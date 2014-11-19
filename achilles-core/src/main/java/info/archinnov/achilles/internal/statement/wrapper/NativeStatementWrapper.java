@@ -20,20 +20,20 @@ import java.util.concurrent.ExecutorService;
 
 import com.datastax.driver.core.*;
 import info.archinnov.achilles.internal.statement.StatementHelper;
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.apache.commons.lang3.ArrayUtils;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
-import info.archinnov.achilles.listener.CASResultListener;
 
 public class NativeStatementWrapper extends AbstractStatementWrapper {
 
 
     private Statement statement;
 
-    public NativeStatementWrapper(Class<?> entityClass, Statement statement, Object[] values, Optional<CASResultListener> casResultListener) {
+    public NativeStatementWrapper(Class<?> entityClass, Statement statement, Object[] values, Optional<LWTResultListener> LWTResultListener) {
         super(entityClass, values);
         this.statement = statement;
-        super.casResultListener = casResultListener;
+        super.LWTResultListener = LWTResultListener;
     }
 
 

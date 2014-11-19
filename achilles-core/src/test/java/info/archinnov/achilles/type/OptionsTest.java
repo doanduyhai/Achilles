@@ -17,7 +17,7 @@ package info.archinnov.achilles.type;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.type.Options.CASCondition;
+import static info.archinnov.achilles.type.Options.LWTCondition;
 import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
 
@@ -25,9 +25,9 @@ public class OptionsTest {
 
     @Test
     public void should_duplicate_without_ttl_and_timestamp() throws Exception {
-        final CASCondition CASCondition = new CASCondition("name", "John");
+        final LWTCondition LWTCondition = new LWTCondition("name", "John");
         Options options = OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(10)
-                .withTimestamp(100L).ifNotExists().ifConditions(CASCondition);
+                .withTimestamp(100L).ifNotExists().ifConditions(LWTCondition);
 
         Options newOptions = options.duplicateWithoutTtlAndTimestamp();
 
@@ -35,8 +35,8 @@ public class OptionsTest {
         assertThat(newOptions.getTimestamp().isPresent()).isFalse();
         assertThat(newOptions.getTtl().isPresent()).isFalse();
         assertThat(newOptions.isIfNotExists()).isTrue();
-        assertThat(newOptions.hasCASConditions()).isTrue();
-        assertThat(newOptions.getCASConditions()).containsExactly(CASCondition);
+        assertThat(newOptions.hasLWTConditions()).isTrue();
+        assertThat(newOptions.getLWTConditions()).containsExactly(LWTCondition);
     }
 
     @Test

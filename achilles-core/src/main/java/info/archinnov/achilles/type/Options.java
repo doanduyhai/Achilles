@@ -18,13 +18,14 @@ package info.archinnov.achilles.type;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import java.util.List;
+
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.apache.commons.collections.CollectionUtils;
 import com.datastax.driver.core.querybuilder.Clause;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.listener.CASResultListener;
 
 public class Options {
 
@@ -36,9 +37,9 @@ public class Options {
 
     boolean ifNotExists;
 
-    List<CASCondition> CASConditions;
+    List<LWTCondition> LWTConditions;
 
-    Optional<CASResultListener> CASResultListenerO = Optional.absent();
+    Optional<LWTResultListener> LWTResultListenerO = Optional.absent();
 
     List<FutureCallback<Object>> asyncListeners;
 
@@ -63,16 +64,16 @@ public class Options {
         return ifNotExists;
     }
 
-    public List<CASCondition> getCASConditions() {
-        return CASConditions;
+    public List<LWTCondition> getLWTConditions() {
+        return LWTConditions;
     }
 
-    public boolean hasCASConditions() {
-        return CollectionUtils.isNotEmpty(CASConditions);
+    public boolean hasLWTConditions() {
+        return CollectionUtils.isNotEmpty(LWTConditions);
     }
 
-    public Optional<CASResultListener> getCasResultListener() {
-        return CASResultListenerO;
+    public Optional<LWTResultListener> getLWTResultListener() {
+        return LWTResultListenerO;
     }
 
     public List<FutureCallback<Object>> getAsyncListeners() {
@@ -94,8 +95,8 @@ public class Options {
                 .add("Time to live", this.ttl)
                 .add("Timestamp", this.timestamp)
                 .add("IF NOT EXISTS ? ", this.ifNotExists)
-                .add("CAS conditions", this.CASConditions)
-                .add("CAS result listener optional", this.CASResultListenerO)
+                .add("CAS conditions", this.LWTConditions)
+                .add("CAS result listener optional", this.LWTResultListenerO)
                 .add("Async listeners", this.asyncListeners)
 				.add("Serial consistency", this.serialConsistencyO)
                 .toString();
@@ -103,34 +104,34 @@ public class Options {
 
     public Options duplicateWithoutTtlAndTimestamp() {
         return OptionsBuilder.withConsistency(consistency)
-                .ifNotExists(ifNotExists).ifConditions(CASConditions)
-                .casResultListener(CASResultListenerO.orNull())
-                .casLocalSerial(serialConsistencyO.isPresent());
+                .ifNotExists(ifNotExists).ifConditions(LWTConditions)
+                .LWTResultListener(LWTResultListenerO.orNull())
+                .LWTLocalSerial(serialConsistencyO.isPresent());
     }
 
     public Options duplicateWithNewConsistencyLevel(ConsistencyLevel consistencyLevel) {
         return OptionsBuilder.withConsistency(consistencyLevel)
                 .withTtl(ttl).withTimestamp(timestamp)
-                .ifNotExists(ifNotExists).ifConditions(CASConditions)
-                .casResultListener(CASResultListenerO.orNull())
-                .casLocalSerial(serialConsistencyO.isPresent());
+                .ifNotExists(ifNotExists).ifConditions(LWTConditions)
+                .LWTResultListener(LWTResultListenerO.orNull())
+                .LWTLocalSerial(serialConsistencyO.isPresent());
     }
 
     public Options duplicateWithNewTimestamp(Long timestamp) {
         return OptionsBuilder.withConsistency(consistency)
                 .withTtl(ttl).withTimestamp(timestamp)
-                .ifNotExists(ifNotExists).ifConditions(CASConditions)
-                .casResultListener(CASResultListenerO.orNull())
-                .casLocalSerial(serialConsistencyO.isPresent());
+                .ifNotExists(ifNotExists).ifConditions(LWTConditions)
+                .LWTResultListener(LWTResultListenerO.orNull())
+                .LWTLocalSerial(serialConsistencyO.isPresent());
     }
 
 
-    public static class CASCondition {
+    public static class LWTCondition {
 
         private String columnName;
         private Object value;
 
-        public CASCondition(String columnName, Object value) {
+        public LWTCondition(String columnName, Object value) {
             Validator.validateNotBlank(columnName, "CAS condition column cannot be blank");
             this.columnName = columnName;
             this.value = value;
@@ -165,7 +166,7 @@ public class Options {
                 return false;
             }
 
-            CASCondition that = (CASCondition) o;
+            LWTCondition that = (LWTCondition) o;
 
             return columnName.equals(that.columnName) && value.equals(that.value);
 

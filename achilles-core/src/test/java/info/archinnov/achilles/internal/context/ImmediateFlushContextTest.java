@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +48,6 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -87,7 +87,7 @@ public class ImmediateFlushContextTest {
     @Captor
     private ArgumentCaptor<List<ListenableFuture<ResultSet>>> futureResultSetsCaptor;
 
-    private Optional<CASResultListener> NO_LISTENER = Optional.absent();
+    private Optional<LWTResultListener> NO_LISTENER = Optional.absent();
 
     @Before
     public void setUp() {

@@ -34,10 +34,10 @@ public class ResultSetListener implements FutureCallback<ResultSet> {
 
     @Override
     public void onSuccess(ResultSet resultSet) {
-        LOGGER.trace("Apply Logging and maybe invoke CAS listener for resultSet {} and query '{}'", resultSet.toString(), statementWrapper.getQueryString());
+        LOGGER.trace("Apply Logging and maybe invoke Light Weight Transaction listener for resultSet {} and query '{}'", resultSet.toString(), statementWrapper.getQueryString());
         statementWrapper.logDMLStatement("");
         statementWrapper.tracing(resultSet);
-        statementWrapper.checkForCASSuccess(resultSet);
+        statementWrapper.checkForLWTSuccess(resultSet);
     }
 
     @Override

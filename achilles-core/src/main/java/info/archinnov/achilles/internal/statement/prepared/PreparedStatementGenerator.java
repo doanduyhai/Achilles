@@ -37,7 +37,7 @@ import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_T
 import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
-import static info.archinnov.achilles.type.Options.CASCondition;
+import static info.archinnov.achilles.type.Options.LWTCondition;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import java.util.HashMap;
 import java.util.List;
@@ -118,9 +118,9 @@ public class PreparedStatementGenerator {
         final EntityMetaConfig metaConfig = entityMeta.config();
         Update update = update(metaConfig.getKeyspaceName(), metaConfig.getTableName());
         final Update.Conditions updateConditions = update.onlyIf();
-        if (options.hasCASConditions()) {
-            for (CASCondition CASCondition : options.getCASConditions()) {
-                updateConditions.and(CASCondition.toClauseForPreparedStatement());
+        if (options.hasLWTConditions()) {
+            for (LWTCondition LWTCondition : options.getLWTConditions()) {
+                updateConditions.and(LWTCondition.toClauseForPreparedStatement());
             }
         }
 
@@ -275,9 +275,9 @@ public class PreparedStatementGenerator {
 
         final Update.Conditions conditions = update(metaConfig.getKeyspaceName(), metaConfig.getTableName()).onlyIf();
 
-        if (options.hasCASConditions()) {
-            for (CASCondition CASCondition : options.getCASConditions()) {
-                conditions.and(CASCondition.toClauseForPreparedStatement());
+        if (options.hasLWTConditions()) {
+            for (LWTCondition LWTCondition : options.getLWTConditions()) {
+                conditions.and(LWTCondition.toClauseForPreparedStatement());
             }
         }
 

@@ -16,12 +16,11 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
-import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
 import static com.datastax.driver.core.ColumnDefinitions.Definition;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.INSERT;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.UPDATE;
+import static info.archinnov.achilles.listener.LWTResultListener.LWTResult;
+import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation;
+import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.INSERT;
+import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.UPDATE;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +30,8 @@ import java.util.TreeMap;
 
 import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
 import java.util.concurrent.ExecutorService;
+
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,6 @@ import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.TypedMap;
 
@@ -57,13 +57,13 @@ public abstract class AbstractStatementWrapper {
     public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
     protected static final String IF_NOT_EXIST_CLAUSE = " IF NOT EXISTS";
     protected static final String IF_CLAUSE = " IF ";
-    protected static final String CAS_RESULT_COLUMN = "[applied]";
+    protected static final String LWT_RESULT_COLUMN = "[applied]";
 
     protected static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
     protected RowMethodInvoker invoker = RowMethodInvoker.Singleton.INSTANCE.get();
     protected AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
 
-    protected Optional<CASResultListener> casResultListener = Optional.absent();
+    protected Optional<LWTResultListener> LWTResultListener = Optional.absent();
 
     protected Object[] values = new Object[] { };
     protected boolean traceQueryForEntity = false;
@@ -157,21 +157,21 @@ public abstract class AbstractStatementWrapper {
         }
     }
 
-    protected boolean isCASInsert(String queryString) {
+    protected boolean isLWTInsert(String queryString) {
         return queryString.contains(IF_NOT_EXIST_CLAUSE);
     }
 
-    protected boolean isCASOperation(String queryString) {
+    protected boolean isLWTOperation(String queryString) {
         return queryString.contains(IF_CLAUSE);
     }
 
-    public void checkForCASSuccess(ResultSet resultSet) {
+    public void checkForLWTSuccess(ResultSet resultSet) {
         String queryString = this.getQueryString();
-        if (isCASOperation(queryString)) {
-            final Row casResult = resultSet.one();
-            if (casResult != null && !casResult.getBool(CAS_RESULT_COLUMN)) {
+        if (isLWTOperation(queryString)) {
+            final Row LWTResult = resultSet.one();
+            if (LWTResult != null && !LWTResult.getBool(LWT_RESULT_COLUMN)) {
                 TreeMap<String, Object> currentValues = new TreeMap<>();
-                for (Definition columnDef : casResult.getColumnDefinitions()) {
+                for (Definition columnDef : LWTResult.getColumnDefinitions()) {
                     final String columnDefName = columnDef.getName();
                     final DataType dataType = columnDef.getType();
                     final DataType.Name name = dataType.getName();
@@ -179,26 +179,26 @@ public abstract class AbstractStatementWrapper {
                     Object columnValue;
                     switch (name) {
                         case LIST:
-                            columnValue = casResult.getList(columnDefName, dataType.getTypeArguments().get(0).asJavaClass());
+                            columnValue = LWTResult.getList(columnDefName, dataType.getTypeArguments().get(0).asJavaClass());
                             break;
                         case SET:
-                            columnValue = casResult.getSet(columnDefName, dataType.getTypeArguments().get(0).asJavaClass());
+                            columnValue = LWTResult.getSet(columnDefName, dataType.getTypeArguments().get(0).asJavaClass());
                             break;
                         case MAP:
                             final List<DataType> typeArguments = dataType.getTypeArguments();
-                            columnValue = casResult.getMap(columnDefName, typeArguments.get(0).asJavaClass(), typeArguments.get(1).asJavaClass());
+                            columnValue = LWTResult.getMap(columnDefName, typeArguments.get(0).asJavaClass(), typeArguments.get(1).asJavaClass());
                             break;
                         default:
-                            columnValue = invoker.invokeOnRowForType(casResult, name.asJavaClass(), columnDefName);
+                            columnValue = invoker.invokeOnRowForType(LWTResult, name.asJavaClass(), columnDefName);
                     }
                     currentValues.put(columnDefName, columnValue);
                 }
 
                 Operation operation = UPDATE;
-                if (isCASInsert(queryString)) {
+                if (isLWTInsert(queryString)) {
                     operation = INSERT;
                 }
-                notifyCASError(new CASResult(operation, TypedMap.fromMap(currentValues)));
+                notifyLWTError(new LWTResult(operation, TypedMap.fromMap(currentValues)));
             } else {
                 notifyCASSuccess();
             }
@@ -206,17 +206,17 @@ public abstract class AbstractStatementWrapper {
         }
     }
 
-    protected void notifyCASError(CASResult casResult) {
-        if (casResultListener.isPresent()) {
-            casResultListener.get().onCASError(casResult);
+    protected void notifyLWTError(LWTResult LWTResult) {
+        if (LWTResultListener.isPresent()) {
+            LWTResultListener.get().onLWTError(LWTResult);
         } else {
-            throw new AchillesLightWeightTransactionException(casResult);
+            throw new AchillesLightWeightTransactionException(LWTResult);
         }
     }
 
     protected void notifyCASSuccess() {
-        if (casResultListener.isPresent()) {
-            casResultListener.get().onCASSuccess();
+        if (LWTResultListener.isPresent()) {
+            LWTResultListener.get().onLWTSuccess();
         }
     }
 

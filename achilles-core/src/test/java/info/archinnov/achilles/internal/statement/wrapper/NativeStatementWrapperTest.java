@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Statement;
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -31,7 +31,6 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.google.common.base.Optional;
-import info.archinnov.achilles.listener.CASResultListener;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NativeStatementWrapperTest {
@@ -42,7 +41,7 @@ public class NativeStatementWrapperTest {
         final Insert statement = insertInto("test").value("id", bindMarker("id"));
         statement.setConsistencyLevel(ConsistencyLevel.ALL);
         statement.setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
-        final NativeStatementWrapper wrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, new Object[] { 10L }, Optional.<CASResultListener>absent());
+        final NativeStatementWrapper wrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, new Object[] { 10L }, Optional.<LWTResultListener>absent());
         final ByteBuffer[] boundValues = new SimpleStatement("select", 10L).getValues();
 
         //When
@@ -63,7 +62,7 @@ public class NativeStatementWrapperTest {
         final Insert statement = insertInto("test").value("id", 10L).value("uuid", new UUID(10,10));
         statement.setConsistencyLevel(ConsistencyLevel.ALL);
         statement.setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
-        final NativeStatementWrapper wrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, new Object[] {}, Optional.<CASResultListener>absent());
+        final NativeStatementWrapper wrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, new Object[] {}, Optional.<LWTResultListener>absent());
 
         //When
         final RegularStatement actual = (RegularStatement)wrapper.buildParameterizedStatement();

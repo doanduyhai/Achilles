@@ -20,15 +20,14 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.INSERT;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.UPDATE;
+import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.INSERT;
+import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.UPDATE;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_SERIAL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.type.Options.CASCondition;
-import static info.archinnov.achilles.type.OptionsBuilder.casResultListener;
+import static info.archinnov.achilles.type.Options.LWTCondition;
+import static info.archinnov.achilles.type.OptionsBuilder.LWTResultListener;
 import static info.archinnov.achilles.type.OptionsBuilder.ifConditions;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.ArrayList;
@@ -39,13 +38,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.RegularStatement;
 import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.query.cql.NativeQuery;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -54,7 +53,7 @@ import info.archinnov.achilles.test.integration.entity.EntityWithEnum;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.OptionsBuilder;
 
-public class CASOperationsIT {
+public class LWTOperationsIT {
 
     @Rule
     public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.BOTH, EntityWithEnum.TABLE_NAME, CompleteBean.TABLE_NAME);
@@ -70,7 +69,7 @@ public class CASOperationsIT {
 
         //When
         logAsserter.prepareLogLevel();
-        manager.insert(entityWithEnum, OptionsBuilder.ifNotExists().casLocalSerial());
+        manager.insert(entityWithEnum, OptionsBuilder.ifNotExists().LWTLocalSerial());
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);
 
         //Then
@@ -81,16 +80,16 @@ public class CASOperationsIT {
     }
 
     @Test
-    public void should_insert_and_notify_cas_listener_on_success() throws Exception {
-        final AtomicBoolean casSuccess = new AtomicBoolean(false);
-        CASResultListener listener = new CASResultListener() {
+    public void should_insert_and_notify_LWT_listener_on_success() throws Exception {
+        final AtomicBoolean LWTSuccess = new AtomicBoolean(false);
+        LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
-                casSuccess.compareAndSet(false, true);
+            public void onLWTSuccess() {
+                LWTSuccess.compareAndSet(false, true);
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
+            public void onLWTError(LWTResult LWTResult) {
 
             }
         };
@@ -99,76 +98,76 @@ public class CASOperationsIT {
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
 
         //When
-        manager.insertOrUpdate(entityWithEnum, OptionsBuilder.ifNotExists().casResultListener(listener));
+        manager.insertOrUpdate(entityWithEnum, OptionsBuilder.ifNotExists().LWTResultListener(listener));
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);
 
         //Then
         assertThat(found).isNotNull();
         assertThat(found.getName()).isEqualTo("name");
         assertThat(found.getConsistencyLevel()).isEqualTo(EACH_QUORUM);
-        assertThat(casSuccess.get()).isTrue();
+        assertThat(LWTSuccess.get()).isTrue();
     }
 
     @Test
-    public void should_exception_when_trying_to_insert_with_cas_because_already_exist() throws Exception {
+    public void should_exception_when_trying_to_insert_with_LWT_because_already_exist() throws Exception {
         //Given
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("id", 10L, "[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "name");
-        AchillesLightWeightTransactionException casException = null;
+        AchillesLightWeightTransactionException LWTException = null;
         manager.insert(entityWithEnum);
 
         //When
         try {
             manager.insert(entityWithEnum, OptionsBuilder.ifNotExists());
         } catch (AchillesLightWeightTransactionException ace) {
-            casException = ace;
+            LWTException = ace;
         }
 
-        assertThat(casException).isNotNull();
-        assertThat(casException.operation()).isEqualTo(INSERT);
-        assertThat(casException.currentValues()).isEqualTo(expectedCurrentValues);
-        assertThat(casException.toString()).isEqualTo("CAS operation INSERT cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, id=10, name=name}");
+        assertThat(LWTException).isNotNull();
+        assertThat(LWTException.operation()).isEqualTo(INSERT);
+        assertThat(LWTException.currentValues()).isEqualTo(expectedCurrentValues);
+        assertThat(LWTException.toString()).isEqualTo("CAS operation INSERT cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, id=10, name=name}");
     }
 
     @Test
-    public void should_notify_listener_when_trying_to_insert_with_cas_because_already_exist() throws Exception {
+    public void should_notify_listener_when_trying_to_insert_with_LWT_because_already_exist() throws Exception {
         //Given
-        final AtomicReference<CASResult> atomicCASResult = new AtomicReference(null);
-        CASResultListener listener = new CASResultListener() {
+        final AtomicReference<LWTResultListener.LWTResult> atomicLWTResult = new AtomicReference(null);
+        LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
+            public void onLWTSuccess() {
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
-                atomicCASResult.compareAndSet(null, casResult);
+            public void onLWTError(LWTResult LWTResult) {
+                atomicLWTResult.compareAndSet(null, LWTResult);
             }
         };
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("id", 10L, "[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "name");
         manager.insert(entityWithEnum);
 
-        manager.insert(entityWithEnum, OptionsBuilder.ifNotExists().casResultListener(listener));
+        manager.insert(entityWithEnum, OptionsBuilder.ifNotExists().LWTResultListener(listener));
 
-        final CASResult casResult = atomicCASResult.get();
-        assertThat(casResult.operation()).isEqualTo(INSERT);
-        assertThat(casResult.currentValues()).isEqualTo(expectedCurrentValues);
-        assertThat(casResult.toString()).isEqualTo("CAS operation INSERT cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, id=10, name=name}");
+        final LWTResultListener.LWTResult LWTResult = atomicLWTResult.get();
+        assertThat(LWTResult.operation()).isEqualTo(INSERT);
+        assertThat(LWTResult.currentValues()).isEqualTo(expectedCurrentValues);
+        assertThat(LWTResult.toString()).isEqualTo("CAS operation INSERT cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, id=10, name=name}");
     }
 
 
     @Test
     public void should_notify_listener_when_trying_to_insert_with_cas_and_ttl_because_already_exist() throws Exception {
         //Given
-        final AtomicReference<CASResult> atomicCASResult = new AtomicReference(null);
-        CASResultListener listener = new CASResultListener() {
+        final AtomicReference<LWTResultListener.LWTResult> atomicLWTResult = new AtomicReference(null);
+        LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
+            public void onLWTSuccess() {
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
-                atomicCASResult.compareAndSet(null, casResult);
+            public void onLWTError(LWTResult LWTResult) {
+                atomicLWTResult.compareAndSet(null, LWTResult);
             }
         };
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
@@ -176,12 +175,12 @@ public class CASOperationsIT {
         manager.insert(entityWithEnum);
 
         manager.insert(entityWithEnum, OptionsBuilder.ifNotExists()
-                .withTtl(100).casResultListener(listener));
+                .withTtl(100).LWTResultListener(listener));
 
-        final CASResult casResult = atomicCASResult.get();
-        assertThat(casResult.operation()).isEqualTo(INSERT);
-        assertThat(casResult.currentValues()).isEqualTo(expectedCurrentValues);
-        assertThat(casResult.toString()).isEqualTo("CAS operation INSERT cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, id=10, name=name}");
+        final LWTResultListener.LWTResult LWTResult = atomicLWTResult.get();
+        assertThat(LWTResult.operation()).isEqualTo(INSERT);
+        assertThat(LWTResult.currentValues()).isEqualTo(expectedCurrentValues);
+        assertThat(LWTResult.toString()).isEqualTo("CAS operation INSERT cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, id=10, name=name}");
     }
 
 
@@ -193,7 +192,7 @@ public class CASOperationsIT {
         managed.setName("Helen");
 
         //When
-        manager.insertOrUpdate(managed, ifConditions(new CASCondition("name", "John"), new CASCondition("consistency_level", EACH_QUORUM)));
+        manager.insertOrUpdate(managed, ifConditions(new LWTCondition("name", "John"), new LWTCondition("consistency_level", EACH_QUORUM)));
 
         //Then
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);
@@ -220,7 +219,7 @@ public class CASOperationsIT {
         managed.getFriends().add("George");
 
         //When
-        manager.update(managed, ifConditions(new CASCondition("age_in_years", 32L)));
+        manager.update(managed, ifConditions(new LWTCondition("age_in_years", 32L)));
 
         //Then
         final CompleteBean found = manager.find(CompleteBean.class, primaryKey);
@@ -235,34 +234,34 @@ public class CASOperationsIT {
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "John", EACH_QUORUM);
         final EntityWithEnum managed = manager.insert(entityWithEnum);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "John");
-        AchillesLightWeightTransactionException casException = null;
+        AchillesLightWeightTransactionException LWTException = null;
         managed.setName("Helen");
 
         //When
         try {
-            manager.update(managed, ifConditions(new CASCondition("name", "name"), new CASCondition("consistency_level", EACH_QUORUM)));
+            manager.update(managed, ifConditions(new LWTCondition("name", "name"), new LWTCondition("consistency_level", EACH_QUORUM)));
         } catch (AchillesLightWeightTransactionException ace) {
-            casException = ace;
+            LWTException = ace;
         }
 
-        assertThat(casException).isNotNull();
-        assertThat(casException.operation()).isEqualTo(UPDATE);
-        assertThat(casException.currentValues()).isEqualTo(expectedCurrentValues);
-        assertThat(casException.toString()).isEqualTo("CAS operation UPDATE cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, name=John}");
+        assertThat(LWTException).isNotNull();
+        assertThat(LWTException.operation()).isEqualTo(UPDATE);
+        assertThat(LWTException.currentValues()).isEqualTo(expectedCurrentValues);
+        assertThat(LWTException.toString()).isEqualTo("CAS operation UPDATE cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, name=John}");
     }
 
     @Test
     public void should_notify_listener_when_failing_cas_update() throws Exception {
         //Given
-        final AtomicReference<CASResult> atomicCASResult = new AtomicReference(null);
-        CASResultListener listener = new CASResultListener() {
+        final AtomicReference<LWTResultListener.LWTResult> atomicCASResult = new AtomicReference(null);
+        LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
+            public void onLWTSuccess() {
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
-                atomicCASResult.compareAndSet(null, casResult);
+            public void onLWTError(LWTResult LWTResult) {
+                atomicCASResult.compareAndSet(null, LWTResult);
             }
         };
 
@@ -273,28 +272,28 @@ public class CASOperationsIT {
 
         //When
         manager.update(managed,
-                ifConditions(new CASCondition("name", "name"), new CASCondition("consistency_level", EACH_QUORUM))
-                        .casResultListener(listener));
+                ifConditions(new LWTCondition("name", "name"), new LWTCondition("consistency_level", EACH_QUORUM))
+                        .LWTResultListener(listener));
 
-        final CASResult casResult = atomicCASResult.get();
-        assertThat(casResult).isNotNull();
-        assertThat(casResult.operation()).isEqualTo(UPDATE);
-        assertThat(casResult.currentValues()).isEqualTo(expectedCurrentValues);
-        assertThat(casResult.toString()).isEqualTo("CAS operation UPDATE cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, name=John}");
+        final LWTResultListener.LWTResult LWTResult = atomicCASResult.get();
+        assertThat(LWTResult).isNotNull();
+        assertThat(LWTResult.operation()).isEqualTo(UPDATE);
+        assertThat(LWTResult.currentValues()).isEqualTo(expectedCurrentValues);
+        assertThat(LWTResult.toString()).isEqualTo("CAS operation UPDATE cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, name=John}");
     }
 
     @Test
     public void should_notify_listener_when_failing_cas_update_with_ttl() throws Exception {
         //Given
-        final AtomicReference<CASResult> atomicCASResult = new AtomicReference(null);
-        CASResultListener listener = new CASResultListener() {
+        final AtomicReference<LWTResultListener.LWTResult> atomicCASResult = new AtomicReference(null);
+        LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
+            public void onLWTSuccess() {
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
-                atomicCASResult.compareAndSet(null, casResult);
+            public void onLWTError(LWTResult LWTResult) {
+                atomicCASResult.compareAndSet(null, LWTResult);
             }
         };
 
@@ -305,15 +304,15 @@ public class CASOperationsIT {
 
         //When
         manager.update(managed,
-                ifConditions(new CASCondition("name", "name"), new CASCondition("consistency_level", EACH_QUORUM))
-                        .casResultListener(listener)
+                ifConditions(new LWTCondition("name", "name"), new LWTCondition("consistency_level", EACH_QUORUM))
+                        .LWTResultListener(listener)
                         .withTtl(100));
 
-        final CASResult casResult = atomicCASResult.get();
-        assertThat(casResult).isNotNull();
-        assertThat(casResult.operation()).isEqualTo(UPDATE);
-        assertThat(casResult.currentValues()).isEqualTo(expectedCurrentValues);
-        assertThat(casResult.toString()).isEqualTo("CAS operation UPDATE cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, name=John}");
+        final LWTResultListener.LWTResult LWTResult = atomicCASResult.get();
+        assertThat(LWTResult).isNotNull();
+        assertThat(LWTResult.operation()).isEqualTo(UPDATE);
+        assertThat(LWTResult.currentValues()).isEqualTo(expectedCurrentValues);
+        assertThat(LWTResult.toString()).isEqualTo("CAS operation UPDATE cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, name=John}");
     }
 
     @Test
@@ -325,7 +324,7 @@ public class CASOperationsIT {
         managed.getFollowers().remove("Paul");
 
         //When
-        manager.update(managed, ifConditions(new CASCondition("name", "John")).withTtl(100));
+        manager.update(managed, ifConditions(new LWTCondition("name", "John")).withTtl(100));
 
         //Then
         final CompleteBean actual = manager.find(CompleteBean.class, entity.getId());
@@ -346,7 +345,7 @@ public class CASOperationsIT {
         managed.getFriends().set(1, null);
 
         //When
-        manager.update(managed, ifConditions(new CASCondition("name", "John")).withTtl(100));
+        manager.update(managed, ifConditions(new LWTCondition("name", "John")).withTtl(100));
 
         //Then
         final CompleteBean actual = manager.find(CompleteBean.class, entity.getId());
@@ -354,17 +353,17 @@ public class CASOperationsIT {
     }
 
     @Test
-    public void should_notify_listener_on_cas_update_failure() throws Exception {
+    public void should_notify_listener_on_LWT_update_failure() throws Exception {
         //Given
-        final AtomicReference<CASResult> atomicCASResult = new AtomicReference(null);
-        CASResultListener listener = new CASResultListener() {
+        final AtomicReference<LWTResultListener.LWTResult> atomicLWTResult = new AtomicReference(null);
+        LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
+            public void onLWTSuccess() {
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
-                atomicCASResult.compareAndSet(null, casResult);
+            public void onLWTError(LWTResult LWTResult) {
+                atomicLWTResult.compareAndSet(null, LWTResult);
             }
         };
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "name", "John");
@@ -374,28 +373,28 @@ public class CASOperationsIT {
         managed.getFollowers().add("Helen");
 
         //When
-        manager.update(managed, ifConditions(new CASCondition("name", "Helen")).casResultListener(listener));
+        manager.update(managed, ifConditions(new LWTCondition("name", "Helen")).LWTResultListener(listener));
 
         //Then
-        final CASResult casResult = atomicCASResult.get();
-        assertThat(casResult).isNotNull();
-        assertThat(casResult.operation()).isEqualTo(UPDATE);
-        assertThat(casResult.currentValues()).isEqualTo(expectedCurrentValues);
+        final LWTResultListener.LWTResult LWTResult = atomicLWTResult.get();
+        assertThat(LWTResult).isNotNull();
+        assertThat(LWTResult.operation()).isEqualTo(UPDATE);
+        assertThat(LWTResult.currentValues()).isEqualTo(expectedCurrentValues);
 
     }
 
     @Test
-    public void should_notify_listener_when_cas_error_on_native_query() throws Exception {
+    public void should_notify_listener_when_LWT_error_on_native_query() throws Exception {
         //Given
-        final AtomicReference<CASResult> atomicCASResult = new AtomicReference(null);
-        CASResultListener listener = new CASResultListener() {
+        final AtomicReference<LWTResultListener.LWTResult> atomicLWTResult = new AtomicReference(null);
+        LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
+            public void onLWTSuccess() {
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
-                atomicCASResult.compareAndSet(null, casResult);
+            public void onLWTError(LWTResult casResult) {
+                atomicLWTResult.compareAndSet(null, casResult);
             }
         };
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "name", "John");
@@ -404,18 +403,18 @@ public class CASOperationsIT {
         manager.insert(entity);
 
         final RegularStatement statement = update("CompleteBean").with(set("name","Helen"))
-                .where(eq("id",entity.getId())).onlyIf(eq("name","Andrew"));
+                .where(eq("id",entity.getId())).onlyIf(eq("name", "Andrew"));
 
         //When
-        final NativeQuery nativeQuery = manager.nativeQuery(statement,casResultListener(listener));
+        final NativeQuery nativeQuery = manager.nativeQuery(statement, LWTResultListener(listener));
         nativeQuery.execute();
 
         //Then
-        final CASResult casResult = atomicCASResult.get();
+        final LWTResultListener.LWTResult LWTResult = atomicLWTResult.get();
 
-        assertThat(casResult).isNotNull();
-        assertThat(casResult.operation()).isEqualTo(UPDATE);
-        assertThat(casResult.currentValues()).isEqualTo(expectedCurrentValues);
+        assertThat(LWTResult).isNotNull();
+        assertThat(LWTResult.operation()).isEqualTo(UPDATE);
+        assertThat(LWTResult.currentValues()).isEqualTo(expectedCurrentValues);
     }
 
 }

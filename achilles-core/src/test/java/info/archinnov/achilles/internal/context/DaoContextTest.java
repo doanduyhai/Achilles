@@ -43,6 +43,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -83,7 +85,6 @@ import info.archinnov.achilles.internal.statement.cache.StatementCacheKey;
 import info.archinnov.achilles.internal.statement.prepared.PreparedStatementBinder;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
@@ -262,13 +263,13 @@ public class DaoContextTest {
         Object[] boundValues = new Object[] { "whatever" };
         Pair<Where, Object[]> pair = Pair.create(where, boundValues);
 
-        final Optional<CASResultListener> casResultListener = Optional.absent();
+        final Optional<LWTResultListener> lwtResultListener = Optional.absent();
 
         when(changeSet.getChangeType()).thenReturn(SET_TO_LIST_AT_INDEX);
 
         when(overrider.getWriteLevel(context)).thenReturn(EACH_QUORUM);
         when(statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet)).thenReturn(pair);
-        when(context.getCASResultListener()).thenReturn(casResultListener);
+        when(context.getCASResultListener()).thenReturn(lwtResultListener);
         when(context.getSerialConsistencyLevel()).thenReturn(fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
 
         // When
@@ -290,13 +291,13 @@ public class DaoContextTest {
         Object[] boundValues = new Object[] { "whatever" };
         Pair<Where, Object[]> pair = Pair.create(where, boundValues);
 
-        final Optional<CASResultListener> casResultListener = Optional.absent();
+        final Optional<LWTResultListener> lwtResultListener = Optional.absent();
 
         when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST_AT_INDEX);
 
         when(overrider.getWriteLevel(context)).thenReturn(EACH_QUORUM);
         when(statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet)).thenReturn(pair);
-        when(context.getCASResultListener()).thenReturn(casResultListener);
+        when(context.getCASResultListener()).thenReturn(lwtResultListener);
 
         when(statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet)).thenReturn(pair);
 

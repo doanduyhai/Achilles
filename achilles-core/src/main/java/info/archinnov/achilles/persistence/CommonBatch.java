@@ -16,7 +16,6 @@
 package info.archinnov.achilles.persistence;
 
 import com.datastax.driver.core.BatchStatement;
-import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesException;
@@ -30,7 +29,7 @@ import info.archinnov.achilles.internal.statement.wrapper.NativeQueryLog;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.internal.utils.UUIDGen;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.internal.persistence.operations.NativeQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
@@ -329,25 +328,25 @@ abstract class CommonBatch extends CommonPersistenceManager {
      * @param boundValues      optional bound values
      */
     public void batchNativeStatement(Statement statement, Object... boundValues) {
-        this.batchNativeStatementWithCASListener(statement, null, boundValues);
+        this.batchNativeStatementWithLWTListener(statement, null, boundValues);
     }
 
     /**
      * <pre class="code"><code class="java">
-     * CASResultListener listener = ...
+     * LWTResultListener listener = ...
      * RegularStatement statement = insertInto("MyEntity").value("id",bindMarker()).value("name",bindMarker());
-     * batch.batchNativeStatementWithCASListener(statement,listener,10,"John");
+     * batch.batchNativeStatementWithLWTListener(statement,listener,10,"John");
      * </code></pre>
      *
      * @param statement  native CQL3 statement
-     * @param casResultListener result listener for CAS operation
+     * @param LWTResultListener result listener for LWT operation
      * @param boundValues       optional bound values
      */
-    public void batchNativeStatementWithCASListener(Statement statement, CASResultListener casResultListener, Object... boundValues) {
+    public void batchNativeStatementWithLWTListener(Statement statement, LWTResultListener LWTResultListener, Object... boundValues) {
         log.debug("Batch native statement '{}' with bound values '{}'", statement, boundValues);
         Validator.validateFalse(statement instanceof BatchStatement, "Cannot add raw batch statement into batch");
         validator.validateUpsertOrDelete(statement);
-        final NativeStatementWrapper nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, boundValues, Optional.fromNullable(casResultListener));
+        final NativeStatementWrapper nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, boundValues, Optional.fromNullable(LWTResultListener));
         flushContext.pushStatement(nativeStatementWrapper);
     }
 

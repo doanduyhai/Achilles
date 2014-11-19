@@ -19,15 +19,15 @@ package info.archinnov.achilles.internal.statement.wrapper;
 import static com.google.common.base.Optional.fromNullable;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.google.common.base.Optional;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -39,7 +39,7 @@ public class BoundStatementWrapperTest {
     private BoundStatement bs;
 
 
-    private static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
+    private static final Optional<LWTResultListener> NO_LISTENER = Optional.absent();
 
     @Test
     public void should_get_bound_statement() throws Exception {

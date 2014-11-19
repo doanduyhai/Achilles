@@ -60,9 +60,9 @@ public class Create extends SchemaStatement {
     }
 
     /**
-     * Use 'IF NOT EXISTS' CAS condition for the table creation.
+     * Use 'IF NOT EXISTS' LWT condition for the table creation.
      *
-     * @param ifNotExists whether to use the CAS condition.
+     * @param ifNotExists whether to use the LWT condition.
      * @return this CREATE TABLE statement.
      */
     public Create ifNotExists(Boolean ifNotExists) {

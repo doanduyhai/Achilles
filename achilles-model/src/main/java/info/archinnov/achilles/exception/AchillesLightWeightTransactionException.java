@@ -15,30 +15,31 @@
  */
 package info.archinnov.achilles.exception;
 
-import static info.archinnov.achilles.listener.CASResultListener.CASResult;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation;
+import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation;
+
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.TypedMap;
 
 public class AchillesLightWeightTransactionException extends AchillesException {
     private static final long serialVersionUID = 1L;
-    private final CASResult casResult;
+    private final LWTResultListener.LWTResult LWTResult;
 
-    public AchillesLightWeightTransactionException(CASResult casResult) {
-        super(casResult.toString());
-        this.casResult = casResult;
+    public AchillesLightWeightTransactionException(LWTResultListener.LWTResult LWTResult) {
+        super(LWTResult.toString());
+        this.LWTResult = LWTResult;
     }
 
     public Operation operation() {
-        return casResult.operation();
+        return LWTResult.operation();
     }
 
     public TypedMap currentValues() {
-        return casResult.currentValues();
+        return LWTResult.currentValues();
     }
 
     @Override
     public String toString() {
-        return casResult.toString();
+        return LWTResult.toString();
     }
 }
 

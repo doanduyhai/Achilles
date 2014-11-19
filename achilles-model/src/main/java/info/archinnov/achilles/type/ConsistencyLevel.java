@@ -21,7 +21,7 @@ package info.archinnov.achilles.type;
  *     <br>
  *     <br>
  *     Please note that <strong>SERIAL</strong> and <strong>LOCAL_SERIAL</strong> levels only
- *     apply to CAS operations
+ *     apply to LWT operations
  *     <br>
  *     <br>
  *     All levels having <strong>LOCAL</strong> in their name apply to a multi-datacenters cluster

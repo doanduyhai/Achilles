@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import info.archinnov.achilles.async.AchillesFuture;
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.Empty;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,7 +55,6 @@ import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapp
 import info.archinnov.achilles.internal.statement.wrapper.BatchStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -103,7 +103,7 @@ public class BatchingFlushContextTest {
     @Captor
     private ArgumentCaptor<Function<List<ResultSet>, Empty>> applyTriggersCaptor;
 
-    private Optional<CASResultListener> NO_LISTENER = Optional.absent();
+    private Optional<LWTResultListener> NO_LISTENER = Optional.absent();
     private static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
     @Before

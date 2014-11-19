@@ -20,10 +20,9 @@ import static com.datastax.driver.core.ColumnDefinitionBuilder.buildColumnDef;
 import static com.datastax.driver.core.ColumnDefinitions.Definition;
 import static com.datastax.driver.core.ConsistencyLevel.ONE;
 import static com.google.common.base.Optional.fromNullable;
-import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.CAS_RESULT_COLUMN;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.INSERT;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.UPDATE;
+import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.LWT_RESULT_COLUMN;
+import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.INSERT;
+import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.UPDATE;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -36,6 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.fest.assertions.data.MapEntry;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,7 +60,6 @@ import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.sample.entity.Entity1;
 
@@ -103,7 +102,7 @@ public class RegularStatementWrapperTest {
     @Captor
     private ArgumentCaptor<Statement> statementCaptor;
 
-    private Optional<CASResultListener> NO_LISTENER = Optional.absent();
+    private Optional<LWTResultListener> NO_LISTENER = Optional.absent();
     private static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
     @Before
@@ -131,49 +130,49 @@ public class RegularStatementWrapperTest {
     @Test
     public void should_execute_cas_successfully() throws Exception {
         //Given
-        final AtomicBoolean casSuccess = new AtomicBoolean(false);
-        CASResultListener listener = new CASResultListener() {
+        final AtomicBoolean LWTSuccess = new AtomicBoolean(false);
+        LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
-                casSuccess.compareAndSet(false, true);
+            public void onLWTSuccess() {
+                LWTSuccess.compareAndSet(false, true);
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
+            public void onLWTError(LWTResult casResult) {
 
             }
         };
 
         when(rs.getQueryString()).thenReturn("INSERT INTO table IF NOT EXISTS");
         wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, fromNullable(listener), NO_SERIAL_CONSISTENCY);
-        when(resultSet.one().getBool(CAS_RESULT_COLUMN)).thenReturn(true);
+        when(resultSet.one().getBool(LWT_RESULT_COLUMN)).thenReturn(true);
 
         //When
-        wrapper.checkForCASSuccess(resultSet);
+        wrapper.checkForLWTSuccess(resultSet);
 
         //Then
-        assertThat(casSuccess.get()).isTrue();
+        assertThat(LWTSuccess.get()).isTrue();
     }
 
     @Test
     public void should_throw_exception_on_cas_error() throws Exception {
         //Given
-        final AtomicReference<CASResult> atomicCASResult = new AtomicReference<>(null);
-        CASResultListener listener = new CASResultListener() {
+        final AtomicReference<LWTResultListener.LWTResult> atomicLWTResult = new AtomicReference<>(null);
+        LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
+            public void onLWTSuccess() {
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
-                atomicCASResult.compareAndSet(null, casResult);
+            public void onLWTError(LWTResult LWTResult) {
+                atomicLWTResult.compareAndSet(null, LWTResult);
             }
         };
         wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, fromNullable(listener), NO_SERIAL_CONSISTENCY);
         wrapper.invoker = invoker;
         when(rs.getQueryString()).thenReturn("UPDATE table IF name='John' SET");
         when(resultSet.one()).thenReturn(row);
-        when(row.getBool(CAS_RESULT_COLUMN)).thenReturn(false);
+        when(row.getBool(LWT_RESULT_COLUMN)).thenReturn(false);
         when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 
         when(columnDefinitions.iterator().hasNext()).thenReturn(true, true, false);
@@ -185,10 +184,10 @@ public class RegularStatementWrapperTest {
         when(invoker.invokeOnRowForType(row, DataType.text().asJavaClass(), "name")).thenReturn("Helen");
 
         //When
-        wrapper.checkForCASSuccess(resultSet);
+        wrapper.checkForLWTSuccess(resultSet);
 
         //Then
-        final CASResult actual = atomicCASResult.get();
+        final LWTResultListener.LWTResult actual = atomicLWTResult.get();
         assertThat(actual).isNotNull();
         assertThat(actual.operation()).isEqualTo(UPDATE);
         assertThat(actual.currentValues()).contains(MapEntry.entry("[applied]", false), MapEntry.entry("name", "Helen"));
@@ -201,7 +200,7 @@ public class RegularStatementWrapperTest {
         wrapper.invoker = invoker;
         when(rs.getQueryString()).thenReturn("INSERT INTO table IF NOT EXISTS");
         when(resultSet.one()).thenReturn(row);
-        when(row.getBool(CAS_RESULT_COLUMN)).thenReturn(false);
+        when(row.getBool(LWT_RESULT_COLUMN)).thenReturn(false);
         when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 
         when(columnDefinitions.iterator().hasNext()).thenReturn(true, true, false);
@@ -215,7 +214,7 @@ public class RegularStatementWrapperTest {
         AchillesLightWeightTransactionException caughtEx = null;
         //When
         try {
-            wrapper.checkForCASSuccess(resultSet);
+            wrapper.checkForLWTSuccess(resultSet);
         } catch (AchillesLightWeightTransactionException ace) {
             caughtEx = ace;
         }

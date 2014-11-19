@@ -28,6 +28,8 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BoundStatement;
@@ -57,7 +59,6 @@ import info.archinnov.achilles.internal.statement.prepared.PreparedStatementBind
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
@@ -280,7 +281,7 @@ public class DaoContext {
         final ConsistencyLevel readLevel =  sliceQueryProperties.getConsistencyLevelOr(defaultReadConsistencyLevel);
 
         return new BoundStatementWrapper(sliceQueryProperties.getEntityClass(),bs,boundValues, getCQLLevel(readLevel),
-                Optional.<CASResultListener>absent(), Optional.<com.datastax.driver.core.ConsistencyLevel>absent());
+                Optional.<LWTResultListener>absent(), Optional.<com.datastax.driver.core.ConsistencyLevel>absent());
     }
 
     private ListenableFuture<ResultSet> executeReadWithConsistency(DaoOperations context, PreparedStatement ps, boolean onlyStaticColumns) {

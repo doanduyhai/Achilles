@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Insert;
-import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.TypedMap;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
@@ -332,7 +332,7 @@ public class BatchModeIT {
     }
 
     @Test
-    public void should_batch_native_statement_with_CAS_result_listener() throws Exception {
+    public void should_batch_native_statement_with_LWT_result_listener() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
         manager.insert(entity);
@@ -340,23 +340,23 @@ public class BatchModeIT {
         final Insert statement = insertInto("CompleteBean").value("id", bindMarker("id")).value("name", bindMarker("name")).ifNotExists();
 
         final AtomicBoolean error = new AtomicBoolean(false);
-        final AtomicReference<CASResultListener.CASResult> result = new AtomicReference<>(null);
+        final AtomicReference<LWTResultListener.LWTResult> result = new AtomicReference<>(null);
 
-        CASResultListener listener = new CASResultListener() {
+        LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
+            public void onLWTSuccess() {
 
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
+            public void onLWTError(LWTResult LWTResult) {
                 error.getAndSet(true);
-                result.getAndSet(casResult);
+                result.getAndSet(LWTResult);
             }
         };
 
         //When
-        batch.batchNativeStatementWithCASListener(statement,listener, entity.getId(),"name");
+        batch.batchNativeStatementWithLWTListener(statement, listener, entity.getId(), "name");
         batch.endBatch();
 
         //Then

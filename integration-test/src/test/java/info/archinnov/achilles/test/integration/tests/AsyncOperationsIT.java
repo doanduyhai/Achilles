@@ -16,7 +16,6 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult;
 import static info.archinnov.achilles.type.OptionsBuilder.withAsyncListeners;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
@@ -28,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.persistence.AsyncManager;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,8 +40,6 @@ import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.listener.CASResultListener;
-import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -192,7 +190,7 @@ public class AsyncOperationsIT {
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Throwable> exceptionSpy = new AtomicReference<>();
-        final AtomicReference<CASResult> casResultSpy = new AtomicReference<>();
+        final AtomicReference<LWTResultListener.LWTResult> LWTResultSpy = new AtomicReference<>();
 
         FutureCallback<Object> errorCallBack = new FutureCallback<Object>() {
             @Override
@@ -207,24 +205,24 @@ public class AsyncOperationsIT {
             }
         };
         //When
-        CASResultListener casListener = new CASResultListener() {
+        LWTResultListener casListener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
+            public void onLWTSuccess() {
 
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
-                casResultSpy.getAndSet(casResult);
+            public void onLWTError(LWTResult casResult) {
+                LWTResultSpy.getAndSet(casResult);
             }
         };
-        manager.insert(paul, withAsyncListeners(errorCallBack).ifNotExists().casResultListener(casListener));
+        manager.insert(paul, withAsyncListeners(errorCallBack).ifNotExists().LWTResultListener(casListener));
 
         //Then
         latch.await();
         Thread.sleep(100);
         assertThat(exceptionSpy.get()).isNull();
-        assertThat(casResultSpy.get()).isNotNull().isInstanceOf(CASResult.class);
+        assertThat(LWTResultSpy.get()).isNotNull().isInstanceOf(LWTResultListener.LWTResult.class);
         ;
     }
 

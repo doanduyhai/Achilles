@@ -23,7 +23,7 @@ import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
 import static info.archinnov.achilles.interceptor.Event.PRE_INSERT;
 import static info.archinnov.achilles.interceptor.Event.PRE_DELETE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
-import static info.archinnov.achilles.type.Options.CASCondition;
+import static info.archinnov.achilles.type.Options.LWTCondition;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -216,16 +216,16 @@ public class PersistenceContext {
             return options.getSerialConsistency();
         }
 
-        public List<CASCondition> getCasConditions() {
-            return Optional.fromNullable(options.getCASConditions()).or(new ArrayList<CASCondition>());
+        public List<LWTCondition> getCasConditions() {
+            return Optional.fromNullable(options.getLWTConditions()).or(new ArrayList<LWTCondition>());
         }
 
         public boolean hasCasConditions() {
-            return options.hasCASConditions();
+            return options.hasLWTConditions();
         }
 
         public Optional getCASResultListener() {
-            return options.getCasResultListener();
+            return options.getLWTResultListener();
         }
 
         public Set<Method> getAllGettersExceptCounters() {

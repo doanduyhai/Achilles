@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.internal.statement.cache;
 
-import static info.archinnov.achilles.type.Options.CASCondition;
+import static info.archinnov.achilles.type.Options.LWTCondition;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -98,19 +98,19 @@ public class StatementCacheKey {
     private static class OptionsCacheKey {
         private boolean hasTimestamp;
         private boolean ifNotExists;
-        private List<CASCondition> CASConditions;
+        private List<LWTCondition> LWTConditions;
 
-        private OptionsCacheKey(boolean hasTimestamp, boolean ifNotExists, List<CASCondition> CASConditions) {
+        private OptionsCacheKey(boolean hasTimestamp, boolean ifNotExists, List<LWTCondition> LWTConditions) {
             this.hasTimestamp = hasTimestamp;
             this.ifNotExists = ifNotExists;
-            this.CASConditions = CASConditions;
+            this.LWTConditions = LWTConditions;
         }
 
         private static OptionsCacheKey fromOptions(Options options) {
             boolean hasTimestamp = options.getTimestamp().isPresent();
             boolean ifNotExists = options.isIfNotExists();
-            List<CASCondition> CASConditions = Optional.fromNullable(options.getCASConditions()).or(Collections.<CASCondition>emptyList());
-            return new OptionsCacheKey(hasTimestamp, ifNotExists, CASConditions);
+            List<LWTCondition> LWTConditions = Optional.fromNullable(options.getLWTConditions()).or(Collections.<LWTCondition>emptyList());
+            return new OptionsCacheKey(hasTimestamp, ifNotExists, LWTConditions);
         }
 
         @Override
@@ -125,12 +125,12 @@ public class StatementCacheKey {
             final OptionsCacheKey other = (OptionsCacheKey) o;
             return Objects.equals(this.hasTimestamp, other.hasTimestamp) &&
                     Objects.equals(this.ifNotExists, other.ifNotExists) &&
-                    Objects.equals(this.CASConditions, other.CASConditions);
+                    Objects.equals(this.LWTConditions, other.LWTConditions);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.hasTimestamp, this.ifNotExists, this.CASConditions);
+            return Objects.hash(this.hasTimestamp, this.ifNotExists, this.LWTConditions);
         }
 
         @Override
@@ -138,7 +138,7 @@ public class StatementCacheKey {
             return "OptionsCacheKey{" +
                     "hasTimestamp=" + Objects.toString(hasTimestamp) +
                     ", ifNotExists=" + Objects.toString(ifNotExists) +
-                    ", CASConditions=" + Objects.toString(CASConditions) +
+                    ", LWTConditions=" + Objects.toString(LWTConditions) +
                     '}';
         }
     }

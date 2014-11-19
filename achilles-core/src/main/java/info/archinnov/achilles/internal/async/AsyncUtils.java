@@ -127,17 +127,17 @@ public class AsyncUtils {
             }
         };
 
-        Function<ResultSet, ResultSet> CASCheck = new Function<ResultSet, ResultSet>() {
+        Function<ResultSet, ResultSet> LWTCheck = new Function<ResultSet, ResultSet>() {
             @Override
             public ResultSet apply(ResultSet resultSet) {
-                statementWrapper.checkForCASSuccess(resultSet);
+                statementWrapper.checkForLWTSuccess(resultSet);
                 return resultSet;
             }
         };
 
         final ListenableFuture<ResultSet> logApplied = Futures.transform(resultSetFuture, logStatements, executorService);
         final ListenableFuture<ResultSet> tracingApplied = Futures.transform(logApplied, tracing, executorService);
-        return Futures.transform(tracingApplied, CASCheck, executorService);
+        return Futures.transform(tracingApplied, LWTCheck, executorService);
     }
 
     public static enum Singleton {

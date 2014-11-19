@@ -23,17 +23,17 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
-import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.listener.LWTResultListener;
 
 public class RegularStatementWrapper extends AbstractStatementWrapper {
 
     private RegularStatement regularStatement;
 
     public RegularStatementWrapper(Class<?> entityClass, RegularStatement regularStatement, Object[] boundValues,
-            ConsistencyLevel consistencyLevel, Optional<CASResultListener> casResultListener, Optional<ConsistencyLevel> serialConsistencyLevel) {
+            ConsistencyLevel consistencyLevel, Optional<LWTResultListener> LWTResultListener, Optional<ConsistencyLevel> serialConsistencyLevel) {
         super(entityClass, boundValues);
         this.regularStatement = regularStatement;
-        super.casResultListener = casResultListener;
+        super.LWTResultListener = LWTResultListener;
         this.regularStatement.setConsistencyLevel(consistencyLevel);
         if (serialConsistencyLevel.isPresent()) {
             this.regularStatement.setSerialConsistencyLevel(serialConsistencyLevel.get());

@@ -34,7 +34,7 @@ public class CreateIndex extends SchemaStatement {
     }
 
     /**
-     * Use 'IF NOT EXISTS' CAS condition for the index creation.
+     * Use 'IF NOT EXISTS' LWT condition for the index creation.
      *
      * @return this CREATE INDEX statement.
      */

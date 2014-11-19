@@ -66,7 +66,7 @@ public class OptionsValidatorTest {
         CompleteBean entity = new CompleteBean();
 
         exception.expect(AchillesException.class);
-        exception.expectMessage("Cannot provide custom timestamp for CAS insert operations");
+        exception.expectMessage("Cannot provide custom timestamp for insert operations using Light Weight Transaction");
 
         //When
         optionsValidator.validateOptionsForUpsert(entity, entityMetaMap, ifNotExists().withTimestamp(100L));

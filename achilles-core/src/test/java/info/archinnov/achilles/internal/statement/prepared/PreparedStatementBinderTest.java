@@ -30,7 +30,7 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_SET;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.type.Options.CASCondition;
+import static info.archinnov.achilles.type.Options.LWTCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -650,12 +650,12 @@ public class PreparedStatementBinderTest {
     public void should_bind_for_remove_entry_from_map_with_cas_condition() throws Exception {
         //Given
         Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        final CASCondition CASCondition = new CASCondition("name", "John");
+        final LWTCondition LWTCondition = new LWTCondition("name", "John");
 
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(context.hasCasConditions()).thenReturn(true);
-        when(context.getCasConditions()).thenReturn(asList(CASCondition));
+        when(context.getCasConditions()).thenReturn(asList(LWTCondition));
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
 
@@ -666,7 +666,7 @@ public class PreparedStatementBinderTest {
 
         when(entityMeta.getClassName()).thenReturn("CompleteBean");
         when(entityMeta.getIdMeta()).thenReturn(idMeta);
-        when(entityMeta.forTranscoding().encodeCasConditionValue(CASCondition)).thenReturn("John");
+        when(entityMeta.forTranscoding().encodeCasConditionValue(LWTCondition)).thenReturn("John");
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
         when(idMeta.structure().isEmbeddedId()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);

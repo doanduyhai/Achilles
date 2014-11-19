@@ -18,15 +18,13 @@ package info.archinnov.achilles.internal.statement.wrapper;
 
 import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
 import static com.google.common.base.Optional.fromNullable;
-import static info.archinnov.achilles.internal.statement.wrapper.BatchStatementWrapper.CompositeCASResultListener;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.concurrent.ExecutorService;
 
-import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -60,10 +58,10 @@ public class BatchStatementWrapperTest {
     private ResultSetFuture resultSetFuture;
 
     @Mock
-    private CASResultListener casResultListener;
+    private LWTResultListener LWTResultListener;
 
     @Mock
-    private CASResult casResult;
+    private info.archinnov.achilles.listener.LWTResultListener.LWTResult LWTResult;
 
     @Captor
     private ArgumentCaptor<BatchStatement> batchCaptor;
@@ -72,7 +70,7 @@ public class BatchStatementWrapperTest {
     public void should_get_query_string() throws Exception {
         //Given
         when(statementWrapper.getQueryString()).thenReturn("SELECT * FROM");
-        statementWrapper.casResultListener = Optional.fromNullable(casResultListener);
+        statementWrapper.LWTResultListener = Optional.fromNullable(LWTResultListener);
 
         //When
         BatchStatementWrapper wrapper = new BatchStatementWrapper(LOGGED, asList(statementWrapper),
@@ -84,20 +82,20 @@ public class BatchStatementWrapperTest {
         verify(statementWrapper).activateQueryTracing();
         assertThat(wrapper.getStatement().getConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.ALL);
         assertThat(wrapper.getStatement().getSerialConsistencyLevel()).isNull();
-        assertThat(wrapper.casResultListener.get()).isInstanceOf(CompositeCASResultListener.class);
+        assertThat(wrapper.LWTResultListener.get()).isInstanceOf(BatchStatementWrapper.CompositeLWTResultListener.class);
 
-        wrapper.casResultListener.get().onCASSuccess();
-        verify(casResultListener).onCASSuccess();
+        wrapper.LWTResultListener.get().onLWTSuccess();
+        verify(LWTResultListener).onLWTSuccess();
 
-        wrapper.casResultListener.get().onCASError(casResult);
-        verify(casResultListener).onCASError(casResult);
+        wrapper.LWTResultListener.get().onLWTError(LWTResult);
+        verify(LWTResultListener).onLWTError(LWTResult);
     }
 
     @Test
     public void should_log_dml_statements() throws Exception {
         //Given
         when(statementWrapper.isTracingEnabled()).thenReturn(true);
-        statementWrapper.casResultListener = Optional.fromNullable(casResultListener);
+        statementWrapper.LWTResultListener = Optional.fromNullable(LWTResultListener);
 
         //When
         BatchStatementWrapper wrapper = new BatchStatementWrapper(LOGGED, asList(statementWrapper),
@@ -107,7 +105,7 @@ public class BatchStatementWrapperTest {
         //Then
         verify(statementWrapper).activateQueryTracing();
         verify(statementWrapper).logDMLStatement("aa");
-        assertThat(wrapper.casResultListener.get()).isInstanceOf(CompositeCASResultListener.class);
+        assertThat(wrapper.LWTResultListener.get()).isInstanceOf(BatchStatementWrapper.CompositeLWTResultListener.class);
     }
 
 }

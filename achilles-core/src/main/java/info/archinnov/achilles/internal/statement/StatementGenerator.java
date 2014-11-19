@@ -18,7 +18,7 @@ package info.archinnov.achilles.internal.statement;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
-import static info.archinnov.achilles.type.Options.CASCondition;
+import static info.archinnov.achilles.type.Options.LWTCondition;
 import static org.apache.commons.lang3.ArrayUtils.addAll;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,10 +49,10 @@ public class StatementGenerator {
 
         final Optional<Integer> ttlO = context.getTtl();
         final Optional<Long> timestampO = context.getTimestamp();
-        final List<CASCondition> CASConditions = context.getCasConditions();
+        final List<LWTCondition> LWTConditions = context.getCasConditions();
 
         final Update.Conditions conditions = update(metaConfig.getKeyspaceName(), metaConfig.getTableName()).onlyIf();
-        List<Object> casEncodedValues = addAndEncodeCasConditions(meta, CASConditions, conditions);
+        List<Object> LWTEncodedValues = addAndEncodeLWTConditions(meta, LWTConditions, conditions);
 
         Object[] boundValues = new Object[] { };
         if (ttlO.isPresent()) {
@@ -80,18 +80,18 @@ public class StatementGenerator {
         }
 
         final Pair<Update.Where, Object[]> whereClauseAndBoundValues = meta.getIdMeta().forStatementGeneration().generateWhereClauseForUpdate(entity, changeSet.getPropertyMeta(), updateClauseAndBoundValues.left);
-        boundValues = addAll(addAll(boundValues, addAll(updateClauseAndBoundValues.right, whereClauseAndBoundValues.right)), casEncodedValues.toArray());
+        boundValues = addAll(addAll(boundValues, addAll(updateClauseAndBoundValues.right, whereClauseAndBoundValues.right)), LWTEncodedValues.toArray());
         return Pair.create(whereClauseAndBoundValues.left, boundValues);
     }
 
-    private List<Object> addAndEncodeCasConditions(EntityMeta entityMeta, List<CASCondition> CASConditions, Update.Conditions conditions) {
-        List<Object> casEncodedValues = new ArrayList<>();
-        for (CASCondition casCondition : CASConditions) {
-            final Object encodedValue = entityMeta.forTranscoding().encodeCasConditionValue(casCondition);
-            casEncodedValues.add(encodedValue);
-            conditions.and(casCondition.toClause());
+    private List<Object> addAndEncodeLWTConditions(EntityMeta entityMeta, List<LWTCondition> LWTConditions, Update.Conditions conditions) {
+        List<Object> LWTEncodedValues = new ArrayList<>();
+        for (LWTCondition LWTCondition : LWTConditions) {
+            final Object encodedValue = entityMeta.forTranscoding().encodeCasConditionValue(LWTCondition);
+            LWTEncodedValues.add(encodedValue);
+            conditions.and(LWTCondition.toClause());
         }
-        return casEncodedValues;
+        return LWTEncodedValues;
     }
 
     public static enum Singleton {

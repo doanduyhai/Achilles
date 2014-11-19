@@ -538,8 +538,8 @@ public class PersistenceManager extends CommonPersistenceManager {
      *            options
      *
      * @param options
-     *            options for the query. <strong>Only CAS Result listener passed as option is taken
-     *            into account</strong>. For timestamp, TTL and CAS conditions you must specify them
+     *            options for the query. <strong>Only LWT Result listener passed as option is taken
+     *            into account</strong>. For timestamp, TTL and LWT conditions you must specify them
      *            directly in the query string
      *
      * @param boundValues

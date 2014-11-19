@@ -29,7 +29,7 @@ import com.datastax.driver.core.Statement;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
-import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class BatchStatementWrapper extends AbstractStatementWrapper {
@@ -39,7 +39,7 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
     private Optional<ConsistencyLevel> consistencyLevelO;
     private Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevelO;
     private BatchStatement batchStatement;
-    private CompositeCASResultListener compositeCASResultListener;
+    private CompositeLWTResultListener compositeCASResultListener;
 
     public BatchStatementWrapper(BatchStatement.Type batchType, List<AbstractStatementWrapper> statementWrappers,
             Optional<ConsistencyLevel> consistencyLevelO, Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel) {
@@ -48,8 +48,8 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
         this.statementWrappers = statementWrappers;
         this.consistencyLevelO = consistencyLevelO;
         this.serialConsistencyLevelO = serialConsistencyLevel;
-        this.compositeCASResultListener = new CompositeCASResultListener();
-        super.casResultListener = Optional.<CASResultListener>fromNullable(this.compositeCASResultListener);
+        this.compositeCASResultListener = new CompositeLWTResultListener();
+        super.LWTResultListener = Optional.<LWTResultListener>fromNullable(this.compositeCASResultListener);
         this.batchStatement = createBatchStatement(batchType, statementWrappers);
     }
 
@@ -60,8 +60,8 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
             statementWrapper.activateQueryTracing();
             tracingEnabled |= statementWrapper.isTracingEnabled();
 
-            if (statementWrapper.casResultListener.isPresent()) {
-                this.compositeCASResultListener.addCASResultListener(statementWrapper.casResultListener.get());
+            if (statementWrapper.LWTResultListener.isPresent()) {
+                this.compositeCASResultListener.addCASResultListener(statementWrapper.LWTResultListener.get());
             }
 
             if (statementWrapper instanceof NativeStatementWrapper) {
@@ -121,25 +121,25 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
         return consistencyLevelO.get();
     }
 
-    static class CompositeCASResultListener implements CASResultListener {
+    static class CompositeLWTResultListener implements LWTResultListener {
 
-        private final Set<CASResultListener> delegates = new HashSet<>();
+        private final Set<LWTResultListener> delegates = new HashSet<>();
 
-        private void addCASResultListener(CASResultListener listener) {
+        private void addCASResultListener(LWTResultListener listener) {
             delegates.add(listener);
         }
 
         @Override
-        public void onCASSuccess() {
-            for (CASResultListener listener : delegates) {
-                listener.onCASSuccess();
+        public void onLWTSuccess() {
+            for (LWTResultListener listener : delegates) {
+                listener.onLWTSuccess();
             }
         }
 
         @Override
-        public void onCASError(CASResult casResult) {
-            for (CASResultListener listener : delegates) {
-                listener.onCASError(casResult);
+        public void onLWTError(LWTResult LWTResult) {
+            for (LWTResultListener listener : delegates) {
+                listener.onLWTError(LWTResult);
             }
         }
     }

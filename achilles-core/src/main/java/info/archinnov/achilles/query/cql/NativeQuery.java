@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutorService;
 import com.datastax.driver.core.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.google.common.base.Function;
@@ -68,7 +67,7 @@ public class NativeQuery {
 
     public NativeQuery(DaoContext daoContext, ConfigurationContext configContext, Statement statement, Options options, Object... boundValues) {
         this.daoContext = daoContext;
-        this.nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, boundValues, options.getCasResultListener());
+        this.nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, boundValues, options.getLWTResultListener());
         this.executorService = configContext.getExecutorService();
     }
 

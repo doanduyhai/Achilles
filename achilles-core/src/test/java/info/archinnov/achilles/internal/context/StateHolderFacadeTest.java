@@ -21,6 +21,8 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +32,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -88,14 +89,14 @@ public class StateHolderFacadeTest {
         when(meta.getAllCounterMetas()).thenReturn(asList(counterMeta));
         when(meta.getAllMetasExceptCounters()).thenReturn(asList(nameMeta));
 
-        Options.CASCondition casCondition = new Options.CASCondition("test", "test");
-        CASResultListener listener = mock(CASResultListener.class);
+        Options.LWTCondition LWTCondition = new Options.LWTCondition("test", "test");
+        LWTResultListener listener = mock(LWTResultListener.class);
         final Options options = OptionsBuilder
                 .withConsistency(LOCAL_ONE)
                 .withTimestamp(100L)
                 .withTtl(9)
-                .ifConditions(casCondition)
-                .casResultListener(listener);
+                .ifConditions(LWTCondition)
+                .LWTResultListener(listener);
         context.options = options;
         context.entity = entity;
 
@@ -114,7 +115,7 @@ public class StateHolderFacadeTest {
         assertThat(facade.getTimestamp().get()).isEqualTo(100L);
         assertThat(facade.getConsistencyLevel().get()).isEqualTo(LOCAL_ONE);
         assertThat(facade.hasCasConditions()).isTrue();
-        assertThat(facade.getCasConditions()).contains(casCondition);
+        assertThat(facade.getCasConditions()).contains(LWTCondition);
         assertThat(facade.getCASResultListener().get()).isSameAs(listener);
 
         assertThat(facade.getAllCountersMeta()).containsExactly(counterMeta);

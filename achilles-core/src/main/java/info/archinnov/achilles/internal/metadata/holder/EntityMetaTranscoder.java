@@ -2,7 +2,7 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.IndexCondition;
-import info.archinnov.achilles.type.Options.CASCondition;
+import info.archinnov.achilles.type.Options.LWTCondition;
 
 import java.util.List;
 
@@ -11,11 +11,11 @@ public class EntityMetaTranscoder extends EntityMetaView {
         super(meta);
     }
 
-    public Object encodeCasConditionValue(CASCondition CASCondition) {
-        Object rawValue = CASCondition.getValue();
-        final String columnName = CASCondition.getColumnName();
+    public Object encodeCasConditionValue(LWTCondition LWTCondition) {
+        Object rawValue = LWTCondition.getValue();
+        final String columnName = LWTCondition.getColumnName();
         Object encodedValue = encodeValueForProperty(columnName, rawValue);
-        CASCondition.encodedValue(encodedValue);
+        LWTCondition.encodedValue(encodedValue);
         return encodedValue;
     }
 

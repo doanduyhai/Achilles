@@ -20,7 +20,7 @@ import static com.datastax.driver.core.querybuilder.Update.Conditions;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST_AT_INDEX;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.test.builders.CompleteBeanTestBuilder.builder;
-import static info.archinnov.achilles.type.Options.CASCondition;
+import static info.archinnov.achilles.type.Options.LWTCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
@@ -91,7 +91,7 @@ public class StatementGeneratorTest {
         Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         Object[] boundValues = new Object[] { "whatever" };
         CompleteBean entity = builder().id(id).buid();
-        final CASCondition casCondition = new CASCondition("name", "DuyHai");
+        final LWTCondition LWTCondition = new LWTCondition("name", "DuyHai");
         final Pair<Assignments, Object[]> updateClauseAndBoundValues = Pair.create(update(), boundValues);
         final Pair<Where, Object[]> whereClauseAndBoundValues = Pair.create(QueryBuilder.update("table").with(set("name", "DuyHai")).where(QueryBuilder.eq("id",11L)), boundValues);
 
@@ -100,9 +100,9 @@ public class StatementGeneratorTest {
         when(context.getIdMeta()).thenReturn(idMeta);
         when(context.getTtl()).thenReturn(Optional.fromNullable(10));
         when(context.getTimestamp()).thenReturn(Optional.fromNullable(100L));
-        when(context.getCasConditions()).thenReturn(asList(casCondition));
+        when(context.getCasConditions()).thenReturn(asList(LWTCondition));
 
-        when(entityMeta.forTranscoding().encodeCasConditionValue(casCondition)).thenReturn("DuyHai_encoded");
+        when(entityMeta.forTranscoding().encodeCasConditionValue(LWTCondition)).thenReturn("DuyHai_encoded");
         when(entityMeta.config().getKeyspaceName()).thenReturn("ks");
         when(entityMeta.config().getTableName()).thenReturn("table");
 
@@ -136,7 +136,7 @@ public class StatementGeneratorTest {
         when(context.getIdMeta()).thenReturn(idMeta);
         when(context.getTtl()).thenReturn(Optional.fromNullable(10));
         when(context.getTimestamp()).thenReturn(Optional.fromNullable(100L));
-        when(context.getCasConditions()).thenReturn(new ArrayList<CASCondition>());
+        when(context.getCasConditions()).thenReturn(new ArrayList<LWTCondition>());
 
         when(entityMeta.config().getQualifiedTableName()).thenReturn("table");
 

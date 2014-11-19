@@ -43,9 +43,9 @@ public class Drop extends SchemaStatement {
     }
 
     /**
-     * Use 'IF EXISTS' CAS condition for the table drop.
+     * Use 'IF EXISTS' LWT condition for the table drop.
      *
-     * @param ifExists whether to use the CAS condition.
+     * @param ifExists whether to use the LWT condition.
      * @return a new {@link Drop} instance.
      */
     public Drop ifExists(Boolean ifExists) {

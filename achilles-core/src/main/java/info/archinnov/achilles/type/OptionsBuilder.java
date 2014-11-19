@@ -15,12 +15,12 @@
  */
 package info.archinnov.achilles.type;
 
-import static info.archinnov.achilles.type.Options.CASCondition;
+import static info.archinnov.achilles.type.Options.LWTCondition;
 import java.util.Arrays;
 import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
-import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.listener.LWTResultListener;
 
 /**
  * <p>
@@ -40,19 +40,19 @@ import info.archinnov.achilles.listener.CASResultListener;
  * options = OptionsBuilder.withTimestamp(100L);
  *
  *
- * // CAS 'IF NOT EXISTS'
+ * // LWT 'IF NOT EXISTS'
  * options = OptionsBuilder.ifNotExists();
  *
- * // CAS update conditions
+ * // LWT update conditions
  * options = OptionsBuilder.ifConditions(Arrays.asList(
- *              new CASCondition("name","John"),
- *              new CASCondition("age_in_years",33L));
+ *              new LWTCondition("name","John"),
+ *              new LWTCondition("age_in_years",33L));
  *
- * // CAS result listener
- * options = OptionsBuilder.casResultListener(listener);
+ * // LWT result listener
+ * options = OptionsBuilder.LWTResultListener(listener);
  *
- * // CAS LOCAL_SERIAL instead of the default SERIAL value
- * options = OptionsBuilder.casLocalSerial();
+ * // LWT LOCAL_SERIAL instead of the default SERIAL value
+ * options = OptionsBuilder.LWTLocalSerial();
  *
  * // Multiple options at a time
  * options = OptionsBuilder.withTtl(11)
@@ -110,40 +110,40 @@ public class OptionsBuilder {
     }
 
     /**
-     * Use CAS conditions for UPDATE operations. This has no effect on statements other than UPDATE
+     * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE
      *
      * <pre class="code"><code class="java">
      *
      * Options options = OptionsBuilder.ifConditions(Arrays.asList(
-     *              new CASCondition("name","John"),
-     *              new CASCondition("age_in_years",33L));
+     *              new LWTCondition("name","John"),
+     *              new LWTCondition("age_in_years",33L));
      * </code></pre>
      *
-     * @param  CASConditions list of CASConditions
+     * @param  LWTConditions list of LWTConditions
      * @return BuiltOptions
      */
-    public static BuiltOptions ifConditions(CASCondition... CASConditions) {
-        return new BuiltOptions(CASConditions);
+    public static BuiltOptions ifConditions(LWTCondition... LWTConditions) {
+        return new BuiltOptions(LWTConditions);
     }
 
     /**
-     * Inject a CAS result listener for all CAS operations
+     * Inject a LWT result listener for all LWT operations
      *
      * <pre class="code"><code class="java">
      *
-     * CASResultListener casListener = new CASResultListener() {
+     * LWTResultListener LWTListener = new LWTResultListener() {
      *
-     *     public void onCASSuccess() {
+     *     public void onLWTSuccess() {
      *         // Do something on success
      *     }
      *
-     *     public void onCASError(CASResult casResult) {
+     *     public void onLWTError(LWTResult LWTResult) {
      *
-     *         //Get type of CAS operation that fails
-     *         CASResult.Operation operation = casResult.operation();
+     *         //Get type of LWT operation that fails
+     *         LWTResult.Operation operation = LWTResult.operation();
      *
      *         // Print out current values
-     *         TypedMap currentValues = casResult.currentValues();
+     *         TypedMap currentValues = LWTResult.currentValues();
      *         for(Entry<String,Object> entry: currentValues.entrySet()) {
      *             System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue()));
      *         }
@@ -152,14 +152,14 @@ public class OptionsBuilder {
      *
      * persistenceManager.update(user, OptionsBuilder.
      *         ifConditions(Arrays.asList(
-     *             new CASCondition("login","jdoe")))
-     *         .casResultListener(casListener));
+     *             new LWTCondition("login","jdoe")))
+     *         .LWTResultListener(casListener));
      * </code></pre>
      *
-     * @param listener CASResultListener
+     * @param listener LWTResultListener
      * @return BuiltOptions
      */	
-    public static BuiltOptions casResultListener(CASResultListener listener) {
+    public static BuiltOptions LWTResultListener(LWTResultListener listener) {
         return new BuiltOptions(listener);
     }
 
@@ -168,11 +168,11 @@ public class OptionsBuilder {
     }
 
     /**
-     * Force LOCAL_SERIAL consistency for all CAS operations.
-     * By default CAS operations are performed using SERIAL serial consistency level
+     * Force LOCAL_SERIAL consistency for all LWT operations.
+     * By default LWT operations are performed using SERIAL serial consistency level
      * @return BuiltOptions
      */
-    public static BuiltOptions casLocalSerial() {
+    public static BuiltOptions LWTLocalSerial() {
         return new BuiltOptions(Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
     }
 
@@ -209,12 +209,12 @@ public class OptionsBuilder {
             super.ifNotExists = ifNotExists;
         }
 
-        protected BuiltOptions(CASCondition... CASConditions) {
-            super.CASConditions = Arrays.asList(CASConditions);
+        protected BuiltOptions(LWTCondition... LWTConditions) {
+            super.LWTConditions = Arrays.asList(LWTConditions);
         }
 
-        protected BuiltOptions(CASResultListener listener) {
-            super.CASResultListenerO = Optional.fromNullable(listener);
+        protected BuiltOptions(LWTResultListener listener) {
+            super.LWTResultListenerO = Optional.fromNullable(listener);
         }
 
         protected BuiltOptions(Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyO) {
@@ -277,23 +277,23 @@ public class OptionsBuilder {
         }
 
          /**
-         * Inject a CAS result listener for all CAS operations
+         * Inject a LWT result listener for all LWT operations
          *
          * <pre class="code"><code class="java">
          *
-         * CASResultListener casListener = new CASResultListener() {
+         * LWTResultListener LWTListener = new LWTResultListener() {
          *
-         *     public void onCASSuccess() {
+         *     public void onLWTSuccess() {
          *         // Do something on success
          *     }
          *
-         *     public void onCASError(CASResult casResult) {
+         *     public void onLWTError(LWTResult LWTResult) {
          *
-         *         //Get type of CAS operation that fails
-         *         CASResult.Operation operation = casResult.operation();
+         *         //Get type of LWT operation that fails
+         *         LWTResult.Operation operation = LWTResult.operation();
          *
          *         // Print out current values
-         *         TypedMap currentValues = casResult.currentValues();
+         *         TypedMap currentValues = LWTResult.currentValues();
          *         for(Entry<String,Object> entry: currentValues.entrySet()) {
          *             System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue()));
          *         }
@@ -302,72 +302,72 @@ public class OptionsBuilder {
          *
          * persistenceManager.update(user, OptionsBuilder.
          *         ifConditions(Arrays.asList(
-         *             new CASCondition("login","jdoe")))
-         *         .casResultListener(casListener));
+         *             new LWTCondition("login","jdoe")))
+         *         .LWTResultListener(casListener));
          * </code></pre>
          *
-         * @param listener CASResultListener
+         * @param listener LWTResultListener
          * @return BuiltOptions
          */
-        public BuiltOptions casResultListener(CASResultListener listener) {
-            super.CASResultListenerO = Optional.fromNullable(listener);
+        public BuiltOptions LWTResultListener(LWTResultListener listener) {
+            super.LWTResultListenerO = Optional.fromNullable(listener);
             return this;
         }
 
         /**
-         * Use CAS conditions for UPDATE operations. This has no effect on statements other than UPDATE
+         * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE
          *
          * <pre class="code"><code class="java">
          *
          * Options options = OptionsBuilder.ifConditions(Arrays.asList(
-         *              new CASCondition("name","John"),
-         *              new CASCondition("age_in_years",33L));
+         *              new LWTCondition("name","John"),
+         *              new LWTCondition("age_in_years",33L));
          * </code></pre>
          *
-         * @param CASConditions varargs of CASConditions
+         * @param LWTConditions varargs of LWTConditions
          * @return BuiltOptions
          */
-        public BuiltOptions ifConditions(CASCondition... CASConditions) {
-            super.CASConditions = Arrays.asList(CASConditions);
+        public BuiltOptions ifConditions(LWTCondition... LWTConditions) {
+            super.LWTConditions = Arrays.asList(LWTConditions);
             return this;
         }
 
         /**
-         * Use CAS conditions for UPDATE operations. This has no effect on statements other than UPDATE
+         * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE
          *
          * <pre class="code"><code class="java">
          *
          * Options options = OptionsBuilder.ifConditions(Arrays.asList(
-         *              new CASCondition("name","John"),
-         *              new CASCondition("age_in_years",33L));
+         *              new LWTCondition("name","John"),
+         *              new LWTCondition("age_in_years",33L));
          * </code></pre>
          *
-         * @param CASConditions list of CASConditions
+         * @param LWTConditions list of LWTConditions
          * @return BuiltOptions
          */
-        public BuiltOptions ifConditions(List<CASCondition> CASConditions) {
-            super.CASConditions = CASConditions;
+        public BuiltOptions ifConditions(List<LWTCondition> LWTConditions) {
+            super.LWTConditions = LWTConditions;
             return this;
         }
 
         /**
-         * Force LOCAL_SERIAL consistency for all CAS operations.
-         * By default CAS operations are performed using SERIAL serial consistency level
+         * Force LOCAL_SERIAL consistency for all LWT operations.
+         * By default LWT operations are performed using SERIAL serial consistency level
          * @return BuiltOptions
          */
-        public BuiltOptions casLocalSerial() {
+        public BuiltOptions LWTLocalSerial() {
             super.serialConsistencyO = Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
             return this;
         }
 
         /**
-         * Force LOCAL_SERIAL consistency for all CAS operations.
-         * By default CAS operations are performed using SERIAL serial consistency level
+         * Force LOCAL_SERIAL consistency for all LWT operations.
+         * By default LWT operations are performed using SERIAL serial consistency level
          *
          * @param localSerial whether to use LOCAL_SERIAL
          * @return BuiltOptions
          */
-        BuiltOptions casLocalSerial(boolean localSerial) {
+        BuiltOptions LWTLocalSerial(boolean localSerial) {
             if (localSerial) {
                 super.serialConsistencyO = Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
             }

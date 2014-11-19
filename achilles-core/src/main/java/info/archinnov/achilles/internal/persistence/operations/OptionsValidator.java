@@ -27,12 +27,12 @@ public class OptionsValidator {
 
     public void validateOptionsForUpsert(Object entity, Map<Class<?>, EntityMeta> entityMetaMap, Options options) {
         validateNoTtlForClusteredCounter(entity, entityMetaMap, options);
-        validateNoCasConditionsAndTimestamp(options);
+        validateNoLWTConditionsAndTimestamp(options);
     }
 
-    public void validateNoCasConditionsAndTimestamp(Options options) {
-        Validator.validateFalse(options.isIfNotExists() && options.getTimestamp().isPresent(), "Cannot provide custom timestamp for CAS insert operations");
-        Validator.validateFalse(options.hasCASConditions() && options.getTimestamp().isPresent(), "Cannot provide custom timestamp for CAS update operations");
+    public void validateNoLWTConditionsAndTimestamp(Options options) {
+        Validator.validateFalse(options.isIfNotExists() && options.getTimestamp().isPresent(), "Cannot provide custom timestamp for insert operations using Light Weight Transaction");
+        Validator.validateFalse(options.hasLWTConditions() && options.getTimestamp().isPresent(), "Cannot provide custom timestamp for update operations using Light Weight Transaction");
     }
 
     public boolean isOptionsValidForBatch(Options options) {

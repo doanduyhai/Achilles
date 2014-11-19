@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import info.archinnov.achilles.internal.statement.StatementHelper;
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,6 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 
@@ -44,7 +44,7 @@ public class PreparedStatementBinder {
 
     private static final Logger log = LoggerFactory.getLogger(PreparedStatementBinder.class);
 
-    protected static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
+    protected static final Optional<LWTResultListener> NO_LISTENER = Optional.absent();
     protected static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
     private ConsistencyOverrider overrider = ConsistencyOverrider.Singleton.INSTANCE.get();
@@ -291,8 +291,8 @@ public class PreparedStatementBinder {
     private List<Object> fetchCASConditionsValues(PersistentStateHolder context, EntityMeta entityMeta) {
         List<Object> values = new ArrayList<>();
         if (context.hasCasConditions()) {
-            for (Options.CASCondition CASCondition : context.getCasConditions()) {
-                values.add(entityMeta.forTranscoding().encodeCasConditionValue(CASCondition));
+            for (Options.LWTCondition LWTCondition : context.getCasConditions()) {
+                values.add(entityMeta.forTranscoding().encodeCasConditionValue(LWTCondition));
             }
         }
         return values;

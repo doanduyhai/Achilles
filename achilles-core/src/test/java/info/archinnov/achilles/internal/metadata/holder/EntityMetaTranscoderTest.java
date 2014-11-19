@@ -5,15 +5,13 @@ import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import info.archinnov.achilles.type.IndexCondition;
-import info.archinnov.achilles.type.Options.CASCondition;
+import info.archinnov.achilles.type.Options.LWTCondition;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.Arrays;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMetaTranscoderTest {
@@ -32,7 +30,7 @@ public class EntityMetaTranscoderTest {
     public void should_encode_CAS_condition_value() throws Exception {
         //Given
         PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        CASCondition casCondition = spy(new CASCondition("name", "DuyHai"));
+        LWTCondition LWTCondition = spy(new LWTCondition("name", "DuyHai"));
 
         when(meta.getAllMetasExceptCounters()).thenReturn(asList(nameMeta));
         when(nameMeta.getCQL3ColumnName()).thenReturn("name");
@@ -40,11 +38,11 @@ public class EntityMetaTranscoderTest {
         when(nameMeta.forTranscoding().encodeToCassandra("DuyHai")).thenReturn("DuyHai");
 
         //When
-        final Object encoded = view.encodeCasConditionValue(casCondition);
+        final Object encoded = view.encodeCasConditionValue(LWTCondition);
 
         //Then
         assertThat(encoded).isEqualTo("DuyHai");
-        verify(casCondition).encodedValue("DuyHai");
+        verify(LWTCondition).encodedValue("DuyHai");
     }
 
     @Test

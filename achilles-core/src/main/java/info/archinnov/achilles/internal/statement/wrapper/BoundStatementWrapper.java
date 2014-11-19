@@ -23,16 +23,16 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
-import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.listener.LWTResultListener;
 
 public class BoundStatementWrapper extends AbstractStatementWrapper {
 
     private BoundStatement boundStatement;
 
     public BoundStatementWrapper(Class<?> entityClass, BoundStatement bs, Object[] values, ConsistencyLevel consistencyLevel,
-            Optional<CASResultListener> casResultListener, Optional<ConsistencyLevel> serialConsistencyLevel) {
+            Optional<LWTResultListener> LWTResultListener, Optional<ConsistencyLevel> serialConsistencyLevel) {
         super(entityClass, values);
-        super.casResultListener = casResultListener;
+        super.LWTResultListener = LWTResultListener;
         this.boundStatement = bs;
         this.boundStatement.setConsistencyLevel(consistencyLevel);
         if (serialConsistencyLevel.isPresent()) {

@@ -27,9 +27,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import com.datastax.driver.core.Statement;
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.google.common.base.Function;
@@ -48,11 +48,10 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
-import info.archinnov.achilles.listener.CASResultListener;
 
 public class TypedQuery<T> {
     private static final Logger log = LoggerFactory.getLogger(TypedQuery.class);
-    private static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
+    private static final Optional<LWTResultListener> NO_LISTENER = Optional.absent();
     private final NativeStatementWrapper nativeStatementWrapper;
 
     private DaoContext daoContext;
@@ -72,7 +71,7 @@ public class TypedQuery<T> {
         this.daoContext = daoContext;
         this.executorService = configContext.getExecutorService();
         this.boundValues = boundValues;
-        this.nativeStatementWrapper = new NativeStatementWrapper(entityClass, statement, this.boundValues, Optional.<CASResultListener>absent());
+        this.nativeStatementWrapper = new NativeStatementWrapper(entityClass, statement, this.boundValues, Optional.<LWTResultListener>absent());
         this.meta = meta;
         this.contextFactory = contextFactory;
         this.entityState = entityState;

@@ -21,7 +21,6 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.in;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -40,6 +39,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
+import info.archinnov.achilles.listener.LWTResultListener;
 import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -50,7 +50,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.query.typed.TypedQuery;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
@@ -133,7 +132,7 @@ public class QueryIT {
     }
 
     @Test
-    public void should_execute_native_query_with_CAS() throws Exception {
+    public void should_execute_native_query_with_LWT() throws Exception {
         //Given
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
@@ -142,23 +141,23 @@ public class QueryIT {
         final Insert statement = insertInto("CompleteBean").ifNotExists().value("id", bindMarker("id")).value("name", bindMarker("name"));
 
         final AtomicBoolean error = new AtomicBoolean(false);
-        final AtomicReference<CASResult> result = new AtomicReference<>(null);
+        final AtomicReference<LWTResultListener.LWTResult> result = new AtomicReference<>(null);
 
-        CASResultListener listener = new CASResultListener() {
+        LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onCASSuccess() {
+            public void onLWTSuccess() {
 
             }
 
             @Override
-            public void onCASError(CASResult casResult) {
+            public void onLWTError(LWTResult LWTResult) {
                 error.getAndSet(true);
-                result.getAndSet(casResult);
+                result.getAndSet(LWTResult);
             }
         };
 
         //When
-        manager.nativeQuery(statement,OptionsBuilder.casResultListener(listener),entity.getId(),"DuyHai").execute();
+        manager.nativeQuery(statement,OptionsBuilder.LWTResultListener(listener),entity.getId(),"DuyHai").execute();
 
         //Then
         assertThat(error.get()).isTrue();
