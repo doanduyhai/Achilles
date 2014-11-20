@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.persistence;
 
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import java.io.IOException;
@@ -23,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.datastax.driver.core.Statement;
+import info.archinnov.achilles.internal.validation.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
@@ -475,7 +478,7 @@ public class PersistenceManager extends CommonPersistenceManager {
     }
 
     /**
-     * Return a CQL native query builder
+     * Return a CQL native query
      *
      * <br/>
      * <br/>
@@ -507,7 +510,9 @@ public class PersistenceManager extends CommonPersistenceManager {
      * @return NativeQuery
      */
     public NativeQuery nativeQuery(Statement statement, Object... boundValues) {
-        return super.nativeQuery(statement, noOptions(), boundValues);
+        log.debug("Execute native query {}", statement);
+        Validator.validateNotNull(statement, "The statement for native query should not be null");
+        return new NativeQuery(daoContext, configContext, statement, noOptions(), boundValues);
     }
 
     /**
@@ -549,7 +554,8 @@ public class PersistenceManager extends CommonPersistenceManager {
      */
     public NativeQuery nativeQuery(Statement statement, Options options, Object... boundValues) {
         log.debug("Execute native query {}", statement);
-        return super.nativeQuery(statement, options, boundValues);
+        Validator.validateNotNull(statement, "The statement for native query should not be null");
+        return new NativeQuery(daoContext, configContext, statement, options, boundValues);
     }
 
     /**
@@ -590,7 +596,9 @@ public class PersistenceManager extends CommonPersistenceManager {
      * @return TypedQuery<T>
      */
     public <T> TypedQuery<T> typedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
-        return super.typedQueryInternal(entityClass, statement, boundValues);
+        log.debug("Execute typed query {}", statement);
+        final EntityMeta meta = super.typedQueryInternal(entityClass, statement, boundValues);
+        return new TypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, MANAGED, boundValues);
     }
 
     /**
@@ -608,7 +616,9 @@ public class PersistenceManager extends CommonPersistenceManager {
      */
     public <T> TypedQuery<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
         log.debug("Execute indexed query for entity class {}", entityClass);
-        return super.indexedQuery(entityClass, indexCondition);
+        final Statement statement = super.indexedQueryInternal(entityClass, indexCondition);
+        final EntityMeta meta = super.typedQueryInternal(entityClass, statement, indexCondition.getColumnValue());
+        return new TypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, MANAGED, new Object[]{indexCondition.getColumnValue()});
     }
 
     /**
@@ -651,7 +661,8 @@ public class PersistenceManager extends CommonPersistenceManager {
      */
     public <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
         log.debug("Execute raw typed query for entity class {}", entityClass);
-        return super.rawTypedQuery(entityClass, statement, boundValues);
+        final EntityMeta meta = super.rawTypedQueryInternal(entityClass, statement, boundValues);
+        return new TypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, NOT_MANAGED, boundValues);
     }
 
     /**

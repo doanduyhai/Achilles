@@ -178,7 +178,7 @@ public class QueryIT {
 
         RegularStatement statement = select().countAll().from("CompleteBean").where(eq("id", entity.getId()));
 
-        Long count = (Long) manager.nativeQuery(statement).first().get("count");
+        Long count = (Long) manager.nativeQuery(statement).getFirst().get("count");
 
         assertThat(count).isEqualTo(1L);
     }
@@ -194,7 +194,7 @@ public class QueryIT {
         RegularStatement statement = select().fcall("ttl", column("name")).fcall("writetime",column("age_in_years"))
                 .from("CompleteBean").where(eq("id",entity.getId()));
 
-        Map<String, Object> result = manager.nativeQuery(statement).first();
+        Map<String, Object> result = manager.nativeQuery(statement).getFirst();
 
         assertThat((Integer) result.get("ttl(name)")).isLessThanOrEqualTo(1000);
         assertThat(result.get("writetime(age_in_years)")).isEqualTo(timestamp);
@@ -215,7 +215,7 @@ public class QueryIT {
                 .from(ClusteredEntityWithTimeUUID.TABLE_NAME)
                 .where(eq("id", id));
 
-        Map<String, Object> result = manager.nativeQuery(statement).first();
+        Map<String, Object> result = manager.nativeQuery(statement).getFirst();
         assertThat(result.get("now()")).isNotNull().isInstanceOf(UUID.class);
         assertThat(result.get("dateOf(date)")).isNotNull().isInstanceOf(Date.class);
         assertThat(result.get("unixTimestampOf(date)")).isNotNull().isInstanceOf(Long.class);
@@ -682,7 +682,7 @@ public class QueryIT {
         manager.insert(entity);
 
         final Select.Where select = select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
-        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select, select.getValues());
+        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select, null);
 
         // When
         final CompleteBean actual = queryBuilder.getFirst();
@@ -700,7 +700,7 @@ public class QueryIT {
 
         final Select.Where select = select().from("Tweet").where(QueryBuilder.eq("id", entity.getId()));
         final ByteBuffer[] values = select.getValues();
-        final TypedQuery<Tweet> queryBuilder = manager.typedQuery(Tweet.class, select, values);
+        final TypedQuery<Tweet> queryBuilder = manager.typedQuery(Tweet.class, select, new Object[]{values});
 
         // When
         final Tweet actual = queryBuilder.getFirst();
@@ -717,7 +717,7 @@ public class QueryIT {
         manager.insert(entity);
 
         final Select.Where select = select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
-        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select, select.getValues());
+        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select, null);
 
         // When
         final CompleteBean actual = queryBuilder.getFirst();

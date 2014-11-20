@@ -93,7 +93,7 @@ public class BatchModeIT {
         batch.update(entity);
 
         final RegularStatement selectLabel = select("label").from("CompleteBean").where(eq("id", entity.getId()));
-        Map<String, Object> result = manager.nativeQuery(selectLabel).first();
+        Map<String, Object> result = manager.nativeQuery(selectLabel).getFirst();
         assertThat(result).isNull();
 
         RegularStatement selectCounter = select("counter_value").from("achilles_counter_table")
@@ -101,7 +101,7 @@ public class BatchModeIT {
                 .and(eq("primary_key", entity.getId().toString()))
                 .and(eq("property_name", "version"));
 
-        result = manager.nativeQuery(selectCounter).first();
+        result = manager.nativeQuery(selectCounter).getFirst();
         assertThat(result).isNull();
 
         // Flush
@@ -110,7 +110,7 @@ public class BatchModeIT {
         Row row = manager.getNativeSession().execute(selectLabel).one();
         assertThat(row.getString("label")).isEqualTo("label");
 
-        result = manager.nativeQuery(selectCounter).first();
+        result = manager.nativeQuery(selectCounter).getFirst();
         assertThat(result.get("counter_value")).isEqualTo(10L);
         assertThatBatchContextHasBeenReset(batch);
     }

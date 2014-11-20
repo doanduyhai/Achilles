@@ -24,8 +24,11 @@ import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.query.cql.AsyncNativeQuery;
 import info.archinnov.achilles.query.cql.NativeQuery;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
+import info.archinnov.achilles.query.typed.AsyncTypedQuery;
 import info.archinnov.achilles.query.typed.TypedQuery;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;
@@ -37,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 
 /**
@@ -435,7 +440,7 @@ public class AsyncManager extends CommonAsyncManager {
     }
 
     /**
-     * Return a CQL native query builder
+     * Return a CQL native query
      *
      * <br/>
      * <br/>
@@ -443,7 +448,7 @@ public class AsyncManager extends CommonAsyncManager {
      *  <h3>Native query without bound values</h3>
      *  <pre class="code"><code class="java">
      *      RegularStatement nativeQuery = select("name",age_in_years").from("UserEntity").where(in("id",Arrays.asList(10,11))).limit(20);
-     *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery).get();
+     *      AchillesFuture&lt;List&lt;TypedMap&gt;&gt; actual = asyncManager.nativeQuery(nativeQuery).get();
      *  </code></pre>
      *
      *  <br/>
@@ -452,7 +457,7 @@ public class AsyncManager extends CommonAsyncManager {
      *  <h3>Native query with bound values</h3>
      *  <pre class="code"><code class="java">
      *      RegularStatement nativeQuery = select("name",age_in_years").from("UserEntity").where(in("id",bindMarker())).limit(bindMarker());
-     *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery,Arrays.asList(10,11),20).get();
+     *      AchillesFuture&lt;List&lt;TypedMap&gt;&gt; actual = asyncManager.nativeQuery(nativeQuery,Arrays.asList(10,11),20).get();
      *  </code></pre>
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
@@ -464,14 +469,16 @@ public class AsyncManager extends CommonAsyncManager {
      * @param boundValues
      *            values to be bind to the parameterized query, if any
      *
-     * @return NativeQuery
+     * @return AsyncNativeQuery
      */
-    public NativeQuery nativeQuery(Statement statement, Object... boundValues) {
-        return super.nativeQuery(statement, noOptions(), boundValues);
+    public AsyncNativeQuery nativeQuery(Statement statement, Object... boundValues) {
+        log.debug("Execute native query {}", statement);
+        Validator.validateNotNull(statement, "The statement for native query should not be null");
+        return new AsyncNativeQuery(daoContext, configContext, statement, noOptions(), boundValues);
     }
 
     /**
-     * Return a CQL native query builder
+     * Return an asynchronous CQL native query
      *
      * <br/>
      * <br/>
@@ -479,7 +486,7 @@ public class AsyncManager extends CommonAsyncManager {
      *  <h3>Native query without bound values</h3>
      *  <pre class="code"><code class="java">
      *      RegularStatement nativeQuery = select("name",age_in_years").from("UserEntity").where(in("id",Arrays.asList(10,11))).limit(20);
-     *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery).get();
+     *      AchillesFuture&lt;List&lt;TypedMap&gt;&gt; actual = asyncManager.nativeQuery(nativeQuery).get();
      *  </code></pre>
      *
      *  <br/>
@@ -488,7 +495,7 @@ public class AsyncManager extends CommonAsyncManager {
      *  <h3>Native query with bound values</h3>
      *  <pre class="code"><code class="java">
      *      RegularStatement nativeQuery = select("name",age_in_years").from("UserEntity").where(in("id",bindMarker())).limit(bindMarker());
-     *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery,Arrays.asList(10,11),20).get();
+     *      AchillesFuture&lt;List&lt;TypedMap&gt;&gt; actual = asyncManager.nativeQuery(nativeQuery,Arrays.asList(10,11),20).get();
      *  </code></pre>
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
@@ -505,15 +512,16 @@ public class AsyncManager extends CommonAsyncManager {
      * @param boundValues
      *            values to be bind to the parameterized query, if any
      *
-     * @return NativeQuery
+     * @return AsyncNativeQuery
      */
-    public NativeQuery nativeQuery(Statement statement, Options options, Object... boundValues) {
+    public AsyncNativeQuery nativeQuery(Statement statement, Options options, Object... boundValues) {
         log.debug("Execute native query {}", statement);
-        return super.nativeQuery(statement, options, boundValues);
+        Validator.validateNotNull(statement, "The statement for native query should not be null");
+        return new AsyncNativeQuery(daoContext, configContext, statement, options, boundValues);
     }
 
     /**
-     * Return a CQL typed query builder
+     * Return an asynchronous CQL typed query
      *
      * All found entities will be in <strong>managed</strong> state
      *
@@ -523,7 +531,7 @@ public class AsyncManager extends CommonAsyncManager {
      *  <h3>Typed query without bound values</h3>
      *  <pre class="code"><code class="java">
      *      RegularStatement nativeQuery = select().from("MyEntity").where().limit(3);
-     *      List&lt;MyEntity> actual = manager.typedQuery(MyEntity.class, nativeQuery).get();
+     *      AchillesFuture&lt;List&lt;MyEntity&gt;&gt; actual = asyncManager.typedQuery(MyEntity.class, nativeQuery).get();
      *  </code></pre>
      *
      *  <br/>
@@ -532,7 +540,7 @@ public class AsyncManager extends CommonAsyncManager {
      *  <h3>Typed query with bound values</h3>
      *  <pre class="code"><code class="java">
      *      RegularStatement statement = select().from("MyEntity").limit(bindMarker());
-     *      List&lt;MyEntity&gt; actual = manager.typedQuery(MyEntity.class, statement,3).get();
+     *      AchillesFuture&lt;List&lt;MyEntity&gt;&gt; actual = asyncManager.typedQuery(MyEntity.class, statement,3).get();
      *  </code></pre>
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#typed-query" target="_blank">Typed query API</a>
@@ -547,14 +555,15 @@ public class AsyncManager extends CommonAsyncManager {
      * @param boundValues
      *            values to be bind to the parameterized query, if any
      *
-     * @return TypedQuery<T>
+     * @return AsyncTypedQuery<T>
      */
-    public <T> TypedQuery<T> typedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
-        return super.typedQueryInternal(entityClass, statement, boundValues);
+    public <T> AsyncTypedQuery<T> typedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
+        final EntityMeta meta = super.typedQueryInternal(entityClass, statement,boundValues);
+        return new AsyncTypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, MANAGED, boundValues);
     }
 
     /**
-     * Return a CQL typed query builder
+     * Return an asynchronous CQL indexed query
      *
      * All found entities will be in 'managed' state
      *
@@ -564,15 +573,17 @@ public class AsyncManager extends CommonAsyncManager {
      * @param indexCondition
      *            index condition
      *
-     * @return TypedQuery<T>
+     * @return AsyncTypedQuery<T>
      */
-    public <T> TypedQuery<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
+    public <T> AsyncTypedQuery<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
         log.debug("Execute indexed query for entity class {}", entityClass);
-        return super.indexedQuery(entityClass, indexCondition);
+        final Statement statement = super.indexedQueryInternal(entityClass, indexCondition);
+        final EntityMeta meta = super.typedQueryInternal(entityClass, statement, indexCondition.getColumnValue());
+        return new AsyncTypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, MANAGED, new Object[]{indexCondition.getColumnValue()});
     }
 
     /**
-     * Return a CQL typed query builder
+     * Return an asynchronous CQL typed query
      *
      * All found entities will be returned as raw entities and not 'managed' by
      * Achilles
@@ -583,7 +594,7 @@ public class AsyncManager extends CommonAsyncManager {
      *  <h3>Raw typed query without bound values</h3>
      *  <pre class="code"><code class="java">
      *      RegularStatement nativeQuery = select().from("MyEntity").where().limit(3);
-     *      List&lt;MyEntity> actual = manager.rawTypedQuery(MyEntity.class, nativeQuery).get();
+     *      AchillesFuture&lt;List&lt;MyEntity&gt;&gt; actual = asyncManager.rawTypedQuery(MyEntity.class, nativeQuery).get();
      *  </code></pre>
      *
      *  <br/>
@@ -592,7 +603,7 @@ public class AsyncManager extends CommonAsyncManager {
      *  <h3>Raw typed query with bound values</h3>
      *  <pre class="code"><code class="java">
      *      RegularStatement nativeQuery = select().from("MyEntity").where().limit(bindMarker());
-     *      List&lt;MyEntity&gt; actual = manager.rawTypedQuery(MyEntity.class, nativeQuery,3).get();
+     *      AchillesFuture&lt;List&lt;MyEntity&gt;&gt; actual = asyncManager.rawTypedQuery(MyEntity.class, nativeQuery,3).get();
      *  </code></pre>
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#typed-query" target="_blank">Typed query API</a>
@@ -607,11 +618,12 @@ public class AsyncManager extends CommonAsyncManager {
      * @param boundValues
      *            values to be bind to the parameterized query, if any
      *
-     * @return TypedQuery<T>
+     * @return AsyncTypedQuery<T>
      */
-    public <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
+    public <T> AsyncTypedQuery<T> rawTypedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
         log.debug("Execute raw typed query for entity class {}", entityClass);
-        return super.rawTypedQuery(entityClass, statement, boundValues);
+        final EntityMeta meta = super.rawTypedQueryInternal(entityClass, statement, boundValues);
+        return new AsyncTypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, NOT_MANAGED, boundValues);
     }
 
     /**
@@ -645,14 +657,14 @@ public class AsyncManager extends CommonAsyncManager {
     }
 
     /**
-     * Create a new state-full Batch <br/>
+     * Create a new state-full asynchronous Batch <br/>
      * <br/>
      * <p/>
      * <strong>WARNING : This Batch is state-full and not
      * thread-safe. In case of exception, you MUST not re-use it but create
      * another one</strong>
      *
-     * @return a new state-full PersistenceManager
+     * @return a new state-full AsyncBatch
      */
     public AsyncBatch createBatch() {
         log.debug("Spawn new AsyncBatch");
@@ -661,7 +673,7 @@ public class AsyncManager extends CommonAsyncManager {
 
 
     /**
-     * Create a new state-full <strong>ordered</strong> Batch <br/>
+     * Create a new state-full asynchronous <strong>ordered</strong> Batch <br/>
      * <br/>
      * <p>
      * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
@@ -672,7 +684,7 @@ public class AsyncManager extends CommonAsyncManager {
      * thread-safe. In case of exception, you MUST not re-use it but create
      * another one</strong>
      *
-     * @return a new state-full PersistenceManager
+     * @return a new state-full AsyncBatch
      */
     public AsyncBatch createOrderedBatch() {
         log.debug("Spawn new AsyncBatch");

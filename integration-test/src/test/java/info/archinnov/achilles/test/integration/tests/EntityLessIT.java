@@ -49,7 +49,7 @@ public class EntityLessIT {
     public void should_bootstrap_achilles_without_entity_package_for_native_query() throws Exception {
         RegularStatement statement = select("keyspace_name").from("system","schema_keyspaces").where(eq("keyspace_name","system"));
 
-        Map<String, Object> keyspaceMap = manager.nativeQuery(statement).first();
+        Map<String, Object> keyspaceMap = manager.nativeQuery(statement).getFirst();
 
         assertThat(keyspaceMap).hasSize(1);
         assertThat(keyspaceMap.get("keyspace_name")).isEqualTo("system");

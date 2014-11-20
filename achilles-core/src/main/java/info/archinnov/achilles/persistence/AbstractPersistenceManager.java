@@ -183,12 +183,7 @@ abstract class AbstractPersistenceManager {
         return new SliceQueryBuilder<>(sliceQueryExecutor, entityClass, meta);
     }
 
-    protected NativeQuery nativeQuery(Statement statement, Options options, Object... boundValues) {
-        Validator.validateNotNull(statement, "The statement for native query should not be null");
-        return new NativeQuery(daoContext, configContext, statement, options, boundValues);
-    }
-
-    protected <T> TypedQuery<T> typedQueryInternal(Class<T> entityClass, Statement statement, Object... boundValues) {
+    protected <T> EntityMeta typedQueryInternal(Class<T> entityClass, Statement statement, Object... boundValues) {
         log.debug("Execute typed query for entity class {}", entityClass);
         Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
         Validator.validateNotNull(statement, "The regularStatement for typed query should not be null");
@@ -196,20 +191,20 @@ abstract class AbstractPersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateTypedQuery(entityClass, statement, meta);
-        return new TypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, MANAGED, boundValues);
+        return meta;
     }
 
-    protected <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
+    protected <T> EntityMeta rawTypedQueryInternal(Class<T> entityClass, Statement statement, Object... boundValues) {
         Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
         Validator.validateNotNull(statement, "The regularStatement for typed query should not be null");
         Validator.validateTrue(entityMetaMap.containsKey(entityClass),"Cannot perform typed query because the entityClass '%s' is not managed by Achilles",entityClass.getCanonicalName());
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateRawTypedQuery(entityClass, statement, meta);
-        return new TypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, NOT_MANAGED, boundValues);
+        return meta;
     }
 
-    protected <T> TypedQuery<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
+    protected <T> Statement indexedQueryInternal(Class<T> entityClass, IndexCondition indexCondition) {
         EntityMeta entityMeta = entityMetaMap.get(entityClass);
 
         Validator.validateFalse(entityMeta.structure().isClusteredEntity(), "Index query is not supported for clustered entity. Please use typed query/native query");
@@ -220,7 +215,7 @@ abstract class AbstractPersistenceManager {
         String indexColumnName = indexCondition.getColumnName();
         final EntityMetaConfig metaConfig = entityMeta.config();
         final Select.Where statement = select().from(metaConfig.getKeyspaceName(), metaConfig.getTableName()).where(eq(indexColumnName, bindMarker(indexColumnName)));
-        return this.typedQueryInternal(entityClass, statement, indexCondition.getColumnValue());
+        return statement;
     }
 
     protected String serializeToJSON(Object entity) throws IOException {

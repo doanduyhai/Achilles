@@ -59,7 +59,7 @@ public class AsyncBatchModeIT {
     public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
             "Tweet", "User");
 
-    private AsyncManager manager = resource.getAsyncManager();
+    private AsyncManager asyncManager = resource.getAsyncManager();
 
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
@@ -75,7 +75,7 @@ public class AsyncBatchModeIT {
     @Test
     public void should_batch_counters_async() throws Exception {
         // Start batch
-        AsyncBatch batch = manager.createBatch();
+        AsyncBatch batch = asyncManager.createBatch();
         batch.startBatch();
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
@@ -90,8 +90,8 @@ public class AsyncBatchModeIT {
         entity.getVersion().incr(10L);
         batch.update(entity);
 
-        RegularStatement selectLabel = select("label").from("CompleteBean").where(eq("id",entity.getId()));
-        Map<String, Object> result = manager.nativeQuery(selectLabel).first();
+        RegularStatement selectLabel = select("label").from("CompleteBean").where(eq("id", entity.getId()));
+        Map<String, Object> result = asyncManager.nativeQuery(selectLabel).getFirst().getImmediately();
         assertThat(result).isNull();
 
         RegularStatement selectCounter = select("counter_value")
@@ -100,7 +100,7 @@ public class AsyncBatchModeIT {
                 .and(eq("primary_key",entity.getId().toString()))
                 .and(eq("property_name","version"));
 
-        result = manager.nativeQuery(selectCounter).first();
+        result = asyncManager.nativeQuery(selectCounter).getFirst().getImmediately();
 
         assertThat(result).isNull();
 
@@ -135,15 +135,15 @@ public class AsyncBatchModeIT {
         };
 
         // Flush
-        batch.endBatch(successCallBack, errorCallBack);
+        batch.asyncEndBatch(successCallBack, errorCallBack);
 
         latch.await();
 
         Statement statement = new SimpleStatement("SELECT label from CompleteBean where id=" + entity.getId());
-        Row row = manager.getNativeSession().execute(statement).one();
+        Row row = asyncManager.getNativeSession().execute(statement).one();
         assertThat(row.getString("label")).isEqualTo("label");
 
-        result = manager.nativeQuery(selectCounter).first();
+        result = asyncManager.nativeQuery(selectCounter).getFirst().getImmediately();
         assertThat(result.get("counter_value")).isEqualTo(10L);
         assertThatBatchContextHasBeenReset(batch);
 
@@ -188,7 +188,7 @@ public class AsyncBatchModeIT {
         };
 
         // Start batch
-        AsyncBatch batch = manager.createBatch();
+        AsyncBatch batch = asyncManager.createBatch();
         batch.startBatch();
 
         batch.insert(bean);
@@ -196,10 +196,10 @@ public class AsyncBatchModeIT {
         batch.insert(tweet2);
         batch.insert(user);
 
-        CompleteBean foundBean = manager.find(CompleteBean.class, bean.getId()).getImmediately();
-        Tweet foundTweet1 = manager.find(Tweet.class, tweet1.getId()).getImmediately();
-        Tweet foundTweet2 = manager.find(Tweet.class, tweet2.getId()).getImmediately();
-        User foundUser = manager.find(User.class, user.getId()).getImmediately();
+        CompleteBean foundBean = asyncManager.find(CompleteBean.class, bean.getId()).getImmediately();
+        Tweet foundTweet1 = asyncManager.find(Tweet.class, tweet1.getId()).getImmediately();
+        Tweet foundTweet2 = asyncManager.find(Tweet.class, tweet2.getId()).getImmediately();
+        User foundUser = asyncManager.find(User.class, user.getId()).getImmediately();
 
         assertThat(foundBean).isNull();
         assertThat(foundTweet1).isNull();
@@ -207,17 +207,17 @@ public class AsyncBatchModeIT {
         assertThat(foundUser).isNull();
 
         // Flush
-        batch.endBatch(successCallBack, errorCallBack);
+        batch.asyncEndBatch(successCallBack, errorCallBack);
 
         latch.await();
 
-        final ResultSet resultSet = manager.getNativeSession().execute("SELECT id,favoriteTweets,followers,friends,age_in_years,name,welcomeTweet,label,preferences FROM CompleteBean WHERE id=:id", bean.getId());
+        final ResultSet resultSet = asyncManager.getNativeSession().execute("SELECT id,favoriteTweets,followers,friends,age_in_years,name,welcomeTweet,label,preferences FROM CompleteBean WHERE id=:id", bean.getId());
         assertThat(resultSet.all()).hasSize(1);
 
-        foundBean = manager.find(CompleteBean.class, bean.getId()).getImmediately();
-        foundTweet1 = manager.find(Tweet.class, tweet1.getId()).getImmediately();
-        foundTweet2 = manager.find(Tweet.class, tweet2.getId()).getImmediately();
-        foundUser = manager.find(User.class, user.getId()).getImmediately();
+        foundBean = asyncManager.find(CompleteBean.class, bean.getId()).getImmediately();
+        foundTweet1 = asyncManager.find(Tweet.class, tweet1.getId()).getImmediately();
+        foundTweet2 = asyncManager.find(Tweet.class, tweet2.getId()).getImmediately();
+        foundUser = asyncManager.find(User.class, user.getId()).getImmediately();
 
         assertThat(foundBean.getName()).isEqualTo("name");
         assertThat(foundTweet1.getContent()).isEqualTo("tweet1");
@@ -251,23 +251,23 @@ public class AsyncBatchModeIT {
             }
         };
 
-        manager.insert(tweet1).getImmediately();
+        asyncManager.insert(tweet1).getImmediately();
 
         // Start batch
-        AsyncBatch batch = manager.createBatch();
+        AsyncBatch batch = asyncManager.createBatch();
 
         batch.startBatch(QUORUM);
 
         logAsserter.prepareLogLevel();
 
-        Tweet foundTweet1 = manager.find(Tweet.class, tweet1.getId()).getImmediately();
+        Tweet foundTweet1 = asyncManager.find(Tweet.class, tweet1.getId()).getImmediately();
 
         assertThat(foundTweet1.getContent()).isEqualTo(tweet1.getContent());
 
         batch.insert(tweet2);
         batch.insert(tweet3);
 
-        batch.endBatch(successCallBack);
+        batch.asyncEndBatch(successCallBack);
 
         latch.await();
 
@@ -297,15 +297,15 @@ public class AsyncBatchModeIT {
             }
         };
 
-        manager.insert(tweet1);
+        asyncManager.insert(tweet1);
 
         // Start batch
-        AsyncBatch batch = manager.createBatch();
+        AsyncBatch batch = asyncManager.createBatch();
 
         batch.startBatch(EACH_QUORUM);
         batch.insert(tweet2);
 
-        batch.endBatch(successCallBack);
+        batch.asyncEndBatch(successCallBack);
 
         latch.await();
 
@@ -314,7 +314,7 @@ public class AsyncBatchModeIT {
         logAsserter.prepareLogLevel();
         batch.startBatch();
         batch.insert(tweet2);
-        batch.endBatch();
+        batch.asyncEndBatch();
         logAsserter.assertConsistencyLevels(ONE);
 
         assertThat(successSpy.get()).isEqualTo(Empty.INSTANCE);
@@ -324,7 +324,7 @@ public class AsyncBatchModeIT {
     public void should_order_batch_operations_on_the_same_column_with_insert_and_update_async() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-        final AsyncBatch batch = manager.createOrderedBatch();
+        final AsyncBatch batch = asyncManager.createOrderedBatch();
 
         //When
         batch.startBatch();
@@ -333,11 +333,11 @@ public class AsyncBatchModeIT {
         entity.setLabel("label");
         batch.update(entity);
 
-        batch.endBatch().getImmediately();
+        batch.asyncEndBatch().getImmediately();
 
         //Then
         Statement statement = new SimpleStatement("SELECT label from CompleteBean where id=" + entity.getId());
-        Row row = manager.getNativeSession().execute(statement).one();
+        Row row = asyncManager.getNativeSession().execute(statement).one();
         assertThat(row.getString("label")).isEqualTo("label");
     }
 
@@ -346,7 +346,7 @@ public class AsyncBatchModeIT {
     public void should_order_batch_operations_on_the_same_column_async() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
-        final AsyncBatch batch = manager.createOrderedBatch();
+        final AsyncBatch batch = asyncManager.createOrderedBatch();
 
         //When
         batch.startBatch();
@@ -355,11 +355,11 @@ public class AsyncBatchModeIT {
         entity.setName("name");
         batch.update(entity);
 
-        batch.endBatch().getImmediately();
+        batch.asyncEndBatch().getImmediately();
 
         //Then
         Statement statement = new SimpleStatement("SELECT name from CompleteBean where id=" + entity.getId());
-        Row row = manager.getNativeSession().execute(statement).one();
+        Row row = asyncManager.getNativeSession().execute(statement).one();
         assertThat(row.getString("name")).isEqualTo("name");
     }
 
@@ -370,16 +370,16 @@ public class AsyncBatchModeIT {
         Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String name = "DuyHai";
         final Insert insert = insertInto("CompleteBean").value("id", bindMarker("id")).value("name", bindMarker("name")).ifNotExists();
-        final PreparedStatement ps = manager.getNativeSession().prepare(insert);
+        final PreparedStatement ps = asyncManager.getNativeSession().prepare(insert);
         final BoundStatement bs = ps.bind(id, name);
 
-        final AsyncBatch batch = manager.createBatch();
+        final AsyncBatch batch = asyncManager.createBatch();
 
         batch.startBatch();
 
         batch.batchNativeStatement(bs);
 
-        batch.endBatch(new FutureCallback<Object>() {
+        batch.asyncEndBatch(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch.countDown();
@@ -394,7 +394,7 @@ public class AsyncBatchModeIT {
         latch.await();
         
         //When
-        final CompleteBean found = manager.find(CompleteBean.class, id).get();
+        final CompleteBean found = asyncManager.find(CompleteBean.class, id).get();
 
         //Then
         assertThat(found.getName()).isEqualTo(name);

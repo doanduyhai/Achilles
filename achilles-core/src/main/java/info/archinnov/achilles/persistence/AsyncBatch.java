@@ -49,7 +49,7 @@ import java.util.concurrent.Future;
  * </ul>
  *
  * This AsyncBatch is a <strong>state-full</strong> object that stacks up all operations. They will be flushed upon call to
- * <em>endBatch()</em>
+ * <em>asyncEndBatch()</em>
  *
  * <br/>
  * <br/>
@@ -63,7 +63,7 @@ import java.util.concurrent.Future;
  *
  *   asyncBatch.insert(new User(10L, "John","LENNNON")); // nothing happens here
  *
- *   Future<Empty> emptyFuture = asyncBatch.endBatch(); // send the INSERT statement to Cassandra
+ *   Future<Empty> emptyFuture = asyncBatch.asyncEndBatch(); // send the INSERT statement to Cassandra
  *
  * </code></pre>
  *
@@ -89,7 +89,7 @@ public class AsyncBatch extends CommonBatch {
      * @return Future<Empty> an empty future
      *
      */
-    public AchillesFuture<Empty> endBatch() {
+    public AchillesFuture<Empty> asyncEndBatch() {
         log.debug("Flushing batch asynchronously");
         try {
             return flushContext.flushBatch();
@@ -104,7 +104,7 @@ public class AsyncBatch extends CommonBatch {
      * Do nothing if there is no pending statement
      *
      */
-    public AchillesFuture<Empty> endBatch(FutureCallback<Object>... asyncListeners) {
+    public AchillesFuture<Empty> asyncEndBatch(FutureCallback<Object>... asyncListeners) {
         log.debug("Flushing batch asynchronously");
         try {
             final ExecutorService executorService = configContext.getExecutorService();

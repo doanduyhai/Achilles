@@ -1,34 +1,25 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select.Where;
 import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
-import info.archinnov.achilles.query.typed.TypedQuery;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntityForTranscoding;
 import info.archinnov.achilles.test.integration.entity.EntityWithEnumeratedConfig;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.TypedMap;
 import org.apache.commons.lang3.RandomUtils;
-import org.fest.assertions.core.Condition;
-import org.fest.assertions.data.MapEntry;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.in;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.test.integration.entity.EntityWithEnumeratedConfig.TABLE_NAME;
@@ -82,7 +73,7 @@ public class EnumeratedSupportIT {
         //When
         final Where statement = select().from(TABLE_NAME).where(eq("id", bindMarker("id")));
 
-        final TypedMap found = manager.nativeQuery(statement, id).first();
+        final TypedMap found = manager.nativeQuery(statement, id).getFirst();
 
         //Then
         assertThat(found.getTyped("id")).isEqualTo(id);

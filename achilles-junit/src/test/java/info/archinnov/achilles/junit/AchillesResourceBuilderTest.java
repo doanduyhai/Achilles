@@ -29,8 +29,6 @@ import org.junit.Test;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.test.integration.entity.User;
@@ -78,7 +76,7 @@ public class AchillesResourceBuilderTest {
                 .where(eq("keyspace_name","test_keyspace"));
 
         //When
-        final Map<String,Object> map = manager.nativeQuery(regularStatement).first();
+        final Map<String,Object> map = manager.nativeQuery(regularStatement).getFirst();
 
         //Then
         assertThat(map.get("count")).isEqualTo(1L);

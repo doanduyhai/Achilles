@@ -38,7 +38,6 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.RegularStatement;
@@ -144,7 +143,7 @@ public class NativeQueryTest {
         when(mapper.mapRows(rows)).thenReturn(typedMaps);
 
         // When
-        final AchillesFuture<List<TypedMap>> actual = query.asyncGet(asyncListeners);
+        final AchillesFuture<List<TypedMap>> actual = query.asyncGetInternal(asyncListeners);
 
         // Then
         assertThat(actual).isSameAs(achillesFutureTypedMaps);
@@ -172,7 +171,7 @@ public class NativeQueryTest {
         when(mapper.mapRows(rows)).thenReturn(typedMaps);
 
         // When
-        final AchillesFuture<TypedMap> actual = query.asyncFirst(asyncListeners);
+        final AchillesFuture<TypedMap> actual = query.asyncGetFirstInternal(asyncListeners);
 
         // Then
         assertThat(actual).isSameAs(achillesFutureTypedMap);
@@ -198,7 +197,7 @@ public class NativeQueryTest {
         when(mapper.mapRows(rows)).thenReturn(typedMaps);
 
         // When
-        final AchillesFuture<TypedMap> actual = query.asyncFirst(asyncListeners);
+        final AchillesFuture<TypedMap> actual = query.asyncGetFirstInternal(asyncListeners);
 
         // Then
         assertThat(actual).isSameAs(achillesFutureTypedMap);
@@ -223,7 +222,7 @@ public class NativeQueryTest {
         when(regularStatement.getQueryString()).thenReturn("query");
 
         //When
-        final AchillesFuture<Empty> actual = query.asyncExecute(asyncListeners);
+        final AchillesFuture<Empty> actual = query.asyncExecuteInternal(asyncListeners);
 
         //Then
         assertThat(actual).isSameAs(achillesFutureEmpty);

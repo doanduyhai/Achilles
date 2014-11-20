@@ -38,6 +38,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
+import info.archinnov.achilles.persistence.AsyncManager;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,7 +50,6 @@ import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.type.Empty;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUUID;
@@ -69,7 +69,7 @@ public class AsyncQueryIT {
             CompleteBean.class.getSimpleName(), TABLE_NAME, ClusteredEntityWithTimeUUID.TABLE_NAME,
             AchillesCounter.ACHILLES_COUNTER_TABLE);
 
-    private PersistenceManager manager = resource.getPersistenceManager();
+    private AsyncManager asyncManager = resource.getAsyncManager();
 
     @Test
     public void should_return_rows_for_native_query_async() throws Exception {
@@ -81,8 +81,8 @@ public class AsyncQueryIT {
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").version(CounterBuilder.incr(17L)).buid();
 
-        manager.insert(entity1);
-        manager.insert(entity2);
+        asyncManager.insert(entity1).getImmediately();
+        asyncManager.insert(entity2).getImmediately();
 
 
         final RegularStatement statement = select("name","age_in_years","friends","followers","preferences")
@@ -103,12 +103,19 @@ public class AsyncQueryIT {
             }
         };
 
-        final AchillesFuture<List<TypedMap>> future1 = manager.nativeQuery(statement, entity1.getId()).asyncGet(successCallBack);
-        final AchillesFuture<List<TypedMap>> future2 = manager.nativeQuery(statement, entity2.getId()).asyncGet();
+
+        final AchillesFuture<List<TypedMap>> future1 = asyncManager.nativeQuery(statement, entity1.getId()).get(successCallBack);
+        final AchillesFuture<List<TypedMap>> future2 = asyncManager.nativeQuery(statement, entity2.getId()).get();
+
+        latch.await();
 
         final List<TypedMap> typedMaps1 = future1.get();
         assertThat(typedMaps1).hasSize(1);
         TypedMap typedMap1 = typedMaps1.get(0);
+
+        while (!future2.isDone()) {
+            Thread.sleep(2);
+        }
 
         final List<TypedMap> typedMaps2 = future2.get();
         assertThat(typedMaps2).hasSize(1);
@@ -174,11 +181,10 @@ public class AsyncQueryIT {
         final RegularStatement delete = delete().from("completebean").where(eq("name","test"));
 
         //When
-        manager.nativeQuery(insert, id).asyncExecute(successCallBack);
-        manager.nativeQuery(delete).asyncExecute(exceptionCallBack);
+        asyncManager.nativeQuery(insert, id).execute(successCallBack);
+        asyncManager.nativeQuery(delete).execute(exceptionCallBack);
 
         latch.await();
-        Thread.sleep(100);
 
         //Then
         assertThat(successSpy.get()).isNotNull().isSameAs(Empty.INSTANCE);
@@ -193,21 +199,21 @@ public class AsyncQueryIT {
         CompleteBean entity4 = builder().randomId().name("John").buid();
         CompleteBean entity5 = builder().randomId().name("Helen").buid();
 
-        manager.insert(entity1);
-        manager.insert(entity2);
-        manager.insert(entity3);
-        manager.insert(entity4);
-        manager.insert(entity5);
+        asyncManager.insert(entity1).getImmediately();
+        asyncManager.insert(entity2).getImmediately();
+        asyncManager.insert(entity3).getImmediately();
+        asyncManager.insert(entity4).getImmediately();
+        asyncManager.insert(entity5).getImmediately();
 
         List<String> possibleNames = Arrays.asList("DuyHai", "Paul", "George", "John", "Helen");
 
         RegularStatement statement = select().all().from("CompleteBean").limit(6);
         statement.setFetchSize(2);
 
-        final AchillesFuture<Iterator<TypedMap>> futureIterator = manager.nativeQuery(statement).asyncIterator();
+        final AchillesFuture<Iterator<TypedMap>> futureIterator = asyncManager.nativeQuery(statement).iterator();
 
         while (!futureIterator.isDone()) {
-            Thread.sleep(10);
+            Thread.sleep(2);
         }
 
         final Iterator<TypedMap> iterator = futureIterator.get();
@@ -236,8 +242,8 @@ public class AsyncQueryIT {
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").buid();
 
-        manager.insert(paul);
-        manager.insert(john);
+        asyncManager.insert(paul).getImmediately();
+        asyncManager.insert(john).getImmediately();
 
         final CountDownLatch latch = new CountDownLatch(2);
         final AtomicReference<Object> successSpy1 = new AtomicReference<>();
@@ -270,8 +276,10 @@ public class AsyncQueryIT {
         };
 
         final RegularStatement selectStar = select().from("CompleteBean").where(eq("id", bindMarker("id")));
-        final List<CompleteBean> list1 = manager.typedQuery(CompleteBean.class, selectStar, paul.getId()).asyncGet(successCallBack1).get();
-        final CompleteBean foundJohn = manager.typedQuery(CompleteBean.class, selectStar, john.getId()).asyncGetFirst(successCallBack2).get();
+        final List<CompleteBean> list1 = asyncManager.typedQuery(CompleteBean.class, selectStar, paul.getId()).get(successCallBack1).get();
+        final CompleteBean foundJohn = asyncManager.typedQuery(CompleteBean.class, selectStar, john.getId()).getFirst(successCallBack2).get();
+
+        latch.await();
 
         assertThat(list1).hasSize(1);
 
@@ -328,8 +336,8 @@ public class AsyncQueryIT {
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").version(counter2).buid();
 
-        manager.insert(paul);
-        manager.insert(john);
+        asyncManager.insert(paul).getImmediately();
+        asyncManager.insert(john).getImmediately();
 
         final CountDownLatch latch = new CountDownLatch(2);
         final AtomicReference<Object> successSpy1 = new AtomicReference<>();
@@ -363,8 +371,10 @@ public class AsyncQueryIT {
 
         final RegularStatement selectStar = select().from("CompleteBean").where(eq("id", bindMarker("id")));
 
-        final AchillesFuture<CompleteBean> futurePaul = manager.rawTypedQuery(CompleteBean.class, selectStar, paul.getId()).asyncGetFirst(successCallBack1);
-        final AchillesFuture<CompleteBean> futureJohn = manager.rawTypedQuery(CompleteBean.class, selectStar, john.getId()).asyncGetFirst(successCallBack2);
+        final AchillesFuture<CompleteBean> futurePaul = asyncManager.rawTypedQuery(CompleteBean.class, selectStar, paul.getId()).getFirst(successCallBack1);
+        final AchillesFuture<CompleteBean> futureJohn = asyncManager.rawTypedQuery(CompleteBean.class, selectStar, john.getId()).getFirst(successCallBack2);
+
+        latch.await();
 
         CompleteBean foundPaul = futurePaul.get();
 
@@ -386,8 +396,6 @@ public class AsyncQueryIT {
         assertThat(foundJohn.getPreferences().get(2)).isEqualTo("NewYork");
         assertThat(foundJohn.getVersion()).isNull();
 
-        latch.await();
-        Thread.sleep(100);
         assertThat(successSpy1.get()).isNotNull().isInstanceOf(CompleteBean.class).isNotInstanceOf(Factory.class);
         assertThat(successSpy2.get()).isNotNull().isInstanceOf(CompleteBean.class).isNotInstanceOf(Factory.class);
     }
@@ -395,7 +403,7 @@ public class AsyncQueryIT {
     @Test
     public void should_query_async_with_default_params() throws Exception {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class)
+        List<ClusteredEntity> entities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .fromClusterings(1, "name2").toClusterings(1, "name4")
@@ -406,7 +414,6 @@ public class AsyncQueryIT {
 
         final CountDownLatch latch = new CountDownLatch(2);
         final AtomicReference<Object> successSpy = new AtomicReference<>();
-        final AtomicReference<Throwable> exceptionSpy = new AtomicReference<>();
 
         FutureCallback<Object> successCallBack = new FutureCallback<Object>() {
             @Override
@@ -423,7 +430,7 @@ public class AsyncQueryIT {
 
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        entities = manager.sliceQuery(ClusteredEntity.class)
+        entities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .fromClusterings(1, "name2").toClusterings(1, "name4")
@@ -458,7 +465,7 @@ public class AsyncQueryIT {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class)
+        List<ClusteredEntity> entities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .fromClusterings(1, "name1")
@@ -480,7 +487,7 @@ public class AsyncQueryIT {
         Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         insertValues(partitionKey, 1, 5);
 
-        final AchillesFuture<List<ClusteredEntity>> futures = manager.sliceQuery(ClusteredEntity.class)
+        final AchillesFuture<List<ClusteredEntity>> futures = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .fromClusterings(1, "name2")
@@ -497,7 +504,7 @@ public class AsyncQueryIT {
     @Test
     public void should_query_async_with_getFirst() throws Exception {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class)
+        ClusteredEntity entity = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .async().getOne()
@@ -507,7 +514,7 @@ public class AsyncQueryIT {
 
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        entity = manager.sliceQuery(ClusteredEntity.class)
+        entity = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .async().getOne()
@@ -515,7 +522,7 @@ public class AsyncQueryIT {
 
         assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 1);
 
-        List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class)
+        List<ClusteredEntity> entities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .async().get(3)
@@ -529,7 +536,7 @@ public class AsyncQueryIT {
         insertClusteredEntity(partitionKey, 4, "name41", clusteredValuePrefix + 41);
         insertClusteredEntity(partitionKey, 4, "name42", clusteredValuePrefix + 42);
 
-        entities = manager.sliceQuery(ClusteredEntity.class)
+        entities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .async().getFirstMatching(3,4)
@@ -546,7 +553,7 @@ public class AsyncQueryIT {
     public void should_query_async_with_getLast() throws Exception {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
-        ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class)
+        ClusteredEntity entity = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .orderByDescending()
@@ -557,7 +564,7 @@ public class AsyncQueryIT {
 
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        entity = manager.sliceQuery(ClusteredEntity.class)
+        entity = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .orderByDescending()
@@ -566,7 +573,7 @@ public class AsyncQueryIT {
 
         assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 5);
 
-        List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class)
+        List<ClusteredEntity> entities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .orderByDescending()
@@ -583,7 +590,7 @@ public class AsyncQueryIT {
         insertClusteredEntity(partitionKey, 4, "name43", clusteredValuePrefix + 43);
         insertClusteredEntity(partitionKey, 4, "name44", clusteredValuePrefix + 44);
 
-        entities = manager.sliceQuery(ClusteredEntity.class)
+        entities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .async().getLastMatching(3,4)
@@ -601,7 +608,7 @@ public class AsyncQueryIT {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class)
+        Iterator<ClusteredEntity> iter = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forIteration()
                 .withPartitionComponents(partitionKey)
                 .async().iterator()
@@ -650,7 +657,7 @@ public class AsyncQueryIT {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class)
+        Iterator<ClusteredEntity> iter = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forIteration()
                 .withPartitionComponents(partitionKey)
                 .fromClusterings(1, "name2")
@@ -682,7 +689,7 @@ public class AsyncQueryIT {
         insertClusteredEntity(partitionKey, 4, "name41", "val41");
 
         //When
-        final Iterator<ClusteredEntity> iterator = manager.sliceQuery(ClusteredEntity.class)
+        final Iterator<ClusteredEntity> iterator = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forIteration()
                 .withPartitionComponents(partitionKey)
                 .fromClusterings(1)
@@ -720,14 +727,14 @@ public class AsyncQueryIT {
         insertValues(partitionKey, 2, 3);
         insertValues(partitionKey, 3, 1);
 
-        manager.sliceQuery(ClusteredEntity.class)
+        asyncManager.sliceQuery(ClusteredEntity.class)
                 .forDelete()
                 .withPartitionComponents(partitionKey)
                 .async()
                 .deleteMatching(2)
                 .getImmediately();
 
-        List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class)
+        List<ClusteredEntity> entities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .get(100);
@@ -747,7 +754,7 @@ public class AsyncQueryIT {
     public void should_allow_native_and_typed_query_with_bound_statement() throws Exception {
         //Given
         final long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
-        final Session session = manager.getNativeSession();
+        final Session session = asyncManager.getNativeSession();
         final PreparedStatement insertPs = session.prepare(insertInto(CompleteBean.TABLE_NAME)
                 .value("id", bindMarker("id"))
                 .value("label", bindMarker("label"))
@@ -755,7 +762,7 @@ public class AsyncQueryIT {
         final BoundStatement insertBs = insertPs.bind(id, "label", 32L);
 
         final CountDownLatch latch1 = new CountDownLatch(1);
-        manager.nativeQuery(insertBs).asyncExecute(new FutureCallback<Object>() {
+        asyncManager.nativeQuery(insertBs).execute(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch1.countDown();
@@ -774,7 +781,7 @@ public class AsyncQueryIT {
 
         //When
         final CountDownLatch latch2 = new CountDownLatch(2);
-        final AchillesFuture<CompleteBean> foundWithProxy = manager.typedQuery(CompleteBean.class, selectBs).asyncGetFirst(new FutureCallback<Object>() {
+        final AchillesFuture<CompleteBean> foundWithProxy = asyncManager.typedQuery(CompleteBean.class, selectBs).getFirst(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch2.countDown();
@@ -785,7 +792,7 @@ public class AsyncQueryIT {
 
             }
         });
-        final AchillesFuture<CompleteBean> foundRaw = manager.rawTypedQuery(CompleteBean.class, selectBs).asyncGetFirst(new FutureCallback<Object>() {
+        final AchillesFuture<CompleteBean> foundRaw = asyncManager.rawTypedQuery(CompleteBean.class, selectBs).getFirst(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch2.countDown();
@@ -825,6 +832,6 @@ public class AsyncQueryIT {
     private void insertClusteredEntity(Long partitionKey, int count, String name, String clusteredValue) {
         ClusteredEntity.ClusteredKey embeddedId = new ClusteredEntity.ClusteredKey(partitionKey, count, name);
         ClusteredEntity entity = new ClusteredEntity(embeddedId, clusteredValue);
-        manager.insert(entity);
+        asyncManager.insert(entity);
     }
 }

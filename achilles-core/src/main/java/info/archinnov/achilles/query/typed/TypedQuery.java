@@ -49,33 +49,25 @@ import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 
-public class TypedQuery<T> {
+/**
+ * Class to perform native Cassandra query and let <strong>Achilles</strong> map back the result set into list of entities.
+ * In this case <strong>Achilles</strong> simply plays the role of a plain object mapper
+ * <pre class="code"><code class="java">
+ *
+ *   Statement statement = new SimpleStatement("SELECT name,age_in_years FROM users WHERE id IN(?,?)");
+ *   List<UserEntity> users = manager.typedQuery(UserEntity.class, statement, 10L, 11L).get();
+ *
+ * </code></pre>
+ *
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#typed-query" target="_blank">Typed query</a>
+ * @param <T> entity type
+ */
+public class TypedQuery<T> extends AbstractTypedQuery<T> {
     private static final Logger log = LoggerFactory.getLogger(TypedQuery.class);
-    private static final Optional<LWTResultListener> NO_LISTENER = Optional.absent();
-    private final NativeStatementWrapper nativeStatementWrapper;
-
-    private DaoContext daoContext;
-    private ExecutorService executorService;
-    private Map<String, PropertyMeta> propertiesMap;
-    private EntityMeta meta;
-    private PersistenceContextFactory contextFactory;
-    private EntityState entityState;
-    private Object[] boundValues;
-
-    private EntityMapper mapper = EntityMapper.Singleton.INSTANCE.get();
-    private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
-    private AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
 
     public TypedQuery(Class<T> entityClass, DaoContext daoContext, ConfigurationContext configContext, Statement statement, EntityMeta meta,
             PersistenceContextFactory contextFactory, EntityState entityState, Object[] boundValues) {
-        this.daoContext = daoContext;
-        this.executorService = configContext.getExecutorService();
-        this.boundValues = boundValues;
-        this.nativeStatementWrapper = new NativeStatementWrapper(entityClass, statement, this.boundValues, Optional.<LWTResultListener>absent());
-        this.meta = meta;
-        this.contextFactory = contextFactory;
-        this.entityState = entityState;
-        this.propertiesMap = transformPropertiesMap(meta);
+        super(entityClass, daoContext, configContext, statement, meta, contextFactory, entityState, boundValues);
     }
 
     /**
@@ -92,39 +84,7 @@ public class TypedQuery<T> {
      */
     public List<T> get() {
         log.debug("Get results for typed query '{}'", nativeStatementWrapper.getStatement());
-        return asyncGet().getImmediately();
-    }
-
-    /**
-     * Executes the query and returns entities asynchronously
-     *
-     * Matching CQL rows are mapped to entities by reflection. All un-mapped
-     * columns are ignored.
-     *
-     * The size of the list is equal or lesser than the number of matching CQL
-     * row, because some null or empty rows are ignored and filtered out
-     *
-     * @return AchillesFuture<List<T>> future of list of found entities or empty list
-     *
-     */
-    public AchillesFuture<List<T>> asyncGet(FutureCallback<Object>... asyncListeners) {
-        log.debug("Get results asynchronously for typed query '{}'", nativeStatementWrapper.getStatement());
-
-        final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(nativeStatementWrapper);
-        final ListenableFuture<List<Row>> futureRows = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROWS, executorService);
-
-        Function<List<Row>, List<T>> rowsToEntities = rowsToEntities();
-        Function<List<T>, List<T>> applyTriggers = applyTriggersToEntities();
-        Function<List<T>, List<T>> maybeCreateProxy = proxifyEntities();
-
-        final ListenableFuture<List<T>> rawEntities = asyncUtils.transformFuture(futureRows, rowsToEntities, executorService);
-        final ListenableFuture<List<T>> entitiesWithTriggers = asyncUtils.transformFuture(rawEntities, applyTriggers, executorService);
-
-        asyncUtils.maybeAddAsyncListeners(entitiesWithTriggers, asyncListeners, executorService);
-
-        final ListenableFuture<List<T>> maybeProxyCreated = asyncUtils.transformFuture(entitiesWithTriggers, maybeCreateProxy, executorService);
-
-        return asyncUtils.buildInterruptible(maybeProxyCreated);
+        return asyncGetInternal().getImmediately();
     }
 
 
@@ -139,126 +99,7 @@ public class TypedQuery<T> {
      */
     public T getFirst() {
         log.debug("Get first result for typed query '{}'", nativeStatementWrapper.getStatement());
-        return asyncGetFirst().getImmediately();
+        return asyncGetFirstInternal().getImmediately();
     }
 
-    /**
-     * Executes the query and returns first entity
-     *
-     * Matching CQL row is mapped to entity by reflection. All un-mapped columns
-     * are ignored.
-     *
-     * @return T first found entity or null
-     *
-     */
-    public AchillesFuture<T> asyncGetFirst(FutureCallback<Object>... asyncListeners) {
-        log.debug("Get first result asynchronously for typed query '{}'", nativeStatementWrapper.getStatement());
-
-        final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(nativeStatementWrapper);
-        final ListenableFuture<Row> futureRow = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW, executorService);
-
-        Function<Row, T> rowToEntity = rowToEntity();
-        Function<T, T> applyTriggers = applyTriggersToEntity();
-        Function<T, T> maybeCreateProxy = proxifyEntity();
-
-        final ListenableFuture<T> rawEntity = asyncUtils.transformFuture(futureRow, rowToEntity, executorService);
-        final ListenableFuture<T> entityWithTriggers = asyncUtils.transformFuture(rawEntity, applyTriggers, executorService);
-
-        asyncUtils.maybeAddAsyncListeners(entityWithTriggers, asyncListeners, executorService);
-
-        final ListenableFuture<T> maybeProxyCreated = asyncUtils.transformFuture(entityWithTriggers, maybeCreateProxy, executorService);
-
-        return asyncUtils.buildInterruptible(maybeProxyCreated);
-    }
-
-    protected Function<Row, T> rowToEntity() {
-        return new Function<Row, T>() {
-            @Override
-            public T apply(Row row) {
-                T entity = null;
-                if (row != null) {
-                    entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, entityState);
-                }
-                return entity;
-            }
-        };
-    }
-
-    protected Function<T, T> applyTriggersToEntity() {
-        return new Function<T, T>() {
-            @Override
-            public T apply(T entity) {
-                if (entity != null) {
-                    meta.forInterception().intercept(entity, Event.POST_LOAD);
-                }
-                return entity;
-            }
-        };
-    }
-
-    protected Function<T, T> proxifyEntity() {
-        return new Function<T, T>() {
-            @Override
-            public T apply(T entity) {
-                T newEntity = entity;
-                if (entity != null && entityState.isManaged()) {
-                    newEntity = buildProxy(entity);
-                }
-                return newEntity;
-            }
-        };
-    }
-
-
-    protected Function<List<Row>, List<T>> rowsToEntities() {
-        return new Function<List<Row>, List<T>>() {
-            @Override
-            public List<T> apply(List<Row> rows) {
-                List<T> entities = new ArrayList<>();
-                for (Row row : rows) {
-                    entities.add(rowToEntity().apply(row));
-                }
-                return from(entities).filter(notNull()).toList();
-            }
-        };
-    }
-
-    protected Function<List<T>, List<T>> applyTriggersToEntities() {
-        return new Function<List<T>, List<T>>() {
-            @Override
-            public List<T> apply(List<T> entities) {
-                for (T entity : entities) {
-                    applyTriggersToEntity().apply(entity);
-                }
-                return entities;
-            }
-        };
-    }
-
-    protected Function<List<T>, List<T>> proxifyEntities() {
-        return new Function<List<T>, List<T>>() {
-            @Override
-            public List<T> apply(List<T> entities) {
-                List<T> proxies = new ArrayList<>();
-                for (T entity : entities) {
-                    proxies.add(proxifyEntity().apply(entity));
-                }
-                return from(proxies).filter(notNull()).toList();
-            }
-        };
-    }
-
-    private Map<String, PropertyMeta> transformPropertiesMap(EntityMeta meta) {
-        Map<String, PropertyMeta> propertiesMap = new HashMap<>();
-        for (PropertyMeta pm : meta.getPropertyMetas().values()) {
-            String cql3ColumnName = pm.getCQL3ColumnName();
-            propertiesMap.put(cql3ColumnName, pm);
-        }
-        return propertiesMap;
-    }
-    private T buildProxy(T entity) {
-        PersistenceContext context = contextFactory.newContext(entity);
-        entity = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context.getEntityFacade());
-        return entity;
-    }
 }

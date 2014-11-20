@@ -45,7 +45,7 @@ public class AllowInsertingStaticColumnWithoutClusteringColumnsT {
         manager.insert(entity);
 
         //When
-        final TypedMap found = manager.nativeQuery(select().from(ClusteredEntityWithStaticColumn.TABLE_NAME).where(eq("id",id))).first();
+        final TypedMap found = manager.nativeQuery(select().from(ClusteredEntityWithStaticColumn.TABLE_NAME).where(eq("id",id))).getFirst();
 
         //Then
         assertThat(found.getTyped("name")).isNull();

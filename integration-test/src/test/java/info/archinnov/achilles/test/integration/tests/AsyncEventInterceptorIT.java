@@ -27,7 +27,6 @@ import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.persistence.*;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
-import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -162,8 +161,8 @@ public class AsyncEventInterceptorIT {
             .withAchillesConfigParams(ImmutableMap.of(EVENT_INTERCEPTORS, interceptors, FORCE_TABLE_CREATION, true))
             .buildPersistenceManagerFactory();
 
-    private AsyncManager manager = pmf.createAsyncManager();
-    private Session session = manager.getNativeSession();
+    private AsyncManager asyncManager = pmf.createAsyncManager();
+    private Session session = asyncManager.getNativeSession();
 
     private AsyncManager manager2 = CassandraEmbeddedServerBuilder
             .withEntities(CompleteBean.class)
@@ -187,7 +186,7 @@ public class AsyncEventInterceptorIT {
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").version(incr(2L)).buid();
 
         final CountDownLatch latch = new CountDownLatch(1);
-        manager.insert(entity, withAsyncListeners(new FutureCallback<Object>() {
+        asyncManager.insert(entity, withAsyncListeners(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch.countDown();
@@ -217,7 +216,7 @@ public class AsyncEventInterceptorIT {
         CompleteBean entity = builder().randomId().buid();
 
         final CountDownLatch latch = new CountDownLatch(2);
-        final AchillesFuture<CompleteBean> future = manager.insert(entity, withAsyncListeners(new FutureCallback<Object>() {
+        final AchillesFuture<CompleteBean> future = asyncManager.insert(entity, withAsyncListeners(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch.countDown();
@@ -234,7 +233,7 @@ public class AsyncEventInterceptorIT {
         entity.setLabel("label");
 
 
-        manager.update(entity, withAsyncListeners(new FutureCallback<Object>() {
+        asyncManager.update(entity, withAsyncListeners(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch.countDown();
@@ -261,7 +260,7 @@ public class AsyncEventInterceptorIT {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.delete(entity);
+        asyncManager.delete(entity);
 
         assertThat(entity.getName()).isEqualTo("preRemove");
     }
@@ -294,11 +293,11 @@ public class AsyncEventInterceptorIT {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.insert(entity).getImmediately();
+        asyncManager.insert(entity).getImmediately();
 
         final CountDownLatch latch = new CountDownLatch(1);
 
-        final AchillesFuture<CompleteBean> future = manager.find(CompleteBean.class, entity.getId(), withAsyncListeners(new FutureCallback<Object>() {
+        final AchillesFuture<CompleteBean> future = asyncManager.find(CompleteBean.class, entity.getId(), withAsyncListeners(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch.countDown();
@@ -318,7 +317,7 @@ public class AsyncEventInterceptorIT {
     @Test
     public void should_apply_interceptors_after_flush_for_batch() throws Exception {
         // Given
-        final AsyncBatch asyncBatch = manager.createBatch();
+        final AsyncBatch asyncBatch = asyncManager.createBatch();
         asyncBatch.startBatch();
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
@@ -332,7 +331,7 @@ public class AsyncEventInterceptorIT {
 
         // When
         final CountDownLatch latch = new CountDownLatch(1);
-        asyncBatch.endBatch(new FutureCallback<Object>() {
+        asyncBatch.asyncEndBatch(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch.countDown();
@@ -383,13 +382,13 @@ public class AsyncEventInterceptorIT {
         // Given
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.insert(entity).getImmediately();
+        asyncManager.insert(entity).getImmediately();
 
         RegularStatement statement = select().from("CompleteBean").where(eq("id",bindMarker()));
 
         // When
         final CountDownLatch latch = new CountDownLatch(1);
-        final AchillesFuture<CompleteBean> future = manager.typedQuery(CompleteBean.class, statement, entity.getId()).asyncGetFirst(new FutureCallback<Object>() {
+        final AchillesFuture<CompleteBean> future = asyncManager.typedQuery(CompleteBean.class, statement, entity.getId()).getFirst(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch.countDown();
@@ -413,14 +412,14 @@ public class AsyncEventInterceptorIT {
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
 
-        manager.insert(entity).getImmediately();
+        asyncManager.insert(entity).getImmediately();
 
         RegularStatement statement = select().from("CompleteBean").where(eq("id",bindMarker()));
 
         // When
         final CountDownLatch latch = new CountDownLatch(1);
 
-        final AchillesFuture<CompleteBean> future = manager.rawTypedQuery(CompleteBean.class, statement, entity.getId()).asyncGetFirst(new FutureCallback<Object>() {
+        final AchillesFuture<CompleteBean> future = asyncManager.rawTypedQuery(CompleteBean.class, statement, entity.getId()).getFirst(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch.countDown();
