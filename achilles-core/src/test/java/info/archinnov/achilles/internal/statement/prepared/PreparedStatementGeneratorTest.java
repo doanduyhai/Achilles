@@ -134,7 +134,7 @@ public class PreparedStatementGeneratorTest {
     @Test
     public void should_prepare_insert_ps() throws Exception {
         PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        when(nameMeta.getCQL3ColumnName()).thenReturn("name");
+        when(nameMeta.getCQLColumnName()).thenReturn("name");
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareInsert(session, meta, asList(nameMeta), noOptions());
@@ -308,7 +308,7 @@ public class PreparedStatementGeneratorTest {
         when(meta.getAllCounterMetas()).thenReturn(asList(counterMeta));
         when(counterMeta.forStatementGeneration()).thenReturn(statementGenerator);
         when(counterMeta.getPropertyName()).thenReturn("countProperty");
-        when(counterMeta.getCQL3ColumnName()).thenReturn("count");
+        when(counterMeta.getCQLColumnName()).thenReturn("count");
         when(counterMeta.structure().isStaticColumn()).thenReturn(false);
 
 

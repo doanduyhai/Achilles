@@ -520,7 +520,7 @@ public class DaoContextTest {
     public void should_get_clustered_counter_column() throws Exception {
         // Given
         PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        when(counterMeta.getCQL3ColumnName()).thenReturn("counter");
+        when(counterMeta.getCQLColumnName()).thenReturn("counter");
         when(counterMeta.structure().isStaticColumn()).thenReturn(true);
         Row row = mock(Row.class);
 

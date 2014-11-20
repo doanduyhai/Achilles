@@ -49,7 +49,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_insert_primary_key_for_embedded_id() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
+        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         Insert insert = QueryBuilder.insertInto("table");
 
         //When
@@ -63,7 +63,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_insert_primary_key_for_embedded_id_with_only_static_columns() throws Exception {
         //Given
         PropertyMeta meta1 = mock(PropertyMeta.class);
-        when(meta1.getCQL3ColumnName()).thenReturn("id");
+        when(meta1.getCQLColumnName()).thenReturn("id");
 
         PartitionComponents partitionComponents = new PartitionComponents(asList(meta1));
         when(meta.structure().isEmbeddedId()).thenReturn(true);
@@ -81,7 +81,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_insert_primary_key_for_simple_id() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(false);
-        when(meta.getCQL3ColumnName()).thenReturn("id");
+        when(meta.getCQLColumnName()).thenReturn("id");
         Insert insert = QueryBuilder.insertInto("table");
 
         //When
@@ -96,7 +96,7 @@ public class PropertyMetaStatementGeneratorTest {
         //Given
         Optional<PropertyMeta> pmO = Optional.absent();
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
+        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         Select select = QueryBuilder.select().from("table");
 
         //When
@@ -115,7 +115,7 @@ public class PropertyMetaStatementGeneratorTest {
         Optional<PropertyMeta> pmO = Optional.fromNullable(staticMeta);
 
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getPartitionComponents().getCQL3ComponentNames()).thenReturn(asList("id"));
+        when(embeddedIdProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
         Select select = QueryBuilder.select().from("table");
 
         //When
@@ -130,7 +130,7 @@ public class PropertyMetaStatementGeneratorTest {
         //Given
         Optional<PropertyMeta> pmO = Optional.absent();
         when(meta.structure().isEmbeddedId()).thenReturn(false);
-        when(meta.getCQL3ColumnName()).thenReturn("id");
+        when(meta.getCQLColumnName()).thenReturn("id");
         Select select = QueryBuilder.select().from("table");
 
         //When
@@ -145,7 +145,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_where_clause_for_delete_with_embedded_id() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
+        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         Delete delete = QueryBuilder.delete().from("table");
 
         //When
@@ -159,7 +159,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_where_clause_for_delete_with_embedded_id_and_static_column() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getPartitionComponents().getCQL3ComponentNames()).thenReturn(asList("id"));
+        when(embeddedIdProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
         Delete delete = QueryBuilder.delete().from("table");
 
         //When
@@ -173,7 +173,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_where_clause_for_delete_with_simple_id() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(false);
-        when(meta.getCQL3ColumnName()).thenReturn("id");
+        when(meta.getCQLColumnName()).thenReturn("id");
         Delete delete = QueryBuilder.delete().from("table");
 
         //When
@@ -186,7 +186,7 @@ public class PropertyMetaStatementGeneratorTest {
     @Test
     public void should_prepare_update_fields_with_conditions() throws Exception {
         //Given
-        when(meta.getCQL3ColumnName()).thenReturn("name");
+        when(meta.getCQLColumnName()).thenReturn("name");
         final Conditions conditions = update("table").onlyIf();
 
         //When
@@ -199,7 +199,7 @@ public class PropertyMetaStatementGeneratorTest {
     @Test
     public void should_prepare_update_fields_with_assignments() throws Exception {
         //Given
-        when(meta.getCQL3ColumnName()).thenReturn("name");
+        when(meta.getCQLColumnName()).thenReturn("name");
         final Assignments assignments = update("table").with();
 
         //When
@@ -214,7 +214,7 @@ public class PropertyMetaStatementGeneratorTest {
         //Given
         final Assignments assignments = update("table").with();
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
+        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         //When
         final Where actual = view.prepareCommonWhereClauseForUpdate(assignments, false);
@@ -228,7 +228,7 @@ public class PropertyMetaStatementGeneratorTest {
         //Given
         final Assignments assignments = update("table").with();
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getPartitionComponents().getCQL3ComponentNames()).thenReturn(asList("id"));
+        when(embeddedIdProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
 
         //When
         final Where actual = view.prepareCommonWhereClauseForUpdate(assignments, true);
@@ -242,7 +242,7 @@ public class PropertyMetaStatementGeneratorTest {
         //Given
         final Assignments assignments = update("table").with();
         when(meta.structure().isEmbeddedId()).thenReturn(false);
-        when(meta.getCQL3ColumnName()).thenReturn("id");
+        when(meta.getCQLColumnName()).thenReturn("id");
 
         //When
         final Where actual = view.prepareCommonWhereClauseForUpdate(assignments, true);
@@ -262,7 +262,7 @@ public class PropertyMetaStatementGeneratorTest {
 
         final Assignments assignments = update("table").with();
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
+        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         when(pm.structure().isStaticColumn()).thenReturn(false);
         when(meta.forTranscoding().encodeToComponents(pk, false)).thenReturn(Arrays.<Object>asList(10L, "DuyHai"));
 
@@ -285,7 +285,7 @@ public class PropertyMetaStatementGeneratorTest {
         final Assignments assignments = update("table").with();
         when(meta.structure().isEmbeddedId()).thenReturn(false);
         when(meta.forTranscoding().encodeToCassandra(10L)).thenReturn(10L);
-        when(meta.getCQL3ColumnName()).thenReturn("id");
+        when(meta.getCQLColumnName()).thenReturn("id");
 
         //When
         final Pair<Where, Object[]> actual = view.generateWhereClauseForUpdate(entity, pm, assignments);
@@ -300,7 +300,7 @@ public class PropertyMetaStatementGeneratorTest {
         //Given
         final Selection select = select();
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
+        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         //When
         final Selection actual = view.prepareSelectField(select);
@@ -314,7 +314,7 @@ public class PropertyMetaStatementGeneratorTest {
         //Given
         final Selection select = select();
         when(meta.structure().isEmbeddedId()).thenReturn(false);
-        when(meta.getCQL3ColumnName()).thenReturn("id");
+        when(meta.getCQLColumnName()).thenReturn("id");
 
         //When
         final Selection actual = view.prepareSelectField(select);
@@ -327,7 +327,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_generate_update_for_remove_all() throws Exception {
         //Given
         final Conditions conditions = update("table").onlyIf();
-        when(meta.getCQL3ColumnName()).thenReturn("names");
+        when(meta.getCQLColumnName()).thenReturn("names");
 
         //When
         final Assignments actual = view.generateUpdateForRemoveAll(conditions);
@@ -340,7 +340,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_generate_update_for_added_elements() throws Exception {
         //Given
         final Conditions conditions = update("table").onlyIf();
-        when(meta.getCQL3ColumnName()).thenReturn("names");
+        when(meta.getCQLColumnName()).thenReturn("names");
 
         //When
         final Assignments actual = view.generateUpdateForAddedElements(conditions);
@@ -353,7 +353,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_generate_update_for_removed_elements() throws Exception {
         //Given
         final Conditions conditions = update("table").onlyIf();
-        when(meta.getCQL3ColumnName()).thenReturn("names");
+        when(meta.getCQLColumnName()).thenReturn("names");
 
         //When
         final Assignments actual = view.generateUpdateForRemovedElements(conditions);
@@ -366,7 +366,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_generate_update_for_appended_elements() throws Exception {
         //Given
         final Conditions conditions = update("table").onlyIf();
-        when(meta.getCQL3ColumnName()).thenReturn("names");
+        when(meta.getCQLColumnName()).thenReturn("names");
 
         //When
         final Assignments actual = view.generateUpdateForAppendedElements(conditions);
@@ -379,7 +379,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_generate_update_for_prepended_elements() throws Exception {
         //Given
         final Conditions conditions = update("table").onlyIf();
-        when(meta.getCQL3ColumnName()).thenReturn("names");
+        when(meta.getCQLColumnName()).thenReturn("names");
 
         //When
         final Assignments actual = view.generateUpdateForPrependedElements(conditions);
@@ -392,7 +392,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_generate_update_for_remove_list_elements() throws Exception {
         //Given
         final Conditions conditions = update("table").onlyIf();
-        when(meta.getCQL3ColumnName()).thenReturn("names");
+        when(meta.getCQLColumnName()).thenReturn("names");
 
         //When
         final Assignments actual = view.generateUpdateForRemoveListElements(conditions);
@@ -405,7 +405,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_generate_update_for_added_entries() throws Exception {
         //Given
         final Conditions conditions = update("table").onlyIf();
-        when(meta.getCQL3ColumnName()).thenReturn("names");
+        when(meta.getCQLColumnName()).thenReturn("names");
 
         //When
         final Assignments actual = view.generateUpdateForAddedEntries(conditions);
@@ -418,7 +418,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_generate_update_for_removed_key() throws Exception {
         //Given
         final Conditions conditions = update("table").onlyIf();
-        when(meta.getCQL3ColumnName()).thenReturn("names");
+        when(meta.getCQLColumnName()).thenReturn("names");
 
         //When
         final Assignments actual = view.generateUpdateForRemovedKey(conditions);
@@ -431,7 +431,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_generate_update_for_set_at_index() throws Exception {
         //Given
         final Conditions conditions = update("table").onlyIf();
-        when(meta.getCQL3ColumnName()).thenReturn("names");
+        when(meta.getCQLColumnName()).thenReturn("names");
 
         //When
         final Assignments actual = view.generateUpdateForSetAtIndexElement(conditions, 2, "DuyHai");
@@ -444,7 +444,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_generate_update_for_remove_at_index() throws Exception {
         //Given
         final Conditions conditions = update("table").onlyIf();
-        when(meta.getCQL3ColumnName()).thenReturn("names");
+        when(meta.getCQLColumnName()).thenReturn("names");
 
         //When
         final Assignments actual = view.generateUpdateForRemovedAtIndexElement(conditions, 2);

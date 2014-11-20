@@ -507,48 +507,48 @@ public class CodecFactoryTest {
     }
 
     @Test
-    public void should_determine_cql3_simple_type() throws Exception {
+    public void should_determine_cql_simple_type() throws Exception {
         //Given
         Codec simpleCodec = new NativeCodec(String.class);
 
         //When
-        final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, false);
+        final Class<?> actualClass = factory.determineCQLValueType(simpleCodec, false);
 
         //Then
         assertThat(actualClass).isEqualTo((Class)String.class);
     }
 
     @Test
-    public void should_determine_cql3_simple_timeuuid_type() throws Exception {
+    public void should_determine_cql_simple_timeuuid_type() throws Exception {
         //Given
         Codec simpleCodec = new NativeCodec(UUID.class);
 
         //When
-        final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, true);
+        final Class<?> actualClass = factory.determineCQLValueType(simpleCodec, true);
 
         //Then
         assertThat(actualClass).isEqualTo((Class)InternalTimeUUID.class);
     }
 
     @Test
-    public void should_determine_cql3_simple_byte_buffer_type() throws Exception {
+    public void should_determine_cql_simple_byte_buffer_type() throws Exception {
         //Given
         Codec simpleCodec = new NativeCodec(ByteBuffer.wrap("test".getBytes()).getClass());
 
         //When
-        final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, false);
+        final Class<?> actualClass = factory.determineCQLValueType(simpleCodec, false);
 
         //Then
         assertThat(actualClass).isEqualTo((Class)ByteBuffer.class);
     }
 
     @Test
-    public void should_determine_cql3_simple_counter_type() throws Exception {
+    public void should_determine_cql_simple_counter_type() throws Exception {
         //Given
         Codec simpleCodec = new NativeCodec(Counter.class);
 
         //When
-        final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, false);
+        final Class<?> actualClass = factory.determineCQLValueType(simpleCodec, false);
 
         //Then
         assertThat(actualClass).isEqualTo((Class)Long.class);
@@ -556,56 +556,56 @@ public class CodecFactoryTest {
 
 
     @Test
-    public void should_determine_cql3_list_type() throws Exception {
+    public void should_determine_cql_list_type() throws Exception {
         //Given
         ListCodec listCodec = mock(ListCodec.class);
         when(listCodec.sourceType()).thenReturn(Integer.class);
         when(listCodec.targetType()).thenReturn(String.class);
 
         //When
-        final Class<?> actualClass = factory.determineCQL3ValueType(listCodec, false);
+        final Class<?> actualClass = factory.determineCQLValueType(listCodec, false);
 
         //Then
         assertThat(actualClass).isEqualTo((Class)String.class);
     }
 
     @Test
-    public void should_determine_cql3_set_type() throws Exception {
+    public void should_determine_cql_set_type() throws Exception {
         //Given
         SetCodec setCodec = mock(SetCodec.class);
         when(setCodec.sourceType()).thenReturn(Integer.class);
         when(setCodec.targetType()).thenReturn(String.class);
 
         //When
-        final Class<?> actualClass = factory.determineCQL3ValueType(setCodec, false);
+        final Class<?> actualClass = factory.determineCQLValueType(setCodec, false);
 
         //Then
         assertThat(actualClass).isEqualTo((Class)String.class);
     }
 
     @Test
-    public void should_determine_cql3_map_value_type() throws Exception {
+    public void should_determine_cql_map_value_type() throws Exception {
         //Given
         MapCodec mapCodec = mock(MapCodec.class);
         when(mapCodec.sourceValueType()).thenReturn(Integer.class);
         when(mapCodec.targetValueType()).thenReturn(String.class);
 
         //When
-        final Class<?> actualClass = factory.determineCQL3ValueType(mapCodec, false);
+        final Class<?> actualClass = factory.determineCQLValueType(mapCodec, false);
 
         //Then
         assertThat(actualClass).isEqualTo((Class)String.class);
     }
 
     @Test
-    public void should_determine_cql3_map_key_type() throws Exception {
+    public void should_determine_cql_map_key_type() throws Exception {
         //Given
         MapCodec mapCodec = mock(MapCodec.class);
         when(mapCodec.sourceKeyType()).thenReturn(Integer.class);
         when(mapCodec.targetKeyType()).thenReturn(String.class);
 
         //When
-        final Class<?> actualClass = factory.determineCQL3KeyType(mapCodec, false);
+        final Class<?> actualClass = factory.determineCQLKeyType(mapCodec, false);
 
         //Then
         assertThat(actualClass).isEqualTo((Class)String.class);

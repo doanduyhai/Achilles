@@ -46,18 +46,18 @@ public class EntityMetaTranscoder extends EntityMetaView {
     private Object encodeValueForProperty(String columnName, Object rawValue) {
         Object encodedValue = rawValue;
         if (rawValue != null) {
-            final PropertyMeta propertyMeta = findPropertyMetaByCQL3Name(columnName);
+            final PropertyMeta propertyMeta = findPropertyMetaByCQLName(columnName);
             encodedValue = propertyMeta.forTranscoding().encodeToCassandra(rawValue);
         }
         return encodedValue;
     }
 
-    private PropertyMeta findPropertyMetaByCQL3Name(String cql3Name) {
+    private PropertyMeta findPropertyMetaByCQLName(String cqlName) {
         for (PropertyMeta propertyMeta : meta.getAllMetasExceptCounters()) {
-            if (propertyMeta.getCQL3ColumnName().equals(cql3Name) ) {
+            if (propertyMeta.getCQLColumnName().equals(cqlName) ) {
                 return propertyMeta;
             }
         }
-        throw new AchillesException(String.format("Cannot find matching property meta for the cql3 field %s", cql3Name));
+        throw new AchillesException(String.format("Cannot find matching property meta for the cql field %s", cqlName));
     }
 }

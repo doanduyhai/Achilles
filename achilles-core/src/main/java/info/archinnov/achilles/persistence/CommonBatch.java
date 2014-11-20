@@ -314,7 +314,7 @@ abstract class CommonBatch extends CommonPersistenceManager {
     }
 
     /**
-     * Add a native CQL3 statement to the current batch.
+     * Add a native CQL statement to the current batch.
      * <br/>
      * <br/>
      * <strong>This statement should be an INSERT or UPDATE</strong>, otherwise Achilles will raise an exception
@@ -324,7 +324,7 @@ abstract class CommonBatch extends CommonPersistenceManager {
      * batch.batchNativeStatement(statement,10,"John");
      * </code></pre>
      *
-     * @param statement native CQL3 statement
+     * @param statement native CQL statement
      * @param boundValues      optional bound values
      */
     public void batchNativeStatement(Statement statement, Object... boundValues) {
@@ -338,7 +338,7 @@ abstract class CommonBatch extends CommonPersistenceManager {
      * batch.batchNativeStatementWithLWTListener(statement,listener,10,"John");
      * </code></pre>
      *
-     * @param statement  native CQL3 statement
+     * @param statement  native CQL statement
      * @param LWTResultListener result listener for LWT operation
      * @param boundValues       optional bound values
      */

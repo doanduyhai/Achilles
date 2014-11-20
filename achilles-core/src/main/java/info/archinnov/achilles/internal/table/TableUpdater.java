@@ -48,32 +48,32 @@ public class TableUpdater {
         final String tableName = entityMeta.config().getQualifiedTableName();
 
         for (PropertyMeta propertyMeta : propertyMetas) {
-            String cql3ColumnName = propertyMeta.getCQL3ColumnName();
-            if (!columnNames.contains(cql3ColumnName)) {
-                Class<?> valueClass = propertyMeta.structure().getCQL3ValueType();
+            String cqlColumnName = propertyMeta.getCQLColumnName();
+            if (!columnNames.contains(cqlColumnName)) {
+                Class<?> valueClass = propertyMeta.structure().getCQLValueType();
                 final boolean staticColumn = propertyMeta.structure().isStaticColumn();
                 String alterTableScript = "";
                 switch (propertyMeta.type()) {
                     case SIMPLE:
-                        alterTableScript = alterTable(tableName).addColumn(cql3ColumnName, staticColumn).type(toCQLDataType(valueClass));
+                        alterTableScript = alterTable(tableName).addColumn(cqlColumnName, staticColumn).type(toCQLDataType(valueClass));
                         session.execute(alterTableScript);
                         break;
                     case LIST:
-                        alterTableScript = alterTable(tableName).addColumn(cql3ColumnName, staticColumn).type(list(toCQLDataType(valueClass)));
+                        alterTableScript = alterTable(tableName).addColumn(cqlColumnName, staticColumn).type(list(toCQLDataType(valueClass)));
                         session.execute(alterTableScript);
                         break;
                     case SET:
-                        alterTableScript = alterTable(tableName).addColumn(cql3ColumnName, staticColumn).type(set(toCQLDataType(valueClass)));
+                        alterTableScript = alterTable(tableName).addColumn(cqlColumnName, staticColumn).type(set(toCQLDataType(valueClass)));
                         session.execute(alterTableScript);
                         break;
                     case MAP:
-                        final Class<Object> keyClass = propertyMeta.structure().getCQL3KeyType();
-                        alterTableScript = alterTable(tableName).addColumn(cql3ColumnName, staticColumn).type(map(toCQLDataType(keyClass), toCQLDataType(valueClass)));
+                        final Class<Object> keyClass = propertyMeta.structure().getCQLKeyType();
+                        alterTableScript = alterTable(tableName).addColumn(cqlColumnName, staticColumn).type(map(toCQLDataType(keyClass), toCQLDataType(valueClass)));
                         session.execute(alterTableScript);
                         break;
                     case COUNTER:
                         if (entityMeta.structure().isClusteredCounter()) {
-                            alterTableScript = alterTable(tableName).addColumn(cql3ColumnName, staticColumn).type(counter());
+                            alterTableScript = alterTable(tableName).addColumn(cqlColumnName, staticColumn).type(counter());
                             session.execute(alterTableScript);
                         }
                         break;

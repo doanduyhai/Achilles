@@ -43,7 +43,7 @@ public class SelectFromPartition<TYPE> extends SelectPartitionRoot<TYPE, SelectF
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM messages WHERE user_id=10 AND year IN (2013,2014)

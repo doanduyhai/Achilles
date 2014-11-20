@@ -49,8 +49,8 @@ public class PropertyParsingValidator {
     }
 
     public void validateNoDuplicateCQLName(PropertyParsingContext context) {
-        String currentCQL3ColumnName = context.getCurrentCQL3ColumnName();
-        log.debug("Validate that property name {} is unique for the entity class {}", currentCQL3ColumnName, context
+        String currentCQLColumnName = context.getCurrentCQLColumnName();
+        log.debug("Validate that property name {} is unique for the entity class {}", currentCQLColumnName, context
                 .getCurrentEntityClass().getCanonicalName());
 
         final Set<String> distincCQLColumNames = new HashSet<>();

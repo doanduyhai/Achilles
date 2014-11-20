@@ -33,7 +33,7 @@ public class PropertyParsingContext {
     private EntityParsingContext context;
     private Field currentField;
     private String currentPropertyName;
-    private String currentCQL3ColumnName;
+    private String currentCQLColumnName;
     private boolean isCustomConsistencyLevels;
     private boolean primaryKey = false;
     private boolean embeddedId = false;
@@ -42,7 +42,7 @@ public class PropertyParsingContext {
         this.context = context;
         this.currentField = currentField;
         this.currentPropertyName = currentField.getName();
-        this.currentCQL3ColumnName = introspector.inferCQLColumnName(currentField, context.getNamingStrategy());
+        this.currentCQLColumnName = introspector.inferCQLColumnName(currentField, context.getNamingStrategy());
     }
 
     public ObjectMapper getCurrentObjectMapper() {
@@ -66,8 +66,8 @@ public class PropertyParsingContext {
         return currentPropertyName;
     }
 
-    public String getCurrentCQL3ColumnName() {
-        return currentCQL3ColumnName;
+    public String getCurrentCQLColumnName() {
+        return currentCQLColumnName;
     }
 
     public List<PropertyMeta> getCounterMetas() {

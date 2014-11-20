@@ -103,7 +103,7 @@ public class EntityUpdater {
     public static class PropertyMetaComparator implements Comparator<PropertyMeta> {
         @Override
         public int compare(PropertyMeta arg0, PropertyMeta arg1) {
-            return arg0.getCQL3ColumnName().compareTo(arg1.getCQL3ColumnName());
+            return arg0.getCQLColumnName().compareTo(arg1.getCQLColumnName());
         }
 
     }

@@ -243,7 +243,7 @@ public class PropertyParserTest {
 
         PropertyMeta meta = parser.parse(context);
 
-        assertThat(meta.getCQL3ColumnName()).isEqualTo("my_custom_id");
+        assertThat(meta.getCQLColumnName()).isEqualTo("my_custom_id");
     }
 
     @Test
@@ -266,7 +266,7 @@ public class PropertyParserTest {
 
         PropertyMeta meta = parser.parse(context);
 
-        assertThat(meta.getCQL3ColumnName()).isEqualTo("firstname");
+        assertThat(meta.getCQLColumnName()).isEqualTo("firstname");
     }
 
     @Test
@@ -290,7 +290,7 @@ public class PropertyParserTest {
 
         PropertyMeta meta = parser.parse(context);
 
-        assertThat(meta.getCQL3ColumnName()).isEqualTo("first_name");
+        assertThat(meta.getCQLColumnName()).isEqualTo("first_name");
     }
 
 
@@ -519,7 +519,7 @@ public class PropertyParserTest {
         PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.<PropertyType>getValueClass()).isEqualTo(PropertyType.class);
-        assertThat(meta.structure().<String>getCQL3ValueType()).isEqualTo(String.class);
+        assertThat(meta.structure().<String>getCQLValueType()).isEqualTo(String.class);
     }
 
     @Test
@@ -543,7 +543,7 @@ public class PropertyParserTest {
         PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.<PropertyType>getValueClass()).isEqualTo(PropertyType.class);
-        assertThat(meta.structure().<Integer>getCQL3ValueType()).isEqualTo(Integer.class);
+        assertThat(meta.structure().<Integer>getCQLValueType()).isEqualTo(Integer.class);
     }
 
     @Test
@@ -567,7 +567,7 @@ public class PropertyParserTest {
         PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.<PropertyType>getValueClass()).isEqualTo(PropertyType.class);
-        assertThat(meta.structure().<Integer>getCQL3ValueType()).isEqualTo(Integer.class);
+        assertThat(meta.structure().<Integer>getCQLValueType()).isEqualTo(Integer.class);
     }
 
     @Test
@@ -591,8 +591,8 @@ public class PropertyParserTest {
         PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.<PropertyType>getValueClass()).isEqualTo(PropertyType.class);
-        assertThat(meta.structure().<Integer>getCQL3KeyType()).isEqualTo(Integer.class);
-        assertThat(meta.structure().<String>getCQL3ValueType()).isEqualTo(String.class);
+        assertThat(meta.structure().<Integer>getCQLKeyType()).isEqualTo(Integer.class);
+        assertThat(meta.structure().<String>getCQLValueType()).isEqualTo(String.class);
     }
 
 

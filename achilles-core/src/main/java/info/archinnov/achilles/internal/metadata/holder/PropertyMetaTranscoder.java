@@ -22,7 +22,7 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
 
     public Object decodeFromComponents(List<?> components) {
         if (log.isTraceEnabled()) {
-            log.trace("Decode CQL3 components {} into compound primary key {} for entity class {}", components, meta.getPropertyName(), meta.getEntityClassName());
+            log.trace("Decode CQL components {} into compound primary key {} for entity class {}", components, meta.getPropertyName(), meta.getEntityClassName());
         }
         Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot decode components '%s' for the property '%s' which is not a compound primary key", components, meta.propertyName);
         if (CollectionUtils.isEmpty(components)) {
@@ -56,7 +56,7 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
             case MAP:
                 return meta.getMapCodec().decode((Map) fromCassandra);
             default:
-                throw new AchillesException(String.format("Cannot decode value '%s' from CQL3 for property '%s' of type '%s'", fromCassandra, meta.propertyName, meta.type().name()));
+                throw new AchillesException(String.format("Cannot decode value '%s' from CQL for property '%s' of type '%s'", fromCassandra, meta.propertyName, meta.type().name()));
         }
     }
 
@@ -77,7 +77,7 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
             case COUNTER:
                 return (T)((InternalCounterImpl) fromJava).getInternalCounterDelta();
             default:
-                throw new AchillesException(String.format("Cannot encode value '%s' to CQL3 for property '%s' of type '%s'",fromJava, meta.propertyName, meta.type().name()));
+                throw new AchillesException(String.format("Cannot encode value '%s' to CQL for property '%s' of type '%s'",fromJava, meta.propertyName, meta.type().name()));
         }
     }
 
@@ -94,7 +94,7 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
     }
 
     public List<Object> encodeToComponents(Object compoundKey, boolean onlyPartitionComponents) {
-        log.trace("Encode compound primary key {} to CQL3 components with 'onlyPartitionComponents' : {}", compoundKey, onlyPartitionComponents);
+        log.trace("Encode compound primary key {} to CQL components with 'onlyPartitionComponents' : {}", compoundKey, onlyPartitionComponents);
         Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot encode object '%s' for the property '%s' which is not a compound primary key", compoundKey, meta.propertyName);
         List<Object> encoded = new ArrayList<>();
         if (compoundKey == null) {

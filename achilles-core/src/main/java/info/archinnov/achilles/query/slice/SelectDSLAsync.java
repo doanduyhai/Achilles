@@ -47,7 +47,7 @@ public class SelectDSLAsync<TYPE> {
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=...
@@ -73,7 +73,7 @@ public class SelectDSLAsync<TYPE> {
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM messages WHERE user_id=10 AND year IN (2013,2014)

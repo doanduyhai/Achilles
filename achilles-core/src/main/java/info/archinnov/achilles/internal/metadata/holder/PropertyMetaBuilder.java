@@ -34,7 +34,7 @@ public class PropertyMetaBuilder {
 
     private PropertyType type;
     private String propertyName;
-    private String cql3ColumnName;
+    private String cqlColumnName;
     private String entityClassName;
     private Method[] accessors;
     private Field field;
@@ -50,8 +50,8 @@ public class PropertyMetaBuilder {
     private ListCodec listCodec;
     private SetCodec setCodec;
     private MapCodec mapCodec;
-    private Class<?> cql3KeyClass;
-    private Class<?> cql3ValueClass;
+    private Class<?> cqlKeyClass;
+    private Class<?> cqlValueClass;
 
     public static PropertyMetaBuilder factory() {
         return new PropertyMetaBuilder();
@@ -63,7 +63,7 @@ public class PropertyMetaBuilder {
     }
 
     public PropertyMetaBuilder cqlColumnName(String cqlColumnName) {
-        this.cql3ColumnName = cqlColumnName;
+        this.cqlColumnName = cqlColumnName;
         return this;
     }
 
@@ -99,9 +99,9 @@ public class PropertyMetaBuilder {
         meta.setListCodec(Optional.fromNullable(listCodec).orNull());
         meta.setSetCodec(Optional.fromNullable(setCodec).orNull());
         meta.setMapCodec(Optional.fromNullable(mapCodec).orNull());
-        meta.setCql3ColumnName(cql3ColumnName);
-        meta.setCql3KeyClass(cql3KeyClass);
-        meta.setCql3ValueClass(cql3ValueClass);
+        meta.setCQLColumnName(cqlColumnName);
+        meta.setCQLKeyClass(cqlKeyClass);
+        meta.setCqlValueClass(cqlValueClass);
         return meta;
     }
 
@@ -170,13 +170,13 @@ public class PropertyMetaBuilder {
         return this;
     }
 
-    public PropertyMetaBuilder cql3KeyClass(Class<?> cql3KeyClass) {
-        this.cql3KeyClass = cql3KeyClass;
+    public PropertyMetaBuilder cqlKeyClass(Class<?> cqlKeyClass) {
+        this.cqlKeyClass = cqlKeyClass;
         return this;
     }
 
-    public PropertyMetaBuilder cql3ValueClass(Class<?> cql3ValueClass) {
-        this.cql3ValueClass = cql3ValueClass;
+    public PropertyMetaBuilder cqlValueClass(Class<?> cqlValueClass) {
+        this.cqlValueClass = cqlValueClass;
         return this;
     }
 }

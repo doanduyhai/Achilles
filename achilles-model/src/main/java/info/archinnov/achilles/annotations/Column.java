@@ -45,7 +45,7 @@ import java.lang.annotation.Target;
 public @interface Column {
 
 	/**
-	 * (<strong>Optional</strong>) The name of the column in <strong>CQL3</strong>. Defaults to the field name.
+	 * (<strong>Optional</strong>) The name of the column in <strong>CQL</strong>. Defaults to the field name.
      *
      * <pre class="code"><code class="java">
      *

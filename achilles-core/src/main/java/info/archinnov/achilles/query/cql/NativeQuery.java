@@ -30,7 +30,7 @@ import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.TypedMap;
 
 /**
- * Class to wrap CQL3 native query
+ * Class to wrap CQL native query
  *
  * <pre class="code"><code class="java">
  *

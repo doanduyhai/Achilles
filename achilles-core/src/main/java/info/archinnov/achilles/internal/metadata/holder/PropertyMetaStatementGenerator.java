@@ -28,17 +28,17 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
         if (meta.structure().isEmbeddedId()) {
             if (onlyStaticColumns) {
                 for (PropertyMeta partitionComponents : meta.getEmbeddedIdProperties().getPartitionComponents().propertyMetas) {
-                    final String cql3ColumnName = partitionComponents.getCQL3ColumnName();
-                    insert.value(cql3ColumnName, bindMarker(cql3ColumnName));
+                    final String cqlColumnName = partitionComponents.getCQLColumnName();
+                    insert.value(cqlColumnName, bindMarker(cqlColumnName));
                 }
             } else {
-                for (String component : meta.getEmbeddedIdProperties().getCQL3ComponentNames()) {
+                for (String component : meta.getEmbeddedIdProperties().getCQLComponentNames()) {
                     insert.value(component, bindMarker(component));
                 }
             }
             return insert;
         } else {
-            return insert.value(meta.getCQL3ColumnName(), bindMarker(meta.getCQL3ColumnName()));
+            return insert.value(meta.getCQLColumnName(), bindMarker(meta.getCQLColumnName()));
         }
     }
 
@@ -48,7 +48,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
         if (meta.structure().isEmbeddedId()) {
             return generateWhereClauseForSelectWithCompound(pmO, from);
         } else {
-            return from.where(eq(meta.getCQL3ColumnName(), bindMarker(meta.getCQL3ColumnName())));
+            return from.where(eq(meta.getCQLColumnName(), bindMarker(meta.getCQLColumnName())));
         }
     }
 
@@ -59,9 +59,9 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
         int i = 0;
         List<String> componentNames;
         if (pmO.isPresent() && pmO.get().structure().isStaticColumn()) {
-            componentNames =  meta.getEmbeddedIdProperties().getPartitionComponents().getCQL3ComponentNames();
+            componentNames =  meta.getEmbeddedIdProperties().getPartitionComponents().getCQLComponentNames();
         } else {
-            componentNames = meta.getEmbeddedIdProperties().getCQL3ComponentNames();
+            componentNames = meta.getEmbeddedIdProperties().getCQLComponentNames();
         }
         for (String partitionKey : componentNames) {
             if (i++ == 0) {
@@ -78,7 +78,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
         if (meta.structure().isEmbeddedId()) {
             return generateWhereClauseForDeleteWithCompound(onlyStaticColumns, mainFrom);
         } else {
-            return mainFrom.where(eq(meta.getCQL3ColumnName(), bindMarker(meta.getCQL3ColumnName())));
+            return mainFrom.where(eq(meta.getCQLColumnName(), bindMarker(meta.getCQLColumnName())));
         }
     }
 
@@ -87,9 +87,9 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
         Delete.Where where = null;
         List<String> componentNames;
         if (onlyStaticColumns) {
-            componentNames = meta.getEmbeddedIdProperties().getPartitionComponents().getCQL3ComponentNames();
+            componentNames = meta.getEmbeddedIdProperties().getPartitionComponents().getCQLComponentNames();
         } else {
-            componentNames = meta.getEmbeddedIdProperties().getCQL3ComponentNames();
+            componentNames = meta.getEmbeddedIdProperties().getCQLComponentNames();
         }
 
         int i = 0;
@@ -105,14 +105,14 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
 
     public Update.Assignments prepareUpdateField(Update.Conditions updateConditions) {
         log.debug("Prepare UPDATE clause for property meta {} ", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return updateConditions.with(set(cql3ColumnName, bindMarker(cql3ColumnName)));
+        String cqlColumnName = meta.getCQLColumnName();
+        return updateConditions.with(set(cqlColumnName, bindMarker(cqlColumnName)));
     }
 
     public Update.Assignments prepareUpdateField(Update.Assignments assignments) {
         log.debug("Prepare UPDATE clause for property meta {} ", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return assignments.and(set(cql3ColumnName, bindMarker(cql3ColumnName)));
+        String cqlColumnName = meta.getCQLColumnName();
+        return assignments.and(set(cqlColumnName, bindMarker(cqlColumnName)));
     }
 
     public Update.Where prepareCommonWhereClauseForUpdate(Update.Assignments assignments, boolean onlyStaticColumns) {
@@ -120,8 +120,8 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
         if (meta.structure().isEmbeddedId()) {
             return prepareCommonWhereClauseForUpdateWithCompound(assignments, onlyStaticColumns);
         } else {
-            String cql3ColumnName = meta.getCQL3ColumnName();
-            return assignments.where(eq(cql3ColumnName, bindMarker(cql3ColumnName)));
+            String cqlColumnName = meta.getCQLColumnName();
+            return assignments.where(eq(cqlColumnName, bindMarker(cqlColumnName)));
         }
     }
 
@@ -130,7 +130,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
         Update.Where where = null;
         int i = 0;
         if (onlyStaticColumns) {
-            for (String partitionKeys : meta.getEmbeddedIdProperties().getPartitionComponents().getCQL3ComponentNames()) {
+            for (String partitionKeys : meta.getEmbeddedIdProperties().getPartitionComponents().getCQLComponentNames()) {
                 if (i++ == 0) {
                     where = assignments.where(eq(partitionKeys, bindMarker(partitionKeys)));
                 } else {
@@ -138,7 +138,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
                 }
             }
         } else {
-            for (String clusteredId : meta.getEmbeddedIdProperties().getCQL3ComponentNames()) {
+            for (String clusteredId : meta.getEmbeddedIdProperties().getCQLComponentNames()) {
                 if (i++ == 0) {
                     where = assignments.where(eq(clusteredId, bindMarker(clusteredId)));
                 } else {
@@ -156,7 +156,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
             return generateWhereClauseForUpdateWithCompound(primaryKey, pm, update);
         } else {
             Object id = meta.forTranscoding().encodeToCassandra(primaryKey);
-            Update.Where where = update.where(eq(meta.getCQL3ColumnName(), id));
+            Update.Where where = update.where(eq(meta.getCQLColumnName(), id));
             Object[] boundValues = new Object[] { id };
             return Pair.create(where, boundValues);
         }
@@ -164,7 +164,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
 
     private Pair<Update.Where, Object[]> generateWhereClauseForUpdateWithCompound(Object primaryKey, PropertyMeta pm, Update.Assignments update) {
         log.debug("Generate plain UPDATE WHERE clause with compound primary key for property meta {}", pm);
-        List<String> componentNames = meta.getEmbeddedIdProperties().getCQL3ComponentNames();
+        List<String> componentNames = meta.getEmbeddedIdProperties().getCQLComponentNames();
         List<Object> encodedComponents = meta.forTranscoding().encodeToComponents(primaryKey, pm.structure().isStaticColumn());
         Object[] boundValues = new Object[encodedComponents.size()];
         Update.Where where = null;
@@ -184,12 +184,12 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
     public Select.Selection prepareSelectField(Select.Selection select) {
         log.debug("Prepare SELECT clause for property meta {}", meta);
         if (meta.structure().isEmbeddedId()) {
-            for (String component : meta.getEmbeddedIdProperties().getCQL3ComponentNames()) {
+            for (String component : meta.getEmbeddedIdProperties().getCQLComponentNames()) {
                 select = select.column(component);
             }
             return select;
         } else {
-            return select.column(meta.getCQL3ColumnName());
+            return select.column(meta.getCQLColumnName());
         }
     }
 
@@ -197,61 +197,61 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
     // DirtyCheckChangeSet
     public Update.Assignments generateUpdateForRemoveAll(Update.Conditions conditions) {
         log.debug("Generate UPDATE for changing collection for property meta {}", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return conditions.with(set(cql3ColumnName, bindMarker(cql3ColumnName)));
+        String cqlColumnName = meta.getCQLColumnName();
+        return conditions.with(set(cqlColumnName, bindMarker(cqlColumnName)));
     }
 
     public Update.Assignments generateUpdateForAddedElements(Update.Conditions conditions) {
         log.debug("Generate UPDATE for adding elements to collection for property meta {}", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return conditions.with(addAll(cql3ColumnName, bindMarker(cql3ColumnName)));
+        String cqlColumnName = meta.getCQLColumnName();
+        return conditions.with(addAll(cqlColumnName, bindMarker(cqlColumnName)));
     }
 
     public Update.Assignments generateUpdateForRemovedElements(Update.Conditions conditions) {
         log.debug("Generate UPDATE for removing all elements from collection for property meta {}", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return conditions.with(removeAll(cql3ColumnName, bindMarker(cql3ColumnName)));
+        String cqlColumnName = meta.getCQLColumnName();
+        return conditions.with(removeAll(cqlColumnName, bindMarker(cqlColumnName)));
     }
 
     public Update.Assignments generateUpdateForAppendedElements(Update.Conditions conditions) {
         log.debug("Generate UPDATE for appending elements to collection for property meta {}", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return conditions.with(appendAll(cql3ColumnName, bindMarker(cql3ColumnName)));
+        String cqlColumnName = meta.getCQLColumnName();
+        return conditions.with(appendAll(cqlColumnName, bindMarker(cqlColumnName)));
     }
 
     public Update.Assignments generateUpdateForPrependedElements(Update.Conditions conditions) {
         log.debug("Generate UPDATE for prepending elements to collection for property meta {}", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return conditions.with(prependAll(cql3ColumnName, bindMarker(cql3ColumnName)));
+        String cqlColumnName = meta.getCQLColumnName();
+        return conditions.with(prependAll(cqlColumnName, bindMarker(cqlColumnName)));
     }
 
     public Update.Assignments generateUpdateForRemoveListElements(Update.Conditions conditions) {
         log.debug("Generate UPDATE for discarding all elements from list for property meta {}", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return conditions.with(discardAll(cql3ColumnName, bindMarker(cql3ColumnName)));
+        String cqlColumnName = meta.getCQLColumnName();
+        return conditions.with(discardAll(cqlColumnName, bindMarker(cqlColumnName)));
     }
 
     public Update.Assignments generateUpdateForAddedEntries(Update.Conditions conditions) {
         log.debug("Generate UPDATE for adding entries to map for property meta {}", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return conditions.with(putAll(cql3ColumnName, bindMarker(cql3ColumnName)));
+        String cqlColumnName = meta.getCQLColumnName();
+        return conditions.with(putAll(cqlColumnName, bindMarker(cqlColumnName)));
     }
 
     public Update.Assignments generateUpdateForRemovedKey(Update.Conditions conditions) {
         log.debug("Generate UPDATE for removing from map by key for property meta {}", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return conditions.with(put(cql3ColumnName, bindMarker("key"), bindMarker("nullValue")));
+        String cqlColumnName = meta.getCQLColumnName();
+        return conditions.with(put(cqlColumnName, bindMarker("key"), bindMarker("nullValue")));
     }
 
     public Update.Assignments generateUpdateForSetAtIndexElement(Update.Conditions conditions, int index, Object encoded) {
         log.debug("Generate UPDATE for setting list element at index for property meta {}", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return conditions.with(setIdx(cql3ColumnName, index, encoded));
+        String cqlColumnName = meta.getCQLColumnName();
+        return conditions.with(setIdx(cqlColumnName, index, encoded));
     }
 
     public Update.Assignments generateUpdateForRemovedAtIndexElement(Update.Conditions conditions, int index) {
         log.debug("Generate UPDATE for removing list element at index for property meta {}", meta);
-        String cql3ColumnName = meta.getCQL3ColumnName();
-        return conditions.with(setIdx(cql3ColumnName, index, null));
+        String cqlColumnName = meta.getCQLColumnName();
+        return conditions.with(setIdx(cqlColumnName, index, null));
     }
 }

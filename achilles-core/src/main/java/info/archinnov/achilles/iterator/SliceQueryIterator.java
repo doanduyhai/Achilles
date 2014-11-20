@@ -29,7 +29,7 @@ import info.archinnov.achilles.query.slice.SliceQueryProperties;
 
 /**
  *
- * Implementation of an Iterator&lt;T&gt; that uses <strong>CQL3</strong> paging feature to fetch results by batches
+ * Implementation of an Iterator&lt;T&gt; that uses <strong>CQL</strong> paging feature to fetch results by batches
  *
  * @param <T>: type of entity to iterate on
  */

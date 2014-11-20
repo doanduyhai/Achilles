@@ -16,7 +16,6 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -31,7 +30,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sun.org.apache.bcel.internal.generic.RET;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaRowExtractor;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
@@ -53,7 +51,6 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
@@ -110,7 +107,7 @@ public class EntityMapperTest {
         //Given
         Long counterValue = 10L;
         PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        when(counterMeta.getCQL3ColumnName()).thenReturn("counter");
+        when(counterMeta.getCQLColumnName()).thenReturn("counter");
         when(entityMeta.getAllCounterMetas()).thenReturn(asList(counterMeta));
         when(cqlRowInvoker.invokeOnRowForType(row, Long.class, "counter")).thenReturn(counterValue);
 

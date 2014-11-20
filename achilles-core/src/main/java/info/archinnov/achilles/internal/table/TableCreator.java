@@ -89,25 +89,25 @@ public class TableCreator {
         final List<String> indexes = new LinkedList<>();
         final Create createTable = SchemaBuilder.createTable(qualifiedTableName);
         for (PropertyMeta pm : entityMeta.getAllMetasExceptIdAndCounters()) {
-            String cql3ColumnName = pm.getCQL3ColumnName();
-            Class<?> valueClass = pm.structure().getCQL3ValueType();
+            String cqlColumnName = pm.getCQLColumnName();
+            Class<?> valueClass = pm.structure().getCQLValueType();
             final boolean staticColumn = pm.structure().isStaticColumn();
             switch (pm.type()) {
                 case SIMPLE:
-                    createTable.addColumn(cql3ColumnName, toCQLDataType(valueClass), staticColumn);
+                    createTable.addColumn(cqlColumnName, toCQLDataType(valueClass), staticColumn);
                     if (pm.structure().isIndexed()) {
                         indexes.add(pm.forTableCreation().createNewIndexScript(entityMeta.config().getTableName()));
                     }
                     break;
                 case LIST:
-                    createTable.addColumn(cql3ColumnName, DataType.list(toCQLDataType(valueClass)), staticColumn);
+                    createTable.addColumn(cqlColumnName, DataType.list(toCQLDataType(valueClass)), staticColumn);
                     break;
                 case SET:
-                    createTable.addColumn(cql3ColumnName, DataType.set(toCQLDataType(valueClass)), staticColumn);
+                    createTable.addColumn(cqlColumnName, DataType.set(toCQLDataType(valueClass)), staticColumn);
                     break;
                 case MAP:
-                    Class<?> keyClass = pm.structure().getCQL3KeyType();
-                    createTable.addColumn(cql3ColumnName, DataType.map(toCQLDataType(keyClass), toCQLDataType(valueClass)), staticColumn);
+                    Class<?> keyClass = pm.structure().getCQLKeyType();
+                    createTable.addColumn(cqlColumnName, DataType.map(toCQLDataType(keyClass), toCQLDataType(valueClass)), staticColumn);
                     break;
                 default:
                     break;
@@ -143,7 +143,7 @@ public class TableCreator {
         PropertyMeta idMeta = meta.getIdMeta();
         buildPrimaryKey(idMeta, createTable);
         for (PropertyMeta counterMeta : meta.getAllCounterMetas()) {
-            createTable.addColumn(counterMeta.getCQL3ColumnName(), DataType.counter(),counterMeta.structure().isStaticColumn());
+            createTable.addColumn(counterMeta.getCQLColumnName(), DataType.counter(),counterMeta.structure().isStaticColumn());
         }
         final Create.Options tableOptions = createTable.withOptions();
         idMeta.forTableCreation().addClusteringOrder(tableOptions);
@@ -161,8 +161,8 @@ public class TableCreator {
             pm.forTableCreation().addPartitionKeys(createTable);
             pm.forTableCreation().addClusteringKeys(createTable);
         } else {
-            String cql3ColumnName = pm.getCQL3ColumnName();
-            createTable.addPartitionKey(cql3ColumnName, toCQLDataType(pm.structure().getCQL3ValueType()));
+            String cqlColumnName = pm.getCQLColumnName();
+            createTable.addPartitionKey(cqlColumnName, toCQLDataType(pm.structure().getCQLValueType()));
         }
         return clusteringOrders;
     }

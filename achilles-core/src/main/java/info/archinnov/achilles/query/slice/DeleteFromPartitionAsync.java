@@ -43,7 +43,7 @@ public class DeleteFromPartitionAsync<TYPE> extends DeletePartitionRootAsync<TYP
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL query:
      *
      * <br/>
      *  DELETE FROM messages WHERE user_id=10 AND year IN (2013,2014)

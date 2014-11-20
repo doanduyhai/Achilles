@@ -40,7 +40,7 @@ public abstract class DeletePartitionRoot<TYPE, T extends DeletePartitionRoot<TY
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL query:
      *
      * <br/>
      *  DELETE FROM article_rating WHERE article_id=...
@@ -64,7 +64,7 @@ public abstract class DeletePartitionRoot<TYPE, T extends DeletePartitionRoot<TY
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL query:
      *
      * <br/>
      *  DELETE FROM article_rating WHERE article_id=... <strong>AND rating=2</strong>

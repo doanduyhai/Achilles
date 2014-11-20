@@ -48,7 +48,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC LIMIT 100
@@ -72,7 +72,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC <strong>LIMIT 23</strong>
@@ -98,7 +98,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC <strong>LIMIT 1</strong>
@@ -123,7 +123,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC LIMIT 100
@@ -148,7 +148,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC <strong>LIMIT 1</strong>
@@ -173,7 +173,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC <strong>LIMIT 10</strong>
@@ -201,7 +201,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2 ORDER BY rating DESC LIMIT 10</strong>
@@ -229,13 +229,13 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND (rating,date)&gt;=(2,now)</strong> ORDER BY rating ASC LIMIT 100
      * <br/>
      * <br/>
-     * <em>Remark: the generated CQL3 query will take into account the defined clustering order of the table. For example if the clustering order is <strong>descending</strong>,</em>
+     * <em>Remark: the generated CQL  query will take into account the defined clustering order of the table. For example if the clustering order is <strong>descending</strong>,</em>
      * <pre class="code"><code class="java">
      *     fromClustering("col1","col2)
      * </code></pre>
@@ -265,13 +265,13 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating&lt;=3</strong> ORDER BY rating ASC LIMIT 100
      * <br/>
      * <br/>
-     * <em>Remark: the generated CQL3 query will take into account the defined clustering order of the table. For example if the clustering order is <strong>descending</strong>,</em>
+     * <em>Remark: the generated CQL  query will take into account the defined clustering order of the table. For example if the clustering order is <strong>descending</strong>,</em>
      * <pre class="code"><code class="java">
      *     toClustering("col1","col2)
      * </code></pre>
@@ -301,7 +301,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=3</strong> ORDER BY rating ASC LIMIT 100
@@ -330,7 +330,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 <strong>ORDER BY rating ASC</strong> LIMIT 20
@@ -357,7 +357,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 <strong>ORDER BY rating DESC</strong> LIMIT 20
@@ -385,7 +385,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 ORDER BY rating ASC <strong>LIMIT 5</strong>
@@ -430,7 +430,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC <strong>LIMIT 1</strong>
@@ -457,7 +457,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC LIMIT 100
@@ -483,7 +483,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC <strong>LIMIT 23</strong>
@@ -515,7 +515,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;=(2,now)</strong> AND <strong>(rating)&lt;=4</strong> ORDER BY rating ASC LIMIT 20
@@ -542,7 +542,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;(2,now)</strong> AND <strong>(rating)&lt;4</strong> ORDER BY rating ASC LIMIT 20
@@ -569,7 +569,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;=(2,now)</strong> AND <strong>(rating)&lt;4</strong> ORDER BY rating ASC LIMIT 20
@@ -596,7 +596,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;(2,now)</strong> AND <strong>(rating)&lt;=4</strong> ORDER BY rating ASC LIMIT 20
@@ -626,13 +626,13 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating&lt;=3</strong> ORDER BY rating ASC LIMIT 100
          * <br/>
          * <br/>
-         * <em>Remark: the generated CQL3 query will take into account the defined clustering order of the table. For example if the clustering order is <strong>descending</strong>,</em>
+         * <em>Remark: the generated CQL  query will take into account the defined clustering order of the table. For example if the clustering order is <strong>descending</strong>,</em>
          * <pre class="code"><code class="java">
          *     toClustering("col1","col2)
          * </code></pre>
@@ -671,7 +671,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating=3 AND <strong>date IN (now,tomorrow,yesterday)</strong> ORDER BY rating ASC LIMIT 100

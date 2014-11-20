@@ -43,7 +43,7 @@ public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExten
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;=(2,now)</strong> AND <strong>(rating)&lt;=4</strong> ORDER BY rating ASC LIMIT 20
@@ -70,7 +70,7 @@ public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExten
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;(2,now)</strong> AND <strong>(rating)&lt;4</strong> ORDER BY rating ASC LIMIT 20
@@ -97,7 +97,7 @@ public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExten
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;=(2,now)</strong> AND <strong>(rating)&lt;4</strong> ORDER BY rating ASC LIMIT 20
@@ -124,7 +124,7 @@ public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExten
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;(2,now)</strong> AND <strong>(rating)&lt;=4</strong> ORDER BY rating ASC LIMIT 20
@@ -151,7 +151,7 @@ public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExten
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 <strong>ORDER BY rating ASC</strong> LIMIT 20
@@ -179,7 +179,7 @@ public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExten
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 <strong>ORDER BY rating DESC</strong> LIMIT 20
@@ -207,7 +207,7 @@ public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExten
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 ORDER BY rating ASC <strong>LIMIT 5</strong>

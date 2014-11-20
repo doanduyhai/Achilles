@@ -22,10 +22,8 @@ import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.Rule;
@@ -41,7 +39,6 @@ import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.CorrectEmbeddedKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
@@ -70,12 +67,12 @@ public class PropertyParsingValidatorTest {
     }
 
     @Test
-    public void should_exception_when_duplicate_cql3_name() throws Exception {
+    public void should_exception_when_duplicate_cql_name() throws Exception {
         PropertyMeta name = valueClass(String.class).cqlColumnName("name").type(SIMPLE).build();
         PropertyMeta duplicatedName = valueClass(String.class).cqlColumnName("name").type(SIMPLE).build();
         Map<String, PropertyMeta> propertyMetas = ImmutableMap.of("name1", name, "name2", duplicatedName);
         when(context.getCurrentPropertyName()).thenReturn("name");
-        when(context.getCurrentCQL3ColumnName()).thenReturn("name");
+        when(context.getCurrentCQLColumnName()).thenReturn("name");
         when(context.getPropertyMetas()).thenReturn(propertyMetas);
         when(context.<CompleteBean>getCurrentEntityClass()).thenReturn(CompleteBean.class);
 

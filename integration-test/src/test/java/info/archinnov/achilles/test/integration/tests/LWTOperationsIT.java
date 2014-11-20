@@ -203,7 +203,7 @@ public class LWTOperationsIT {
     }
 
     @Test
-    public void should_update_with_cas_conditions_using_cql3_column_name() throws Exception {
+    public void should_update_with_cas_conditions_using_cql_column_name() throws Exception {
         //Given
         final Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final CompleteBean entity = new CompleteBean();

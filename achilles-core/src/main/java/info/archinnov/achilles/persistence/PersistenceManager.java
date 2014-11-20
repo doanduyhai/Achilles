@@ -131,7 +131,7 @@ import info.archinnov.achilles.type.Options;
  *      Session session = manager.getNativeSession();
  *      ...
  *
- *      // Issue simple CQL3 queries
+ *      // Issue simple CQL queries
  *      session.execute("UPDATE users SET age=:age WHERE id=:id",30,10);
  *  </code></pre>
  *
@@ -502,7 +502,7 @@ public class PersistenceManager extends CommonPersistenceManager {
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
      *
      * @param statement
-     *            native CQL3 regularStatement, including limit, ttl and consistency
+     *            native CQL regularStatement, including limit, ttl and consistency
      *            options
      *
      * @param boundValues
@@ -540,7 +540,7 @@ public class PersistenceManager extends CommonPersistenceManager {
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
      *
      * @param statement
-     *            native CQL3 statement, including limit, ttl and consistency
+     *            native CQL statement, including limit, ttl and consistency
      *            options
      *
      * @param options
@@ -588,7 +588,7 @@ public class PersistenceManager extends CommonPersistenceManager {
      *            type of entity to be returned
      *
      * @param statement
-     *            native CQL3 regularStatement, including limit, ttl and consistency
+     *            native CQL regularStatement, including limit, ttl and consistency
      *            options
      *
      * @param boundValues
@@ -652,7 +652,7 @@ public class PersistenceManager extends CommonPersistenceManager {
      *            type of entity to be returned
      *
      * @param statement
-     *            native CQL3 regularStatement, including limit, ttl and consistency
+     *            native CQL regularStatement, including limit, ttl and consistency
      *            options
      *
      * @param boundValues

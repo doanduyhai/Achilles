@@ -42,8 +42,8 @@ public class PropertyMetaTestBuilder<T, K, V> {
     private PropertyType type;
     private Class<K> keyClass;
     private Class<V> valueClass;
-    private Class<?> cql3KeyClass;
-    private Class<?> cql3ValueClass;
+    private Class<?> cqlKeyClass;
+    private Class<?> cqlValueClass;
 
 
     private boolean buildAccessors;
@@ -82,11 +82,11 @@ public class PropertyMetaTestBuilder<T, K, V> {
         pm.setType(type);
         pm.setEntityClassName(entityClassName);
         pm.setPropertyName(propertyName);
-        pm.setCql3ColumnName(cqlColumnName);
+        pm.setCQLColumnName(cqlColumnName);
         pm.setKeyClass(keyClass);
         pm.setValueClass(valueClass);
-        pm.setCql3KeyClass(fromNullable(cql3KeyClass).or((Class) keyClass));
-        pm.setCql3ValueClass(fromNullable(cql3ValueClass).or((Class) valueClass));
+        pm.setCQLKeyClass(fromNullable(cqlKeyClass).or((Class) keyClass));
+        pm.setCqlValueClass(fromNullable(cqlValueClass).or((Class) valueClass));
 
         if (StringUtils.isNotBlank(propertyName) && clazz == CompleteBean.class) {
             pm.setField(clazz.getDeclaredField(propertyName));
@@ -225,13 +225,13 @@ public class PropertyMetaTestBuilder<T, K, V> {
         return this;
     }
 
-    public PropertyMetaTestBuilder<T, K, V> cql3KeyType(Class<?> cql3KeyClass) {
-        this.cql3KeyClass = cql3KeyClass;
+    public PropertyMetaTestBuilder<T, K, V> cqlKeyType(Class<?> cqlKeyClass) {
+        this.cqlKeyClass = cqlKeyClass;
         return this;
     }
 
-    public PropertyMetaTestBuilder<T, K, V> cql3ValueType(Class<?> cql3ValueClass) {
-        this.cql3ValueClass = cql3ValueClass;
+    public PropertyMetaTestBuilder<T, K, V> cqlValueType(Class<?> cqlValueClass) {
+        this.cqlValueClass = cqlValueClass;
         return this;
     }
 }

@@ -46,7 +46,7 @@ public class DeleteDSL<TYPE> {
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL query:
      *
      * <br/>
      *  DELETE FROM article_rating WHERE article_id=...
@@ -72,7 +72,7 @@ public class DeleteDSL<TYPE> {
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL query:
      *
      * <br/>
      *  DELETE FROM messages WHERE user_id=10 AND year IN (2013,2014)

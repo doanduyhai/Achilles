@@ -93,9 +93,9 @@ public class AchillesResource extends AchillesTestResource {
     }
 
     /**
-     * Return a native CQL3 Session
+     * Return a native CQL  Session
      *
-     * @return native CQL3 Session
+     * @return native CQL  Session
      */
     public Session getNativeSession() {
         return session;

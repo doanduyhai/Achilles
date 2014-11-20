@@ -51,14 +51,14 @@ public class PropertyMeta {
     public static final Function<PropertyMeta,String> GET_CQL_COLUMN_NAME = new Function<PropertyMeta, String>() {
         @Override
         public String apply(PropertyMeta meta) {
-            return meta.getCQL3ColumnName();
+            return meta.getCQLColumnName();
         }
     };
 
     public static final Function<PropertyMeta, List<String>> GET_CQL_COLUMN_NAMES_FROM_EMBEDDED_ID = new Function<PropertyMeta, List<String>>() {
         @Override
         public List<String> apply(PropertyMeta embeddedIdMeta) {
-            return embeddedIdMeta.getEmbeddedIdProperties().getCQL3ComponentNames();
+            return embeddedIdMeta.getEmbeddedIdProperties().getCQLComponentNames();
         }
     };
 
@@ -68,11 +68,11 @@ public class PropertyMeta {
     private String entityClassName;
     private Class<?> valueClass;
     private Class<?> keyClass;
-    private Class<?> cql3ValueClass;
-    private Class<?> cql3KeyClass;
+    private Class<?> cqlValueClass;
+    private Class<?> cqlKeyClass;
     private PropertyType type;
     String propertyName;
-    String cql3ColumnName;
+    String cqlColumnName;
     Method getter;
     Method setter;
     private Field field;
@@ -199,20 +199,20 @@ public class PropertyMeta {
         this.valueClass = valueClass;
     }
 
-    <T> Class<T> getCql3ValueClass() {
-        return (Class<T>) cql3ValueClass;
+    <T> Class<T> getCqlValueClass() {
+        return (Class<T>) cqlValueClass;
     }
 
-    void setCql3ValueClass(Class<?> cql3ValueClass) {
-        this.cql3ValueClass = cql3ValueClass;
+    void setCqlValueClass(Class<?> cqlValueClass) {
+        this.cqlValueClass = cqlValueClass;
     }
 
-    <T> Class<T> getCql3KeyClass() {
-        return (Class<T>) cql3KeyClass;
+    <T> Class<T> getCQLKeyClass() {
+        return (Class<T>) cqlKeyClass;
     }
 
-    void setCql3KeyClass(Class<?> cql3KeyClass) {
-        this.cql3KeyClass = cql3KeyClass;
+    void setCQLKeyClass(Class<?> cqlKeyClass) {
+        this.cqlKeyClass = cqlKeyClass;
     }
 
     public Method getGetter() {
@@ -307,12 +307,12 @@ public class PropertyMeta {
         this.staticColumn = staticColumn;
     }
 
-    public String getCQL3ColumnName() {
-        return cql3ColumnName;
+    public String getCQLColumnName() {
+        return cqlColumnName;
     }
 
-    public void setCql3ColumnName(String cqlColumnName) {
-        this.cql3ColumnName = cqlColumnName;
+    public void setCQLColumnName(String cqlColumnName) {
+        this.cqlColumnName = cqlColumnName;
     }
 
     Codec getSimpleCodec() {

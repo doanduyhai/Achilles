@@ -97,7 +97,7 @@ public class EntityMapper {
 
     public void setCounterToEntity(PropertyMeta counterMeta, Object entity, Row row) {
         log.debug("Set counter value to property {} of entity class {} from CQL row", counterMeta.getPropertyName(), counterMeta.getEntityClassName());
-        Long counterValue = cqlRowInvoker.invokeOnRowForType(row, Long.class, counterMeta.getCQL3ColumnName());
+        Long counterValue = cqlRowInvoker.invokeOnRowForType(row, Long.class, counterMeta.getCQLColumnName());
         setCounterToEntity(counterMeta, entity, counterValue);
     }
 

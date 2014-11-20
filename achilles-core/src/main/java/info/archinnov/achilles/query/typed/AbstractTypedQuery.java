@@ -184,8 +184,8 @@ public abstract class AbstractTypedQuery<T> {
     private Map<String, PropertyMeta> transformPropertiesMap(EntityMeta meta) {
         Map<String, PropertyMeta> propertiesMap = new HashMap<>();
         for (PropertyMeta pm : meta.getPropertyMetas().values()) {
-            String cql3ColumnName = pm.getCQL3ColumnName();
-            propertiesMap.put(cql3ColumnName, pm);
+            String cqlColumnName = pm.getCQLColumnName();
+            propertiesMap.put(cqlColumnName, pm);
         }
         return propertiesMap;
     }

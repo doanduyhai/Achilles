@@ -21,11 +21,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
-
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.BeanWithNamingStrategy;
-import info.archinnov.achilles.type.NamingStrategy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -51,7 +47,7 @@ public class PropertyParsingContextTest {
         assertThat(context.isEmbeddedId()).isTrue();
         assertThat(context.isPrimaryKey()).isTrue();
         assertThat(context.<CompleteBean>getCurrentEntityClass()).isEqualTo(CompleteBean.class);
-        assertThat(context.getCurrentCQL3ColumnName()).isEqualTo("age_in_years");
+        assertThat(context.getCurrentCQLColumnName()).isEqualTo("age_in_years");
     }
 
 

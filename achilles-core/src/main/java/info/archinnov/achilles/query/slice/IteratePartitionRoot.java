@@ -48,7 +48,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC LIMIT 100
@@ -72,7 +72,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC ASC LIMIT 100
@@ -103,7 +103,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC LIMIT 100
@@ -128,7 +128,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC LIMIT 100
@@ -160,7 +160,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND (rating,date)&gt;=(2,now)</strong> ORDER BY rating ASC LIMIT 100
@@ -186,7 +186,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating&lt;=3</strong> ORDER BY rating ASC LIMIT 100
@@ -212,7 +212,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * </code></pre>
      *
-     * Generated CQL3 query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=3</strong> ORDER BY rating ASC LIMIT 100
@@ -242,7 +242,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 <strong>ORDER BY rating ASC</strong> LIMIT 20
@@ -269,7 +269,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 <strong>ORDER BY rating DESC</strong> LIMIT 20
@@ -297,7 +297,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 ORDER BY rating ASC <strong>LIMIT 5</strong>
@@ -341,7 +341,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC LIMIT 100
@@ -366,7 +366,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC LIMIT 100
@@ -403,7 +403,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;=(2,now)</strong> AND <strong>(rating)&lt;=4</strong> ORDER BY rating ASC LIMIT 20
@@ -430,7 +430,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;(2,now)</strong> AND <strong>(rating)&lt;4</strong> ORDER BY rating ASC LIMIT 20
@@ -457,7 +457,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;=(2,now)</strong> AND <strong>(rating)&lt;4</strong> ORDER BY rating ASC LIMIT 20
@@ -484,7 +484,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;(2,now)</strong> AND <strong>(rating)&lt;=4</strong> ORDER BY rating ASC LIMIT 20
@@ -512,7 +512,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL  query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating&lt;=3</strong> ORDER BY rating ASC LIMIT 100
@@ -547,7 +547,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * </code></pre>
          *
-         * Generated CQL3 query:
+         * Generated CQL query:
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating=3 AND <strong>date IN (now,tomorrow,yesterday)</strong> ORDER BY rating ASC LIMIT 100

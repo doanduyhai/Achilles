@@ -27,13 +27,13 @@ public class EntityMetaTranscoderTest {
     }
 
     @Test
-    public void should_encode_CAS_condition_value() throws Exception {
+    public void should_encode_LWT_condition_value() throws Exception {
         //Given
         PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         LWTCondition LWTCondition = spy(new LWTCondition("name", "DuyHai"));
 
         when(meta.getAllMetasExceptCounters()).thenReturn(asList(nameMeta));
-        when(nameMeta.getCQL3ColumnName()).thenReturn("name");
+        when(nameMeta.getCQLColumnName()).thenReturn("name");
         when(nameMeta.getPropertyName()).thenReturn("name");
         when(nameMeta.forTranscoding().encodeToCassandra("DuyHai")).thenReturn("DuyHai");
 
@@ -52,7 +52,7 @@ public class EntityMetaTranscoderTest {
         IndexCondition indexCondition = spy(new IndexCondition("name", "DuyHai"));
 
         when(meta.getAllMetasExceptCounters()).thenReturn(asList(nameMeta));
-        when(nameMeta.getCQL3ColumnName()).thenReturn("name");
+        when(nameMeta.getCQLColumnName()).thenReturn("name");
         when(nameMeta.getPropertyName()).thenReturn("name");
         when(nameMeta.forTranscoding().encodeToCassandra("DuyHai")).thenReturn("DuyHai");
 

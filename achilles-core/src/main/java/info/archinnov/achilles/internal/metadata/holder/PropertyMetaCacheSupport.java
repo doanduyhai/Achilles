@@ -18,9 +18,9 @@ public class PropertyMetaCacheSupport extends PropertyMetaView{
     public Set<String> extractClusteredFieldsIfNecessary() {
         log.trace("Get compound primary keys name for property meta {}", meta);
         if (meta.structure().isEmbeddedId()) {
-            return new HashSet<>(meta.getEmbeddedIdProperties().getCQL3ComponentNames());
+            return new HashSet<>(meta.getEmbeddedIdProperties().getCQLComponentNames());
         } else {
-            return Sets.newHashSet(meta.getCQL3ColumnName());
+            return Sets.newHashSet(meta.getCQLColumnName());
         }
     }
 }

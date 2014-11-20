@@ -313,9 +313,9 @@ public class PreparedStatementBinder {
         PropertyMeta idMeta = entityMeta.getIdMeta();
         String fqcn = entityMeta.getClassName();
         String primaryKeyAsString = idMeta.forTranscoding().forceEncodeToJSONForCounter(primaryKey);
-        String cql3ColumnName = pm.getCQL3ColumnName();
+        String cqlColumnName = pm.getCQLColumnName();
 
-        return new Object[] { fqcn, primaryKeyAsString, cql3ColumnName };
+        return new Object[] { fqcn, primaryKeyAsString, cqlColumnName };
     }
 
     public static enum Singleton {

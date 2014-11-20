@@ -132,7 +132,7 @@ import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
  *      Session session = asyncManager.getNativeSession();
  *      ...
  *
- *      // Issue simple CQL3 queries
+ *      // Issue simple CQL queries
  *      session.execute("UPDATE users SET age=:age WHERE id=:id",30,10);
  *  </code></pre>
  *
@@ -462,7 +462,7 @@ public class AsyncManager extends CommonAsyncManager {
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
      *
      * @param statement
-     *            native CQL3 regularStatement, including limit, ttl and consistency
+     *            native CQL regularStatement, including limit, ttl and consistency
      *            options
      *
      * @param boundValues
@@ -500,7 +500,7 @@ public class AsyncManager extends CommonAsyncManager {
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
      *
      * @param statement
-     *            native CQL3 regularStatement, including limit, ttl and consistency
+     *            native CQL regularStatement, including limit, ttl and consistency
      *            options
      *
      * @param options
@@ -548,7 +548,7 @@ public class AsyncManager extends CommonAsyncManager {
      *            type of entity to be returned
      *
      * @param statement
-     *            native CQL3 regularStatement, including limit, ttl and consistency
+     *            native CQL regularStatement, including limit, ttl and consistency
      *            options
      *
      * @param boundValues
@@ -611,7 +611,7 @@ public class AsyncManager extends CommonAsyncManager {
      *            type of entity to be returned
      *
      * @param statement
-     *            native CQL3 regularStatement, including limit, ttl and consistency
+     *            native CQL regularStatement, including limit, ttl and consistency
      *            options
      *
      * @param boundValues

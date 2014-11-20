@@ -46,11 +46,11 @@ public class PropertyMetaTableCreatorTest {
         PropertyMeta partitionMeta2 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         when(embeddedIdProperties.getPartitionComponents()).thenReturn(new PartitionComponents(asList(partitionMeta1, partitionMeta2)));
 
-        when(partitionMeta1.getCQL3ColumnName()).thenReturn("id");
-        when(partitionMeta2.getCQL3ColumnName()).thenReturn("name");
+        when(partitionMeta1.getCQLColumnName()).thenReturn("id");
+        when(partitionMeta2.getCQLColumnName()).thenReturn("name");
 
-        when(partitionMeta1.structure().<Long>getCQL3ValueType()).thenReturn(Long.class);
-        when(partitionMeta2.structure().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(partitionMeta1.structure().<Long>getCQLValueType()).thenReturn(Long.class);
+        when(partitionMeta2.structure().<String>getCQLValueType()).thenReturn(String.class);
 
         //When
         view.addPartitionKeys(create);
@@ -70,11 +70,11 @@ public class PropertyMetaTableCreatorTest {
         PropertyMeta clusteringMeta2 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         when(embeddedIdProperties.getClusteringComponents()).thenReturn(new ClusteringComponents(asList(clusteringMeta1, clusteringMeta2), Arrays.<ClusteringOrder>asList()));
 
-        when(clusteringMeta1.getCQL3ColumnName()).thenReturn("id");
-        when(clusteringMeta2.getCQL3ColumnName()).thenReturn("name");
+        when(clusteringMeta1.getCQLColumnName()).thenReturn("id");
+        when(clusteringMeta2.getCQLColumnName()).thenReturn("name");
 
-        when(clusteringMeta1.structure().<Long>getCQL3ValueType()).thenReturn(Long.class);
-        when(clusteringMeta2.structure().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(clusteringMeta1.structure().<Long>getCQLValueType()).thenReturn(Long.class);
+        when(clusteringMeta2.structure().<String>getCQLValueType()).thenReturn(String.class);
 
         //When
         view.addClusteringKeys(create);
@@ -93,7 +93,7 @@ public class PropertyMetaTableCreatorTest {
         IndexProperties indexProperties = mock(IndexProperties.class, RETURNS_DEEP_STUBS);
         when(meta.getIndexProperties()).thenReturn(indexProperties);
         when(indexProperties.getIndexName()).thenReturn("name_index");
-        when(meta.getCQL3ColumnName()).thenReturn("name");
+        when(meta.getCQLColumnName()).thenReturn("name");
 
         //When
         final String indexScript = view.createNewIndexScript("my_table");
@@ -109,7 +109,7 @@ public class PropertyMetaTableCreatorTest {
         IndexProperties indexProperties = mock(IndexProperties.class, RETURNS_DEEP_STUBS);
         when(meta.getIndexProperties()).thenReturn(indexProperties);
         when(indexProperties.getIndexName()).thenReturn(null);
-        when(meta.getCQL3ColumnName()).thenReturn("name");
+        when(meta.getCQLColumnName()).thenReturn("name");
 
         //When
         final String indexScript = view.createNewIndexScript("my_table");

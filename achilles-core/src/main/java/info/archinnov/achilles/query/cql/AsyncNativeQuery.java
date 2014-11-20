@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class to wrap CQL3 native query asynchronously
+ * Class to wrap CQL native query asynchronously
  *
  * <pre class="code"><code class="java">
  *

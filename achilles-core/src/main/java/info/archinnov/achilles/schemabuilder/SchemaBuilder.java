@@ -17,7 +17,7 @@
 package info.archinnov.achilles.schemabuilder;
 
 /**
- * Static methods to build a CQL3 DML statement.
+ * Static methods to build a CQL  DML statement.
  * <p>
  * Available DML statements: CREATE/ALTER/DROP
  * <p>

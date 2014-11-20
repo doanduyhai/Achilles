@@ -83,8 +83,8 @@ public class PreparedStatementGenerator {
         idMeta.forStatementGeneration().generateInsertPrimaryKey(insert, onlyStaticColumns);
 
         for (PropertyMeta pm : pms) {
-            String cql3ColumnName = pm.getCQL3ColumnName();
-            insert.value(cql3ColumnName, bindMarker(cql3ColumnName));
+            String cqlColumnName = pm.getCQLColumnName();
+            insert.value(cqlColumnName, bindMarker(cqlColumnName));
         }
 
         final Insert.Options insertOptions = insert.using(ttl(bindMarker("ttl")));
@@ -211,13 +211,13 @@ public class PreparedStatementGenerator {
 
         for (PropertyMeta counterMeta : meta.getAllCounterMetas()) {
             final String propertyName = counterMeta.getPropertyName();
-            final String cql3ColumnName = counterMeta.getCQL3ColumnName();
+            final String cqlColumnName = counterMeta.getCQLColumnName();
             final boolean staticColumn = counterMeta.structure().isStaticColumn();
 
-            RegularStatement incrementStatement = prepareWhereClauseForCounterUpdate(statementGenerator, update(keyspaceName,tableName).with(incr(cql3ColumnName, bindMarker(cql3ColumnName))), staticColumn, noOptions());
-            RegularStatement decrementStatement = prepareWhereClauseForCounterUpdate(statementGenerator, update(keyspaceName,tableName).with(decr(cql3ColumnName, bindMarker(cql3ColumnName))), staticColumn, noOptions());
+            RegularStatement incrementStatement = prepareWhereClauseForCounterUpdate(statementGenerator, update(keyspaceName,tableName).with(incr(cqlColumnName, bindMarker(cqlColumnName))), staticColumn, noOptions());
+            RegularStatement decrementStatement = prepareWhereClauseForCounterUpdate(statementGenerator, update(keyspaceName,tableName).with(decr(cqlColumnName, bindMarker(cqlColumnName))), staticColumn, noOptions());
 
-            RegularStatement selectStatement = statementGenerator.generateWhereClauseForSelect(Optional.fromNullable(counterMeta), select(cql3ColumnName).from(keyspaceName,tableName));
+            RegularStatement selectStatement = statementGenerator.generateWhereClauseForSelect(Optional.fromNullable(counterMeta), select(cqlColumnName).from(keyspaceName,tableName));
 
             incrStatementPerCounter.put(propertyName, session.prepare(incrementStatement));
             decrStatementPerCounter.put(propertyName, session.prepare(decrementStatement));

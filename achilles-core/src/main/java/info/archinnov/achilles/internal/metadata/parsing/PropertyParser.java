@@ -202,7 +202,7 @@ public class PropertyParser {
             propertyMeta = parseSimpleProperty(context);
             String indexName = getIndexName(field);
             if (indexName != null) {
-                propertyMeta.setIndexProperties(new IndexProperties(indexName, propertyMeta.getCQL3ColumnName()));
+                propertyMeta.setIndexProperties(new IndexProperties(indexName, propertyMeta.getCQLColumnName()));
             }
         }
         context.getPropertyMetas().put(context.getCurrentPropertyName(), propertyMeta);
@@ -259,14 +259,14 @@ public class PropertyParser {
 
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         final Codec simpleCodec = codecFactory.parseSimpleField(context);
-        final Class<?> cql3ValueType = codecFactory.determineCQL3ValueType(simpleCodec, timeUUID);
+        final Class<?> cqlValueType = codecFactory.determineCQLValueType(simpleCodec, timeUUID);
         PropertyType type = SIMPLE;
 
         PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQL3ColumnName())
+                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQLColumnName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
                 .consistencyLevels(context.getCurrentConsistencyLevels()).field(field).timeuuid(timeUUID)
-                .staticColumn(staticColumn).simpleCodec(simpleCodec).cql3ValueClass(cql3ValueType)
+                .staticColumn(staticColumn).simpleCodec(simpleCodec).cqlValueClass(cqlValueType)
                 .build(Void.class, field.getType());
 
         log.trace("Built simple property meta for property {} of entity class {} : {}", propertyMeta.getPropertyName(),
@@ -288,10 +288,10 @@ public class PropertyParser {
         CounterProperties counterProperties = new CounterProperties(context.getCurrentEntityClass().getCanonicalName());
 
         PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQL3ColumnName())
+                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQLColumnName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors).field(field)
                 .counterProperties(counterProperties).consistencyLevels(context.getCurrentConsistencyLevels()).staticColumn(staticColumn)
-                .cql3ValueClass(Long.class)
+                .cqlValueClass(Long.class)
                 .build(Void.class, field.getType());
 
         context.hasSimpleCounterType();
@@ -321,16 +321,16 @@ public class PropertyParser {
 
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         final ListCodec listCodec = codecFactory.parseListField(context);
-        final Class<?> cql3ValueType = codecFactory.determineCQL3ValueType(listCodec, timeUUID);
+        final Class<?> cqlValueType = codecFactory.determineCQLValueType(listCodec, timeUUID);
 
         PropertyType type = LIST;
 
         PropertyMeta listMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQL3ColumnName())
+                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQLColumnName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
                 .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).staticColumn(staticColumn)
-                .listCodec(listCodec).cql3ValueClass(cql3ValueType)
+                .listCodec(listCodec).cqlValueClass(cqlValueType)
                 .build(Void.class, valueClass);
 
         log.trace("Built list property meta for property {} of entity class {} : {}", listMeta.getPropertyName(),
@@ -355,16 +355,16 @@ public class PropertyParser {
         valueClass = TypeParser.inferValueClassForListOrSet(genericType, entityClass);
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         final SetCodec setCodec = codecFactory.parseSetField(context);
-        final Class<?> cql3ValueType = codecFactory.determineCQL3ValueType(setCodec, timeUUID);
+        final Class<?> cqlValueType = codecFactory.determineCQLValueType(setCodec, timeUUID);
 
         PropertyType type = SET;
 
         PropertyMeta setMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQL3ColumnName())
+                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQLColumnName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
                 .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).staticColumn(staticColumn)
-                .setCodec(setCodec).cql3ValueClass(cql3ValueType)
+                .setCodec(setCodec).cqlValueClass(cqlValueType)
                 .build(Void.class, valueClass);
 
         log.trace("Built set property meta for property {} of  entity class {} : {}", setMeta.getPropertyName(),
@@ -390,17 +390,17 @@ public class PropertyParser {
 
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         final MapCodec mapCodec = codecFactory.parseMapField(context);
-        final Class<?> cql3KeyType = codecFactory.determineCQL3KeyType(mapCodec, timeUUID);
-        final Class<?> cql3ValueType = codecFactory.determineCQL3ValueType(mapCodec, timeUUID);
+        final Class<?> cqlKeyType = codecFactory.determineCQLKeyType(mapCodec, timeUUID);
+        final Class<?> cqlValueType = codecFactory.determineCQLValueType(mapCodec, timeUUID);
 
         PropertyType type = MAP;
 
         PropertyMeta mapMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQL3ColumnName())
+                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQLColumnName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
                 .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).staticColumn(staticColumn)
-                .mapCodec(mapCodec).cql3KeyClass(cql3KeyType).cql3ValueClass(cql3ValueType)
+                .mapCodec(mapCodec).cqlKeyClass(cqlKeyType).cqlValueClass(cqlValueType)
                 .build(keyClass, valueClass);
 
         log.trace("Built map property meta for property {} of entity class {} : {}", mapMeta.getPropertyName(), context

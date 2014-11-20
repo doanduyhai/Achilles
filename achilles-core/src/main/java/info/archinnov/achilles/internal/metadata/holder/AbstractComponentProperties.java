@@ -33,10 +33,10 @@ public abstract class AbstractComponentProperties {
         }
     };
 
-    private static final Function<PropertyMeta, Class<?>> GET_CQL3_CLASS = new Function<PropertyMeta, Class<?>>() {
+    private static final Function<PropertyMeta, Class<?>> GET_CQL_CLASS = new Function<PropertyMeta, Class<?>>() {
         @Override
         public Class<?> apply(PropertyMeta meta) {
-            return meta.getCql3ValueClass();
+            return meta.getCqlValueClass();
         }
     };
 
@@ -47,10 +47,10 @@ public abstract class AbstractComponentProperties {
         }
     };
 
-    private static final Function<PropertyMeta, String> GET_CQL3_NAME = new Function<PropertyMeta, String>() {
+    private static final Function<PropertyMeta, String> GET_CQL_NAME = new Function<PropertyMeta, String>() {
         @Override
         public String apply(PropertyMeta meta) {
-            return meta.getCQL3ColumnName();
+            return meta.getCQLColumnName();
         }
     };
 
@@ -71,8 +71,8 @@ public abstract class AbstractComponentProperties {
 		return from(propertyMetas).transform(GET_CLASS).toList();
 	}
 
-    public List<Class<?>> getCQL3ComponentClasses() {
-        return from(propertyMetas).transform(GET_CQL3_CLASS).toList();
+    public List<Class<?>> getCQLComponentClasses() {
+        return from(propertyMetas).transform(GET_CQL_CLASS).toList();
     }
 
     public List<Field> getComponentFields() {
@@ -83,8 +83,8 @@ public abstract class AbstractComponentProperties {
 		return from(propertyMetas).transform(GET_NAME).toList();
 	}
 
-    public List<String> getCQL3ComponentNames() {
-        return from(propertyMetas).transform(GET_CQL3_NAME).toList();
+    public List<String> getCQLComponentNames() {
+        return from(propertyMetas).transform(GET_CQL_NAME).toList();
     }
 
     protected static boolean isCompatibleClass(Class<?> expected, Class<?> given)

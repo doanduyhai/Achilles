@@ -116,7 +116,7 @@ public class ExtendedDirtyCheckIT {
     public void should_add_elements_to_map_with_ttl() throws Exception {
         //Given
         bean.getPreferences().put(4, "Cassandra");
-        bean.getPreferences().put(5, "CQL3");
+        bean.getPreferences().put(5, "CQL");
 
         //When
         manager.update(bean, OptionsBuilder.withTtl(1));
@@ -134,7 +134,7 @@ public class ExtendedDirtyCheckIT {
     public void should_add_elements_to_map_with_timestamp() throws Exception {
         //Given
         bean.getPreferences().put(4, "Cassandra");
-        bean.getPreferences().put(5, "CQL3");
+        bean.getPreferences().put(5, "CQL");
 
         //When
         manager.update(bean, OptionsBuilder.withTimestamp((System.currentTimeMillis()-100000)*1000));

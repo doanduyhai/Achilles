@@ -117,29 +117,29 @@ public class CodecFactory {
 
     }
 
-    Class<?> determineCQL3ValueType(Codec simpleCodec, boolean timeUUID) {
-        log.trace("Determine CQL3 type for type {}", simpleCodec.sourceType());
+    Class<?> determineCQLValueType(Codec simpleCodec, boolean timeUUID) {
+        log.trace("Determine CQL type for type {}", simpleCodec.sourceType());
         return determineType(simpleCodec.targetType(), timeUUID);
     }
 
-    Class<?> determineCQL3ValueType(ListCodec listCodec, boolean timeUUID) {
-        log.trace("Determine CQL3 type for list type {}", listCodec.sourceType());
+    Class<?> determineCQLValueType(ListCodec listCodec, boolean timeUUID) {
+        log.trace("Determine CQL type for list type {}", listCodec.sourceType());
         return determineType(listCodec.targetType(), timeUUID);
     }
 
-    Class<?> determineCQL3ValueType(SetCodec setCodec, boolean timeUUID) {
-        log.trace("Determine CQL3 type for set type {}", setCodec.sourceType());
+    Class<?> determineCQLValueType(SetCodec setCodec, boolean timeUUID) {
+        log.trace("Determine CQL type for set type {}", setCodec.sourceType());
         return determineType(setCodec.targetType(), timeUUID);
     }
 
-    Class<?> determineCQL3ValueType(MapCodec mapCodec, boolean timeUUID) {
-        log.trace("Determine CQL3 type for map type {}", mapCodec.sourceValueType());
+    Class<?> determineCQLValueType(MapCodec mapCodec, boolean timeUUID) {
+        log.trace("Determine CQL type for map type {}", mapCodec.sourceValueType());
         return determineType(mapCodec.targetValueType(), timeUUID);
     }
 
 
-    Class<?> determineCQL3KeyType(MapCodec mapCodec, boolean timeUUID) {
-        log.trace("Determine CQL3 type for type {}", mapCodec.sourceKeyType());
+    Class<?> determineCQLKeyType(MapCodec mapCodec, boolean timeUUID) {
+        log.trace("Determine CQL type for type {}", mapCodec.sourceKeyType());
         return determineType(mapCodec.targetKeyType(), timeUUID);
     }
 

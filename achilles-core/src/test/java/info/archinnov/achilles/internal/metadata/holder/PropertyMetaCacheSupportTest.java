@@ -22,7 +22,7 @@ public class PropertyMetaCacheSupportTest {
     public void should_extract_clustered_fields_from_embedded_id() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(meta.getEmbeddedIdProperties().getCQL3ComponentNames()).thenReturn(Arrays.asList("a", "b"));
+        when(meta.getEmbeddedIdProperties().getCQLComponentNames()).thenReturn(Arrays.asList("a", "b"));
         final PropertyMetaCacheSupport view = new PropertyMetaCacheSupport(meta);
 
         //When
@@ -36,7 +36,7 @@ public class PropertyMetaCacheSupportTest {
     public void should_extract_clustered_fields_from_normal_id() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(false);
-        when(meta.getCQL3ColumnName()).thenReturn("a");
+        when(meta.getCQLColumnName()).thenReturn("a");
         final PropertyMetaCacheSupport view = new PropertyMetaCacheSupport(meta);
 
         //When

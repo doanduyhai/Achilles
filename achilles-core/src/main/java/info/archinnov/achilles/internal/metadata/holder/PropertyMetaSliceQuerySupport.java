@@ -19,22 +19,22 @@ public class PropertyMetaSliceQuerySupport extends PropertyMetaView {
 
     List<String> getPartitionKeysName(int size) {
         Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot get {} partition key names for entity '%s' because it does not have a compound primary key", size, meta.getEntityClassName());
-        return meta.getEmbeddedIdProperties().getPartitionComponents().getCQL3ComponentNames().subList(0, size);
+        return meta.getEmbeddedIdProperties().getPartitionComponents().getCQLComponentNames().subList(0, size);
     }
 
     String getLastPartitionKeyName() {
         Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot get last partition key name for entity '%s' because it does not have a compound primary key", meta.getEntityClassName());
-        return Iterables.getLast(meta.getEmbeddedIdProperties().getPartitionComponents().getCQL3ComponentNames());
+        return Iterables.getLast(meta.getEmbeddedIdProperties().getPartitionComponents().getCQLComponentNames());
     }
 
     List<String> getClusteringKeysName(int size) {
         Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot get {} clustering key names for entity '%s' because it does not have a compound primary key",size, meta.getEntityClassName());
-        return meta.getEmbeddedIdProperties().getClusteringComponents().getCQL3ComponentNames().subList(0, size);
+        return meta.getEmbeddedIdProperties().getClusteringComponents().getCQLComponentNames().subList(0, size);
     }
 
     String getLastClusteringKeyName() {
         Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot get last clustering key name for entity '%s' because it does not have a compound primary key",meta.getEntityClassName());
-        return Iterables.getLast(meta.getEmbeddedIdProperties().getClusteringComponents().getCQL3ComponentNames());
+        return Iterables.getLast(meta.getEmbeddedIdProperties().getClusteringComponents().getCQLComponentNames());
     }
 
     int getPartitionKeysSize() {

@@ -54,8 +54,8 @@ public class PropertyMetaRowExtractorTest {
     @Test
     public void should_extract_raw_compound_pk_components_from_row() throws Exception {
         //Given
-        when(embeddedIdProperties.getCQL3ComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
-        when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
+        when(embeddedIdProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
+        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
         Definition columnDef2 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "name", DataType.text());
@@ -74,7 +74,7 @@ public class PropertyMetaRowExtractorTest {
     @Test
          public void should_validate_extracted_pk_components() throws Exception {
         //Given
-        when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
+        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         //When
         extractor.validateExtractedCompoundPrimaryComponents(Arrays.<Object>asList(10L, "DuyHai"));
@@ -85,7 +85,7 @@ public class PropertyMetaRowExtractorTest {
     @Test
     public void should_exception_while_validating_extracted_pk_components() throws Exception {
         //Given
-        when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
+        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         when(meta.<CompleteBean>getValueClass()).thenReturn(CompleteBean.class);
 
         exception.expect(AchillesException.class);
@@ -100,7 +100,7 @@ public class PropertyMetaRowExtractorTest {
     @Test
     public void should_get_value_on_row() throws Exception {
         //Given
-        when(meta.getCQL3ColumnName()).thenReturn("column");
+        when(meta.getCQLColumnName()).thenReturn("column");
         when(row.isNull("column")).thenReturn(false);
         when(meta.type()).thenReturn(PropertyType.SIMPLE);
         when(meta.<String>getValueClass()).thenReturn(String.class);
@@ -119,7 +119,7 @@ public class PropertyMetaRowExtractorTest {
     @Test
     public void should_get_list_on_row() throws Exception {
         //Given
-        when(meta.getCQL3ColumnName()).thenReturn("list");
+        when(meta.getCQLColumnName()).thenReturn("list");
         when(row.isNull("list")).thenReturn(false);
         when(meta.type()).thenReturn(PropertyType.LIST);
         when(meta.<String>getValueClass()).thenReturn(String.class);
@@ -138,7 +138,7 @@ public class PropertyMetaRowExtractorTest {
     @Test
     public void should_get_set_on_row() throws Exception {
         //Given
-        when(meta.getCQL3ColumnName()).thenReturn("set");
+        when(meta.getCQLColumnName()).thenReturn("set");
         when(row.isNull("set")).thenReturn(false);
         when(meta.type()).thenReturn(PropertyType.SET);
         when(meta.<String>getValueClass()).thenReturn(String.class);
@@ -157,11 +157,11 @@ public class PropertyMetaRowExtractorTest {
     @Test
     public void should_get_map_on_row() throws Exception {
         //Given
-        when(meta.getCQL3ColumnName()).thenReturn("map");
+        when(meta.getCQLColumnName()).thenReturn("map");
         when(row.isNull("map")).thenReturn(false);
         when(meta.type()).thenReturn(PropertyType.MAP);
-        when(meta.<Integer>getCql3KeyClass()).thenReturn(Integer.class);
-        when(meta.<String>getCql3ValueClass()).thenReturn(String.class);
+        when(meta.<Integer>getCQLKeyClass()).thenReturn(Integer.class);
+        when(meta.<String>getCqlValueClass()).thenReturn(String.class);
         final Map<Integer,String> rawMap = ImmutableMap.of(1,"a");
         when(row.getMap("map", Integer.class, String.class)).thenReturn(rawMap);
         when(meta.forTranscoding().decodeFromCassandra(rawMap)).thenReturn(rawMap);
@@ -177,7 +177,7 @@ public class PropertyMetaRowExtractorTest {
     @Test
     public void should_get_empty_collection_on_null_from_row() throws Exception {
         //Given
-        when(meta.getCQL3ColumnName()).thenReturn("list");
+        when(meta.getCQLColumnName()).thenReturn("list");
         when(row.isNull("list")).thenReturn(true);
         when(meta.type()).thenReturn(PropertyType.LIST);
         final List<String> emptyList = Arrays.asList();
@@ -194,7 +194,7 @@ public class PropertyMetaRowExtractorTest {
     @Test
     public void should_return_null_when_not_found_in_row() throws Exception {
         //Given
-        when(meta.getCQL3ColumnName()).thenReturn("column");
+        when(meta.getCQLColumnName()).thenReturn("column");
         when(row.isNull("column")).thenReturn(true);
         when(meta.type()).thenReturn(PropertyType.SIMPLE);
         //When
@@ -211,8 +211,8 @@ public class PropertyMetaRowExtractorTest {
         EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         CompleteBean pk = new CompleteBean();
 
-        when(embeddedIdProperties.getCQL3ComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
-        when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
+        when(embeddedIdProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
+        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
         Definition columnDef2 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "name", DataType.text());
@@ -229,7 +229,7 @@ public class PropertyMetaRowExtractorTest {
 
         //Then
         assertThat(actual).isSameAs(pk);
-        verify(meta.getEmbeddedIdProperties()).getCQL3ComponentNames();
+        verify(meta.getEmbeddedIdProperties()).getCQLComponentNames();
     }
 
     @Test
@@ -238,8 +238,8 @@ public class PropertyMetaRowExtractorTest {
         EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         CompleteBean pk = new CompleteBean();
 
-        when(embeddedIdProperties.getCQL3ComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
-        when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
+        when(embeddedIdProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
+        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
         Definition columnDef2 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "name", DataType.text());
@@ -256,6 +256,6 @@ public class PropertyMetaRowExtractorTest {
 
         //Then
         assertThat(actual).isSameAs(pk);
-        verify(meta.getEmbeddedIdProperties(),times(2)).getCQL3ComponentNames();
+        verify(meta.getEmbeddedIdProperties(),times(2)).getCQLComponentNames();
     }
 }

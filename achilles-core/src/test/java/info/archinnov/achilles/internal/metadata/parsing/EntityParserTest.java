@@ -139,7 +139,7 @@ public class EntityParserTest {
         assertThat(name.config().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(age.getPropertyName()).isEqualTo("age");
-        assertThat(age.getCQL3ColumnName()).isEqualTo("age_in_year");
+        assertThat(age.getCQLColumnName()).isEqualTo("age_in_year");
         assertThat(age.<Long>getValueClass()).isEqualTo(Long.class);
         assertThat(age.type()).isEqualTo(SIMPLE);
         assertThat(age.config().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
@@ -251,7 +251,7 @@ public class EntityParserTest {
         // Then
         assertThat(meta).isNotNull();
         assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
-        assertThat(meta.getIdMeta().getCQL3ColumnName()).isEqualTo("toto");
+        assertThat(meta.getIdMeta().getCQLColumnName()).isEqualTo("toto");
     }
 
     @Test

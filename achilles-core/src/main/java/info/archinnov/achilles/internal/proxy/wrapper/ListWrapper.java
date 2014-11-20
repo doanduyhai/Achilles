@@ -66,7 +66,7 @@ public class ListWrapper extends AbstractWrapper implements List<Object> {
 		log.trace("Mark list property {} of entity class {} dirty upon element addition at index {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), index);
         if(index != 0) {
-            throw new UnsupportedOperationException("Append, Prepend, Remove, RemoveAll and SetValueAtIndex are the only supported operations for CQL3 lists");
+            throw new UnsupportedOperationException("Append, Prepend, Remove, RemoveAll and SetValueAtIndex are the only supported operations for CQL lists");
         }
         final Object element = proxifier.removeProxy(arg1);
         target.add(index, element);
@@ -76,7 +76,7 @@ public class ListWrapper extends AbstractWrapper implements List<Object> {
 	@Override
 	public boolean addAll(int index, Collection<?> arg1) {
         if(index != 0) {
-            throw new UnsupportedOperationException("Append, Prepend, Remove, RemoveAll and SetValueAtIndex are the only supported operations for CQL3 lists");
+            throw new UnsupportedOperationException("Append, Prepend, Remove, RemoveAll and SetValueAtIndex are the only supported operations for CQL lists");
         }
         final Collection<Object> elements = (Collection<Object>) proxifier.removeProxy(arg1);
         boolean result = target.addAll(index, elements);

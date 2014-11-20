@@ -68,11 +68,11 @@ public class PropertyMetaTableValidatorTest {
         PropertyMeta partitionMeta2 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         when(embeddedIdProperties.getPartitionComponents()).thenReturn(new PartitionComponents(asList(partitionMeta1, partitionMeta2)));
 
-        when(partitionMeta1.getCQL3ColumnName()).thenReturn("id");
-        when(partitionMeta2.getCQL3ColumnName()).thenReturn("name");
+        when(partitionMeta1.getCQLColumnName()).thenReturn("id");
+        when(partitionMeta2.getCQLColumnName()).thenReturn("name");
 
-        when(partitionMeta1.structure().<Long>getCQL3ValueType()).thenReturn(Long.class);
-        when(partitionMeta2.structure().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(partitionMeta1.structure().<Long>getCQLValueType()).thenReturn(Long.class);
+        when(partitionMeta2.structure().<String>getCQLValueType()).thenReturn(String.class);
 
         when(tableMetadata.getPartitionKey()).thenReturn(asList(idColumnMeta, nameColumnMeta));
         when(tableMetadata.getColumn("id")).thenReturn(idColumnMeta);
@@ -92,11 +92,11 @@ public class PropertyMetaTableValidatorTest {
         PropertyMeta clusteringMeta2 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         when(embeddedIdProperties.getClusteringComponents()).thenReturn(new ClusteringComponents(asList(clusteringMeta1, clusteringMeta2), Arrays.<ClusteringOrder>asList()));
 
-        when(clusteringMeta1.getCQL3ColumnName()).thenReturn("id");
-        when(clusteringMeta2.getCQL3ColumnName()).thenReturn("name");
+        when(clusteringMeta1.getCQLColumnName()).thenReturn("id");
+        when(clusteringMeta2.getCQLColumnName()).thenReturn("name");
 
-        when(clusteringMeta1.structure().<Long>getCQL3ValueType()).thenReturn(Long.class);
-        when(clusteringMeta2.structure().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(clusteringMeta1.structure().<Long>getCQLValueType()).thenReturn(Long.class);
+        when(clusteringMeta2.structure().<String>getCQLValueType()).thenReturn(String.class);
 
         when(tableMetadata.getClusteringColumns()).thenReturn(asList(idColumnMeta, nameColumnMeta));
         when(tableMetadata.getColumn("id")).thenReturn(idColumnMeta);
@@ -111,8 +111,8 @@ public class PropertyMetaTableValidatorTest {
         //Given
         final ColumnMetadata nameColumnMeta = create(tableMetadata, "name", text());
 
-        when(meta.getCQL3ColumnName()).thenReturn("name");
-        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.getCQLColumnName()).thenReturn("name");
+        when(meta.structure().<String>getCQLValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -127,8 +127,8 @@ public class PropertyMetaTableValidatorTest {
     @Test
     public void should_skip_simple_column_validation_if_dynamic_schema_update_enabled() throws Exception {
         //Given
-        when(meta.getCQL3ColumnName()).thenReturn("name");
-        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.getCQLColumnName()).thenReturn("name");
+        when(meta.structure().<String>getCQLValueType()).thenReturn(String.class);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(true);
 
         when(tableMetadata.getColumn("name")).thenReturn(null);
@@ -146,8 +146,8 @@ public class PropertyMetaTableValidatorTest {
         //Given
         final ColumnMetadata nameColumnMeta = create(tableMetadata, "name", text());
 
-        when(meta.getCQL3ColumnName()).thenReturn("name");
-        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.getCQLColumnName()).thenReturn("name");
+        when(meta.structure().<String>getCQLValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -170,9 +170,9 @@ public class PropertyMetaTableValidatorTest {
         //Given
         final ColumnMetadata listColumnMeta = create(tableMetadata, "list", DataType.list(DataType.text()));
 
-        when(meta.getCQL3ColumnName()).thenReturn("list");
+        when(meta.getCQLColumnName()).thenReturn("list");
         when(meta.type()).thenReturn(LIST);
-        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.structure().<String>getCQLValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -187,9 +187,9 @@ public class PropertyMetaTableValidatorTest {
         //Given
         final ColumnMetadata setColumnMeta = create(tableMetadata, "set", DataType.set(DataType.text()));
 
-        when(meta.getCQL3ColumnName()).thenReturn("set");
+        when(meta.getCQLColumnName()).thenReturn("set");
         when(meta.type()).thenReturn(SET);
-        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.structure().<String>getCQLValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -204,10 +204,10 @@ public class PropertyMetaTableValidatorTest {
         //Given
         final ColumnMetadata mapColumnMeta = create(tableMetadata, "map", DataType.map(DataType.cint(), DataType.text()));
 
-        when(meta.getCQL3ColumnName()).thenReturn("map");
+        when(meta.getCQLColumnName()).thenReturn("map");
         when(meta.type()).thenReturn(MAP);
-        when(meta.structure().<Integer>getCQL3KeyType()).thenReturn(Integer.class);
-        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.structure().<Integer>getCQLKeyType()).thenReturn(Integer.class);
+        when(meta.structure().<String>getCQLValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -220,9 +220,9 @@ public class PropertyMetaTableValidatorTest {
     @Test
     public void should_skip_validation_of_list_column_if_schema_update_enabled() throws Exception {
         //Given
-        when(meta.getCQL3ColumnName()).thenReturn("list");
+        when(meta.getCQLColumnName()).thenReturn("list");
         when(meta.type()).thenReturn(LIST);
-        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.structure().<String>getCQLValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(true);
 
@@ -236,8 +236,8 @@ public class PropertyMetaTableValidatorTest {
     public void should_validate_clustered_counter_column() throws Exception {
         final ColumnMetadata counterColumnMeta = create(tableMetadata, "count", counter());
 
-        when(meta.getCQL3ColumnName()).thenReturn("count");
-        when(meta.structure().<Counter>getCQL3ValueType()).thenReturn(Counter.class);
+        when(meta.getCQLColumnName()).thenReturn("count");
+        when(meta.structure().<Counter>getCQLValueType()).thenReturn(Counter.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -249,8 +249,8 @@ public class PropertyMetaTableValidatorTest {
 
     @Test
     public void should_skip_validation_of_clustered_counter_column_if_schema_update_enabled() throws Exception {
-        when(meta.getCQL3ColumnName()).thenReturn("count");
-        when(meta.structure().<Counter>getCQL3ValueType()).thenReturn(Counter.class);
+        when(meta.getCQLColumnName()).thenReturn("count");
+        when(meta.structure().<Counter>getCQLValueType()).thenReturn(Counter.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(true);
 

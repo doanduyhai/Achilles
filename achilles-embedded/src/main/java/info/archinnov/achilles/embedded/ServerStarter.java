@@ -94,7 +94,7 @@ public enum ServerStarter {
     }
 
     public void checkAndConfigurePorts(TypedMap parameters) {
-        log.trace("Check and configure Thrift/CQL3 ports");
+        log.trace("Check and configure Thrift/CQL ports");
         Integer cqlPort = parameters.getTyped(CASSANDRA_CQL_PORT);
         Integer thriftPort = parameters.getTyped(CASSANDRA_THRIFT_PORT);
         if (cqlPort != null && ServerStarter.cqlPort != cqlPort.intValue()) {
@@ -131,7 +131,7 @@ public enum ServerStarter {
         final String triggersDir = createTriggersFolder();
 
         log.info(" Random embedded Cassandra RPC port/Thrift port = {}", config.getRPCPort());
-        log.info(" Random embedded Cassandra Native port/CQL3 port = {}", config.getCqlPort());
+        log.info(" Random embedded Cassandra Native port/CQL port = {}", config.getCqlPort());
         log.info(" Random embedded Cassandra Storage port = {}", config.getStoragePort());
         log.info(" Random embedded Cassandra Storage SSL port = {}", config.getStorageSSLPort());
         log.info(" Embedded Cassandra triggers directory = {}", triggersDir);

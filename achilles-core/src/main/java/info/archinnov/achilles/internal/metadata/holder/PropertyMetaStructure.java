@@ -38,12 +38,12 @@ public class PropertyMetaStructure extends PropertyMetaView {
         return meta.isTimeUUID();
     }
 
-    public <T> Class<T> getCQL3ValueType() {
-        return meta.getCql3ValueClass();
+    public <T> Class<T> getCQLValueType() {
+        return meta.getCqlValueClass();
     }
 
-    public <T> Class<T> getCQL3KeyType() {
-        return meta.getCql3KeyClass();
+    public <T> Class<T> getCQLKeyType() {
+        return meta.getCQLKeyClass();
     }
 
 }

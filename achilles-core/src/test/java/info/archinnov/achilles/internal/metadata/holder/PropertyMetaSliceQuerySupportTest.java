@@ -36,7 +36,7 @@ public class PropertyMetaSliceQuerySupportTest {
     @Test
     public void should_get_partition_key_names() throws Exception {
         //Given
-        when(embeddedIdProperties.getPartitionComponents().getCQL3ComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
+        when(embeddedIdProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
 
         //When
         final List<String> partitionKeysName = view.getPartitionKeysName(2);
@@ -48,7 +48,7 @@ public class PropertyMetaSliceQuerySupportTest {
     @Test
     public void should_get_last_partition_key_name() throws Exception {
         //Given
-        when(embeddedIdProperties.getPartitionComponents().getCQL3ComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
+        when(embeddedIdProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
 
         //When
         final String lastPartitionKeyName = view.getLastPartitionKeyName();
@@ -60,7 +60,7 @@ public class PropertyMetaSliceQuerySupportTest {
     @Test
     public void should_get_clustering_key_names() throws Exception {
         //Given
-        when(embeddedIdProperties.getClusteringComponents().getCQL3ComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
+        when(embeddedIdProperties.getClusteringComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
 
         //When
         final List<String> clusteringKeysName = view.getClusteringKeysName(2);
@@ -72,7 +72,7 @@ public class PropertyMetaSliceQuerySupportTest {
     @Test
     public void should_get_last_clustering_key_name() throws Exception {
         //Given
-        when(embeddedIdProperties.getClusteringComponents().getCQL3ComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
+        when(embeddedIdProperties.getClusteringComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
 
         //When
         final String lastClusteringKeyName = view.getLastClusteringKeyName();

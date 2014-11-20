@@ -233,15 +233,15 @@ public class DaoContext {
     public Long getClusteredCounterColumn(DaoOperations context, PropertyMeta counterMeta) {
         log.debug("Get clustered counter for PersistenceContext '{}'", context);
 
-        final String cql3ColumnName = counterMeta.getCQL3ColumnName();
-        PreparedStatement ps = clusteredCounterQueryMap.get(context.getEntityClass()).get(SELECT).get(cql3ColumnName);
+        final String cqlColumnName = counterMeta.getCQLColumnName();
+        PreparedStatement ps = clusteredCounterQueryMap.get(context.getEntityClass()).get(SELECT).get(cqlColumnName);
         ConsistencyLevel readLevel = overrider.getReadLevel(context, counterMeta);
         BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(context, ps, counterMeta.structure().isStaticColumn(), readLevel);
 
         final ListenableFuture<ResultSet> resultSetFuture = context.executeImmediate(bsWrapper);
         final ListenableFuture<Row> futureRow = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW, executorService);
         final Row row = asyncUtils.buildInterruptible(futureRow).getImmediately();
-        return rowToLongFunction(cql3ColumnName).apply(row);
+        return rowToLongFunction(cqlColumnName).apply(row);
     }
 
     public void bindForClusteredCounterDelete(DaoOperations context) {

@@ -20,7 +20,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.UUID;
 
 import info.archinnov.achilles.internal.metadata.holder.ClusteringComponents;
@@ -97,13 +96,13 @@ public class EmbeddedIdParserTest {
         assertThat(partitionComponents.getComponentClasses()).containsExactly(String.class);
         assertThat(partitionComponents.getComponentFields()).containsExactly(nameField);
         assertThat(partitionComponents.getComponentNames()).containsExactly("name");
-        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("name");
+        assertThat(partitionComponents.getCQLComponentNames()).containsExactly("name");
 
         final ClusteringComponents clusteringComponents = props.getClusteringComponents();
         assertThat(clusteringComponents.getComponentClasses()).containsExactly(int.class);
         assertThat(clusteringComponents.getComponentFields()).containsExactly(rankField);
         assertThat(clusteringComponents.getComponentNames()).containsExactly("rank");
-        assertThat(clusteringComponents.getCQL3ComponentNames()).containsExactly("rank");
+        assertThat(clusteringComponents.getCQLComponentNames()).containsExactly("rank");
         assertThat(clusteringComponents.getClusteringOrders()).containsExactly(new ClusteringOrder("rank", Sorting.ASC));
     }
 
@@ -123,13 +122,13 @@ public class EmbeddedIdParserTest {
         assertThat(partitionComponents.getComponentClasses()).containsExactly(String.class);
         assertThat(partitionComponents.getComponentFields()).containsExactly(nameField);
         assertThat(partitionComponents.getComponentNames()).containsExactly("name");
-        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("name");
+        assertThat(partitionComponents.getCQLComponentNames()).containsExactly("name");
 
         final ClusteringComponents clusteringComponents = props.getClusteringComponents();
         assertThat(clusteringComponents.getComponentClasses()).containsExactly(int.class, int.class);
         assertThat(clusteringComponents.getComponentFields()).containsExactly(rankField, countField);
         assertThat(clusteringComponents.getComponentNames()).containsExactly("rank", "count");
-        assertThat(clusteringComponents.getCQL3ComponentNames()).containsExactly("rank", "count");
+        assertThat(clusteringComponents.getCQLComponentNames()).containsExactly("rank", "count");
         assertThat(clusteringComponents.getClusteringOrders()).containsExactly(new ClusteringOrder("rank", Sorting.DESC), new ClusteringOrder("count", Sorting.DESC));
     }
 
@@ -215,13 +214,13 @@ public class EmbeddedIdParserTest {
         assertThat(partitionComponents.getComponentClasses()).containsExactly(Long.class, String.class);
         assertThat(partitionComponents.getComponentFields()).containsExactly(idField, typeField);
         assertThat(partitionComponents.getComponentNames()).containsExactly("id", "type");
-        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("id", "type");
+        assertThat(partitionComponents.getCQLComponentNames()).containsExactly("id", "type");
 
         final ClusteringComponents clusteringComponents = props.getClusteringComponents();
         assertThat(clusteringComponents.getComponentClasses()).containsExactly(UUID.class);
         assertThat(clusteringComponents.getComponentFields()).containsExactly(dateField);
         assertThat(clusteringComponents.getComponentNames()).containsExactly("date");
-        assertThat(clusteringComponents.getCQL3ComponentNames()).containsExactly("date");
+        assertThat(clusteringComponents.getCQLComponentNames()).containsExactly("date");
         assertThat(clusteringComponents.getClusteringOrders()).containsExactly(new ClusteringOrder("date", Sorting.ASC));
 
     }
@@ -267,13 +266,13 @@ public class EmbeddedIdParserTest {
         assertThat(partitionComponents.getComponentClasses()).containsExactly(Long.class, String.class);
         assertThat(partitionComponents.getComponentFields()).containsExactly(idField, typeField);
         assertThat(partitionComponents.getComponentNames()).containsExactly("id", "type");
-        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("id", "type");
+        assertThat(partitionComponents.getCQLComponentNames()).containsExactly("id", "type");
 
         final ClusteringComponents clusteringComponents = props.getClusteringComponents();
         assertThat(clusteringComponents.getComponentClasses()).isEmpty();
         assertThat(clusteringComponents.getComponentFields()).isEmpty();
         assertThat(clusteringComponents.getComponentNames()).isEmpty();
-        assertThat(clusteringComponents.getCQL3ComponentNames()).isEmpty();
+        assertThat(clusteringComponents.getCQLComponentNames()).isEmpty();
         assertThat(clusteringComponents.getClusteringOrders()).isEmpty();
     }
 
@@ -293,13 +292,13 @@ public class EmbeddedIdParserTest {
         assertThat(partitionComponents.getComponentClasses()).containsExactly(String.class);
         assertThat(partitionComponents.getComponentFields()).containsExactly(partitionKeyField);
         assertThat(partitionComponents.getComponentNames()).containsExactly("partitionKey");
-        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("partition_key");
+        assertThat(partitionComponents.getCQLComponentNames()).containsExactly("partition_key");
 
         final ClusteringComponents clusteringComponents = props.getClusteringComponents();
         assertThat(clusteringComponents.getComponentClasses()).containsExactly(Long.class);
         assertThat(clusteringComponents.getComponentFields()).containsExactly(clusteringKeyField);
         assertThat(clusteringComponents.getComponentNames()).containsExactly("clustering");
-        assertThat(clusteringComponents.getCQL3ComponentNames()).containsExactly("clustering_key");
+        assertThat(clusteringComponents.getCQLComponentNames()).containsExactly("clustering_key");
         assertThat(clusteringComponents.getClusteringOrders()).containsExactly(new ClusteringOrder("clustering_key", Sorting.ASC));
     }
 
@@ -320,13 +319,13 @@ public class EmbeddedIdParserTest {
         assertThat(partitionComponents.getComponentClasses()).containsExactly(String.class, Long.class);
         assertThat(partitionComponents.getComponentFields()).containsExactly(partitionKey1Field, partitionKey2Field);
         assertThat(partitionComponents.getComponentNames()).containsExactly("partitionKey", "partitionKey2");
-        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("partition_key", "partition_key2");
+        assertThat(partitionComponents.getCQLComponentNames()).containsExactly("partition_key", "partition_key2");
 
         final ClusteringComponents clusteringComponents = props.getClusteringComponents();
         assertThat(clusteringComponents.getComponentClasses()).containsExactly(UUID.class);
         assertThat(clusteringComponents.getComponentFields()).containsExactly(clusteringKeyField);
         assertThat(clusteringComponents.getComponentNames()).containsExactly("clustering");
-        assertThat(clusteringComponents.getCQL3ComponentNames()).containsExactly("clustering_key");
+        assertThat(clusteringComponents.getCQLComponentNames()).containsExactly("clustering_key");
         assertThat(clusteringComponents.getClusteringOrders()).containsExactly(new ClusteringOrder("clustering_key", Sorting.ASC));
     }
 

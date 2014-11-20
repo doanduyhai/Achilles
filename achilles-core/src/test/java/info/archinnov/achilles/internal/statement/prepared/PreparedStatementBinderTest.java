@@ -252,7 +252,7 @@ public class PreparedStatementBinderTest {
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(entityMeta.getClassName()).thenReturn("CompleteBean");
         when(idMeta.forTranscoding().forceEncodeToJSONForCounter(primaryKey)).thenReturn(primaryKey.toString());
-        when(counterMeta.getCQL3ColumnName()).thenReturn("count");
+        when(counterMeta.getCQLColumnName()).thenReturn("count");
 
         when(ps.bind(increment, "CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
 
@@ -272,7 +272,7 @@ public class PreparedStatementBinderTest {
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(entityMeta.getClassName()).thenReturn("CompleteBean");
         when(idMeta.forTranscoding().forceEncodeToJSONForCounter(primaryKey)).thenReturn(primaryKey.toString());
-        when(counterMeta.getCQL3ColumnName()).thenReturn("count");
+        when(counterMeta.getCQLColumnName()).thenReturn("count");
 
         when(ps.bind("CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
 
@@ -291,7 +291,7 @@ public class PreparedStatementBinderTest {
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(entityMeta.getClassName()).thenReturn("CompleteBean");
         when(idMeta.forTranscoding().forceEncodeToJSONForCounter(primaryKey)).thenReturn(primaryKey.toString());
-        when(counterMeta.getCQL3ColumnName()).thenReturn("count");
+        when(counterMeta.getCQLColumnName()).thenReturn("count");
 
         when(ps.bind("CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
 
