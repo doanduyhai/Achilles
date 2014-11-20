@@ -67,7 +67,7 @@ public class SliceQueryProperties<T> {
     private final Class<T> entityClass;
     private final SliceType sliceType;
 
-    private Optional<Integer> limitO = Optional.fromNullable(DEFAULT_LIMIT);
+    private Optional<Integer> limitO = Optional.absent();
     protected Optional<Integer> fetchSizeO = Optional.absent();
     private BoundingMode boundingMode = BoundingMode.INCLUSIVE_BOUNDS;
     private Optional<OrderingMode> orderingModeO = Optional.absent();
@@ -105,11 +105,6 @@ public class SliceQueryProperties<T> {
     protected SliceQueryProperties<T>  limit(int limit) {
         Validator.validateTrue(limit > 0, "The limit '%s' should be strictly positive", limit);
         this.limitO = Optional.fromNullable(limit);
-        return this;
-    }
-
-    protected SliceQueryProperties<T>  disableLimit() {
-        this.limitO = Optional.absent();
         return this;
     }
 

@@ -217,14 +217,4 @@ public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExten
         super.properties.limit(limit);
         return getThis();
     }
-
-    /**
-     * Remove the default limit of 100 rows
-     *
-     * @return Slice DSL
-     */
-    public T noLimit() {
-        super.properties.disableLimit();
-        return getThis();
-    }
 }

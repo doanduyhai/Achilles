@@ -173,7 +173,7 @@ public class TypedQueryTest {
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
         // When
-        final AchillesFuture<List<CompleteBean>> actual = typedQuery.asyncGet(asyncListeners);
+        final AchillesFuture<List<CompleteBean>> actual = typedQuery.asyncGetInternal(asyncListeners);
 
         // Then
         assertThat(actual).isSameAs(achillesFuturesEntities);
@@ -219,7 +219,7 @@ public class TypedQueryTest {
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
         // When
-        final AchillesFuture<CompleteBean> actual = typedQuery.asyncGetFirst(asyncListeners);
+        final AchillesFuture<CompleteBean> actual = typedQuery.asyncGetFirstInternal(asyncListeners);
 
         // Then
         assertThat(actual).isSameAs(achillesFuturesEntity);

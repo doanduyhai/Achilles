@@ -366,7 +366,6 @@ public class AsyncEventInterceptorIT {
         final AchillesFuture<List<ClusteredEntity>> futures = manager3.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(id)
-                .async()
                 .get(10);
 
 

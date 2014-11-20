@@ -17,23 +17,25 @@
 package info.archinnov.achilles.query.slice;
 
 import info.archinnov.achilles.async.AchillesFuture;
-import info.archinnov.achilles.type.Empty;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
+import info.archinnov.achilles.type.Empty;
 
-public abstract class DeletePartitionRoot<TYPE, T extends DeletePartitionRoot<TYPE, T>> extends SliceQueryRoot<TYPE, T> {
+public abstract class DeletePartitionRootAsync<TYPE, T extends DeletePartitionRootAsync<TYPE, T>> extends SliceQueryRoot<TYPE, T> {
 
-    protected DeletePartitionRoot(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
+    protected DeletePartitionRootAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 
     /**
      *
-     * Delete entities without filtering clustering keys.
+     * Delete entities asynchronously without filtering clustering keys.
+     * The return future contains an Empty singleton which only indicates
+     * that the deletion has been successful
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forDelete()
      *      .withPartitionComponents(articleId)
      *      .delete();
@@ -45,15 +47,15 @@ public abstract class DeletePartitionRoot<TYPE, T extends DeletePartitionRoot<TY
      * <br/>
      *  DELETE FROM article_rating WHERE article_id=...
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;Empty&gt;
      */
-    public void delete() {
-        super.deleteInternal();
+    public AchillesFuture<Empty> delete() {
+        return super.asyncDeleteInternal();
     }
 
     /**
      *
-     * Delete entities with matching clustering keys
+     * Delete entities asynchronously with matching clustering keys
      *
      * <pre class="code"><code class="java">
      *
@@ -69,10 +71,10 @@ public abstract class DeletePartitionRoot<TYPE, T extends DeletePartitionRoot<TY
      * <br/>
      *  DELETE FROM article_rating WHERE article_id=... <strong>AND rating=2</strong>
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;Empty&gt;
      */
-    public void deleteMatching(Object... clusterings) {
+    public AchillesFuture<Empty> deleteMatching(Object... clusterings) {
         super.withClusteringsInternal(clusterings);
-        super.deleteInternal();
+        return super.asyncDeleteInternal();
     }
 }

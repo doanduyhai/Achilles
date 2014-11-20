@@ -682,7 +682,7 @@ public class QueryIT {
         manager.insert(entity);
 
         final Select.Where select = select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
-        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select, null);
+        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select, (Object[])null);
 
         // When
         final CompleteBean actual = queryBuilder.getFirst();
@@ -717,7 +717,7 @@ public class QueryIT {
         manager.insert(entity);
 
         final Select.Where select = select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
-        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select, null);
+        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select, (Object[])null);
 
         // When
         final CompleteBean actual = queryBuilder.getFirst();

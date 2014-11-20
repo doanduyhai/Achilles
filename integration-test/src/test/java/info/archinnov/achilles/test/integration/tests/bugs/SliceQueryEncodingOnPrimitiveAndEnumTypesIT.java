@@ -5,14 +5,12 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityForTranscoding;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithPrimitiveAndSubTypes;
 import org.apache.commons.lang3.RandomUtils;
 import org.fest.assertions.core.Condition;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
-import java.util.Date;
 import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;

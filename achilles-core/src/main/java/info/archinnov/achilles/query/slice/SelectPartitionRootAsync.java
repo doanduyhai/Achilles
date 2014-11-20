@@ -16,35 +16,32 @@
 
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.query.slice.BoundingMode.EXCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_END_BOUND_ONLY;
-import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_START_BOUND_ONLY;
-import static info.archinnov.achilles.query.slice.OrderingMode.ASCENDING;
-import static info.archinnov.achilles.query.slice.OrderingMode.DESCENDING;
-import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType;
-
-import java.util.List;
-import com.google.common.collect.FluentIterable;
 import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
-public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TYPE,T>> extends SliceQueryRootExtended<TYPE, T> {
+import java.util.List;
 
-    protected SelectPartitionRoot(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceType sliceType) {
+import static info.archinnov.achilles.query.slice.BoundingMode.*;
+import static info.archinnov.achilles.query.slice.OrderingMode.ASCENDING;
+import static info.archinnov.achilles.query.slice.OrderingMode.DESCENDING;
+import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType;
+
+public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRootAsync<TYPE,T>> extends SliceQueryRootExtended<TYPE, T> {
+
+    protected SelectPartitionRootAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceType sliceType) {
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 
     /**
      *
-     * Get selected entities without filtering clustering keys. If no limit has been set, the default LIMIT 100 applies
+     * Get selected entities asynchronously without filtering clustering keys. If no limit has been set, the default LIMIT 100 applies
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forSelect()
      *      .withPartitionComponents(articleId)
      *      .get();
@@ -56,19 +53,19 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC LIMIT 100
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;List&lt;TYPE&gt;&gt;
      */
-    public List<TYPE> get() {
-        return super.getInternal();
+    public AchillesFuture<List<TYPE>> get() {
+        return super.asyncGetInternal();
     }
 
     /**
      *
-     * Get selected entities without filtering clustering keys using provided limit
+     * Get selected entities asynchronously without filtering clustering keys using provided limit
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forSelect()
      *      .withPartitionComponents(articleId)
      *      .get(23);
@@ -80,21 +77,21 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC <strong>LIMIT 23</strong>
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;List&lt;TYPE&gt;&gt;
      */
-    public List<TYPE> get(int limit) {
+    public AchillesFuture<List<TYPE>> get(int limit) {
         super.properties.limit(limit);
-        return super.getInternal();
+        return super.asyncGetInternal();
     }
 
     /**
      *
-     * Get first entity without filtering clustering keys
+     * Get first entity asynchronously without filtering clustering keys
      * To get the last entity, just use getOne() with orderByDescending()
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forSelect()
      *      .withPartitionComponents(articleId)
      *      .getOne();
@@ -106,20 +103,20 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC <strong>LIMIT 1</strong>
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;TYPE&gt;
      */
-    public TYPE getOne() {
+    public AchillesFuture<TYPE> getOne() {
         super.properties.limit(1);
-        return FluentIterable.from(super.getInternal()).first().orNull();
+        return super.asyncGetOneInternal();
     }
 
     /**
      *
-     * Get entities with matching clustering keys
+     * Get entities asynchronously with matching clustering keys
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forSelect()
      *      .withPartitionComponents(articleId)
      *      .getMatching(2);
@@ -131,20 +128,20 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC LIMIT 100
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;List&lt;TYPE&gt;&gt;
      */
-    public List<TYPE> getMatching(Object... matchedClusteringKeys) {
+    public AchillesFuture<List<TYPE>> getMatching(Object... matchedClusteringKeys) {
         super.withClusteringsInternal(matchedClusteringKeys);
-        return super.getInternal();
+        return super.asyncGetInternal();
     }
 
     /**
      *
-     * Get first entity with matching clustering keys
+     * Get first entity asynchronously with matching clustering keys
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forSelect()
      *      .withPartitionComponents(articleId)
      *      .getOneMatching(2);
@@ -156,19 +153,20 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC <strong>LIMIT 1</strong>
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;TYPE&gt;
      */
-    public TYPE getOneMatching(Object... matchedClusteringKeys) {
-        return FluentIterable.from(this.getMatching(matchedClusteringKeys)).first().orNull();
+    public AchillesFuture<TYPE> getOneMatching(Object... matchedClusteringKeys) {
+        super.withClusteringsInternal(matchedClusteringKeys);
+        return super.asyncGetOneInternal();
     }
 
     /**
      *
-     * Get first entities with matching clustering keys
+     * Get first entities asynchronously with matching clustering keys
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forSelect()
      *      .withPartitionComponents(articleId)
      *      .getFirstMatching(10,2);
@@ -180,23 +178,23 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC <strong>LIMIT 10</strong>
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;List&lt;TYPE&gt;&gt;
      */
-    public List<TYPE> getFirstMatching(int limit, Object... matchingClusteringKeys) {
+    public AchillesFuture<List<TYPE>> getFirstMatching(int limit, Object... matchingClusteringKeys) {
         super.properties.ordering(ASCENDING);
         super.properties.limit(limit);
         super.withClusteringsInternal(matchingClusteringKeys);
-        return super.getInternal();
+        return super.asyncGetInternal();
     }
 
     /**
      *
-     * Get last entities with matching clustering keys. It is similar to calling
+     * Get last entities asynchronously with matching clustering keys. It is similar to calling
      * getFirstMatching(...) combined with orderByDescending()
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forSelect()
      *      .withPartitionComponents(articleId)
      *      .getLastMatching(10,2);
@@ -208,13 +206,13 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2 ORDER BY rating DESC LIMIT 10</strong>
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;List&lt;TYPE&gt;&gt;
      */
-    public List<TYPE> getLastMatching(int limit, Object... matchingClusteringKeys) {
+    public AchillesFuture<List<TYPE>> getLastMatching(int limit, Object... matchingClusteringKeys) {
         super.properties.ordering(DESCENDING);
         super.withClusteringsInternal(matchingClusteringKeys);
         super.properties.limit(limit);
-        return super.getInternal();
+        return super.asyncGetInternal();
     }
 
     /**
@@ -223,7 +221,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forSelect()
      *      .withPartitionComponents(articleId)
      *      .fromClusterings(2,now)
@@ -248,9 +246,9 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      *
      * @return slice DSL
      */
-    public SelectFromClusterings<TYPE> fromClusterings(Object... fromClusteringKeys) {
+    public SelectFromClusteringsAsync<TYPE> fromClusterings(Object... fromClusteringKeys) {
         super.fromClusteringsInternal(fromClusteringKeys);
-        return new SelectFromClusterings<>();
+        return new SelectFromClusteringsAsync<>();
     }
 
     /**
@@ -259,7 +257,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forSelect()
      *      .withPartitionComponents(articleId)
      *      .toClusterings(3)
@@ -284,9 +282,9 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      *
      * @return slice DSL
      */
-    public SelectEnd<TYPE> toClusterings(Object... toClusteringKeys) {
+    public SelectEndAsync<TYPE> toClusterings(Object... toClusteringKeys) {
         super.toClusteringsInternal(toClusteringKeys);
-        return new SelectEnd<>();
+        return new SelectEndAsync<>();
     }
 
     /**
@@ -295,7 +293,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forSelect()
      *      .withPartitionComponents(articleId)
      *      .withClusterings(3)
@@ -310,21 +308,19 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      *
      * @return slice DSL
      */
-    public SelectWithClusterings<TYPE> withClusterings(Object... clusteringKeys) {
+    public SelectWithClusteringsAsync<TYPE> withClusterings(Object... clusteringKeys) {
         super.withClusteringsInternal(clusteringKeys);
-        return new SelectWithClusterings<>();
+        return new SelectWithClusteringsAsync<>();
     }
 
-    public abstract class SelectClusteringsRootWithLimitation<ENTITY_TYPE, T extends SelectClusteringsRootWithLimitation<ENTITY_TYPE, T>> {
-
-
+    public abstract class SelectClusteringsRootWithLimitationAsync<ENTITY_TYPE, T extends SelectClusteringsRootWithLimitationAsync<ENTITY_TYPE, T>> {
         /**
          *
          * Use ascending order for the first clustering key. This is the <strong>default</strong> ordering
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -341,7 +337,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          * @return Slice DSL
          */
         public T orderByAscending() {
-            SelectPartitionRoot.super.properties.ordering(ASCENDING);
+            SelectPartitionRootAsync.super.properties.ordering(ASCENDING);
             return getThis();
         }
 
@@ -351,7 +347,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -368,7 +364,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          * @return Slice DSL
          */
         public T orderByDescending() {
-            SelectPartitionRoot.super.properties.ordering(DESCENDING);
+            SelectPartitionRootAsync.super.properties.ordering(DESCENDING);
             return getThis();
         }
 
@@ -379,7 +375,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -396,10 +392,10 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          * @return Slice DSL
          */
         public T limit(int limit) {
-            SelectPartitionRoot.super.properties.limit(limit);
+            SelectPartitionRootAsync.super.properties.limit(limit);
             return getThis();
         }
-
+		
         /**
          *
          * Provide a consistency level for SELECT statement
@@ -408,12 +404,12 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          * @return Slice DSL
          */
         public T withConsistency(ConsistencyLevel consistencyLevel) {
-            SelectPartitionRoot.super.properties.consistency(consistencyLevel);
+            SelectPartitionRootAsync.super.properties.consistency(consistencyLevel);
             return getThis();
         }
 
         public T withAsyncListeners(FutureCallback<Object>...asyncListeners) {
-            SelectPartitionRoot.this.properties.asyncListeners(asyncListeners);
+            SelectPartitionRootAsync.this.properties.asyncListeners(asyncListeners);
             return getThis();
         }
 
@@ -421,12 +417,12 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
 
         /**
          *
-         * Get first entity with filtering clustering keys
+         * Get first entity asynchronously with filtering clustering keys
          * To get the last entity, just use getOne() with orderByDescending()
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2)
@@ -439,21 +435,21 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC <strong>LIMIT 1</strong>
          *
-         * @return slice DSL
+         * @return AchillesFuture&lt;TYPE&gt;
          */
-        public TYPE getOne() {
-            SelectPartitionRoot.super.properties.limit(1);
-            return FluentIterable.from(SelectPartitionRoot.super.getInternal()).first().orNull();
+        public AchillesFuture<TYPE> getOne() {
+            SelectPartitionRootAsync.super.properties.limit(1);
+            return SelectPartitionRootAsync.super.asyncGetOneInternal();
         }
 
         /**
          *
-         * Get first entity with filtering clustering keys
+         * Get first entity asynchronously with filtering clustering keys
          * To get the last entity, just use getOne() with orderByDescending()
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2)
@@ -466,20 +462,20 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC LIMIT 100
          *
-         * @return slice DSL
+         * @return AchillesFuture&lt;List&lt;TYPE&gt;&gt;
          */
-        public List<TYPE> get() {
-            return SelectPartitionRoot.super.getInternal();
+        public AchillesFuture<List<TYPE>> get() {
+            return SelectPartitionRootAsync.super.asyncGetInternal();
         }
 
         /**
          *
-         * Get first entity with filtering clustering keys with provided limit
+         * Get first entity asynchronously by filtering clustering keys with provided limit
          * To get the last entity, just use getOne() with orderByDescending()
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2)
@@ -492,15 +488,15 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC <strong>LIMIT 23</strong>
          *
-         * @return slice DSL
+         * @return AchillesFuture&lt;List&lt;TYPE&gt;&gt;
          */
-        public List<TYPE> get(int limit) {
-            SelectPartitionRoot.super.properties.limit(limit);
-            return SelectPartitionRoot.super.getInternal();
+        public AchillesFuture<List<TYPE>> get(int limit) {
+            SelectPartitionRootAsync.super.properties.limit(limit);
+            return SelectPartitionRootAsync.super.asyncGetInternal();
         }
     }
 
-    public abstract class SelectClusteringsRoot<ENTITY_TYPE, T extends SelectClusteringsRoot<ENTITY_TYPE, T>> extends SelectClusteringsRootWithLimitation<ENTITY_TYPE, T> {
+    public abstract class SelectClusteringsRootAsync<ENTITY_TYPE, T extends SelectClusteringsRootAsync<ENTITY_TYPE, T>> extends SelectClusteringsRootWithLimitationAsync<ENTITY_TYPE, T> {
 
         /**
          *
@@ -508,7 +504,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -526,7 +522,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          * @return Slice DSL
          */
         public T withInclusiveBounds() {
-            SelectPartitionRoot.super.properties.bounding(INCLUSIVE_BOUNDS);
+            SelectPartitionRootAsync.super.properties.bounding(INCLUSIVE_BOUNDS);
             return getThis();
         }
 
@@ -536,7 +532,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -553,7 +549,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          * @return Slice DSL
          */
         public T withExclusiveBounds() {
-            SelectPartitionRoot.super.properties.bounding(EXCLUSIVE_BOUNDS);
+            SelectPartitionRootAsync.super.properties.bounding(EXCLUSIVE_BOUNDS);
             return getThis();
         }
 
@@ -563,7 +559,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -580,7 +576,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          * @return Slice DSL
          */
         public T fromInclusiveToExclusiveBounds() {
-            SelectPartitionRoot.super.properties.bounding(INCLUSIVE_START_BOUND_ONLY);
+            SelectPartitionRootAsync.super.properties.bounding(INCLUSIVE_START_BOUND_ONLY);
             return getThis();
         }
 
@@ -590,7 +586,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -607,14 +603,14 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          * @return Slice DSL
          */
         public T fromExclusiveToInclusiveBounds() {
-            SelectPartitionRoot.super.properties.bounding(INCLUSIVE_END_BOUND_ONLY);
+            SelectPartitionRootAsync.super.properties.bounding(INCLUSIVE_END_BOUND_ONLY);
             return getThis();
         }
 
 
     }
 
-    public class SelectFromClusterings<ENTITY_TYPE> extends SelectClusteringsRoot<ENTITY_TYPE, SelectFromClusterings<ENTITY_TYPE>> {
+    public class SelectFromClusteringsAsync<ENTITY_TYPE> extends SelectClusteringsRootAsync<ENTITY_TYPE, SelectFromClusteringsAsync<ENTITY_TYPE>> {
 
         /**
          *
@@ -622,7 +618,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .toClusterings(3)
@@ -647,18 +643,18 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          *
          * @return slice DSL
          */
-        public SelectEnd<ENTITY_TYPE> toClusterings(Object... clusteringKeys) {
-            SelectPartitionRoot.super.toClusteringsInternal(clusteringKeys);
-            return new SelectEnd<>();
+        public SelectEndAsync<ENTITY_TYPE> toClusterings(Object... clusteringKeys) {
+            SelectPartitionRootAsync.super.toClusteringsInternal(clusteringKeys);
+            return new SelectEndAsync<>();
         }
 
         @Override
-        protected SelectFromClusterings<ENTITY_TYPE> getThis() {
-            return SelectFromClusterings.this;
+        protected SelectFromClusteringsAsync<ENTITY_TYPE> getThis() {
+            return SelectFromClusteringsAsync.this;
         }
     }
 
-    public class SelectWithClusterings<ENTITY_TYPE> extends SelectClusteringsRootWithLimitation<ENTITY_TYPE, SelectWithClusterings<ENTITY_TYPE>> {
+    public class SelectWithClusteringsAsync<ENTITY_TYPE> extends SelectClusteringsRootWithLimitationAsync<ENTITY_TYPE, SelectWithClusteringsAsync<ENTITY_TYPE>> {
 
         /**
          *
@@ -682,30 +678,88 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          *
          * @return slice DSL
          */
-        public SelectEndWithLimitation<ENTITY_TYPE> andClusteringsIN(Object... clusteringKeys) {
-            SelectPartitionRoot.super.andClusteringsInInternal(clusteringKeys);
-            return new SelectEndWithLimitation<>();
+        public SelectEndWithLimitationAsync<ENTITY_TYPE> andClusteringsIN(Object... clusteringKeys) {
+            SelectPartitionRootAsync.super.andClusteringsInInternal(clusteringKeys);
+            return new SelectEndWithLimitationAsync<>();
         }
 
         @Override
-        protected SelectWithClusterings<ENTITY_TYPE> getThis() {
-            return SelectWithClusterings.this;
+        protected SelectWithClusteringsAsync<ENTITY_TYPE> getThis() {
+            return SelectWithClusteringsAsync.this;
         }
     }
 
-    public class SelectEnd<ENTITY_TYPE> extends SelectClusteringsRoot<ENTITY_TYPE, SelectEnd<ENTITY_TYPE>> {
+    public class SelectEndAsync<ENTITY_TYPE> extends SelectClusteringsRootAsync<ENTITY_TYPE, SelectEndAsync<ENTITY_TYPE>> {
 
         @Override
-        protected SelectEnd<ENTITY_TYPE> getThis() {
-            return SelectEnd.this;
+        protected SelectEndAsync<ENTITY_TYPE> getThis() {
+            return SelectEndAsync.this;
         }
     }
 
-    public class SelectEndWithLimitation<ENTITY_TYPE> extends SelectClusteringsRootWithLimitation<ENTITY_TYPE, SelectEndWithLimitation<ENTITY_TYPE>> {
+    public class SelectEndWithLimitationAsync<ENTITY_TYPE> extends SelectClusteringsRootWithLimitationAsync<ENTITY_TYPE, SelectEndWithLimitationAsync<ENTITY_TYPE>> {
 
         @Override
-        protected SelectEndWithLimitation<ENTITY_TYPE> getThis() {
-            return SelectEndWithLimitation.this;
+        protected SelectEndWithLimitationAsync<ENTITY_TYPE> getThis() {
+            return SelectEndWithLimitationAsync.this;
         }
     }
+
+//    public class SelectPartitionAsyncRoot {
+//
+//        public AchillesFuture<List<TYPE>> get() {
+//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//        }
+//
+//        public AchillesFuture<List<TYPE>> get(int limit) {
+//            SelectPartitionRootAsync.super.properties.limit(limit);
+//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//        }
+//
+//        public AchillesFuture<TYPE> getOne() {
+//            SelectPartitionRootAsync.super.properties.limit(1);
+//            return SelectPartitionRootAsync.super.asyncGetOneInternal();
+//        }
+//
+//        public AchillesFuture<List<TYPE>> getMatching(Object... matchedClusteringKeys) {
+//            SelectPartitionRootAsync.super.withClusteringsInternal(matchedClusteringKeys);
+//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//        }
+//
+//        public AchillesFuture<TYPE> getOneMatching(Object... matchedClusteringKeys) {
+//            SelectPartitionRootAsync.super.withClusteringsInternal(matchedClusteringKeys);
+//            return SelectPartitionRootAsync.super.asyncGetOneInternal();
+//        }
+//
+//        public AchillesFuture<List<TYPE>> getFirstMatching(int limit, Object... matchingClusteringKeys) {
+//            SelectPartitionRootAsync.super.properties.ordering(ASCENDING);
+//            SelectPartitionRootAsync.super.properties.limit(limit);
+//            SelectPartitionRootAsync.super.withClusteringsInternal(matchingClusteringKeys);
+//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//        }
+//
+//        public AchillesFuture<List<TYPE>> getLastMatching(int limit, Object... matchingClusteringKeys) {
+//            SelectPartitionRootAsync.super.properties.ordering(DESCENDING);
+//            SelectPartitionRootAsync.super.withClusteringsInternal(matchingClusteringKeys);
+//            SelectPartitionRootAsync.super.properties.limit(limit);
+//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//        }
+//    }
+//
+//    public class SelectClusteringRootAsync {
+//
+//        public AchillesFuture<TYPE> getOne() {
+//            SelectPartitionRootAsync.super.properties.limit(1);
+//            return SelectPartitionRootAsync.super.asyncGetOneInternal();
+//        }
+//
+//        public AchillesFuture<List<TYPE>> get() {
+//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//        }
+//
+//        public AchillesFuture<List<TYPE>> get(int limit) {
+//            SelectPartitionRootAsync.super.properties.limit(limit);
+//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//        }
+//    }
 }

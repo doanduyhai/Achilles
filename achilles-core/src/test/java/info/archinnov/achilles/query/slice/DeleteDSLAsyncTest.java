@@ -16,25 +16,26 @@
 
 package info.archinnov.achilles.query.slice;
 
-import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
+import info.archinnov.achilles.schemabuilder.Create;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
-import info.archinnov.achilles.schemabuilder.Create;
 
 import java.util.Arrays;
 
+import static java.util.Arrays.asList;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 @RunWith(MockitoJUnitRunner.class)
-public class DeleteDSLTest {
+public class DeleteDSLAsyncTest {
 
     @Mock
     private SliceQueryExecutor executor;
@@ -60,11 +61,11 @@ public class DeleteDSLTest {
     @Test
     public void should_delete_with_partition_keys_only() throws Exception {
         //Given
-        final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forDelete();
+        final DeleteDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forDelete();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
 
         //When
-        final DeleteFromPartition<String> start = builder.withPartitionComponents("a");
+        final DeleteFromPartitionAsync<String> start = builder.withPartitionComponents("a");
 
         start.delete();
 
@@ -78,12 +79,12 @@ public class DeleteDSLTest {
     @Test
     public void should_delete_with_partition_keys_IN() throws Exception {
         //Given
-        final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forDelete();
+        final DeleteDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forDelete();
         when(meta.forTranscoding().encodePartitionComponents(asList())).thenReturn(asList());
         when(meta.forTranscoding().encodePartitionComponentsIN(Arrays.<Object>asList("a", "b"))).thenReturn(Arrays.<Object>asList("a", "b"));
 
         //When
-        final DeleteWithPartition<String> start = builder.withPartitionComponentsIN("a", "b");
+        final DeleteWithPartitionAsync<String> start = builder.withPartitionComponentsIN("a", "b");
 
         start.delete();
 
@@ -97,12 +98,12 @@ public class DeleteDSLTest {
     @Test
     public void should_delete_with_matching_clustering_keys() throws Exception {
         //Given
-        final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forDelete();
+        final DeleteDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forDelete();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
 
         //When
-        final DeleteFromPartition<String> start = builder.withPartitionComponents("a");
+        final DeleteFromPartitionAsync<String> start = builder.withPartitionComponents("a");
 
         start.deleteMatching("A", "B");
 

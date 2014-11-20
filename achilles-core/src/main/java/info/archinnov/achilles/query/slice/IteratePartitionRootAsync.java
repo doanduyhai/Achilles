@@ -16,32 +16,31 @@
 
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.query.slice.BoundingMode.EXCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_END_BOUND_ONLY;
-import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_START_BOUND_ONLY;
-import static info.archinnov.achilles.query.slice.OrderingMode.ASCENDING;
-import static info.archinnov.achilles.query.slice.OrderingMode.DESCENDING;
-import java.util.Iterator;
 import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
-public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<TYPE,T>> extends SliceQueryRootExtended<TYPE, T> {
+import java.util.Iterator;
 
-    protected IteratePartitionRoot(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
+import static info.archinnov.achilles.query.slice.BoundingMode.*;
+import static info.archinnov.achilles.query.slice.OrderingMode.ASCENDING;
+import static info.archinnov.achilles.query.slice.OrderingMode.DESCENDING;
+
+public abstract class IteratePartitionRootAsync<TYPE, T extends IteratePartitionRootAsync<TYPE,T>> extends SliceQueryRootExtended<TYPE, T> {
+
+    protected IteratePartitionRootAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 
     /**
      *
-     * Iterate over selected entities without filtering clustering keys. If no limit has been set, the default LIMIT 100 applies
+     * Iterate over selected entities asynchronously without filtering clustering keys. If no limit has been set, the default LIMIT 100 applies
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forIterate()
      *      .withPartitionComponents(articleId)
      *      .iterator();
@@ -53,19 +52,19 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC LIMIT 100
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;Iterator&lt;TYPE&gt;&gt;
      */
-    public Iterator<TYPE> iterator() {
-        return super.iteratorInternal();
+    public AchillesFuture<Iterator<TYPE>> iterator() {
+        return super.asyncIteratorInternal();
     }
 
     /**
      *
-     * Iterate over selected entities without filtering clustering keys using provided fetch size
+     * Iterate over selected entities asynchronously without filtering clustering keys using provided fetch size
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forIterate()
      *      .withPartitionComponents(articleId)
      *      .iterator(23);
@@ -83,20 +82,20 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      * In this case, Achilles will remove automatically the ORDER BY clause
      * </em></strong>
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;Iterator&lt;TYPE&gt;&gt;
      */
-    public Iterator<TYPE> iterator(int batchSize) {
+    public AchillesFuture<Iterator<TYPE>> iterator(int batchSize) {
         super.properties.fetchSize(batchSize);
-        return super.iteratorInternal();
+        return super.asyncIteratorInternal();
     }
 
     /**
      *
-     * Iterate over entities with matching clustering keys
+     * Iterate over entities asynchronously with matching clustering keys
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forIterate()
      *      .withPartitionComponents(articleId)
      *      .iteratorWithMatching(2);
@@ -108,20 +107,20 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC LIMIT 100
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;Iterator&lt;TYPE&gt;&gt;
      */
-    public Iterator<TYPE> iteratorWithMatching(Object... clusterings) {
+    public AchillesFuture<Iterator<TYPE>> iteratorWithMatching(Object... clusterings) {
         super.withClusteringsInternal(clusterings);
-        return super.iteratorInternal();
+        return super.asyncIteratorInternal();
     }
 
     /**
      *
-     * Iterate over entities with matching clustering keys and fetch size
+     * Iterate over entities asynchronously with matching clustering keys and fetch size
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forIterate()
      *      .withPartitionComponents(articleId)
      *      .iteratorWithMatchingAndBatchSize(10,2);
@@ -138,13 +137,14 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      * In this case, Achilles will remove automatically the ORDER BY clause
      * </em></strong>
      *
-     * @return slice DSL
+     * @return AchillesFuture&lt;Iterator&lt;TYPE&gt;&gt;
      */
-    public Iterator<TYPE> iteratorWithMatchingAndBatchSize(int batchSize, Object... clusterings) {
+    public AchillesFuture<Iterator<TYPE>> iteratorWithMatchingAndBatchSize(int batchSize, Object... clusterings) {
         super.properties.fetchSize(batchSize);
         super.withClusteringsInternal(clusterings);
-        return super.iteratorInternal();
+        return super.asyncIteratorInternal();
     }
+
 
     /**
      *
@@ -152,7 +152,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forIterate()
      *      .withPartitionComponents(articleId)
      *      .fromClusterings(2,now)
@@ -167,9 +167,9 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * @return slice DSL
      */
-    public IterateFromClusterings<TYPE> fromClusterings(Object... clusteringKeys) {
+    public IterateFromClusteringsAsync<TYPE> fromClusterings(Object... clusteringKeys) {
         super.fromClusteringsInternal(clusteringKeys);
-        return new IterateFromClusterings<>();
+        return new IterateFromClusteringsAsync<>();
     }
 
     /**
@@ -178,7 +178,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forIterate()
      *      .withPartitionComponents(articleId)
      *      .toClusterings(3)
@@ -193,9 +193,9 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * @return slice DSL
      */
-    public IterateEnd<TYPE> toClusterings(Object... clusteringKeys) {
+    public IterateEndAsync<TYPE> toClusterings(Object... clusteringKeys) {
         super.toClusteringsInternal(clusteringKeys);
-        return new IterateEnd<>();
+        return new IterateEndAsync<>();
     }
 
     /**
@@ -204,7 +204,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * <pre class="code"><code class="java">
      *
-     *  manager.sliceQuery(ArticleRating.class)
+     *  asyncManager.sliceQuery(ArticleRating.class)
      *      .forIterate()
      *      .withPartitionComponents(articleId)
      *      .withClusterings(3)
@@ -219,12 +219,12 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      *
      * @return slice DSL
      */
-    public IterateWithClusterings<TYPE> withClusterings(Object... clusteringKeys) {
+    public IterateWithClusteringsAsync<TYPE> withClusterings(Object... clusteringKeys) {
         super.withClusteringsInternal(clusteringKeys);
-        return new IterateWithClusterings<>();
+        return new IterateWithClusteringsAsync<>();
     }
 
-    public abstract class IterateClusteringsRootWithLimitation<ENTITY_TYPE, T extends IterateClusteringsRootWithLimitation<ENTITY_TYPE, T>> {
+    public abstract class IterateClusteringsRootWithLimitationAsync<ENTITY_TYPE, T extends IterateClusteringsRootWithLimitationAsync<ENTITY_TYPE, T>> {
 
         /**
          *
@@ -232,7 +232,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -249,7 +249,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * @return Slice DSL
          */
         public T orderByAscending() {
-            IteratePartitionRoot.super.properties.ordering(ASCENDING);
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.properties.ordering(ASCENDING);
             return getThis();
         }
 
@@ -259,7 +259,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -276,7 +276,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * @return Slice DSL
          */
         public T orderByDescending() {
-            IteratePartitionRoot.super.properties.ordering(DESCENDING);
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.properties.ordering(DESCENDING);
             return getThis();
         }
 
@@ -287,7 +287,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -304,7 +304,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * @return Slice DSL
          */
         public T limit(int limit) {
-            IteratePartitionRoot.super.properties.limit(limit);
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.properties.limit(limit);
             return getThis();
         }
 
@@ -316,12 +316,12 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * @return Slice DSL
          */
         public T withConsistency(ConsistencyLevel consistencyLevel) {
-            IteratePartitionRoot.super.properties.consistency(consistencyLevel);
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.properties.consistency(consistencyLevel);
             return getThis();
         }
 
         public T withAsyncListeners(FutureCallback<Object>...asyncListeners) {
-            IteratePartitionRoot.this.properties.asyncListeners(asyncListeners);
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.this.properties.asyncListeners(asyncListeners);
             return getThis();
         }
 
@@ -329,11 +329,11 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
 
         /**
          *
-         * Iterate over entities with filtering clustering keys
+         * Iterate over entities asynchronously with filtering clustering keys
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forIterate()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2)
@@ -346,19 +346,19 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC LIMIT 100
          *
-         * @return slice DSL
+         * @return AchillesFuture&lt;Iterator&lt;TYPE&gt;&gt;
          */
-        public Iterator<TYPE> iterator() {
-            return IteratePartitionRoot.super.iteratorInternal();
+        public AchillesFuture<Iterator<TYPE>> iterator() {
+            return info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.asyncIteratorInternal();
         }
 
         /**
          *
-         * Iterate over entities with filtering clustering keys and fetch zie
+         * Iterate over entities asynchronously with filtering clustering keys and fetch zie
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forIterate()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2)
@@ -376,15 +376,15 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * In this case, Achilles will remove automatically the ORDER BY clause
          * </em></strong>
          *
-         * @return slice DSL
+         * @return AchillesFuture&lt;Iterator&lt;TYPE&gt;&gt;
          */
-        public Iterator<TYPE> iterator(int batchSize) {
-            IteratePartitionRoot.super.properties.fetchSize(batchSize);
-            return IteratePartitionRoot.super.iteratorInternal();
+        public AchillesFuture<Iterator<TYPE>> iterator(int batchSize) {
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.properties.fetchSize(batchSize);
+            return info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.asyncIteratorInternal();
         }
     }
 
-    public abstract class IterateClusteringsRoot<ENTITY_TYPE, T extends IterateClusteringsRoot<ENTITY_TYPE, T>> extends IterateClusteringsRootWithLimitation<ENTITY_TYPE, T> {
+    public abstract class IterateClusteringsRootAsync<ENTITY_TYPE, T extends IterateClusteringsRootAsync<ENTITY_TYPE, T>> extends IterateClusteringsRootWithLimitationAsync<ENTITY_TYPE, T> {
 
         /**
          *
@@ -392,7 +392,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -410,7 +410,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * @return Slice DSL
          */
         public T withInclusiveBounds() {
-            IteratePartitionRoot.super.properties.bounding(INCLUSIVE_BOUNDS);
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.properties.bounding(INCLUSIVE_BOUNDS);
             return getThis();
         }
 
@@ -420,7 +420,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -437,7 +437,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * @return Slice DSL
          */
         public T withExclusiveBounds() {
-            IteratePartitionRoot.super.properties.bounding(EXCLUSIVE_BOUNDS);
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.properties.bounding(EXCLUSIVE_BOUNDS);
             return getThis();
         }
 
@@ -447,7 +447,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -464,7 +464,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * @return Slice DSL
          */
         public T fromInclusiveToExclusiveBounds() {
-            IteratePartitionRoot.super.properties.bounding(INCLUSIVE_START_BOUND_ONLY);
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.properties.bounding(INCLUSIVE_START_BOUND_ONLY);
             return getThis();
         }
 
@@ -474,7 +474,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forSelect()
          *      .withPartitionComponents(articleId)
          *      .fromClusterings(2, now)
@@ -491,12 +491,12 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * @return Slice DSL
          */
         public T fromExclusiveToInclusiveBounds() {
-            IteratePartitionRoot.super.properties.bounding(INCLUSIVE_END_BOUND_ONLY);
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.properties.bounding(INCLUSIVE_END_BOUND_ONLY);
             return getThis();
         }
     }
 
-    public class IterateFromClusterings<ENTITY_TYPE> extends IterateClusteringsRoot<ENTITY_TYPE, IterateFromClusterings<ENTITY_TYPE>> {
+    public class IterateFromClusteringsAsync<ENTITY_TYPE> extends IterateClusteringsRootAsync<ENTITY_TYPE, IterateFromClusteringsAsync<ENTITY_TYPE>> {
 
         /**
          *
@@ -504,7 +504,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forIterate()
          *      .withPartitionComponents(articleId)
          *      .toClusterings(3)
@@ -519,18 +519,18 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * @return slice DSL
          */
-        public IterateEnd<TYPE> toClusterings(Object... clusteringKeys) {
-            IteratePartitionRoot.super.toClusteringsInternal(clusteringKeys);
-            return new IterateEnd<>();
+        public IterateEndAsync<TYPE> toClusterings(Object... clusteringKeys) {
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.toClusteringsInternal(clusteringKeys);
+            return new IterateEndAsync<>();
         }
 
         @Override
-        protected IterateFromClusterings<ENTITY_TYPE> getThis() {
-            return IterateFromClusterings.this;
+        protected IterateFromClusteringsAsync<ENTITY_TYPE> getThis() {
+            return IterateFromClusteringsAsync.this;
         }
     }
 
-    public class IterateWithClusterings<ENTITY_TYPE> extends IterateClusteringsRootWithLimitation<ENTITY_TYPE, IterateWithClusterings<ENTITY_TYPE>> {
+    public class IterateWithClusteringsAsync<ENTITY_TYPE> extends IterateClusteringsRootWithLimitationAsync<ENTITY_TYPE, IterateWithClusteringsAsync<ENTITY_TYPE>> {
 
         /**
          *
@@ -538,7 +538,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * <pre class="code"><code class="java">
          *
-         *  manager.sliceQuery(ArticleRating.class)
+         *  asyncManager.sliceQuery(ArticleRating.class)
          *      .forIterate()
          *      .withPartitionComponents(articleId)
          *      .withClusterings(3)
@@ -554,28 +554,28 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          *
          * @return slice DSL
          */
-        public IterateEndWithLimitation<TYPE> andClusteringsIN(Object... clusteringKeys) {
-            IteratePartitionRoot.super.andClusteringsInInternal(clusteringKeys);
-            return new IterateEndWithLimitation<>();
+        public IterateEndWithLimitationAsync<TYPE> andClusteringsIN(Object... clusteringKeys) {
+            info.archinnov.achilles.query.slice.IteratePartitionRootAsync.super.andClusteringsInInternal(clusteringKeys);
+            return new IterateEndWithLimitationAsync<>();
         }
 
         @Override
-        protected IterateWithClusterings<ENTITY_TYPE> getThis() {
-            return IterateWithClusterings.this;
-        }
-    }
-
-    public class IterateEnd<ENTITY_TYPE> extends IterateClusteringsRoot<ENTITY_TYPE, IterateEnd<ENTITY_TYPE>> {
-        @Override
-        protected IterateEnd<ENTITY_TYPE> getThis() {
-            return IterateEnd.this;
+        protected IterateWithClusteringsAsync<ENTITY_TYPE> getThis() {
+            return IterateWithClusteringsAsync.this;
         }
     }
 
-    public class IterateEndWithLimitation<ENTITY_TYPE> extends IterateClusteringsRootWithLimitation<ENTITY_TYPE, IterateEndWithLimitation<ENTITY_TYPE>> {
+    public class IterateEndAsync<ENTITY_TYPE> extends IterateClusteringsRootAsync<ENTITY_TYPE, IterateEndAsync<ENTITY_TYPE>> {
         @Override
-        protected IterateEndWithLimitation<ENTITY_TYPE> getThis() {
-            return IterateEndWithLimitation.this;
+        protected IterateEndAsync<ENTITY_TYPE> getThis() {
+            return IterateEndAsync.this;
+        }
+    }
+
+    public class IterateEndWithLimitationAsync<ENTITY_TYPE> extends IterateClusteringsRootWithLimitationAsync<ENTITY_TYPE, IterateEndWithLimitationAsync<ENTITY_TYPE>> {
+        @Override
+        protected IterateEndWithLimitationAsync<ENTITY_TYPE> getThis() {
+            return IterateEndWithLimitationAsync.this;
         }
     }
 }

@@ -175,12 +175,12 @@ abstract class AbstractPersistenceManager {
         return proxifier.removeProxy(proxies);
     }
 
-    protected <T> SliceQueryBuilder<T> sliceQuery(Class<T> entityClass) {
+    protected <T> EntityMeta validateSliceQueryInternal(Class<T> entityClass) {
         Validator.validateNotNull(entityClass,"The entityClass should be provided for slice query");
         EntityMeta meta = entityMetaMap.get(entityClass);
         Validator.validateNotNull(meta, "The entity '%s' is not managed by achilles", entityClass.getName());
         Validator.validateTrue(meta.structure().isClusteredEntity(),"Cannot perform slice query on entity type '%s' because it is " + "not a clustered entity",meta.getClassName());
-        return new SliceQueryBuilder<>(sliceQueryExecutor, entityClass, meta);
+        return meta;
     }
 
     protected <T> EntityMeta typedQueryInternal(Class<T> entityClass, Statement statement, Object... boundValues) {

@@ -15,7 +15,6 @@
  */
 package info.archinnov.achilles.persistence;
 
-import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.async.AchillesFuture;
@@ -26,10 +25,9 @@ import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.query.cql.AsyncNativeQuery;
-import info.archinnov.achilles.query.cql.NativeQuery;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
+import info.archinnov.achilles.query.slice.SliceQueryBuilderAsync;
 import info.archinnov.achilles.query.typed.AsyncTypedQuery;
-import info.archinnov.achilles.query.typed.TypedQuery;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;
 import org.slf4j.Logger;
@@ -421,7 +419,7 @@ public class AsyncManager extends CommonAsyncManager {
 
 
     /**
-     * Create a builder to start slice query DSL. The provided entity class <strong>must</strong> be:
+     * Create a builder to start an asynchronous slice query DSL. The provided entity class <strong>must</strong> be:
      *
      * <ul>
      *     <li>a entity type managed by <strong>Achilles</strong></li>
@@ -432,15 +430,16 @@ public class AsyncManager extends CommonAsyncManager {
      *
      * @param entityClass type of the clustered entity
      * @param <T>: type of the clustered entity
-     * @return SliceQueryBuilder
+     * @return SliceQueryBuilderAsync&lt;T&gt;
      */
-    public <T> SliceQueryBuilder<T> sliceQuery(Class<T> entityClass) {
+    public <T> SliceQueryBuilderAsync<T> sliceQuery(Class<T> entityClass) {
         log.debug("Execute slice query for entity class {}", entityClass);
-        return super.sliceQuery(entityClass);
+        final EntityMeta meta = super.validateSliceQueryInternal(entityClass);
+        return new SliceQueryBuilderAsync<>(sliceQueryExecutor, entityClass, meta);
     }
 
     /**
-     * Return a CQL native query
+     * Return a CQL native query DSL
      *
      * <br/>
      * <br/>

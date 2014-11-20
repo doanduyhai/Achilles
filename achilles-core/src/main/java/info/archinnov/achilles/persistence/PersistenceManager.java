@@ -26,9 +26,9 @@ import java.util.Set;
 
 import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.query.slice.SliceQueryBuilderAsync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -474,7 +474,8 @@ public class PersistenceManager extends CommonPersistenceManager {
      */
     public <T> SliceQueryBuilder<T> sliceQuery(Class<T> entityClass) {
         log.debug("Execute slice query for entity class {}", entityClass);
-        return super.sliceQuery(entityClass);
+        final EntityMeta meta = super.validateSliceQueryInternal(entityClass);
+        return new SliceQueryBuilder<>(sliceQueryExecutor, entityClass, meta);
     }
 
     /**

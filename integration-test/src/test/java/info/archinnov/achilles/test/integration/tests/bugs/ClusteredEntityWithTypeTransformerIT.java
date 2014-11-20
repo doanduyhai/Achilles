@@ -16,11 +16,9 @@
 
 package info.archinnov.achilles.test.integration.tests.bugs;
 
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
-import info.archinnov.achilles.query.typed.TypedQuery;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTypeTransformer;
 import org.apache.commons.lang3.RandomUtils;

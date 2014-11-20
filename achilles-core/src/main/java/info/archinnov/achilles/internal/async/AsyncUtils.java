@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import info.archinnov.achilles.type.Empty;
 import org.apache.commons.lang3.ArrayUtils;
 import com.datastax.driver.core.ResultSet;
@@ -91,6 +93,9 @@ public class AsyncUtils {
         return Futures.transform(from, function, executorService);
     }
 
+    public <T, V> ListenableFuture<T> transformFuture(ListenableFuture<V> from, Function<V, T> function) {
+        return Futures.transform(from, function, MoreExecutors.sameThreadExecutor());
+    }
 
     public <V> ListenableFuture<Empty> transformFutureToEmpty(ListenableFuture<V> from, ExecutorService executorService) {
         Function<V, Empty> function = new Function<V, Empty>() {

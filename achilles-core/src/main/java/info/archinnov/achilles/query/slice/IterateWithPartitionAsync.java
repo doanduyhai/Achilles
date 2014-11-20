@@ -13,18 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package info.archinnov.achilles.query.slice;
 
-public enum OrderingMode {
-	DESCENDING(true), ASCENDING(false);
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 
-	private boolean reverse;
+public class IterateWithPartitionAsync<TYPE> extends IteratePartitionRootAsync<TYPE,IterateWithPartitionAsync<TYPE>> {
 
-	private OrderingMode(boolean reverse) {
-		this.reverse = reverse;
-	}
+    protected IterateWithPartitionAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
+        super(sliceQueryExecutor, entityClass, meta, sliceType);
+    }
 
-	public boolean isReverse() {
-		return reverse;
-	}
+    @Override
+    protected IterateWithPartitionAsync<TYPE> getThis() {
+        return IterateWithPartitionAsync.this;
+    }
 }

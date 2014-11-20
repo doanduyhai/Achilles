@@ -403,40 +403,47 @@ public class AsyncQueryIT {
     @Test
     public void should_query_async_with_default_params() throws Exception {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        List<ClusteredEntity> entities = asyncManager.sliceQuery(ClusteredEntity.class)
+        final CountDownLatch latch1 = new CountDownLatch(1);
+        AchillesFuture<List<ClusteredEntity>> futureEntities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .fromClusterings(1, "name2").toClusterings(1, "name4")
-                .async().get()
-                .getImmediately();
+                .withAsyncListeners(countDownLatch(latch1))
+                .get();
 
+        latch1.await();
+
+        List<ClusteredEntity> entities = futureEntities.get();
         assertThat(entities).isEmpty();
 
-        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch latch2 = new CountDownLatch(1);
         final AtomicReference<Object> successSpy = new AtomicReference<>();
 
         FutureCallback<Object> successCallBack = new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 successSpy.getAndSet(result);
-                latch.countDown();
+                latch2.countDown();
             }
 
             @Override
             public void onFailure(Throwable t) {
-                latch.countDown();
+                latch2.countDown();
             }
         };
 
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        entities = asyncManager.sliceQuery(ClusteredEntity.class)
+        futureEntities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .fromClusterings(1, "name2").toClusterings(1, "name4")
                 .withAsyncListeners(successCallBack)
-                .async().get()
-                .getImmediately();
+                .get();
+
+        latch2.await();
+
+        entities = futureEntities.get();
 
         assertThat(entities).hasSize(3);
 
@@ -464,8 +471,9 @@ public class AsyncQueryIT {
     public void should_query_async_with_custom_params() throws Exception {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
+        final CountDownLatch latch1 = new CountDownLatch(1);
 
-        List<ClusteredEntity> entities = asyncManager.sliceQuery(ClusteredEntity.class)
+        AchillesFuture<List<ClusteredEntity>> futureEntities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .fromClusterings(1, "name1")
@@ -473,9 +481,12 @@ public class AsyncQueryIT {
                 .fromExclusiveToInclusiveBounds()
                 .orderByDescending()
                 .limit(2)
-                .async().get()
-                .getImmediately();
+                .withAsyncListeners(countDownLatch(latch1))
+                .get();
 
+        latch1.await();
+
+        final List<ClusteredEntity> entities = futureEntities.get();
         assertThat(entities).hasSize(2);
 
         assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 4);
@@ -493,7 +504,7 @@ public class AsyncQueryIT {
                 .fromClusterings(1, "name2")
                 .toClusterings(1, "name4")
                 .withConsistency(EACH_QUORUM)
-                .async().get();
+                .get();
 
         exception.expect(ExecutionException.class);
         exception.expectMessage("EACH_QUORUM ConsistencyLevel is only supported for writes");
@@ -504,30 +515,45 @@ public class AsyncQueryIT {
     @Test
     public void should_query_async_with_getFirst() throws Exception {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        ClusteredEntity entity = asyncManager.sliceQuery(ClusteredEntity.class)
+        final CountDownLatch latch1 = new CountDownLatch(1);
+
+        AchillesFuture<ClusteredEntity> futureEntity = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
-                .async().getOne()
-                .getImmediately();
+                .withAsyncListeners(countDownLatch(latch1))
+                .getOne();
 
+        latch1.await();
+
+        ClusteredEntity entity = futureEntity.get();
         assertThat(entity).isNull();
 
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        entity = asyncManager.sliceQuery(ClusteredEntity.class)
+        final CountDownLatch latch2 = new CountDownLatch(1);
+
+        futureEntity = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
-                .async().getOne()
-                .getImmediately();
+                .withAsyncListeners(countDownLatch(latch2))
+                .getOne();
 
+        latch2.await();
+
+        entity = futureEntity.get();
         assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 1);
 
-        List<ClusteredEntity> entities = asyncManager.sliceQuery(ClusteredEntity.class)
+        final CountDownLatch latch3 = new CountDownLatch(1);
+
+        AchillesFuture<List<ClusteredEntity>> futureEntities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
-                .async().get(3)
-                .getImmediately();
+                .withAsyncListeners(countDownLatch(latch3))
+                .get(3);
 
+        latch3.await();
+
+        List<ClusteredEntity> entities = futureEntities.get();
         assertThat(entities).hasSize(3);
         assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 1);
         assertThat(entities.get(1).getValue()).isEqualTo(clusteredValuePrefix + 2);
@@ -536,12 +562,17 @@ public class AsyncQueryIT {
         insertClusteredEntity(partitionKey, 4, "name41", clusteredValuePrefix + 41);
         insertClusteredEntity(partitionKey, 4, "name42", clusteredValuePrefix + 42);
 
-        entities = asyncManager.sliceQuery(ClusteredEntity.class)
+        final CountDownLatch latch4 = new CountDownLatch(1);
+
+        futureEntities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
-                .async().getFirstMatching(3,4)
-                .getImmediately();
+                .withAsyncListeners(countDownLatch(latch4))
+                .getFirstMatching(3, 4);
 
+        latch4.await();
+
+        entities = futureEntities.get();
         assertThat(entities).hasSize(2);
 
         assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 41);
@@ -553,33 +584,49 @@ public class AsyncQueryIT {
     public void should_query_async_with_getLast() throws Exception {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
-        ClusteredEntity entity = asyncManager.sliceQuery(ClusteredEntity.class)
+        final CountDownLatch latch1 = new CountDownLatch(1);
+
+        AchillesFuture<ClusteredEntity> futureEntity = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
+                .withAsyncListeners(countDownLatch(latch1))
                 .orderByDescending()
-                .async().getOne()
-                .getImmediately();
+                .getOne();
 
+        latch1.await();
+
+        ClusteredEntity entity = futureEntity.get();
         assertThat(entity).isNull();
 
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        entity = asyncManager.sliceQuery(ClusteredEntity.class)
+        final CountDownLatch latch2 = new CountDownLatch(1);
+
+        futureEntity = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .orderByDescending()
-                .async().getOne()
-                .getImmediately();
+                .withAsyncListeners(countDownLatch(latch2))
+                .getOne();
+
+        latch2.await();
+
+        entity = futureEntity.get();
 
         assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 5);
 
-        List<ClusteredEntity> entities = asyncManager.sliceQuery(ClusteredEntity.class)
+        final CountDownLatch latch3 = new CountDownLatch(1);
+
+        AchillesFuture<List<ClusteredEntity>> futureEntities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .orderByDescending()
-                .async().get(3)
-                .getImmediately();
+                .withAsyncListeners(countDownLatch(latch3))
+                .get(3);
 
+        latch3.await();
+
+        List<ClusteredEntity> entities = futureEntities.get();
         assertThat(entities).hasSize(3);
         assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 5);
         assertThat(entities.get(1).getValue()).isEqualTo(clusteredValuePrefix + 4);
@@ -590,11 +637,17 @@ public class AsyncQueryIT {
         insertClusteredEntity(partitionKey, 4, "name43", clusteredValuePrefix + 43);
         insertClusteredEntity(partitionKey, 4, "name44", clusteredValuePrefix + 44);
 
-        entities = asyncManager.sliceQuery(ClusteredEntity.class)
+        final CountDownLatch latch4 = new CountDownLatch(1);
+
+        futureEntities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
-                .async().getLastMatching(3,4)
-                .getImmediately();
+                .withAsyncListeners(countDownLatch(latch4))
+                .getLastMatching(3, 4);
+
+        latch4.await();
+
+        entities = futureEntities.get();
 
         assertThat(entities).hasSize(3);
 
@@ -608,11 +661,16 @@ public class AsyncQueryIT {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        Iterator<ClusteredEntity> iter = asyncManager.sliceQuery(ClusteredEntity.class)
+        final CountDownLatch latch1 = new CountDownLatch(1);
+
+        AchillesFuture<Iterator<ClusteredEntity>> futureIter = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forIteration()
                 .withPartitionComponents(partitionKey)
-                .async().iterator()
-                .getImmediately();
+                .withAsyncListeners(countDownLatch(latch1))
+                .iterator();
+
+        latch1.await();
+        final Iterator<ClusteredEntity> iter = futureIter.get();
 
         assertThat(iter.hasNext()).isTrue();
         ClusteredEntity next = iter.next();
@@ -657,13 +715,19 @@ public class AsyncQueryIT {
         long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        Iterator<ClusteredEntity> iter = asyncManager.sliceQuery(ClusteredEntity.class)
+        final CountDownLatch latch1 = new CountDownLatch(1);
+
+        AchillesFuture<Iterator<ClusteredEntity>> futureIter = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forIteration()
                 .withPartitionComponents(partitionKey)
                 .fromClusterings(1, "name2")
                 .toClusterings(1)
-                .async()
-                .iterator(2).getImmediately();
+                .withAsyncListeners(countDownLatch(latch1))
+                .iterator(2);
+
+        latch1.await();
+
+        final Iterator<ClusteredEntity> iter = futureIter.get();
 
         assertThat(iter.hasNext()).isTrue();
         assertThat(iter.next().getValue()).isEqualTo(clusteredValuePrefix + 2);
@@ -688,15 +752,21 @@ public class AsyncQueryIT {
         insertClusteredEntity(partitionKey, 3, "name31", "val31");
         insertClusteredEntity(partitionKey, 4, "name41", "val41");
 
+        final CountDownLatch latch1 = new CountDownLatch(1);
+
         //When
-        final Iterator<ClusteredEntity> iterator = asyncManager.sliceQuery(ClusteredEntity.class)
+        AchillesFuture<Iterator<ClusteredEntity>> futureIter = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forIteration()
                 .withPartitionComponents(partitionKey)
                 .fromClusterings(1)
                 .fromInclusiveToExclusiveBounds()
                 .limit(6)
-                .async()
-                .iterator(2).getImmediately();
+                .withAsyncListeners(countDownLatch(latch1))
+                .iterator(2);
+
+        latch1.await();
+
+        final Iterator<ClusteredEntity> iterator = futureIter.get();
 
         //Then
         assertThat(iterator.hasNext()).isTrue();
@@ -727,17 +797,27 @@ public class AsyncQueryIT {
         insertValues(partitionKey, 2, 3);
         insertValues(partitionKey, 3, 1);
 
+        final CountDownLatch latch1 = new CountDownLatch(1);
+
         asyncManager.sliceQuery(ClusteredEntity.class)
                 .forDelete()
                 .withPartitionComponents(partitionKey)
-                .async()
-                .deleteMatching(2)
-                .getImmediately();
+                .withAsyncListeners(countDownLatch(latch1))
+                .deleteMatching(2);
 
-        List<ClusteredEntity> entities = asyncManager.sliceQuery(ClusteredEntity.class)
+        latch1.await();
+
+        final CountDownLatch latch2 = new CountDownLatch(1);
+
+        AchillesFuture<List<ClusteredEntity>> futureEntities = asyncManager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
+                .withAsyncListeners(countDownLatch(latch2))
                 .get(100);
+
+        latch2.await();
+
+        final List<ClusteredEntity> entities = futureEntities.get();
 
         assertThat(entities).hasSize(3);
 
@@ -762,17 +842,7 @@ public class AsyncQueryIT {
         final BoundStatement insertBs = insertPs.bind(id, "label", 32L);
 
         final CountDownLatch latch1 = new CountDownLatch(1);
-        asyncManager.nativeQuery(insertBs).execute(new FutureCallback<Object>() {
-            @Override
-            public void onSuccess(Object result) {
-                latch1.countDown();
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-
-            }
-        });
+        asyncManager.nativeQuery(insertBs).execute(countDownLatch(latch1));
 
         latch1.await();
 
@@ -781,28 +851,8 @@ public class AsyncQueryIT {
 
         //When
         final CountDownLatch latch2 = new CountDownLatch(2);
-        final AchillesFuture<CompleteBean> foundWithProxy = asyncManager.typedQuery(CompleteBean.class, selectBs).getFirst(new FutureCallback<Object>() {
-            @Override
-            public void onSuccess(Object result) {
-                latch2.countDown();
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-
-            }
-        });
-        final AchillesFuture<CompleteBean> foundRaw = asyncManager.rawTypedQuery(CompleteBean.class, selectBs).getFirst(new FutureCallback<Object>() {
-            @Override
-            public void onSuccess(Object result) {
-                latch2.countDown();
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-
-            }
-        });
+        final AchillesFuture<CompleteBean> foundWithProxy = asyncManager.typedQuery(CompleteBean.class, selectBs).getFirst(countDownLatch(latch2));
+        final AchillesFuture<CompleteBean> foundRaw = asyncManager.rawTypedQuery(CompleteBean.class, selectBs).getFirst(countDownLatch(latch2));
 
         latch2.await();
 
@@ -832,6 +882,20 @@ public class AsyncQueryIT {
     private void insertClusteredEntity(Long partitionKey, int count, String name, String clusteredValue) {
         ClusteredEntity.ClusteredKey embeddedId = new ClusteredEntity.ClusteredKey(partitionKey, count, name);
         ClusteredEntity entity = new ClusteredEntity(embeddedId, clusteredValue);
-        asyncManager.insert(entity);
+        asyncManager.insert(entity).getImmediately();
+    }
+
+    private FutureCallback<Object> countDownLatch(final CountDownLatch latch) {
+        return new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                latch.countDown();
+            }
+        };
     }
 }
