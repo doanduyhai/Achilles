@@ -278,19 +278,15 @@ public class PersistenceManagerFacadeTest {
     @Test
     public void should_get_proxy() throws Exception {
         // Given
-        final ArgumentCaptor<ImmediateValue> immediateValueCaptor = ArgumentCaptor.forClass(ImmediateValue.class);
         when(loader.createEmptyEntity(context.entityFacade, CompleteBean.class)).thenReturn(entity);
         when(proxifier.buildProxyWithNoFieldLoaded(entity, context.entityFacade)).thenReturn(entity);
-        when(asyncUtils.buildInterruptible(immediateValueCaptor.capture())).thenReturn(achillesFutureEntity);
 
         // When
-        final AchillesFuture<CompleteBean> actual = facade.getProxy(CompleteBean.class);
+        final CompleteBean actual = facade.getProxy(CompleteBean.class);
 
         // Then
-        assertThat(actual).isSameAs(achillesFutureEntity);
-        verify(asyncUtils).maybeAddAsyncListeners(immediateValueCaptor.capture(), eq(options));
-        assertThat(immediateValueCaptor.getAllValues().get(0).get()).isSameAs(entity);
-        assertThat(immediateValueCaptor.getAllValues().get(1).get()).isSameAs(entity);
+        assertThat(actual).isSameAs(entity);
+
     }
 
     @Test

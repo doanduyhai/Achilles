@@ -25,7 +25,6 @@ import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.query.cql.AsyncNativeQuery;
-import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilderAsync;
 import info.archinnov.achilles.query.typed.AsyncTypedQuery;
 import info.archinnov.achilles.type.IndexCondition;
@@ -178,7 +177,7 @@ public class AsyncManager extends CommonAsyncManager {
      * @param primaryKey
      *            Primary key (Cassandra row key) of the entity to load
      *
-     * @return AchillesFuture<T> future managed entity
+     * @return AchillesFuture&lt;T&gt; future managed entity
      */
     public <T> AchillesFuture<T> find(Class<T> entityClass, Object primaryKey) {
         log.debug("Find entity class '{}' with primary key '{}'", entityClass, primaryKey);
@@ -196,7 +195,7 @@ public class AsyncManager extends CommonAsyncManager {
      * @param options
      *            Options
      *
-     * @return AchillesFuture<T> future managed entity
+     * @return AchillesFuture&lt;T&gt; future managed entity
      */
     public <T> AchillesFuture<T> find(final Class<T> entityClass, final Object primaryKey, Options options) {
         log.debug("Find entity class '{}' with primary key '{}' and options '{}'", entityClass, primaryKey, options);
@@ -215,11 +214,11 @@ public class AsyncManager extends CommonAsyncManager {
      * @param primaryKey
      *            Primary key (Cassandra row key) of the entity to initialize
      *
-     * @return AchillesFuture<T> future proxy
+     * @return T future proxy
      */
-    public <T> AchillesFuture<T> getProxy(Class<T> entityClass, Object primaryKey) {
+    public <T> T getProxy(Class<T> entityClass, Object primaryKey) {
         log.debug("Get reference asynchronously for entity class '{}' with primary key {}", entityClass, primaryKey);
-        return super.asyncGetProxy(entityClass, primaryKey, noOptions());
+        return super.getProxyInternal(entityClass, primaryKey, noOptions());
     }
 
 
@@ -236,11 +235,11 @@ public class AsyncManager extends CommonAsyncManager {
      * @param options
      *            Options
      *
-     * @return AchillesFuture<T> future proxy
+     * @return T future proxy
      */
-    public <T> AchillesFuture<T> getProxy(final Class<T> entityClass, final Object primaryKey, Options options) {
+    public <T> T getProxy(final Class<T> entityClass, final Object primaryKey, Options options) {
         log.debug("Get reference asynchronously for entity class '{}' with primary key {} and options {}", entityClass, primaryKey, options);
-        return super.asyncGetProxy(entityClass, primaryKey, options);
+        return super.getProxyInternal(entityClass, primaryKey, options);
     }
 
 
@@ -250,7 +249,7 @@ public class AsyncManager extends CommonAsyncManager {
      * @param entity
      *            Entity to be refreshed
      *
-     * @return AchillesFuture<T> future managed entity
+     * @return AchillesFuture&lt;T&gt; future managed entity
      */
     public <T> AchillesFuture<T> refresh(T entity) throws AchillesStaleObjectStateException {
         log.debug("Refreshing entity '{}' asynchronously", proxifier.removeProxy(entity));
@@ -265,7 +264,7 @@ public class AsyncManager extends CommonAsyncManager {
      * @param options
      *            Options
      *
-     * @return AchillesFuture<T> future managed entity
+     * @return AchillesFuture&lt;T&gt; future managed entity
      */
     public <T> AchillesFuture<T> refresh(final T entity, Options options) throws AchillesStaleObjectStateException {
         log.debug("Refreshing entity '{}' asynchronously with options '{}'", proxifier.removeProxy(entity), options);
@@ -554,7 +553,7 @@ public class AsyncManager extends CommonAsyncManager {
      * @param boundValues
      *            values to be bind to the parameterized query, if any
      *
-     * @return AsyncTypedQuery<T>
+     * @return AsyncTypedQuery&lt;T&gt;
      */
     public <T> AsyncTypedQuery<T> typedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
         final EntityMeta meta = super.typedQueryInternal(entityClass, statement,boundValues);
@@ -572,7 +571,7 @@ public class AsyncManager extends CommonAsyncManager {
      * @param indexCondition
      *            index condition
      *
-     * @return AsyncTypedQuery<T>
+     * @return AsyncTypedQuery&lt;T&gt;
      */
     public <T> AsyncTypedQuery<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
         log.debug("Execute indexed query for entity class {}", entityClass);
@@ -617,7 +616,7 @@ public class AsyncManager extends CommonAsyncManager {
      * @param boundValues
      *            values to be bind to the parameterized query, if any
      *
-     * @return AsyncTypedQuery<T>
+     * @return AsyncTypedQuery&lt;T&gt;
      */
     public <T> AsyncTypedQuery<T> rawTypedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
         log.debug("Execute raw typed query for entity class {}", entityClass);

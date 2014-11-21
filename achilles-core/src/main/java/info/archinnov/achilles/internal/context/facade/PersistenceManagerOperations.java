@@ -36,7 +36,7 @@ public interface PersistenceManagerOperations extends PersistentStateHolder {
 
     public <T> AchillesFuture<T> find(Class<T> entityClass);
 
-    public <T> AchillesFuture<T> getProxy(Class<T> entityClass);
+    public <T> T getProxy(Class<T> entityClass);
 
     public <T> AchillesFuture<T> refresh(T proxy) throws AchillesStaleObjectStateException;
 

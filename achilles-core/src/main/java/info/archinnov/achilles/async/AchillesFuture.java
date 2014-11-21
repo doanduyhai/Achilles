@@ -86,10 +86,6 @@ public class AchillesFuture<V> implements ListenableFuture<V> {
             return (DriverInternalError) cause;
         } else if (cause instanceof AchillesLightWeightTransactionException) {
             return (AchillesLightWeightTransactionException) cause;
-        } else if (cause instanceof AchillesBeanMappingException) {
-            return (AchillesBeanMappingException) cause;
-        } else if (cause instanceof AchillesBeanMappingException) {
-            return (AchillesBeanMappingException) cause;
         } else if (cause instanceof AchillesBeanValidationException) {
             return (AchillesBeanValidationException) cause;
         } else if (cause instanceof AchillesInvalidTableException) {

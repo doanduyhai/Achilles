@@ -474,7 +474,7 @@ public class AsyncOperationsIT {
                 latch.countDown();
             }
         };
-        final CompleteBean proxy = manager.getProxy(CompleteBean.class, 10L).getImmediately();
+        final CompleteBean proxy = manager.getProxy(CompleteBean.class, 10L);
 
         //When
         manager.refresh(proxy, withAsyncListeners(exceptionCallBack));

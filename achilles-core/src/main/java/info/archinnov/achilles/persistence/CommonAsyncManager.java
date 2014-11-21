@@ -207,7 +207,7 @@ public class CommonAsyncManager extends AbstractPersistenceManager {
      *            Primary key
      * @return future of {@code info.archinnov.achilles.type.Empty}.INSTANCE
      */
-    public Future<Empty> deleteById(Class<?> entityClass, Object primaryKey) {
+    public AchillesFuture<Empty> deleteById(Class<?> entityClass, Object primaryKey) {
         log.debug("Deleting asynchronously entity of type '{}' by its id '{}'", entityClass, primaryKey);
         return super.asyncDeleteById(entityClass, primaryKey, noOptions());
     }
@@ -229,7 +229,7 @@ public class CommonAsyncManager extends AbstractPersistenceManager {
      *
      * @return future of {@code info.archinnov.achilles.type.Empty}.INSTANCE
      */
-    public Future<Empty> deleteById(Class<?> entityClass, Object primaryKey, Options options) {
+    public AchillesFuture<Empty> deleteById(Class<?> entityClass, Object primaryKey, Options options) {
         log.debug("Removing asynchronously entity of type '{}' by its id '{}'", entityClass, primaryKey);
         return super.asyncDeleteById(entityClass, primaryKey, options);
     }

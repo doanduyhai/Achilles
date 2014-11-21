@@ -26,7 +26,6 @@ import java.util.Set;
 
 import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.query.slice.SliceQueryBuilderAsync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;
@@ -233,7 +232,7 @@ public class PersistenceManager extends CommonPersistenceManager {
      */
     public <T> T getProxy(Class<T> entityClass, Object primaryKey) {
         log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
-        return super.asyncGetProxy(entityClass, primaryKey, noOptions()).getImmediately();
+        return super.getProxyInternal(entityClass, primaryKey, noOptions());
     }
 
 
@@ -259,7 +258,7 @@ public class PersistenceManager extends CommonPersistenceManager {
          if (log.isDebugEnabled()) {
             log.debug("Get reference for entity class '{}' with primary key {} and options {}", entityClass, primaryKey, options);
         }
-        return super.asyncGetProxy(entityClass, primaryKey, options).getImmediately();
+        return super.getProxyInternal(entityClass, primaryKey, options);
     }
 
 

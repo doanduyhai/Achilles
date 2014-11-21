@@ -43,11 +43,17 @@ public class OptionsValidator {
         return valid;
     }
 
+    public void validateNoAsyncListener(Options options) {
+        Validator.validateFalse(options.hasAsyncListeners(),"Cannot provide custom asynchronous listener for this operation");
+    }
+
     private void validateNoTtlForClusteredCounter(Object entity, Map<Class<?>, EntityMeta> entityMetaMap, Options options) {
         if (options.getTtl().isPresent()) {
             entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
         }
     }
+
+
 
     public static enum Singleton {
         INSTANCE;

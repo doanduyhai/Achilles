@@ -362,12 +362,9 @@ public class PersistenceContext {
             return asyncUtils.buildInterruptible(proxyCreated);
         }
 
-        public <T> AchillesFuture<T> getProxy(Class<T> entityClass) {
+        public <T> T getProxy(Class<T> entityClass) {
             T entity = loader.createEmptyEntity(entityFacade, entityClass);
-            final T proxy = proxifier.buildProxyWithNoFieldLoaded(entity, entityFacade);
-            final ImmediateValue<T> immediateValue = new ImmediateValue<>(proxy);
-            asyncUtils.maybeAddAsyncListeners(immediateValue, options);
-            return asyncUtils.buildInterruptible(immediateValue);
+            return proxifier.buildProxyWithNoFieldLoaded(entity, entityFacade);
         }
 
         public <T> AchillesFuture<T> refresh(T proxy) throws AchillesStaleObjectStateException {
