@@ -26,11 +26,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import javax.validation.ValidationException;
+
+import info.archinnov.achilles.internal.async.DefaultExecutorThreadFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -69,6 +68,7 @@ public class ArgumentExtractor {
     static final int DEFAULT_THREAD_POOL_MAX_THREAD_COUNT = 10;
     static final long DEFAULT_THREAD_POOL_THREAD_TTL = 60L;
     static final int DEFAULT_THREAD_POOL_QUEUE_SIZE = 1000;
+    static final ThreadFactory DEFAULT_THREAD_POOL_THREAD_FACTORY = new DefaultExecutorThreadFactory();
 
     static final InsertStrategy DEFAULT_INSERT_STRATEGY = InsertStrategy.ALL_FIELDS;
     static final NamingStrategy DEFAULT_GLOBAL_NAMING_STRATEGY = NamingStrategy.LOWER_CASE;
@@ -266,8 +266,8 @@ public class ArgumentExtractor {
         int maxThreads = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_MAX_THREAD, DEFAULT_THREAD_POOL_MAX_THREAD_COUNT);
         long threadKeepAlive = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE, DEFAULT_THREAD_POOL_THREAD_TTL);
         int queueSize = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE, DEFAULT_THREAD_POOL_QUEUE_SIZE);
+        ThreadFactory threadFactory = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY, DEFAULT_THREAD_POOL_THREAD_FACTORY);
         return new ThreadPoolExecutor(minThreads, maxThreads, threadKeepAlive, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(queueSize),
-                new DefaultExecutorThreadFactory());
+                new LinkedBlockingQueue<Runnable>(queueSize),threadFactory);
     }
 }

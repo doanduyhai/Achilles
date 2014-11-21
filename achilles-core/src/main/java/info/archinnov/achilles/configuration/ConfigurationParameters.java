@@ -212,6 +212,15 @@ package info.archinnov.achilles.configuration;
  *                  new DefaultExecutorThreadFactory())
  *       </code></pre>
  *  </li>
+ *  <li>
+ *      <strong>DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY</strong> (OPTIONAL): define the thread factory used by <strong>Achilles</strong> for its internal asynchronous operations.
+ *      The thread pool will configured as follow:
+ *       <pre class="code"><code class="java">
+ *              new ThreadPoolExecutor(5, 20, 60, TimeUnit.SECONDS,
+ *                  new LinkedBlockingQueue<Runnable>(1000),
+ *                  DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY)
+ *       </code></pre>
+ *  </li>
  * </ul>
  * <p>For more details, please check <strong><a href="https://github.com/doanduyhai/Achilles/wiki/Asynchronous-Operations">Asynchronous Operations</a></strong></p>
  */
@@ -257,7 +266,8 @@ public enum ConfigurationParameters {
     DEFAULT_EXECUTOR_SERVICE_MIN_THREAD("achilles.executor.service.default.thread.min"),
     DEFAULT_EXECUTOR_SERVICE_MAX_THREAD("achilles.executor.service.default.thread.max"),
     DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE("achilles.executor.service.default.thread.keepalive"),
-    DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE("achilles.executor.service.default.queue.size");
+    DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE("achilles.executor.service.default.queue.size"),
+    DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY("achilles.executor.service.thread.factory");
 
 
     private String label;

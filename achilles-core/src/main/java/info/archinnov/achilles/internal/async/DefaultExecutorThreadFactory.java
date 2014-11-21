@@ -1,4 +1,4 @@
-package info.archinnov.achilles.configuration;
+package info.archinnov.achilles.internal.async;
 
 import static org.slf4j.LoggerFactory.getLogger;
 import java.util.concurrent.ThreadFactory;
@@ -13,7 +13,7 @@ public class DefaultExecutorThreadFactory implements ThreadFactory {
     private Thread.UncaughtExceptionHandler uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
         @Override
         public void uncaughtException(Thread t, Throwable e) {
-            logger.error("", e);
+            logger.error("Uncaught asynchronous exception : "+e.getMessage(), e);
         }
     };
 
