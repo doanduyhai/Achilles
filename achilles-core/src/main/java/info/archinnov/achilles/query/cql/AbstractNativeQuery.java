@@ -93,7 +93,7 @@ public abstract class AbstractNativeQuery {
         final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(nativeStatementWrapper);
         final ListenableFuture<Empty> futureEmpty = asyncUtils.transformFutureToEmpty(resultSetFuture, executorService);
 
-        asyncUtils.maybeAddAsyncListeners(futureEmpty, asyncListeners, executorService);
+        asyncUtils.maybeAddAsyncListeners(futureEmpty, asyncListeners);
         return asyncUtils.buildInterruptible(futureEmpty);
     }
 
@@ -109,7 +109,7 @@ public abstract class AbstractNativeQuery {
         };
 
         final ListenableFuture<Iterator<TypedMap>> futureTypedMapIterator = asyncUtils.transformFuture(futureResultSet, toTypedMap, executorService);
-        asyncUtils.maybeAddAsyncListeners(futureTypedMapIterator, asyncListeners, executorService);
+        asyncUtils.maybeAddAsyncListeners(futureTypedMapIterator, asyncListeners);
         return asyncUtils.buildInterruptible(futureTypedMapIterator);
     }
 }

@@ -123,13 +123,6 @@ public class AsyncUtils {
     }
 
     public ListenableFuture<ResultSet> applyLoggingTracingAndCASCheck(ResultSetFuture resultSetFuture, final AbstractStatementWrapper statementWrapper, ExecutorService executorService) {
-        Function<ResultSet, ResultSet> logStatements = new Function<ResultSet, ResultSet>() {
-            @Override
-            public ResultSet apply(ResultSet resultSet) {
-                statementWrapper.logDMLStatement("");
-                return resultSet;
-            }
-        };
 
         Function<ResultSet, ResultSet> tracing = new Function<ResultSet, ResultSet>() {
             @Override
@@ -147,8 +140,7 @@ public class AsyncUtils {
             }
         };
 
-        final ListenableFuture<ResultSet> logApplied = Futures.transform(resultSetFuture, logStatements, executorService);
-        final ListenableFuture<ResultSet> tracingApplied = Futures.transform(logApplied, tracing);
+        final ListenableFuture<ResultSet> tracingApplied = Futures.transform(resultSetFuture, tracing, executorService);
         return Futures.transform(tracingApplied, LWTCheck);
     }
 

@@ -315,7 +315,7 @@ public class PersistenceContext {
                 }
             };
             final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(resultSetFutures, applyTriggers, getExecutorService());
-            asyncUtils.maybeAddAsyncListeners(triggersApplied, options, getExecutorService());
+            asyncUtils.maybeAddAsyncListeners(triggersApplied, options);
             return asyncUtils.buildInterruptible(triggersApplied);
         }
 
@@ -366,7 +366,7 @@ public class PersistenceContext {
             T entity = loader.createEmptyEntity(entityFacade, entityClass);
             final T proxy = proxifier.buildProxyWithNoFieldLoaded(entity, entityFacade);
             final ImmediateValue<T> immediateValue = new ImmediateValue<>(proxy);
-            asyncUtils.maybeAddAsyncListeners(immediateValue, options, getExecutorService());
+            asyncUtils.maybeAddAsyncListeners(immediateValue, options);
             return asyncUtils.buildInterruptible(immediateValue);
         }
 

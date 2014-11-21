@@ -247,7 +247,7 @@ public class PersistenceManagerFacadeTest {
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_DELETE);
         inOrder.verify(persister).delete(context.entityFacade);
         inOrder.verify(flushContext).flush();
-        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options, executorService);
+        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options);
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_DELETE);
     }
 
@@ -288,7 +288,7 @@ public class PersistenceManagerFacadeTest {
 
         // Then
         assertThat(actual).isSameAs(achillesFutureEntity);
-        verify(asyncUtils).maybeAddAsyncListeners(immediateValueCaptor.capture(), eq(options), eq(executorService));
+        verify(asyncUtils).maybeAddAsyncListeners(immediateValueCaptor.capture(), eq(options));
         assertThat(immediateValueCaptor.getAllValues().get(0).get()).isSameAs(entity);
         assertThat(immediateValueCaptor.getAllValues().get(1).get()).isSameAs(entity);
     }

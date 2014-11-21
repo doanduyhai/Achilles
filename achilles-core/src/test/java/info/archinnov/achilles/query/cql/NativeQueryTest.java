@@ -227,7 +227,7 @@ public class NativeQueryTest {
         //Then
         assertThat(actual).isSameAs(achillesFutureEmpty);
 
-        verify(asyncUtils).maybeAddAsyncListeners(futureEmpty, asyncListeners, executorService);
+        verify(asyncUtils).maybeAddAsyncListeners(futureEmpty, asyncListeners);
 
         final NativeStatementWrapper statementWrapper = nativeStatementCaptor.getValue();
         assertThat(statementWrapper.getStatement()).isInstanceOf(SimpleStatement.class);
