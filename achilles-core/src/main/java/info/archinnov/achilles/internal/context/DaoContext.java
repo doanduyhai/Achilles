@@ -148,7 +148,7 @@ public class DaoContext {
         log.debug("Load property '{}' for PersistenceContext '{}'", pm, context);
         PreparedStatement ps = cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm);
         final ListenableFuture<ResultSet> resultSetFuture = executeReadWithConsistency(context, ps, pm.structure().isStaticColumn());
-        final ListenableFuture<Row> futureRows = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW, executorService);
+        final ListenableFuture<Row> futureRows = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW);
         return asyncUtils.buildInterruptible(futureRows).getImmediately();
     }
 
@@ -197,7 +197,7 @@ public class DaoContext {
         PreparedStatement ps = counterQueryMap.get(SELECT);
         BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterSelect(context, ps, counterMeta, consistencyLevel);
         final ListenableFuture<ResultSet> resultSetFuture = context.executeImmediate(bsWrapper);
-        final ListenableFuture<Row> futureRow = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW, executorService);
+        final ListenableFuture<Row> futureRow = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW);
         final Row row = asyncUtils.buildInterruptible(futureRow).getImmediately();
         return rowToLongFunction(ACHILLES_COUNTER_VALUE).apply(row);
     }
@@ -227,7 +227,7 @@ public class DaoContext {
         ConsistencyLevel consistencyLevel = overrider.getReadLevel(context);
         BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(context, ps, false, consistencyLevel);
         final ListenableFuture<ResultSet> resultSetFuture = context.executeImmediate(bsWrapper);
-        return asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW, executorService);
+        return asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW);
     }
 
     public Long getClusteredCounterColumn(DaoOperations context, PropertyMeta counterMeta) {
@@ -239,7 +239,7 @@ public class DaoContext {
         BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(context, ps, counterMeta.structure().isStaticColumn(), readLevel);
 
         final ListenableFuture<ResultSet> resultSetFuture = context.executeImmediate(bsWrapper);
-        final ListenableFuture<Row> futureRow = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW, executorService);
+        final ListenableFuture<Row> futureRow = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW);
         final Row row = asyncUtils.buildInterruptible(futureRow).getImmediately();
         return rowToLongFunction(cqlColumnName).apply(row);
     }
@@ -260,7 +260,7 @@ public class DaoContext {
 		final EntityMeta entityMeta = context.getEntityMeta();
 
         final ListenableFuture<ResultSet> resultSetFuture = executeReadWithConsistency(context, ps, entityMeta.structure().hasOnlyStaticColumns());
-        return asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW, executorService);
+        return asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW);
     }
 
     public BoundStatementWrapper bindForSliceQuerySelect(SliceQueryProperties<?> sliceQueryProperties, ConsistencyLevel defaultReadConsistencyLevel) {

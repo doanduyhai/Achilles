@@ -80,6 +80,10 @@ public class AsyncUtils {
         }
     }
 
+    public void maybeAddAsyncListeners(ListenableFuture<?> listenableFuture, Options options) {
+        maybeAddAsyncListeners(listenableFuture, options, MoreExecutors.sameThreadExecutor());
+    }
+
     public void maybeAddAsyncListeners(ListenableFuture<?> listenableFuture, FutureCallback<Object>[] asyncListeners, ExecutorService executorService) {
         if (ArrayUtils.isNotEmpty(asyncListeners)) {
             for (FutureCallback<Object> callback : asyncListeners) {
@@ -88,6 +92,9 @@ public class AsyncUtils {
         }
     }
 
+    public void maybeAddAsyncListeners(ListenableFuture<?> listenableFuture, FutureCallback<Object>[] asyncListeners) {
+        maybeAddAsyncListeners(listenableFuture, asyncListeners, MoreExecutors.sameThreadExecutor());
+    }
 
     public <T, V> ListenableFuture<T> transformFuture(ListenableFuture<V> from, Function<V, T> function, ExecutorService executorService) {
         return Futures.transform(from, function, executorService);
@@ -141,8 +148,8 @@ public class AsyncUtils {
         };
 
         final ListenableFuture<ResultSet> logApplied = Futures.transform(resultSetFuture, logStatements, executorService);
-        final ListenableFuture<ResultSet> tracingApplied = Futures.transform(logApplied, tracing, executorService);
-        return Futures.transform(tracingApplied, LWTCheck, executorService);
+        final ListenableFuture<ResultSet> tracingApplied = Futures.transform(logApplied, tracing);
+        return Futures.transform(tracingApplied, LWTCheck);
     }
 
     public static enum Singleton {

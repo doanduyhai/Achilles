@@ -187,9 +187,9 @@ public class SliceQueryExecutorTest {
         when(daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel)).thenReturn(bsWrapper);
 
         when(daoContext.execute(bsWrapper)).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS, executorService)).thenReturn(futureRows);
-        when(asyncUtils.transformFuture(eq(futureRows), rowsToEntitiesCaptor.capture(), eq(executorService))).thenReturn(futureEntities);
-        when(asyncUtils.transformFuture(eq(futureEntities), isoEntitiesCaptor.capture(), eq(executorService))).thenReturn(futureEntities);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS)).thenReturn(futureRows);
+        when(asyncUtils.transformFuture(eq(futureRows), rowsToEntitiesCaptor.capture())).thenReturn(futureEntities);
+        when(asyncUtils.transformFuture(eq(futureEntities), isoEntitiesCaptor.capture())).thenReturn(futureEntities);
         when(asyncUtils.buildInterruptible(futureEntities)).thenReturn(achillesFutureEntities);
 
         when(meta.forOperations().instanciate()).thenReturn(entity);
@@ -212,7 +212,7 @@ public class SliceQueryExecutorTest {
         entities = entitiesFunction.apply(asList(entity));
         assertThat(entities).containsExactly(entity);
 
-        verify(asyncUtils).maybeAddAsyncListeners(futureEntities, asyncListeners, executorService);
+        verify(asyncUtils).maybeAddAsyncListeners(futureEntities, asyncListeners);
     }
 
     @Test
@@ -220,8 +220,8 @@ public class SliceQueryExecutorTest {
         when(daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel)).thenReturn(bsWrapper);
 
         when(daoContext.execute(bsWrapper)).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ITERATOR, executorService)).thenReturn(futureIteratorRow);
-        when(asyncUtils.transformFuture(eq(futureIteratorRow), rowToEntityIteratorCaptor.capture(), eq(executorService))).thenReturn(futureIteratorEntities);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ITERATOR)).thenReturn(futureIteratorRow);
+        when(asyncUtils.transformFuture(eq(futureIteratorRow), rowToEntityIteratorCaptor.capture())).thenReturn(futureIteratorEntities);
         when(asyncUtils.buildInterruptible(futureIteratorEntities)).thenReturn(achillesFutureIteratorEntities);
 
         when(contextFactory.newContextForSliceQuery(ClusteredEntity.class, partitionComponents, LOCAL_QUORUM)).thenReturn(context);
@@ -234,7 +234,7 @@ public class SliceQueryExecutorTest {
 
         assertThat(entitiesIterator).isNotNull().isInstanceOf(SliceQueryIterator.class);
 
-        verify(asyncUtils).maybeAddAsyncListeners(futureIteratorEntities, asyncListeners, executorService);
+        verify(asyncUtils).maybeAddAsyncListeners(futureIteratorEntities, asyncListeners);
     }
 
     @Test

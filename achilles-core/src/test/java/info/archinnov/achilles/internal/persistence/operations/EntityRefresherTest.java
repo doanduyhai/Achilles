@@ -110,7 +110,7 @@ public class EntityRefresherTest {
         when(context.getEntityMeta()).thenReturn(entityMeta);
         when(loader.load(context, CompleteBean.class)).thenReturn(achillesFutureEntity);
         when(context.getAllGettersExceptCounters()).thenReturn(allGettersExceptCounters);
-        when(asyncUtils.transformFuture(eq(achillesFutureEntity), interceptorCaptor.capture(), eq(executorService))).thenReturn(achillesFutureEntity);
+        when(asyncUtils.transformFuture(eq(achillesFutureEntity), interceptorCaptor.capture())).thenReturn(achillesFutureEntity);
         when(asyncUtils.buildInterruptible(achillesFutureEntity)).thenReturn(achillesFutureEntity);
 
         // When

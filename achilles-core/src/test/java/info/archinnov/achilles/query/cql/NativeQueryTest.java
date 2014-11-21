@@ -136,8 +136,8 @@ public class NativeQueryTest {
         List<TypedMap> typedMaps = new ArrayList<>();
 
         when(daoContext.execute(any(NativeStatementWrapper.class))).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS, executorService)).thenReturn(futureRows);
-        when(asyncUtils.transformFuture(eq(futureRows), rowsToTypedMapsCaptor.capture(), eq(executorService))).thenReturn(futureTypedMaps);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS)).thenReturn(futureRows);
+        when(asyncUtils.transformFuture(eq(futureRows), rowsToTypedMapsCaptor.capture())).thenReturn(futureTypedMaps);
         when(asyncUtils.buildInterruptible(futureTypedMaps)).thenReturn(achillesFutureTypedMaps);
 
         when(mapper.mapRows(rows)).thenReturn(typedMaps);
@@ -147,7 +147,7 @@ public class NativeQueryTest {
 
         // Then
         assertThat(actual).isSameAs(achillesFutureTypedMaps);
-        verify(asyncUtils).maybeAddAsyncListeners(futureTypedMaps, asyncListeners, executorService);
+        verify(asyncUtils).maybeAddAsyncListeners(futureTypedMaps, asyncListeners);
 
         final Function<List<Row>, List<TypedMap>> function = rowsToTypedMapsCaptor.getValue();
         final List<TypedMap> actualTypedMaps = function.apply(rows);
@@ -164,8 +164,8 @@ public class NativeQueryTest {
         typedMaps.add(typedMap);
 
         when(daoContext.execute(any(NativeStatementWrapper.class))).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS, executorService)).thenReturn(futureRows);
-        when(asyncUtils.transformFuture(eq(futureRows), rowsToTypedMapCaptor.capture(), eq(executorService))).thenReturn(futureTypedMap);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS)).thenReturn(futureRows);
+        when(asyncUtils.transformFuture(eq(futureRows), rowsToTypedMapCaptor.capture())).thenReturn(futureTypedMap);
         when(asyncUtils.buildInterruptible(futureTypedMap)).thenReturn(achillesFutureTypedMap);
 
         when(mapper.mapRows(rows)).thenReturn(typedMaps);
@@ -175,7 +175,7 @@ public class NativeQueryTest {
 
         // Then
         assertThat(actual).isSameAs(achillesFutureTypedMap);
-        verify(asyncUtils).maybeAddAsyncListeners(futureTypedMap, asyncListeners, executorService);
+        verify(asyncUtils).maybeAddAsyncListeners(futureTypedMap, asyncListeners);
 
         final Function<List<Row>, TypedMap> function = rowsToTypedMapCaptor.getValue();
         final TypedMap actualTypedMap = function.apply(rows);
@@ -190,8 +190,8 @@ public class NativeQueryTest {
         List<TypedMap> typedMaps = new ArrayList<>();
 
         when(daoContext.execute(any(NativeStatementWrapper.class))).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS, executorService)).thenReturn(futureRows);
-        when(asyncUtils.transformFuture(eq(futureRows), rowsToTypedMapCaptor.capture(), eq(executorService))).thenReturn(futureTypedMap);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS)).thenReturn(futureRows);
+        when(asyncUtils.transformFuture(eq(futureRows), rowsToTypedMapCaptor.capture())).thenReturn(futureTypedMap);
         when(asyncUtils.buildInterruptible(futureTypedMap)).thenReturn(achillesFutureTypedMap);
 
         when(mapper.mapRows(rows)).thenReturn(typedMaps);
@@ -201,7 +201,7 @@ public class NativeQueryTest {
 
         // Then
         assertThat(actual).isSameAs(achillesFutureTypedMap);
-        verify(asyncUtils).maybeAddAsyncListeners(futureTypedMap, asyncListeners, executorService);
+        verify(asyncUtils).maybeAddAsyncListeners(futureTypedMap, asyncListeners);
 
         final Function<List<Row>, TypedMap> function = rowsToTypedMapCaptor.getValue();
         final TypedMap actualTypedMap = function.apply(rows);

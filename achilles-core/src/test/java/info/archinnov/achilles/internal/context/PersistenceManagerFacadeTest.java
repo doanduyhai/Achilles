@@ -163,7 +163,7 @@ public class PersistenceManagerFacadeTest {
         //Given
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context.entityFacade)).thenReturn(entity);
         when(asyncUtils.transformFuture(eq(futureResultSets), resultSetsToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
-        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         //When
@@ -180,7 +180,7 @@ public class PersistenceManagerFacadeTest {
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_INSERT);
         inOrder.verify(persister).persist(context.entityFacade);
         inOrder.verify(flushContext).flush();
-        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options, executorService);
+        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options);
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_INSERT);
     }
 
@@ -225,7 +225,7 @@ public class PersistenceManagerFacadeTest {
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_UPDATE);
         inOrder.verify(updater).update(context.entityFacade, entity);
         inOrder.verify(flushContext).flush();
-        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options, executorService);
+        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options);
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_UPDATE);
     }
 
@@ -257,8 +257,8 @@ public class PersistenceManagerFacadeTest {
         when(loader.load(context.entityFacade, CompleteBean.class)).thenReturn(achillesFutureEntity);
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context.entityFacade)).thenReturn(entity);
 
-        when(asyncUtils.transformFuture(eq(achillesFutureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
-        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(achillesFutureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         //When
@@ -271,7 +271,7 @@ public class PersistenceManagerFacadeTest {
         assertThat(isoEntityCaptor.getAllValues().get(1).apply(entity)).isSameAs(entity);
 
         InOrder inOrder = inOrder(flushContext, updater, asyncUtils);
-        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options, executorService);
+        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options);
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_LOAD);
     }
 
@@ -299,8 +299,8 @@ public class PersistenceManagerFacadeTest {
         CompleteBean proxy = new CompleteBean();
         when(refresher.refresh(proxy, context.entityFacade)).thenReturn(achillesFutureEntity);
         when(proxifier.removeProxy(proxy)).thenReturn(entity);
-        when(asyncUtils.transformFuture(eq(achillesFutureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
-        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(achillesFutureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         // When
@@ -315,7 +315,7 @@ public class PersistenceManagerFacadeTest {
         InOrder inOrder = inOrder(flushContext, refresher, proxifier, asyncUtils);
 
         inOrder.verify(refresher).refresh(proxy, context.entityFacade);
-        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options, executorService);
+        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options);
         inOrder.verify(proxifier).removeProxy(proxy);
         inOrder.verify(flushContext).triggerInterceptor(meta, context.entity, POST_LOAD);
     }

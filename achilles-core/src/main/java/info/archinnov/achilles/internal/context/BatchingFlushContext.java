@@ -85,7 +85,7 @@ public class BatchingFlushContext extends AbstractFlushContext {
         final List<ListenableFuture<ResultSet>> resultSetFutures = from(asList(resultSetFutureFields, resultSetFutureCounters)).filter(not(isNull())).toList();
 
         final ListenableFuture<List<ResultSet>> futureAsList = asyncUtils.mergeResultSetFutures(resultSetFutures);
-        final ListenableFuture<Empty> triggersApplied = asyncUtils.transformFuture(futureAsList, applyTriggers, daoContext.getExecutorService());
+        final ListenableFuture<Empty> triggersApplied = asyncUtils.transformFuture(futureAsList, applyTriggers);
         return asyncUtils.buildInterruptible(triggersApplied);
     }
 

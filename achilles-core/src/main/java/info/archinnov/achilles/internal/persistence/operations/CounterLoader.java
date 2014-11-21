@@ -53,7 +53,7 @@ public class CounterLoader {
                 return entity;
             }
         };
-        final ListenableFuture<T> futureEntity = asyncUtils.transformFuture(futureRow, rowToEntity, context.getExecutorService());
+        final ListenableFuture<T> futureEntity = asyncUtils.transformFuture(futureRow, rowToEntity);
         return asyncUtils.buildInterruptible(futureEntity);
     }
 

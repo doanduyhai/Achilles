@@ -145,7 +145,7 @@ public class BatchingFlushContextTest {
 
         when(daoContext.execute(statementWrapperCaptor.capture())).thenReturn(futureResultSet1, futureResultSet2);
         when(asyncUtils.mergeResultSetFutures(futureResultSetsCaptor.capture())).thenReturn(futureAsList);
-        when(asyncUtils.transformFuture(eq(futureAsList), applyTriggersCaptor.capture(), eq(executorService))).thenReturn(futureEmpty);
+        when(asyncUtils.transformFuture(eq(futureAsList), applyTriggersCaptor.capture())).thenReturn(futureEmpty);
         when(asyncUtils.buildInterruptible(futureEmpty)).thenReturn(achillesEmpty);
 
         //When

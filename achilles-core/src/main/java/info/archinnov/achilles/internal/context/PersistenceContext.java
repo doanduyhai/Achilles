@@ -271,9 +271,9 @@ public class PersistenceContext {
 
             final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(resultSetFutures, applyTriggers, getExecutorService());
 
-            asyncUtils.maybeAddAsyncListeners(triggersApplied, options, getExecutorService());
+            asyncUtils.maybeAddAsyncListeners(triggersApplied, options);
 
-            final ListenableFuture<T> proxyCreated = asyncUtils.transformFuture(triggersApplied, createProxy, getExecutorService());
+            final ListenableFuture<T> proxyCreated = asyncUtils.transformFuture(triggersApplied, createProxy);
 
             return asyncUtils.buildInterruptible(proxyCreated);
         }
@@ -299,7 +299,7 @@ public class PersistenceContext {
                 }
             };
             final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(resultSetFutures, applyTriggers, getExecutorService());
-            asyncUtils.maybeAddAsyncListeners(triggersApplied, options, getExecutorService());
+            asyncUtils.maybeAddAsyncListeners(triggersApplied, options);
             return asyncUtils.buildInterruptible(triggersApplied);
         }
 
@@ -330,7 +330,7 @@ public class PersistenceContext {
                 }
             };
             final ListenableFuture<Empty> triggersApplied = asyncUtils.transformFuture(resultSetFutures, toEmpty, getExecutorService());
-            asyncUtils.maybeAddAsyncListeners(triggersApplied, options, getExecutorService());
+            asyncUtils.maybeAddAsyncListeners(triggersApplied, options);
             return asyncUtils.buildInterruptible(triggersApplied);
         }
 
@@ -347,9 +347,9 @@ public class PersistenceContext {
                 }
             };
 
-            final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(achillesFuture, applyTrigger, getExecutorService());
+            final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(achillesFuture, applyTrigger);
 
-            asyncUtils.maybeAddAsyncListeners(triggersApplied, options, getExecutorService());
+            asyncUtils.maybeAddAsyncListeners(triggersApplied, options);
 
             Function<T, T> createProxy = new Function<T, T>() {
                 @Override
@@ -358,7 +358,7 @@ public class PersistenceContext {
                 }
             };
 
-            final ListenableFuture<T> proxyCreated = asyncUtils.transformFuture(triggersApplied, createProxy, getExecutorService());
+            final ListenableFuture<T> proxyCreated = asyncUtils.transformFuture(triggersApplied, createProxy);
             return asyncUtils.buildInterruptible(proxyCreated);
         }
 
@@ -380,9 +380,9 @@ public class PersistenceContext {
                 }
             };
 
-            final ListenableFuture<T> proxyRemoved = asyncUtils.transformFuture(achillesFuture, removeProxy, getExecutorService());
+            final ListenableFuture<T> proxyRemoved = asyncUtils.transformFuture(achillesFuture, removeProxy);
 
-            asyncUtils.maybeAddAsyncListeners(proxyRemoved, options, getExecutorService());
+            asyncUtils.maybeAddAsyncListeners(proxyRemoved, options);
 
             final Function<T, T> applyTriggers = new Function<T, T>() {
                 @Override
@@ -392,7 +392,7 @@ public class PersistenceContext {
                 }
             };
 
-            final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(achillesFuture, applyTriggers, getExecutorService());
+            final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(achillesFuture, applyTriggers);
 
             return asyncUtils.buildInterruptible(triggersApplied);
         }

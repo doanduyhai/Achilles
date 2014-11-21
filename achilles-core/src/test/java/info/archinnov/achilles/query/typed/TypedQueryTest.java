@@ -163,9 +163,9 @@ public class TypedQueryTest {
         initBuilder(statement, meta, meta.getPropertyMetas(), MANAGED);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS, executorService)).thenReturn(futureRows);
-        when(asyncUtils.transformFuture(eq(futureRows), rowsToEntitiesCaptor.capture(), eq(executorService))).thenReturn(futureEntities);
-        when(asyncUtils.transformFuture(eq(futureEntities), isoEntitiesCaptor.capture(), eq(executorService))).thenReturn(futureEntities);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS)).thenReturn(futureRows);
+        when(asyncUtils.transformFuture(eq(futureRows), rowsToEntitiesCaptor.capture())).thenReturn(futureEntities);
+        when(asyncUtils.transformFuture(eq(futureEntities), isoEntitiesCaptor.capture())).thenReturn(futureEntities);
         when(asyncUtils.buildInterruptible(futureEntities)).thenReturn(achillesFuturesEntities);
 
         when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(entity);
@@ -177,7 +177,7 @@ public class TypedQueryTest {
 
         // Then
         assertThat(actual).isSameAs(achillesFuturesEntities);
-        verify(asyncUtils).maybeAddAsyncListeners(futureEntities, asyncListeners, executorService);
+        verify(asyncUtils).maybeAddAsyncListeners(futureEntities, asyncListeners);
 
         final Function<List<Row>, List<CompleteBean>> rowsToEntities = rowsToEntitiesCaptor.getValue();
         final List<CompleteBean> entities = rowsToEntities.apply(asList(row));
@@ -210,8 +210,8 @@ public class TypedQueryTest {
 
         when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
         when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROW, executorService)).thenReturn(futureRow);
-        when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
-        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture())).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFuturesEntity);
 
         when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(entity);
@@ -223,7 +223,7 @@ public class TypedQueryTest {
 
         // Then
         assertThat(actual).isSameAs(achillesFuturesEntity);
-        verify(asyncUtils).maybeAddAsyncListeners(futureEntity, asyncListeners, executorService);
+        verify(asyncUtils).maybeAddAsyncListeners(futureEntity, asyncListeners);
 
         final CompleteBean actualEntity = rowToEntityCaptor.getValue().apply(row);
         assertThat(actualEntity).isSameAs(entity);

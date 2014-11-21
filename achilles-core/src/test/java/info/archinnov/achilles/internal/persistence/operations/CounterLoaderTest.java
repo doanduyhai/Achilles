@@ -107,7 +107,7 @@ public class CounterLoaderTest {
     public void should_load_clustered_counters() throws Exception {
         // Given
         Row row = mock(Row.class);
-        when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         when(overrider.getReadLevel(context)).thenReturn(ONE);
@@ -130,7 +130,7 @@ public class CounterLoaderTest {
     @Test
     public void should_not_load_clustered_counters_when_not_found() throws Exception {
         // Given
-        when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         when(overrider.getReadLevel(context)).thenReturn(ONE);

@@ -242,11 +242,13 @@ public abstract class AbstractStatementWrapper {
                 }
                 try {
                     final QueryTrace queryTrace = executionInfo.getQueryTrace();
-                    final List<QueryTrace.Event> events = new ArrayList<>(queryTrace.getEvents());
-                    Collections.sort(events, EVENT_TRACE_COMPARATOR);
-                    for (QueryTrace.Event event : events) {
-                        final String formatted = String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName());
-                        actualLogger.trace(formatted);
+                    if (queryTrace != null) {
+                        final List<QueryTrace.Event> events = new ArrayList<>(queryTrace.getEvents());
+                        Collections.sort(events, EVENT_TRACE_COMPARATOR);
+                        for (QueryTrace.Event event : events) {
+                            final String formatted = String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName());
+                            actualLogger.trace(formatted);
+                        }
                     }
                 } catch (TraceRetrievalException e) {
                     actualLogger.trace(" ERROR: cannot retrieve trace for query {} because it may not be yet available", getQueryString());
