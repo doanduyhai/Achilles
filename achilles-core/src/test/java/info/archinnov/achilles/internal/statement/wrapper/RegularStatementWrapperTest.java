@@ -133,12 +133,12 @@ public class RegularStatementWrapperTest {
         final AtomicBoolean LWTSuccess = new AtomicBoolean(false);
         LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onLWTSuccess() {
+            public void onSuccess() {
                 LWTSuccess.compareAndSet(false, true);
             }
 
             @Override
-            public void onLWTError(LWTResult casResult) {
+            public void onError(LWTResult lwtResult) {
 
             }
         };
@@ -160,12 +160,12 @@ public class RegularStatementWrapperTest {
         final AtomicReference<LWTResultListener.LWTResult> atomicLWTResult = new AtomicReference<>(null);
         LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onLWTSuccess() {
+            public void onSuccess() {
             }
 
             @Override
-            public void onLWTError(LWTResult LWTResult) {
-                atomicLWTResult.compareAndSet(null, LWTResult);
+            public void onError(LWTResult lwtResult) {
+                atomicLWTResult.compareAndSet(null, lwtResult);
             }
         };
         wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, fromNullable(listener), NO_SERIAL_CONSISTENCY);

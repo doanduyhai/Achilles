@@ -21,9 +21,9 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.Empty;
 
-public abstract class DeletePartitionRootAsync<TYPE, T extends DeletePartitionRootAsync<TYPE, T>> extends SliceQueryRoot<TYPE, T> {
+public abstract class AsyncDeletePartitionRoot<TYPE, T extends AsyncDeletePartitionRoot<TYPE, T>> extends SliceQueryRoot<TYPE, T> {
 
-    protected DeletePartitionRootAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
+    protected AsyncDeletePartitionRoot(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 

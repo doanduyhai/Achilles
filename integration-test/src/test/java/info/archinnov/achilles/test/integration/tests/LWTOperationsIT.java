@@ -27,7 +27,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_SERIAL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.Options.LWTCondition;
-import static info.archinnov.achilles.type.OptionsBuilder.LWTResultListener;
+import static info.archinnov.achilles.type.OptionsBuilder.lwtResultListener;
 import static info.archinnov.achilles.type.OptionsBuilder.ifConditions;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.ArrayList;
@@ -84,12 +84,12 @@ public class LWTOperationsIT {
         final AtomicBoolean LWTSuccess = new AtomicBoolean(false);
         LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onLWTSuccess() {
+            public void onSuccess() {
                 LWTSuccess.compareAndSet(false, true);
             }
 
             @Override
-            public void onLWTError(LWTResult LWTResult) {
+            public void onError(LWTResult lwtResult) {
 
             }
         };
@@ -135,12 +135,12 @@ public class LWTOperationsIT {
         final AtomicReference<LWTResultListener.LWTResult> atomicLWTResult = new AtomicReference(null);
         LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onLWTSuccess() {
+            public void onSuccess() {
             }
 
             @Override
-            public void onLWTError(LWTResult LWTResult) {
-                atomicLWTResult.compareAndSet(null, LWTResult);
+            public void onError(LWTResult lwtResult) {
+                atomicLWTResult.compareAndSet(null, lwtResult);
             }
         };
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
@@ -162,12 +162,12 @@ public class LWTOperationsIT {
         final AtomicReference<LWTResultListener.LWTResult> atomicLWTResult = new AtomicReference(null);
         LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onLWTSuccess() {
+            public void onSuccess() {
             }
 
             @Override
-            public void onLWTError(LWTResult LWTResult) {
-                atomicLWTResult.compareAndSet(null, LWTResult);
+            public void onError(LWTResult lwtResult) {
+                atomicLWTResult.compareAndSet(null, lwtResult);
             }
         };
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
@@ -256,12 +256,12 @@ public class LWTOperationsIT {
         final AtomicReference<LWTResultListener.LWTResult> atomicCASResult = new AtomicReference(null);
         LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onLWTSuccess() {
+            public void onSuccess() {
             }
 
             @Override
-            public void onLWTError(LWTResult LWTResult) {
-                atomicCASResult.compareAndSet(null, LWTResult);
+            public void onError(LWTResult lwtResult) {
+                atomicCASResult.compareAndSet(null, lwtResult);
             }
         };
 
@@ -288,12 +288,12 @@ public class LWTOperationsIT {
         final AtomicReference<LWTResultListener.LWTResult> atomicCASResult = new AtomicReference(null);
         LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onLWTSuccess() {
+            public void onSuccess() {
             }
 
             @Override
-            public void onLWTError(LWTResult LWTResult) {
-                atomicCASResult.compareAndSet(null, LWTResult);
+            public void onError(LWTResult lwtResult) {
+                atomicCASResult.compareAndSet(null, lwtResult);
             }
         };
 
@@ -358,12 +358,12 @@ public class LWTOperationsIT {
         final AtomicReference<LWTResultListener.LWTResult> atomicLWTResult = new AtomicReference(null);
         LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onLWTSuccess() {
+            public void onSuccess() {
             }
 
             @Override
-            public void onLWTError(LWTResult LWTResult) {
-                atomicLWTResult.compareAndSet(null, LWTResult);
+            public void onError(LWTResult lwtResult) {
+                atomicLWTResult.compareAndSet(null, lwtResult);
             }
         };
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "name", "John");
@@ -389,12 +389,12 @@ public class LWTOperationsIT {
         final AtomicReference<LWTResultListener.LWTResult> atomicLWTResult = new AtomicReference(null);
         LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onLWTSuccess() {
+            public void onSuccess() {
             }
 
             @Override
-            public void onLWTError(LWTResult casResult) {
-                atomicLWTResult.compareAndSet(null, casResult);
+            public void onError(LWTResult lwtResult) {
+                atomicLWTResult.compareAndSet(null, lwtResult);
             }
         };
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "name", "John");
@@ -406,7 +406,7 @@ public class LWTOperationsIT {
                 .where(eq("id",entity.getId())).onlyIf(eq("name", "Andrew"));
 
         //When
-        final NativeQuery nativeQuery = manager.nativeQuery(statement, LWTResultListener(listener));
+        final NativeQuery nativeQuery = manager.nativeQuery(statement, lwtResultListener(listener));
         nativeQuery.execute();
 
         //Then

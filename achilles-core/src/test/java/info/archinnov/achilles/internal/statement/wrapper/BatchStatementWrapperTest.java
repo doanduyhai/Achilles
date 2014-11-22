@@ -84,11 +84,11 @@ public class BatchStatementWrapperTest {
         assertThat(wrapper.getStatement().getSerialConsistencyLevel()).isNull();
         assertThat(wrapper.LWTResultListener.get()).isInstanceOf(BatchStatementWrapper.CompositeLWTResultListener.class);
 
-        wrapper.LWTResultListener.get().onLWTSuccess();
-        verify(LWTResultListener).onLWTSuccess();
+        wrapper.LWTResultListener.get().onSuccess();
+        verify(LWTResultListener).onSuccess();
 
-        wrapper.LWTResultListener.get().onLWTError(LWTResult);
-        verify(LWTResultListener).onLWTError(LWTResult);
+        wrapper.LWTResultListener.get().onError(LWTResult);
+        verify(LWTResultListener).onError(LWTResult);
     }
 
     @Test

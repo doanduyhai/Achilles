@@ -19,16 +19,14 @@ package info.archinnov.achilles.query.slice;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 
-import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType;
+public class AsyncIterateWithPartition<TYPE> extends AsyncIteratePartitionRoot<TYPE,AsyncIterateWithPartition<TYPE>> {
 
-public class SelectWithPartitionAsync<TYPE> extends SelectPartitionRootAsync<TYPE,SelectWithPartitionAsync<TYPE>> {
-
-    protected SelectWithPartitionAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceType sliceType) {
+    protected AsyncIterateWithPartition(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 
     @Override
-    protected SelectWithPartitionAsync<TYPE> getThis() {
-        return SelectWithPartitionAsync.this;
+    protected AsyncIterateWithPartition<TYPE> getThis() {
+        return AsyncIterateWithPartition.this;
     }
 }

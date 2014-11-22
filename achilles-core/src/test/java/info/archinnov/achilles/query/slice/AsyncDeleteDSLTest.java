@@ -35,7 +35,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DeleteDSLAsyncTest {
+public class AsyncDeleteDSLTest {
 
     @Mock
     private SliceQueryExecutor executor;
@@ -61,11 +61,11 @@ public class DeleteDSLAsyncTest {
     @Test
     public void should_delete_with_partition_keys_only() throws Exception {
         //Given
-        final DeleteDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forDelete();
+        final AsyncDeleteDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forDelete();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
 
         //When
-        final DeleteFromPartitionAsync<String> start = builder.withPartitionComponents("a");
+        final AsyncDeleteFromPartition<String> start = builder.withPartitionComponents("a");
 
         start.delete();
 
@@ -79,12 +79,12 @@ public class DeleteDSLAsyncTest {
     @Test
     public void should_delete_with_partition_keys_IN() throws Exception {
         //Given
-        final DeleteDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forDelete();
+        final AsyncDeleteDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forDelete();
         when(meta.forTranscoding().encodePartitionComponents(asList())).thenReturn(asList());
         when(meta.forTranscoding().encodePartitionComponentsIN(Arrays.<Object>asList("a", "b"))).thenReturn(Arrays.<Object>asList("a", "b"));
 
         //When
-        final DeleteWithPartitionAsync<String> start = builder.withPartitionComponentsIN("a", "b");
+        final AsyncDeleteWithPartition<String> start = builder.withPartitionComponentsIN("a", "b");
 
         start.delete();
 
@@ -98,12 +98,12 @@ public class DeleteDSLAsyncTest {
     @Test
     public void should_delete_with_matching_clustering_keys() throws Exception {
         //Given
-        final DeleteDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forDelete();
+        final AsyncDeleteDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forDelete();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
 
         //When
-        final DeleteFromPartitionAsync<String> start = builder.withPartitionComponents("a");
+        final AsyncDeleteFromPartition<String> start = builder.withPartitionComponents("a");
 
         start.deleteMatching("A", "B");
 

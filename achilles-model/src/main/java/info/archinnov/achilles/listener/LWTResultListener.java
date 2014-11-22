@@ -22,10 +22,10 @@ import info.archinnov.achilles.type.TypedMap;
  * <p/>
  * Interface to define listener for LWT operations.
  * <br>
- * The "<em>void onLWTSuccess()</em>" method is called when LWT operation is successful
+ * The "<em>void onSuccess()</em>" method is called when LWT operation is successful
  * <br>
  * <br>
- * The "<em>void onLWTError(LWTResult LWTResult)</em>" method is called if LWT operation fails for some reasons.
+ * The "<em>void onError(LWTResult lwtResult)</em>" method is called if LWT operation fails for some reasons.
  * The failure details can be extracted from the {@link info.archinnov.achilles.listener.LWTResultListener.LWTResult}
  * class
  * <br>
@@ -34,19 +34,19 @@ import info.archinnov.achilles.type.TypedMap;
  *
  * <pre class="code"><code class="java">
  *
- * LWTResultListener LWTListener = new LWTResultListener() {
+ * LWTResultListener lwtListener = new LWTResultListener() {
  *
- *     public void onLWTSuccess() {
+ *     public void onSuccess() {
  *         // Do something on success
  *     }
  *
- *     public void onLWTError(LWTResult LWTResult) {
+ *     public void onError(LWTResult lwtResult) {
  *
  *         //Get type of LWT operation that fails
- *         LWTResult.Operation operation = LWTResult.operation();
+ *         LWTResult.Operation operation = lwtResult.operation();
  *
  *         // Print out current values
- *         TypedMap currentValues = LWTResult.currentValues();
+ *         TypedMap currentValues = lwtResult.currentValues();
  *         for(Entry<String,Object> entry: currentValues.entrySet()) {
  *             System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue()));
  *         }
@@ -56,7 +56,7 @@ import info.archinnov.achilles.type.TypedMap;
  *  persistenceManager.update(user, OptionsBuilder.
  *         ifConditions(Arrays.asList(
  *             new LWTCondition("login","jdoe")))
- *         .LWTResultListener(LWTListener));
+ *         .LWTResultListener(lwtListener));
  *
  * </code></pre>
  *
@@ -67,9 +67,9 @@ import info.archinnov.achilles.type.TypedMap;
  */
 public interface LWTResultListener {
 
-    void onLWTSuccess();
+    void onSuccess();
 
-    void onLWTError(LWTResult LWTResult);
+    void onError(LWTResult lwtResult);
 
 
     /**
@@ -91,17 +91,17 @@ public interface LWTResultListener {
      *
      * LWTResultListener LWTListener = new LWTResultListener() {
      *
-     *     public void onLWTSuccess() {
+     *     public void onSuccess() {
      *         // Do something on success
      *     }
      *
-     *     public void onLWTError(LWTResult LWTResult) {
+     *     public void onError(LWTResult lwtResult) {
      *
      *         //Get type of LWT operation that fails
-     *         LWTResult.Operation operation = LWTResult.operation();
+     *         LWTResult.Operation operation = lwtResult.operation();
      *
      *         // Print out current values
-     *         TypedMap currentValues = LWTResult.currentValues();
+     *         TypedMap currentValues = lwtResult.currentValues();
      *         for(Entry<String,Object> entry: currentValues.entrySet()) {
      *             System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue()));
      *         }

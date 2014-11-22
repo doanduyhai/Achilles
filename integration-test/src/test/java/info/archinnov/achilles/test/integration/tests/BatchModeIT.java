@@ -344,14 +344,14 @@ public class BatchModeIT {
 
         LWTResultListener listener = new LWTResultListener() {
             @Override
-            public void onLWTSuccess() {
+            public void onSuccess() {
 
             }
 
             @Override
-            public void onLWTError(LWTResult LWTResult) {
+            public void onError(LWTResult lwtResult) {
                 error.getAndSet(true);
-                result.getAndSet(LWTResult);
+                result.getAndSet(lwtResult);
             }
         };
 

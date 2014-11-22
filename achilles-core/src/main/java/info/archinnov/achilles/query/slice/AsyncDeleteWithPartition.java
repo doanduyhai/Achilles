@@ -19,15 +19,15 @@ package info.archinnov.achilles.query.slice;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 
-public class DeleteWithPartitionAsync<TYPE> extends DeletePartitionRootAsync<TYPE,DeleteWithPartitionAsync<TYPE>> {
+public class AsyncDeleteWithPartition<TYPE> extends AsyncDeletePartitionRoot<TYPE,AsyncDeleteWithPartition<TYPE>> {
 
-    protected DeleteWithPartitionAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
+    protected AsyncDeleteWithPartition(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 
     @Override
-    protected DeleteWithPartitionAsync<TYPE> getThis() {
-        return DeleteWithPartitionAsync.this;
+    protected AsyncDeleteWithPartition<TYPE> getThis() {
+        return AsyncDeleteWithPartition.this;
     }
 
 }

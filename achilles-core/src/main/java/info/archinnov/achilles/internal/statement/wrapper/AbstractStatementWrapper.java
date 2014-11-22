@@ -210,7 +210,7 @@ public abstract class AbstractStatementWrapper {
 
     protected void notifyLWTError(LWTResult LWTResult) {
         if (LWTResultListener.isPresent()) {
-            LWTResultListener.get().onLWTError(LWTResult);
+            LWTResultListener.get().onError(LWTResult);
         } else {
             throw new AchillesLightWeightTransactionException(LWTResult);
         }
@@ -218,7 +218,7 @@ public abstract class AbstractStatementWrapper {
 
     protected void notifyCASSuccess() {
         if (LWTResultListener.isPresent()) {
-            LWTResultListener.get().onLWTSuccess();
+            LWTResultListener.get().onSuccess();
         }
     }
 

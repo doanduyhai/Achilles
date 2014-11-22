@@ -25,7 +25,7 @@ import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.query.cql.AsyncNativeQuery;
-import info.archinnov.achilles.query.slice.SliceQueryBuilderAsync;
+import info.archinnov.achilles.query.slice.AsyncSliceQueryBuilder;
 import info.archinnov.achilles.query.typed.AsyncTypedQuery;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;
@@ -429,12 +429,12 @@ public class AsyncManager extends CommonAsyncManager {
      *
      * @param entityClass type of the clustered entity
      * @param <T>: type of the clustered entity
-     * @return SliceQueryBuilderAsync&lt;T&gt;
+     * @return AsyncSliceQueryBuilder&lt;T&gt;
      */
-    public <T> SliceQueryBuilderAsync<T> sliceQuery(Class<T> entityClass) {
+    public <T> AsyncSliceQueryBuilder<T> sliceQuery(Class<T> entityClass) {
         log.debug("Execute slice query for entity class {}", entityClass);
         final EntityMeta meta = super.validateSliceQueryInternal(entityClass);
-        return new SliceQueryBuilderAsync<>(sliceQueryExecutor, entityClass, meta);
+        return new AsyncSliceQueryBuilder<>(sliceQueryExecutor, entityClass, meta);
     }
 
     /**

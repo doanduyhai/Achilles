@@ -38,7 +38,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SelectDSLAsyncTest {
+public class AsyncSelectDSLTest {
 
     @Mock
     private SliceQueryExecutor executor;
@@ -64,11 +64,11 @@ public class SelectDSLAsyncTest {
     @Test
     public void should_get_with_limit_from_partition_keys_only() throws Exception {
         //Given
-        final SelectDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forSelect();
+        final AsyncSelectDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forSelect();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
 
         //When
-        final SelectFromPartitionAsync<String> start = builder
+        final AsyncSelectFromPartition<String> start = builder
                 .withPartitionComponents("a");
 
         start.limit(3).get(10);
@@ -83,13 +83,13 @@ public class SelectDSLAsyncTest {
     @Test
     public void should_get_from_partition_keys_IN() throws Exception {
         //Given
-        final SelectDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forSelect();
+        final AsyncSelectDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forSelect();
         when(meta.forTranscoding().encodePartitionComponents(asList())).thenReturn(asList());
         when(meta.forTranscoding().encodePartitionComponentsIN(Arrays.<Object>asList("a", "b"))).thenReturn(Arrays.<Object>asList("a", "b"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
 
         //When
-        final SelectWithPartitionAsync<String> start = builder
+        final AsyncSelectWithPartition<String> start = builder
                 .withPartitionComponentsIN("a", "b");
 
         start.limit(2).fromClusterings("A","B").limit(3).orderByAscending().get(10);
@@ -105,10 +105,10 @@ public class SelectDSLAsyncTest {
     @Test
     public void should_get_one_from_partition_keys_only() throws Exception {
         //Given
-        final SelectDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forSelect();
+        final AsyncSelectDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forSelect();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         //When
-        final SelectFromPartitionAsync<String> start = builder
+        final AsyncSelectFromPartition<String> start = builder
                 .withPartitionComponents("a");
 
         start.limit(3).orderByDescending().getOne();
@@ -123,13 +123,13 @@ public class SelectDSLAsyncTest {
     @Test
     public void should_get_with_limit_with_partition_keys_and_clustering_keys() throws Exception {
         //Given
-        final SelectDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forSelect();
+        final AsyncSelectDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forSelect();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         when(meta.forTranscoding().encodePartitionComponentsIN(Arrays.<Object>asList("b", "c"))).thenReturn(Arrays.<Object>asList("b", "c"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("C", "D"))).thenReturn(Arrays.<Object>asList("C", "D"));
         //When
-        final SelectFromPartitionAsync<String> start = builder
+        final AsyncSelectFromPartition<String> start = builder
                 .withPartitionComponents("a");
 
         start.andPartitionComponentsIN("b", "c")
@@ -149,13 +149,13 @@ public class SelectDSLAsyncTest {
     @Test
     public void should_get_one_with_clustering_keys_IN() throws Exception {
         //Given
-        final SelectDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forSelect();
+        final AsyncSelectDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forSelect();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
         when(meta.forTranscoding().encodeClusteringKeysIN(Arrays.<Object>asList("C", "D"))).thenReturn(Arrays.<Object>asList("C", "D"));
 
         //When
-        final SelectFromPartitionAsync<String> start = builder
+        final AsyncSelectFromPartition<String> start = builder
                 .withPartitionComponents("a");
 
         start.limit(3)
@@ -175,12 +175,12 @@ public class SelectDSLAsyncTest {
     @Test
     public void should_get_one_with_from_clustering_only() throws Exception {
         //Given
-        final SelectDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forSelect();
+        final AsyncSelectDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forSelect();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
 
         //When
-        final SelectFromPartitionAsync<String> start = builder.withPartitionComponents("a");
+        final AsyncSelectFromPartition<String> start = builder.withPartitionComponents("a");
 
         start.limit(3).fromClusterings("A", "B").fromExclusiveToInclusiveBounds().orderByDescending().getOne();
 
@@ -194,12 +194,12 @@ public class SelectDSLAsyncTest {
     @Test
     public void should_get_matching_clustering_keys() throws Exception {
         //Given
-        final SelectDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forSelect();
+        final AsyncSelectDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forSelect();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B", "C"))).thenReturn(Arrays.<Object>asList("A", "B", "C"));
 
         //When
-        final SelectFromPartitionAsync<String> start = builder.withPartitionComponents("a");
+        final AsyncSelectFromPartition<String> start = builder.withPartitionComponents("a");
 
         start.limit(3).getMatching("A", "B", "C");
 
@@ -213,12 +213,12 @@ public class SelectDSLAsyncTest {
     @Test
     public void should_get_first_matching_clustering_keys() throws Exception {
         //Given
-        final SelectDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forSelect();
+        final AsyncSelectDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forSelect();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B", "C"))).thenReturn(Arrays.<Object>asList("A", "B", "C"));
 
         //When
-        final SelectFromPartitionAsync<String> start = builder.withPartitionComponents("a");
+        final AsyncSelectFromPartition<String> start = builder.withPartitionComponents("a");
 
         start.limit(3).getFirstMatching(5, "A", "B", "C");
 
@@ -232,12 +232,12 @@ public class SelectDSLAsyncTest {
     @Test
     public void should_get_last_matching_clustering_keys() throws Exception {
         //Given
-        final SelectDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forSelect();
+        final AsyncSelectDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forSelect();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B", "C"))).thenReturn(Arrays.<Object>asList("A", "B", "C"));
 
         //When
-        final SelectFromPartitionAsync<String> start = builder.withPartitionComponents("a");
+        final AsyncSelectFromPartition<String> start = builder.withPartitionComponents("a");
 
         start.limit(3).getLastMatching(5, "A", "B", "C");
 

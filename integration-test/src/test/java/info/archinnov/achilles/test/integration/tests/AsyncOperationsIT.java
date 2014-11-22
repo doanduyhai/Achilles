@@ -207,13 +207,13 @@ public class AsyncOperationsIT {
         //When
         LWTResultListener casListener = new LWTResultListener() {
             @Override
-            public void onLWTSuccess() {
+            public void onSuccess() {
 
             }
 
             @Override
-            public void onLWTError(LWTResult casResult) {
-                LWTResultSpy.getAndSet(casResult);
+            public void onError(LWTResult lwtResult) {
+                LWTResultSpy.getAndSet(lwtResult);
             }
         };
         manager.insert(paul, withAsyncListeners(errorCallBack).ifNotExists().LWTResultListener(casListener));

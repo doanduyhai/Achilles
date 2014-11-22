@@ -49,10 +49,10 @@ import info.archinnov.achilles.listener.LWTResultListener;
  *              new LWTCondition("age_in_years",33L));
  *
  * // LWT result listener
- * options = OptionsBuilder.LWTResultListener(listener);
+ * options = OptionsBuilder.lwtResultListener(listener);
  *
  * // LWT LOCAL_SERIAL instead of the default SERIAL value
- * options = OptionsBuilder.LWTLocalSerial();
+ * options = OptionsBuilder.lwtLocalSerial();
  *
  * // Multiple options at a time
  * options = OptionsBuilder.withTtl(11)
@@ -153,13 +153,13 @@ public class OptionsBuilder {
      * persistenceManager.update(user, OptionsBuilder.
      *         ifConditions(Arrays.asList(
      *             new LWTCondition("login","jdoe")))
-     *         .LWTResultListener(casListener));
+     *         .lwtResultListener(lwtListener));
      * </code></pre>
      *
      * @param listener LWTResultListener
      * @return BuiltOptions
      */	
-    public static BuiltOptions LWTResultListener(LWTResultListener listener) {
+    public static BuiltOptions lwtResultListener(LWTResultListener listener) {
         return new BuiltOptions(listener);
     }
 
@@ -172,7 +172,7 @@ public class OptionsBuilder {
      * By default LWT operations are performed using SERIAL serial consistency level
      * @return BuiltOptions
      */
-    public static BuiltOptions LWTLocalSerial() {
+    public static BuiltOptions lwtLocalSerial() {
         return new BuiltOptions(Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
     }
 
@@ -303,7 +303,7 @@ public class OptionsBuilder {
          * persistenceManager.update(user, OptionsBuilder.
          *         ifConditions(Arrays.asList(
          *             new LWTCondition("login","jdoe")))
-         *         .LWTResultListener(casListener));
+         *         .lwtResultListener(lwtListener));
          * </code></pre>
          *
          * @param listener LWTResultListener

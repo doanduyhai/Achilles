@@ -28,13 +28,13 @@ import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType
  *
  * @param <TYPE>: type of clustered entity
  */
-public class SliceQueryBuilderAsync<TYPE> {
+public class AsyncSliceQueryBuilder<TYPE> {
 
     private final SliceQueryExecutor sliceQueryExecutor;
     private final Class<TYPE> entityClass;
     private final EntityMeta meta;
 
-    public SliceQueryBuilderAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta) {
+    public AsyncSliceQueryBuilder(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta) {
         this.sliceQueryExecutor = sliceQueryExecutor;
         this.entityClass = entityClass;
         this.meta = meta;
@@ -43,28 +43,28 @@ public class SliceQueryBuilderAsync<TYPE> {
     /**
      * Create a builder DSL for a SELECT statement
      *
-     * @return SelectDSLAsync
+     * @return AsyncSelectDSL
      */
-    public SelectDSLAsync<TYPE> forSelect() {
-        return new SelectDSLAsync<>(sliceQueryExecutor, entityClass, meta, SliceType.SELECT);
+    public AsyncSelectDSL<TYPE> forSelect() {
+        return new AsyncSelectDSL<>(sliceQueryExecutor, entityClass, meta, SliceType.SELECT);
     }
 
     /**
      * Create a builder DSL for iteration on a SELECT statement
      *
-     * @return IterateDSLAsync
+     * @return AsyncIterateDSL
      */
-    public IterateDSLAsync<TYPE> forIteration() {
-        return new IterateDSLAsync<>(sliceQueryExecutor, entityClass, meta, SliceType.ITERATE);
+    public AsyncIterateDSL<TYPE> forIteration() {
+        return new AsyncIterateDSL<>(sliceQueryExecutor, entityClass, meta, SliceType.ITERATE);
     }
 
     /**
      * Create a builder DSL for a DELETE statement
      *
-     * @return DeleteDSLAsync
+     * @return AsyncDeleteDSL
      */
-    public DeleteDSLAsync<TYPE> forDelete() {
-        return new DeleteDSLAsync<>(sliceQueryExecutor, entityClass, meta, SliceType.DELETE);
+    public AsyncDeleteDSL<TYPE> forDelete() {
+        return new AsyncDeleteDSL<>(sliceQueryExecutor, entityClass, meta, SliceType.DELETE);
     }
 
 }

@@ -19,39 +19,39 @@ package info.archinnov.achilles.query.slice;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 
-public class IterateFromPartitionAsync<TYPE> extends IteratePartitionRootAsync<TYPE,IterateFromPartitionAsync<TYPE>> {
+public class AsyncSelectFromPartition<TYPE> extends AsyncSelectPartitionRoot<TYPE, AsyncSelectFromPartition<TYPE>> {
 
-    protected IterateFromPartitionAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
+    protected AsyncSelectFromPartition(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 
     @Override
-    protected IterateFromPartitionAsync<TYPE> getThis() {
-        return IterateFromPartitionAsync.this;
+    protected AsyncSelectFromPartition<TYPE> getThis() {
+        return AsyncSelectFromPartition.this;
     }
 
     /**
      *
-     * Start the Iterate DSL with provided partition components IN
+     * Start the Select DSL with provided partition components IN
      *
      * <pre class="code"><code class="java">
      *
-     *  asyncManager.sliceQuery(MessageEntity.class)
-     *      .forIteration()
+     *  manager.sliceQuery(MessageEntity.class)
+     *      .forSelect()
      *      .withPartitionComponents(10L)
      *      .andPartitionComponentsIN(2013, 2014)
      *
      * </code></pre>
      *
-     * Generated CQL query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM messages WHERE user_id=10 AND year IN (2013,2014)
      *
      * @return slice DSL
      */
-    public IterateFromPartitionAsync<TYPE> andPartitionComponentsIN(Object... partitionKeyComponentsIn) {
+    public AsyncSelectFromPartition<TYPE> andPartitionComponentsIN(Object... partitionKeyComponentsIn) {
         super.andPartitionKeysINInternal(partitionKeyComponentsIn);
-        return IterateFromPartitionAsync.this;
+        return AsyncSelectFromPartition.this;
     }
 }

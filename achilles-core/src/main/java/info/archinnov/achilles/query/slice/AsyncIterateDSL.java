@@ -21,14 +21,15 @@ import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecuto
 
 import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType;
 
-public class DeleteDSLAsync<TYPE> {
+public class AsyncIterateDSL<TYPE> {
 
     private final SliceQueryExecutor sliceQueryExecutor;
     private final Class<TYPE> entityClass;
     private final EntityMeta meta;
     private final SliceType sliceType;
 
-    protected DeleteDSLAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceType sliceType) {
+
+    protected AsyncIterateDSL(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceType sliceType) {
         this.sliceQueryExecutor = sliceQueryExecutor;
         this.entityClass = entityClass;
         this.meta = meta;
@@ -37,12 +38,12 @@ public class DeleteDSLAsync<TYPE> {
 
     /**
      *
-     * Start the Delete DSL with provided partition components
+     * Start the Iterate DSL with provided partition components
      *
      * <pre class="code"><code class="java">
      *
      *  asyncManager.sliceQuery(ArticleRating.class)
-     *      .forDelete()
+     *      .forIteration()
      *      .withPartitionComponents(articleId)
      *
      * </code></pre>
@@ -50,24 +51,24 @@ public class DeleteDSLAsync<TYPE> {
      * Generated CQL query:
      *
      * <br/>
-     *  DELETE FROM article_rating WHERE article_id=...
+     *  SELECT * FROM article_rating WHERE article_id=...
      *
      * @return slice DSL
      */
-    public DeleteFromPartitionAsync<TYPE> withPartitionComponents(Object... partitionKeyComponents) {
-        final DeleteFromPartitionAsync<TYPE> delete = new DeleteFromPartitionAsync<>(sliceQueryExecutor, entityClass, meta, sliceType);
-        delete.withPartitionComponentsInternal(partitionKeyComponents);
-        return delete;
+    public AsyncIterateFromPartition<TYPE> withPartitionComponents(Object... partitionKeyComponents) {
+        AsyncIterateFromPartition<TYPE> iterateFromPartitionKey = new AsyncIterateFromPartition<>(sliceQueryExecutor, entityClass, meta, sliceType);
+        iterateFromPartitionKey.withPartitionComponentsInternal(partitionKeyComponents);
+        return iterateFromPartitionKey;
     }
 
     /**
      *
-     * Start the Delete DSL with provided partition components IN
+     * Start the Iterate DSL with provided partition components IN
      *
      * <pre class="code"><code class="java">
      *
      *  asyncManager.sliceQuery(MessageEntity.class)
-     *      .forDelete()
+     *      .forIteration()
      *      .withPartitionComponents(10L)
      *      .andPartitionComponentsIN(2013, 2014)
      *
@@ -76,15 +77,14 @@ public class DeleteDSLAsync<TYPE> {
      * Generated CQL query:
      *
      * <br/>
-     *  DELETE FROM messages WHERE user_id=10 AND year IN (2013,2014)
+     *  SELECT * FROM messages WHERE user_id=10 AND year IN (2013,2014)
      *
      * @return slice DSL
      */
-    public DeleteWithPartitionAsync<TYPE> withPartitionComponentsIN(Object... partitionKeyComponents) {
-        final DeleteWithPartitionAsync<TYPE> delete = new DeleteWithPartitionAsync<>(sliceQueryExecutor, entityClass, meta, sliceType);
-        delete.withPartitionComponentsINInternal(partitionKeyComponents);
-        return delete;
+    public AsyncIterateWithPartition<TYPE> withPartitionComponentsIN(Object... partitionKeyComponents) {
+        AsyncIterateWithPartition<TYPE> iterateWithPartition = new AsyncIterateWithPartition<>(sliceQueryExecutor, entityClass, meta, sliceType);
+        iterateWithPartition.withPartitionComponentsINInternal(partitionKeyComponents);
+        return iterateWithPartition;
     }
-
 
 }

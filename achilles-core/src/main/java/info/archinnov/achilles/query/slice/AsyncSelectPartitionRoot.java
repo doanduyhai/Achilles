@@ -29,9 +29,9 @@ import static info.archinnov.achilles.query.slice.OrderingMode.ASCENDING;
 import static info.archinnov.achilles.query.slice.OrderingMode.DESCENDING;
 import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType;
 
-public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRootAsync<TYPE,T>> extends SliceQueryRootExtended<TYPE, T> {
+public abstract class AsyncSelectPartitionRoot<TYPE, T extends AsyncSelectPartitionRoot<TYPE,T>> extends SliceQueryRootExtended<TYPE, T> {
 
-    protected SelectPartitionRootAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceType sliceType) {
+    protected AsyncSelectPartitionRoot(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceType sliceType) {
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 
@@ -337,7 +337,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return Slice DSL
          */
         public T orderByAscending() {
-            SelectPartitionRootAsync.super.properties.ordering(ASCENDING);
+            AsyncSelectPartitionRoot.super.properties.ordering(ASCENDING);
             return getThis();
         }
 
@@ -364,7 +364,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return Slice DSL
          */
         public T orderByDescending() {
-            SelectPartitionRootAsync.super.properties.ordering(DESCENDING);
+            AsyncSelectPartitionRoot.super.properties.ordering(DESCENDING);
             return getThis();
         }
 
@@ -392,7 +392,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return Slice DSL
          */
         public T limit(int limit) {
-            SelectPartitionRootAsync.super.properties.limit(limit);
+            AsyncSelectPartitionRoot.super.properties.limit(limit);
             return getThis();
         }
 		
@@ -404,12 +404,12 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return Slice DSL
          */
         public T withConsistency(ConsistencyLevel consistencyLevel) {
-            SelectPartitionRootAsync.super.properties.consistency(consistencyLevel);
+            AsyncSelectPartitionRoot.super.properties.consistency(consistencyLevel);
             return getThis();
         }
 
         public T withAsyncListeners(FutureCallback<Object>...asyncListeners) {
-            SelectPartitionRootAsync.this.properties.asyncListeners(asyncListeners);
+            AsyncSelectPartitionRoot.this.properties.asyncListeners(asyncListeners);
             return getThis();
         }
 
@@ -438,8 +438,8 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return AchillesFuture&lt;TYPE&gt;
          */
         public AchillesFuture<TYPE> getOne() {
-            SelectPartitionRootAsync.super.properties.limit(1);
-            return SelectPartitionRootAsync.super.asyncGetOneInternal();
+            AsyncSelectPartitionRoot.super.properties.limit(1);
+            return AsyncSelectPartitionRoot.super.asyncGetOneInternal();
         }
 
         /**
@@ -465,7 +465,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return AchillesFuture&lt;List&lt;TYPE&gt;&gt;
          */
         public AchillesFuture<List<TYPE>> get() {
-            return SelectPartitionRootAsync.super.asyncGetInternal();
+            return AsyncSelectPartitionRoot.super.asyncGetInternal();
         }
 
         /**
@@ -491,8 +491,8 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return AchillesFuture&lt;List&lt;TYPE&gt;&gt;
          */
         public AchillesFuture<List<TYPE>> get(int limit) {
-            SelectPartitionRootAsync.super.properties.limit(limit);
-            return SelectPartitionRootAsync.super.asyncGetInternal();
+            AsyncSelectPartitionRoot.super.properties.limit(limit);
+            return AsyncSelectPartitionRoot.super.asyncGetInternal();
         }
     }
 
@@ -522,7 +522,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return Slice DSL
          */
         public T withInclusiveBounds() {
-            SelectPartitionRootAsync.super.properties.bounding(INCLUSIVE_BOUNDS);
+            AsyncSelectPartitionRoot.super.properties.bounding(INCLUSIVE_BOUNDS);
             return getThis();
         }
 
@@ -549,7 +549,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return Slice DSL
          */
         public T withExclusiveBounds() {
-            SelectPartitionRootAsync.super.properties.bounding(EXCLUSIVE_BOUNDS);
+            AsyncSelectPartitionRoot.super.properties.bounding(EXCLUSIVE_BOUNDS);
             return getThis();
         }
 
@@ -576,7 +576,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return Slice DSL
          */
         public T fromInclusiveToExclusiveBounds() {
-            SelectPartitionRootAsync.super.properties.bounding(INCLUSIVE_START_BOUND_ONLY);
+            AsyncSelectPartitionRoot.super.properties.bounding(INCLUSIVE_START_BOUND_ONLY);
             return getThis();
         }
 
@@ -603,7 +603,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return Slice DSL
          */
         public T fromExclusiveToInclusiveBounds() {
-            SelectPartitionRootAsync.super.properties.bounding(INCLUSIVE_END_BOUND_ONLY);
+            AsyncSelectPartitionRoot.super.properties.bounding(INCLUSIVE_END_BOUND_ONLY);
             return getThis();
         }
 
@@ -644,7 +644,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return slice DSL
          */
         public SelectEndAsync<ENTITY_TYPE> toClusterings(Object... clusteringKeys) {
-            SelectPartitionRootAsync.super.toClusteringsInternal(clusteringKeys);
+            AsyncSelectPartitionRoot.super.toClusteringsInternal(clusteringKeys);
             return new SelectEndAsync<>();
         }
 
@@ -679,7 +679,7 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
          * @return slice DSL
          */
         public SelectEndWithLimitationAsync<ENTITY_TYPE> andClusteringsIN(Object... clusteringKeys) {
-            SelectPartitionRootAsync.super.andClusteringsInInternal(clusteringKeys);
+            AsyncSelectPartitionRoot.super.andClusteringsInInternal(clusteringKeys);
             return new SelectEndWithLimitationAsync<>();
         }
 
@@ -708,58 +708,58 @@ public abstract class SelectPartitionRootAsync<TYPE, T extends SelectPartitionRo
 //    public class SelectPartitionAsyncRoot {
 //
 //        public AchillesFuture<List<TYPE>> get() {
-//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//            return AsyncSelectPartitionRoot.super.asyncGetInternal();
 //        }
 //
 //        public AchillesFuture<List<TYPE>> get(int limit) {
-//            SelectPartitionRootAsync.super.properties.limit(limit);
-//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//            AsyncSelectPartitionRoot.super.properties.limit(limit);
+//            return AsyncSelectPartitionRoot.super.asyncGetInternal();
 //        }
 //
 //        public AchillesFuture<TYPE> getOne() {
-//            SelectPartitionRootAsync.super.properties.limit(1);
-//            return SelectPartitionRootAsync.super.asyncGetOneInternal();
+//            AsyncSelectPartitionRoot.super.properties.limit(1);
+//            return AsyncSelectPartitionRoot.super.asyncGetOneInternal();
 //        }
 //
 //        public AchillesFuture<List<TYPE>> getMatching(Object... matchedClusteringKeys) {
-//            SelectPartitionRootAsync.super.withClusteringsInternal(matchedClusteringKeys);
-//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//            AsyncSelectPartitionRoot.super.withClusteringsInternal(matchedClusteringKeys);
+//            return AsyncSelectPartitionRoot.super.asyncGetInternal();
 //        }
 //
 //        public AchillesFuture<TYPE> getOneMatching(Object... matchedClusteringKeys) {
-//            SelectPartitionRootAsync.super.withClusteringsInternal(matchedClusteringKeys);
-//            return SelectPartitionRootAsync.super.asyncGetOneInternal();
+//            AsyncSelectPartitionRoot.super.withClusteringsInternal(matchedClusteringKeys);
+//            return AsyncSelectPartitionRoot.super.asyncGetOneInternal();
 //        }
 //
 //        public AchillesFuture<List<TYPE>> getFirstMatching(int limit, Object... matchingClusteringKeys) {
-//            SelectPartitionRootAsync.super.properties.ordering(ASCENDING);
-//            SelectPartitionRootAsync.super.properties.limit(limit);
-//            SelectPartitionRootAsync.super.withClusteringsInternal(matchingClusteringKeys);
-//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//            AsyncSelectPartitionRoot.super.properties.ordering(ASCENDING);
+//            AsyncSelectPartitionRoot.super.properties.limit(limit);
+//            AsyncSelectPartitionRoot.super.withClusteringsInternal(matchingClusteringKeys);
+//            return AsyncSelectPartitionRoot.super.asyncGetInternal();
 //        }
 //
 //        public AchillesFuture<List<TYPE>> getLastMatching(int limit, Object... matchingClusteringKeys) {
-//            SelectPartitionRootAsync.super.properties.ordering(DESCENDING);
-//            SelectPartitionRootAsync.super.withClusteringsInternal(matchingClusteringKeys);
-//            SelectPartitionRootAsync.super.properties.limit(limit);
-//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//            AsyncSelectPartitionRoot.super.properties.ordering(DESCENDING);
+//            AsyncSelectPartitionRoot.super.withClusteringsInternal(matchingClusteringKeys);
+//            AsyncSelectPartitionRoot.super.properties.limit(limit);
+//            return AsyncSelectPartitionRoot.super.asyncGetInternal();
 //        }
 //    }
 //
 //    public class SelectClusteringRootAsync {
 //
 //        public AchillesFuture<TYPE> getOne() {
-//            SelectPartitionRootAsync.super.properties.limit(1);
-//            return SelectPartitionRootAsync.super.asyncGetOneInternal();
+//            AsyncSelectPartitionRoot.super.properties.limit(1);
+//            return AsyncSelectPartitionRoot.super.asyncGetOneInternal();
 //        }
 //
 //        public AchillesFuture<List<TYPE>> get() {
-//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//            return AsyncSelectPartitionRoot.super.asyncGetInternal();
 //        }
 //
 //        public AchillesFuture<List<TYPE>> get(int limit) {
-//            SelectPartitionRootAsync.super.properties.limit(limit);
-//            return SelectPartitionRootAsync.super.asyncGetInternal();
+//            AsyncSelectPartitionRoot.super.properties.limit(limit);
+//            return AsyncSelectPartitionRoot.super.asyncGetInternal();
 //        }
 //    }
 }

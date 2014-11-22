@@ -21,15 +21,14 @@ import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecuto
 
 import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType;
 
-public class IterateDSLAsync<TYPE> {
+public class AsyncSelectDSL<TYPE> {
 
     private final SliceQueryExecutor sliceQueryExecutor;
     private final Class<TYPE> entityClass;
     private final EntityMeta meta;
     private final SliceType sliceType;
 
-
-    protected IterateDSLAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceType sliceType) {
+    protected AsyncSelectDSL(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceType sliceType) {
         this.sliceQueryExecutor = sliceQueryExecutor;
         this.entityClass = entityClass;
         this.meta = meta;
@@ -38,53 +37,54 @@ public class IterateDSLAsync<TYPE> {
 
     /**
      *
-     * Start the Iterate DSL with provided partition components
+     * Start the Select DSL with provided partition components
      *
      * <pre class="code"><code class="java">
      *
      *  asyncManager.sliceQuery(ArticleRating.class)
-     *      .forIteration()
+     *      .forSelect()
      *      .withPartitionComponents(articleId)
      *
      * </code></pre>
      *
-     * Generated CQL query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=...
      *
      * @return slice DSL
      */
-    public IterateFromPartitionAsync<TYPE> withPartitionComponents(Object... partitionKeyComponents) {
-        IterateFromPartitionAsync<TYPE> iterateFromPartitionKey = new IterateFromPartitionAsync<>(sliceQueryExecutor, entityClass, meta, sliceType);
-        iterateFromPartitionKey.withPartitionComponentsInternal(partitionKeyComponents);
-        return iterateFromPartitionKey;
+    public AsyncSelectFromPartition<TYPE> withPartitionComponents(Object... partitionKeyComponents) {
+        final AsyncSelectFromPartition<TYPE> selectFromPartition = new AsyncSelectFromPartition<>(sliceQueryExecutor, entityClass, meta, sliceType);
+        selectFromPartition.withPartitionComponentsInternal(partitionKeyComponents);
+        return selectFromPartition;
     }
 
     /**
      *
-     * Start the Iterate DSL with provided partition components IN
+     * Start the Select DSL with provided partition components IN
      *
      * <pre class="code"><code class="java">
      *
      *  asyncManager.sliceQuery(MessageEntity.class)
-     *      .forIteration()
+     *      .forSelect()
      *      .withPartitionComponents(10L)
      *      .andPartitionComponentsIN(2013, 2014)
      *
      * </code></pre>
      *
-     * Generated CQL query:
+     * Generated CQL  query:
      *
      * <br/>
      *  SELECT * FROM messages WHERE user_id=10 AND year IN (2013,2014)
      *
      * @return slice DSL
      */
-    public IterateWithPartitionAsync<TYPE> withPartitionComponentsIN(Object... partitionKeyComponents) {
-        IterateWithPartitionAsync<TYPE> iterateWithPartition = new IterateWithPartitionAsync<>(sliceQueryExecutor, entityClass, meta, sliceType);
-        iterateWithPartition.withPartitionComponentsINInternal(partitionKeyComponents);
-        return iterateWithPartition;
+    public AsyncSelectWithPartition<TYPE> withPartitionComponentsIN(Object... partitionKeyComponents) {
+        final AsyncSelectWithPartition<TYPE> selectWithPartition = new AsyncSelectWithPartition<>(sliceQueryExecutor, entityClass, meta, sliceType);
+        selectWithPartition.withPartitionComponentsINInternal(partitionKeyComponents);
+        return selectWithPartition;
     }
+
 
 }

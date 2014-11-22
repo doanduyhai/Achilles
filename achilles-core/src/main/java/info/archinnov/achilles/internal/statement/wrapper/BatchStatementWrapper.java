@@ -130,16 +130,16 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
         }
 
         @Override
-        public void onLWTSuccess() {
+        public void onSuccess() {
             for (LWTResultListener listener : delegates) {
-                listener.onLWTSuccess();
+                listener.onSuccess();
             }
         }
 
         @Override
-        public void onLWTError(LWTResult LWTResult) {
+        public void onError(LWTResult lwtResult) {
             for (LWTResultListener listener : delegates) {
-                listener.onLWTError(LWTResult);
+                listener.onError(lwtResult);
             }
         }
     }

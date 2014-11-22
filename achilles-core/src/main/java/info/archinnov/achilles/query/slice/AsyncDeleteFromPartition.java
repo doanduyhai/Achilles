@@ -19,15 +19,15 @@ package info.archinnov.achilles.query.slice;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 
-public class DeleteFromPartitionAsync<TYPE> extends DeletePartitionRootAsync<TYPE,DeleteFromPartitionAsync<TYPE>> {
+public class AsyncDeleteFromPartition<TYPE> extends AsyncDeletePartitionRoot<TYPE,AsyncDeleteFromPartition<TYPE>> {
 
-    protected DeleteFromPartitionAsync(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
+    protected AsyncDeleteFromPartition(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceQueryProperties.SliceType sliceType) {
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 
     @Override
-    protected DeleteFromPartitionAsync<TYPE> getThis() {
-        return DeleteFromPartitionAsync.this;
+    protected AsyncDeleteFromPartition<TYPE> getThis() {
+        return AsyncDeleteFromPartition.this;
     }
 
     /**
@@ -50,8 +50,8 @@ public class DeleteFromPartitionAsync<TYPE> extends DeletePartitionRootAsync<TYP
      *
      * @return slice DSL
      */
-    public DeleteFromPartitionAsync<TYPE> andPartitionComponentsIN(Object... partitionKeyComponentsIn) {
+    public AsyncDeleteFromPartition<TYPE> andPartitionComponentsIN(Object... partitionKeyComponentsIn) {
         super.andPartitionKeysINInternal(partitionKeyComponentsIn);
-        return DeleteFromPartitionAsync.this;
+        return AsyncDeleteFromPartition.this;
     }
 }

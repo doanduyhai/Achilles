@@ -36,7 +36,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class IterateDSLAsyncTest {
+public class AsyncIterateDSLTest {
 
     @Mock
     private SliceQueryExecutor executor;
@@ -62,11 +62,11 @@ public class IterateDSLAsyncTest {
     @Test
     public void should_iterate() throws Exception {
         //Given
-        final IterateDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forIteration();
+        final AsyncIterateDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forIteration();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
 
         //When
-        final IterateFromPartitionAsync<String> start = builder.withPartitionComponents("a");
+        final AsyncIterateFromPartition<String> start = builder.withPartitionComponents("a");
 
         start.limit(3).iterator();
 
@@ -81,13 +81,13 @@ public class IterateDSLAsyncTest {
     @Test
     public void should_iterate_with_partition_keys_IN() throws Exception {
         //Given
-        final IterateDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forIteration();
+        final AsyncIterateDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forIteration();
         when(meta.forTranscoding().encodePartitionComponents(asList())).thenReturn(asList());
         when(meta.forTranscoding().encodePartitionComponentsIN(Arrays.<Object>asList("a", "b"))).thenReturn(Arrays.<Object>asList("a", "b"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
 
         //When
-        final IterateWithPartitionAsync<String> start = builder.withPartitionComponentsIN("a", "b");
+        final AsyncIterateWithPartition<String> start = builder.withPartitionComponentsIN("a", "b");
 
         start.fromClusterings("A", "B").limit(3).iterator(10);
 
@@ -102,11 +102,11 @@ public class IterateDSLAsyncTest {
     @Test
     public void should_iterate_with_fetch_size() throws Exception {
         //Given
-        final IterateDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forIteration();
+        final AsyncIterateDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forIteration();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
 
         //When
-        final IterateFromPartitionAsync<String> start = builder.withPartitionComponents("a");
+        final AsyncIterateFromPartition<String> start = builder.withPartitionComponents("a");
 
         start.limit(3).iterator(120);
 
@@ -121,12 +121,12 @@ public class IterateDSLAsyncTest {
     @Test
     public void should_iterate_with_matching() throws Exception {
         //Given
-        final IterateDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forIteration();
+        final AsyncIterateDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forIteration();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A" , "B"));
 
         //When
-        final IterateFromPartitionAsync<String> start = builder.withPartitionComponents("a");
+        final AsyncIterateFromPartition<String> start = builder.withPartitionComponents("a");
 
         start.limit(3).iteratorWithMatching("A", "B");
 
@@ -141,12 +141,12 @@ public class IterateDSLAsyncTest {
     @Test
     public void should_iterate_with_matching_and_fetch_size() throws Exception {
         //Given
-        final IterateDSLAsync<String> builder = new SliceQueryBuilderAsync<>(executor, String.class, meta).forIteration();
+        final AsyncIterateDSL<String> builder = new AsyncSliceQueryBuilder<>(executor, String.class, meta).forIteration();
         when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A" , "B"));
 
         //When
-        final IterateFromPartitionAsync<String> start = builder.withPartitionComponents("a");
+        final AsyncIterateFromPartition<String> start = builder.withPartitionComponents("a");
 
         start.limit(3).orderByAscending().iteratorWithMatchingAndBatchSize(123, "A", "B");
 
