@@ -118,8 +118,6 @@ public class BatchTest {
     @Mock
     private AchillesFuture<CompleteBean> achillesFutureEntity;
 
-    private FutureCallback<Object>[] asyncListeners = new FutureCallback[] { };
-
     @Mock
     private PersistenceManagerFactory pmf;
 

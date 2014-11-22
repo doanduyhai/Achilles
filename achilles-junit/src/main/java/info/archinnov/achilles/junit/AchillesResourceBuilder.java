@@ -75,7 +75,7 @@ public class AchillesResourceBuilder {
 	 * Start building an AchillesResource with no entity packages and default 'achilles_test' keyspace
 	 */
 	public static AchillesResource noEntityPackages() {
-		return new AchillesResource(new ConfigMap(),null);
+		return new AchillesResource(new ConfigMap(),(String[])null);
 	}
 
     /**
@@ -84,7 +84,7 @@ public class AchillesResourceBuilder {
 	public static AchillesResource noEntityPackages(String keyspaceName) {
         final ConfigMap configMap = new ConfigMap();
         configMap.put(KEYSPACE_NAME, keyspaceName);
-        return new AchillesResource(configMap,null);
+        return new AchillesResource(configMap,(String[])null);
 	}
 
     /**

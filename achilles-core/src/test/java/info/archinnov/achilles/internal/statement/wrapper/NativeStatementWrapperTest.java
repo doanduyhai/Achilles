@@ -22,6 +22,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.RegularStatement;
 import info.archinnov.achilles.listener.LWTResultListener;
 import org.junit.Test;
@@ -42,7 +43,7 @@ public class NativeStatementWrapperTest {
         statement.setConsistencyLevel(ConsistencyLevel.ALL);
         statement.setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
         final NativeStatementWrapper wrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, new Object[] { 10L }, Optional.<LWTResultListener>absent());
-        final ByteBuffer[] boundValues = new SimpleStatement("select", 10L).getValues();
+        final ByteBuffer[] boundValues = new SimpleStatement("select", 10L).getValues(ProtocolVersion.V2);
 
         //When
         final SimpleStatement actual = (SimpleStatement)wrapper.buildParameterizedStatement();
@@ -52,8 +53,8 @@ public class NativeStatementWrapperTest {
         assertThat(actual.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
         assertThat(actual.getSerialConsistencyLevel()).isEqualTo(ConsistencyLevel.LOCAL_SERIAL);
 
-        assertThat(actual.getValues()).hasSize(1);
-        assertThat(actual.getValues()).isEqualTo(boundValues);
+        assertThat(actual.getValues(ProtocolVersion.V2)).hasSize(1);
+        assertThat(actual.getValues(ProtocolVersion.V2)).isEqualTo(boundValues);
     }
 
     @Test
@@ -70,7 +71,7 @@ public class NativeStatementWrapperTest {
         //Then
         assertThat(actual).isSameAs(statement);
         assertThat(actual.getQueryString()).isEqualTo(statement.getQueryString());
-        assertThat(actual.getValues()).isNotEmpty();
+        assertThat(actual.getValues(ProtocolVersion.V2)).isNotEmpty();
         assertThat(actual.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
         assertThat(actual.getSerialConsistencyLevel()).isEqualTo(ConsistencyLevel.LOCAL_SERIAL);
     }

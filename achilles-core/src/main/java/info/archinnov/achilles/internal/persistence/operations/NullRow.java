@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.UUID;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.TupleValue;
+import com.datastax.driver.core.UDTValue;
 
 public class NullRow implements Row {
     @Override
@@ -200,7 +202,27 @@ public class NullRow implements Row {
     }
 
     @Override
+    public UDTValue getUDTValue(int i) {
+        return null;
+    }
+
+    @Override
+    public TupleValue getTupleValue(int i) {
+        return null;
+    }
+
+    @Override
     public <K, V> Map<K, V> getMap(String name, Class<K> keysClass, Class<V> valuesClass) {
+        return null;
+    }
+
+    @Override
+    public UDTValue getUDTValue(String name) {
+        return null;
+    }
+
+    @Override
+    public TupleValue getTupleValue(String name) {
         return null;
     }
 }

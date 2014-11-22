@@ -71,7 +71,7 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
     public Statement buildParameterizedStatement() {
         if (statement instanceof RegularStatement) {
             final RegularStatement regularStatement = (RegularStatement) statement;
-            if (ArrayUtils.isEmpty(regularStatement.getValues()) && ArrayUtils.isNotEmpty(values)) {
+            if (ArrayUtils.isEmpty(regularStatement.getValues(ProtocolVersion.V2)) && ArrayUtils.isNotEmpty(values)) {
                 final SimpleStatement statement = new SimpleStatement(getQueryString(), values);
 
                 if (this.statement.getConsistencyLevel() != null) {

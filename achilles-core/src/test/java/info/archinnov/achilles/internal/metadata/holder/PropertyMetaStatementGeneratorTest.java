@@ -450,6 +450,6 @@ public class PropertyMetaStatementGeneratorTest {
         final Assignments actual = view.generateUpdateForRemovedAtIndexElement(conditions, 2);
 
         //Then
-        assertThat(actual.getQueryString()).isEqualTo("UPDATE table SET names[2]=null;");
+        assertThat(actual.getQueryString()).isEqualTo("UPDATE table SET names[2]=?;");
     }
 }

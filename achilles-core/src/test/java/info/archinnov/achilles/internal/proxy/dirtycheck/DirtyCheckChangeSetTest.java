@@ -332,7 +332,7 @@ public class DirtyCheckChangeSetTest {
         //Then
         assertThat(vals[0]).isEqualTo(1);
         assertThat(vals[1]).isNull();
-        assertThat(conditions.getQueryString()).isEqualTo("UPDATE table SET property[1]=null;");
+        assertThat(conditions.getQueryString()).isEqualTo("UPDATE table SET property[1]=?;");
     }
 
     @Test
@@ -374,7 +374,7 @@ public class DirtyCheckChangeSetTest {
         changeSet.generateUpdateForRemovedKey(update);
 
         //Then
-        assertThat(conditions.getQueryString()).isEqualTo("UPDATE table SET property[1]=null;");
+        assertThat(conditions.getQueryString()).isEqualTo("UPDATE table SET property[1]=?;");
     }
 
     @Test
@@ -401,7 +401,7 @@ public class DirtyCheckChangeSetTest {
         changeSet.generateUpdateForRemoveAll(update);
 
         //Then
-        assertThat(conditions.getQueryString()).isEqualTo("UPDATE table SET property=null;");
+        assertThat(conditions.getQueryString()).isEqualTo("UPDATE table SET property=?;");
     }
 
     @Test

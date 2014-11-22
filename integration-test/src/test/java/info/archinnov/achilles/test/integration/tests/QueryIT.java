@@ -35,16 +35,13 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.*;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import info.archinnov.achilles.listener.LWTResultListener;
 import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
@@ -699,7 +696,7 @@ public class QueryIT {
         manager.insert(entity);
 
         final Select.Where select = select().from("Tweet").where(QueryBuilder.eq("id", entity.getId()));
-        final ByteBuffer[] values = select.getValues();
+        final ByteBuffer[] values = select.getValues(ProtocolVersion.V2);
         final TypedQuery<Tweet> queryBuilder = manager.typedQuery(Tweet.class, select, new Object[]{values});
 
         // When
