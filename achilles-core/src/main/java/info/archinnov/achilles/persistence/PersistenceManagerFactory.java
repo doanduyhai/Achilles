@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -627,6 +628,26 @@ public class PersistenceManagerFactory {
          */
         public PersistenceManagerFactoryBuilder withExecutorServiceThreadQueueSize(int threadQueueSize) {
             configMap.put(DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE, threadQueueSize);
+            return this;
+        }
+
+        /**
+         * Define the Thread Factory for the ExecutorService (ThreadPool) to be used internally for asynchronous operations.
+         * <br/>
+         * The default ExecutorService is configured as below:
+         *  <pre class="code"><code class="java">
+         *      // Create proxy
+         *      new ThreadPoolExecutor(5, 20, 60, TimeUnit.SECONDS,
+         *              new LinkedBlockingQueue<Runnable>(threadQueueSize),
+         *              new DefaultExecutorThreadFactory())
+         *  </code></pre>
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Asynchronous-Operations">Asynchronous Operations</a>
+         * @param factory the thread factory
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder withExecutorServiceThreadFactory(ThreadFactory factory) {
+            configMap.put(DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY, factory);
             return this;
         }
 
