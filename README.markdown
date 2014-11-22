@@ -32,7 +32,7 @@
 	<dependency>
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-core</artifactId>
-		<version>3.0.10</version>
+		<version>3.0.11</version>
 	</dependency>
 ```
 
@@ -42,7 +42,7 @@
  	<dependency>
  		<groupId>info.archinnov</groupId>
  		<artifactId>achilles-junit</artifactId>
- 		<version>3.0.10</version>
+ 		<version>3.0.11</version>
  		<scope>test</scope>
  	</dependency>
 ```
@@ -50,7 +50,7 @@
  For now, **Achilles** depends on the following libraries:
 
  1. cassandra 2.0.11
- 2. cassandra-driver-core 2.0.7
+ 2. cassandra-driver-core 2.1.2
  3. CGLIB nodep 2.2.2 for proxy building
  4. Jackson core, annotations, databind & module jaxb annotations 2.2.3
  5. org.reflections 0.9.9-RC1
