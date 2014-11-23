@@ -41,7 +41,7 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
         return newInstance;
     }
 
-    Object decodeFromCassandra(Object fromCassandra) {
+    public Object decodeFromCassandra(Object fromCassandra) {
         if (log.isTraceEnabled()) {
             log.trace("Decode Cassandra value {} into Java for property {} of entity class {}", fromCassandra, meta.getPropertyName(), meta.getEntityClassName());
         }

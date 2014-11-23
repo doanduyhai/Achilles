@@ -22,6 +22,7 @@ import info.archinnov.achilles.internal.metadata.codec.SetCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodecImpl;
 import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.Pair;
 import org.slf4j.Logger;
@@ -75,7 +76,8 @@ public class CodecFactory {
         log.debug("Parse list codec for field {}", field);
         if (filter.hasAnnotation(field, TypeTransformer.class)) {
             return typeTransformerParser.parseAndValidateListCodec(field);
-        } else {
+        }
+        else {
             final Codec simpleCodec = createSimpleCodecForCollection(context);
             return new ListCodecImpl(simpleCodec.sourceType(), simpleCodec.targetType(), simpleCodec);
         }
@@ -104,8 +106,8 @@ public class CodecFactory {
 
             final Pair<Class<Object>, Class<Object>> sourceTargetTypes = TypeParser.determineMapGenericTypes(field);
 
-            final Codec keyCodec = createSimpleCodec(context, sourceTargetTypes.left, maybeEncodingKey);
-            final Codec valueCodec = createSimpleCodec(context, sourceTargetTypes.right, maybeEncodingValue);
+            Codec keyCodec = createSimpleCodecForMapKey(context, sourceTargetTypes.left, maybeEncodingKey);
+            Codec valueCodec = createSimpleCodecForMapValue(context, sourceTargetTypes.right, maybeEncodingValue);
 
             return MapCodecBuilder.fromKeyType(keyCodec.sourceType())
                     .toKeyType(keyCodec.targetType())
@@ -154,25 +156,80 @@ public class CodecFactory {
             return input;
         }
     }
+
     private Codec createSimpleCodec(PropertyParsingContext context, Class type, Optional<Encoding> maybeEncoding) {
         log.debug("Create simple codec for java type {}", type);
-        Codec codec;
-        if (Byte.class.isAssignableFrom(type) || byte.class.isAssignableFrom(type)) {
-            codec = new ByteCodec();
-        } else if (byte[].class.isAssignableFrom(type)) {
-            codec = new ByteArrayPrimitiveCodec();
-        } else if (Byte[].class.isAssignableFrom(type)) {
-            codec = new ByteArrayCodec();
-        } else if (PropertyParser.isAssignableFromNativeType(type)) {
-            codec = new NativeCodec<Object>(type);
-        } else if (type.isEnum()) {
-            codec = createEnumCodec(type, maybeEncoding);
-        } else if (filter.hasAnnotation(context.getCurrentField(), JSON.class)) {
-            codec = new JSONCodec<>(context.getCurrentObjectMapper(), type);
+        Optional<? extends Codec> codecO;
+        final Field field = context.getCurrentField();
+        if (filter.hasAnnotation(field, JSON.class)) {
+            final JSON annotation = field.getAnnotation(JSON.class);
+            Validator.validateBeanMappingTrue(annotation.value(),"The attribute 'value' of @JSON annotation should be set to true on simple, List and Set types");
+            codecO = Optional.fromNullable(new JSONCodec(context.getCurrentObjectMapper(), type));
         } else {
+            codecO = createSimpleCodecCore(type, maybeEncoding);
+        }
+        if(!codecO.isPresent()) {
             throw new AchillesBeanMappingException(format("The type '%s' on field '%s' of entity '%s' is not supported. If you want to convert it to JSON string, do not forget to add @JSON", type.getCanonicalName(), context.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName()));
         }
-        return codec;
+        return codecO.get();
+    }
+
+    private Optional<? extends Codec> createSimpleCodecCore(Class type, Optional<Encoding> maybeEncoding) {
+        log.debug("Create simple codec for java type {}", type);
+        Optional<? extends Codec> codecO = Optional.absent();
+        if (Byte.class.isAssignableFrom(type) || byte.class.isAssignableFrom(type)) {
+            codecO = Optional.fromNullable(new ByteCodec());
+        } else if (byte[].class.isAssignableFrom(type)) {
+            codecO = Optional.fromNullable(new ByteArrayPrimitiveCodec());
+        } else if (Byte[].class.isAssignableFrom(type)) {
+            codecO = Optional.fromNullable(new ByteArrayCodec());
+        } else if (PropertyParser.isAssignableFromNativeType(type)) {
+            codecO = Optional.fromNullable(new NativeCodec<Object>(type));
+        } else if (type.isEnum()) {
+            codecO = Optional.fromNullable(createEnumCodec(type, maybeEncoding));
+        }
+        return codecO;
+    }
+
+    private Codec createSimpleCodecForMapKey(PropertyParsingContext context, Class type, Optional<Encoding> maybeEncoding) {
+        log.debug("Create simple codec for java type {}", type);
+        final Field field = context.getCurrentField();
+        Optional<? extends Codec> codecO = Optional.absent();
+        if (filter.hasAnnotation(field, JSON.class)) {
+            final JSON annotation = field.getAnnotation(JSON.class);
+            if (annotation.key()) {
+                codecO = Optional.fromNullable(new JSONCodec(context.getCurrentObjectMapper(), type));
+            }
+        }
+
+        if(!codecO.isPresent()) {
+            codecO = createSimpleCodecCore(type, maybeEncoding);
+        }
+
+        if(!codecO.isPresent()) {
+            throw new AchillesBeanMappingException(format("The type '%s' on field '%s' of entity '%s' is not supported. If you want to convert it to JSON string, do not forget to add @JSON", type.getCanonicalName(), context.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName()));
+        }
+        return codecO.get();
+    }
+
+    private Codec createSimpleCodecForMapValue(PropertyParsingContext context, Class type, Optional<Encoding> maybeEncoding) {
+        log.debug("Create simple codec for java map type {}", type);
+        final Field field = context.getCurrentField();
+        Optional<? extends Codec> codecO = Optional.absent();
+        if (filter.hasAnnotation(field, JSON.class)) {
+            final JSON annotation = field.getAnnotation(JSON.class);
+            if (annotation.value()) {
+                codecO = Optional.fromNullable(new JSONCodec(context.getCurrentObjectMapper(), type));
+            }
+        }
+
+        if(!codecO.isPresent()) {
+            codecO = createSimpleCodecCore(type, maybeEncoding);
+        }
+        if(!codecO.isPresent()) {
+            throw new AchillesBeanMappingException(format("The type '%s' on field '%s' of entity '%s' is not supported. If you want to convert it to JSON string, do not forget to add @JSON", type.getCanonicalName(), context.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName()));
+        }
+        return codecO.get();
     }
 
     private Codec createEnumCodec(Class type, Optional<Encoding> maybeEncoding) {

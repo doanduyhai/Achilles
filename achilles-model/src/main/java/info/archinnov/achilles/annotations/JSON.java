@@ -36,4 +36,15 @@ import java.lang.annotation.*;
 @Documented
 public @interface JSON {
 
+    /**
+     * Encode Map keys as JSON string. Only applies to Map types
+     * @return false
+     */
+    public boolean key() default false;
+
+    /**
+     * By default, encode value to JSON string. Applies to simple value or List/Set values
+     * @return
+     */
+    public boolean value() default true;
 }

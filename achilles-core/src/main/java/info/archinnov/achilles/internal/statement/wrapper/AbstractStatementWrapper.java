@@ -95,9 +95,9 @@ public abstract class AbstractStatementWrapper {
     public abstract void logDMLStatement(String indentation);
 
     protected ListenableFuture<ResultSet> executeAsyncInternal(Session session, AbstractStatementWrapper statementWrapper, ExecutorService executorService) {
-        ResultSetFuture resultSetFuture = session.executeAsync(statementWrapper.getStatement());
         //Log DML statement BEFORE executing the query
         statementWrapper.logDMLStatement("");
+        ResultSetFuture resultSetFuture = session.executeAsync(statementWrapper.getStatement());
         return asyncUtils.applyLoggingTracingAndCASCheck(resultSetFuture, statementWrapper, executorService);
     }
 

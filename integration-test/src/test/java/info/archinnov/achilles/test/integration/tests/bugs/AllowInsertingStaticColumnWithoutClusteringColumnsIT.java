@@ -28,7 +28,7 @@ import org.junit.Test;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-public class AllowInsertingStaticColumnWithoutClusteringColumnsT {
+public class AllowInsertingStaticColumnWithoutClusteringColumnsIT {
 
     @Rule
     public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, ClusteredEntityWithStaticColumn.TABLE_NAME);

@@ -288,6 +288,25 @@ public class CodecFactoryTest {
     }
 
     @Test
+    public void should_create_list_json_codec() throws Exception {
+        class Test {
+            @JSON
+            private List<Integer> counts;
+        }
+
+        Field field = Test.class.getDeclaredField("counts");
+
+        //When
+        final ListCodec<Object, Object> codec = factory.parseListField(createContext(field));
+        final List<Object> encoded = codec.encode(Arrays.<Object>asList(1, 2, 3));
+        final List<Object> decoded = codec.decode(Arrays.<Object>asList("4", "5"));
+
+        //Then
+        assertThat(encoded).containsExactly("1", "2", "3");
+        assertThat(decoded).containsExactly(4, 5);
+    }
+
+    @Test
     public void should_create_list_codec_from_transformer() throws Exception {
         class Test {
             @TypeTransformer(valueCodecClass = LongToStringCodec.class)
@@ -338,6 +357,25 @@ public class CodecFactoryTest {
         //Then
         assertThat(encoded).containsOnly(0, 1);
         assertThat(decoded).containsOnly(PropertyType.SIMPLE, PropertyType.LIST, PropertyType.SET);
+    }
+
+    @Test
+    public void should_create_set_json_codec() throws Exception {
+        class Test {
+            @JSON
+            private Set<Integer> types;
+        }
+
+        Field field = Test.class.getDeclaredField("types");
+
+        //When
+        final SetCodec codec = factory.parseSetField(createContext(field));
+        final Set<Object> encoded = codec.encode(Sets.newSet(1,2));
+        final Set<Object> decoded = codec.decode(Sets.newSet("2", "3", "4"));
+
+        //Then
+        assertThat(encoded).containsOnly("1", "2");
+        assertThat(decoded).containsOnly(2, 3, 4);
     }
 
     @Test
@@ -445,6 +483,30 @@ public class CodecFactoryTest {
     }
 
     @Test
+    public void should_create_key_json_map_codec() throws Exception {
+        //Given
+        class Test {
+            @JSON(key = true, value = false)
+            private Map<Integer, Integer> maps;
+
+        }
+
+        Field field = Test.class.getDeclaredField("maps");
+
+        //When
+        final MapCodec<Object, Object, Object, Object> codec = factory.parseMapField(createContext(field));
+        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(1, 100, 2, 200));
+        Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of("3", 3, "4", 4));
+
+        //Then
+        assertThat(encoded.get("1")).isEqualTo(100);
+        assertThat(encoded.get("2")).isEqualTo(200);
+
+        assertThat(decoded.get(3)).isEqualTo(3);
+        assertThat(decoded.get(4)).isEqualTo(4);
+    }
+
+    @Test
     public void should_create_value_map_codec() throws Exception {
         class Test {
             private Map<Integer,PropertyType> maps;
@@ -485,6 +547,50 @@ public class CodecFactoryTest {
 
         assertThat(decoded.get(3)).isEqualTo(PropertyType.LIST);
         assertThat(decoded.get(4)).isEqualTo(PropertyType.SET);
+    }
+
+    @Test
+         public void should_create_value_json_map_codec() throws Exception {
+        class Test {
+            @JSON
+            private Map<Integer,Integer> maps;
+        }
+
+        Field field = Test.class.getDeclaredField("maps");
+
+        //When
+        final MapCodec codec = factory.parseMapField(createContext(field));
+        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(1, 100, 2, 200));
+        Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of(3, "300", 4, "400"));
+
+        //Then
+        assertThat(encoded.get(1)).isEqualTo("100");
+        assertThat(encoded.get(2)).isEqualTo("200");
+
+        assertThat(decoded.get(3)).isEqualTo(300);
+        assertThat(decoded.get(4)).isEqualTo(400);
+    }
+
+    @Test
+    public void should_create_key_value_json_map_codec() throws Exception {
+        class Test {
+            @JSON(key = true)
+            private Map<Integer,Integer> maps;
+        }
+
+        Field field = Test.class.getDeclaredField("maps");
+
+        //When
+        final MapCodec codec = factory.parseMapField(createContext(field));
+        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(1, 100, 2, 200));
+        Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of("3", "300", "4", "400"));
+
+        //Then
+        assertThat(encoded.get("1")).isEqualTo("100");
+        assertThat(encoded.get("2")).isEqualTo("200");
+
+        assertThat(decoded.get(3)).isEqualTo(300);
+        assertThat(decoded.get(4)).isEqualTo(400);
     }
 
     @Test

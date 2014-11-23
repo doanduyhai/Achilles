@@ -32,18 +32,15 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import javax.validation.constraints.NotNull;
 
 import com.google.common.base.Optional;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Enumerated;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.annotations.Enumerated.Encoding;
-import info.archinnov.achilles.annotations.Strategy;
+import info.archinnov.achilles.json.DefaultJacksonMapperFactory;
 import info.archinnov.achilles.type.NamingStrategy;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,13 +49,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.EmptyCollectionIfNull;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Index;
-import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Event;
@@ -851,6 +841,146 @@ public class PropertyParserTest {
 
     }
 
+    @Test
+    public void should_parse_json_list_value() throws Exception {
+        //Given
+        @Entity(keyspace = "ks", table="test")
+        class Test {
+            @Column
+            @JSON
+            private List<Integer> types;
+
+            public List<Integer> getTypes() {
+                return types;
+            }
+
+            public void setTypes(List<Integer> types) {
+                this.types = types;
+            }
+        }
+
+        Test instance = new Test();
+        instance.setTypes(Arrays.asList(1));
+
+        //When
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("types"));
+
+        PropertyMeta meta = parser.parse(context);
+        //Then
+
+        assertThat(meta.getPropertyName()).isEqualTo("types");
+        assertThat(meta.<Integer>getValueClass()).isEqualTo(Integer.class);
+        assertThat(meta.type()).isEqualTo(PropertyType.LIST);
+        assertThat(meta.forTranscoding().encodeToCassandra(instance.getTypes())).isEqualTo(Arrays.asList("1"));
+        assertThat(meta.forTranscoding().decodeFromCassandra(Arrays.asList("1"))).isEqualTo(Arrays.asList(1));
+    }
+
+    @Test
+    public void should_parse_json_set_value() throws Exception {
+        //Given
+        @Entity(keyspace = "ks", table="test")
+        class Test {
+            @Column
+            @JSON
+            private Set<Integer> types;
+
+            public Set<Integer> getTypes() {
+                return types;
+            }
+
+            public void setTypes(Set<Integer> types) {
+                this.types = types;
+            }
+        }
+
+        Test instance = new Test();
+        instance.setTypes(Sets.newHashSet(2));
+
+        //When
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("types"));
+
+        PropertyMeta meta = parser.parse(context);
+        //Then
+
+        assertThat(meta.getPropertyName()).isEqualTo("types");
+        assertThat(meta.<Integer>getValueClass()).isEqualTo(Integer.class);
+        assertThat(meta.type()).isEqualTo(PropertyType.SET);
+        assertThat(meta.forTranscoding().encodeToCassandra(instance.getTypes())).isEqualTo(Sets.newHashSet("2"));
+        assertThat(meta.forTranscoding().decodeFromCassandra(Sets.newHashSet("2"))).isEqualTo(Sets.newHashSet(2));
+    }
+
+    @Test
+    public void should_parse_json_map_key() throws Exception {
+        //Given
+        @Entity(keyspace = "ks", table="test")
+        class Test {
+            @Column
+            @JSON(key = true, value = false)
+            private Map<Integer,Integer> map;
+
+            public Map<Integer, Integer> getMap() {
+                return map;
+            }
+
+            public void setMap(Map<Integer, Integer> map) {
+                this.map = map;
+            }
+        }
+
+
+        Test instance = new Test();
+        instance.setMap(ImmutableMap.of(1, 2));
+
+
+        //When
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("map"));
+
+        PropertyMeta meta = parser.parse(context);
+        //Then
+
+        assertThat(meta.getPropertyName()).isEqualTo("map");
+        assertThat(meta.<Integer>getKeyClass()).isEqualTo(Integer.class);
+        assertThat(meta.<Integer>getValueClass()).isEqualTo(Integer.class);
+        assertThat(meta.type()).isEqualTo(PropertyType.MAP);
+        assertThat(meta.forTranscoding().encodeToCassandra(instance.getMap())).isEqualTo(ImmutableMap.of("1", 2));
+        assertThat(meta.forTranscoding().decodeFromCassandra(ImmutableMap.of("1", 2))).isEqualTo(ImmutableMap.of(1, 2));
+    }
+
+    @Test
+    public void should_parse_json_map_value() throws Exception {
+        //Given
+        @Entity(keyspace = "ks", table="test")
+        class Test {
+            @Column
+            @JSON
+            private Map<Integer,Integer> map;
+
+            public Map<Integer, Integer> getMap() {
+                return map;
+            }
+
+            public void setMap(Map<Integer, Integer> map) {
+                this.map = map;
+            }
+        }
+
+        Test instance = new Test();
+        instance.setMap(ImmutableMap.of(2,3));
+
+        //When
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("map"));
+
+        PropertyMeta meta = parser.parse(context);
+        //Then
+
+        assertThat(meta.getPropertyName()).isEqualTo("map");
+        assertThat(meta.<Integer>getKeyClass()).isEqualTo(Integer.class);
+        assertThat(meta.<Integer>getValueClass()).isEqualTo(Integer.class);
+        assertThat(meta.type()).isEqualTo(PropertyType.MAP);
+        assertThat(meta.forTranscoding().encodeToCassandra(instance.getMap())).isEqualTo(ImmutableMap.of(2,"3"));
+        assertThat(meta.forTranscoding().decodeFromCassandra(ImmutableMap.of(2,"3"))).isEqualTo(ImmutableMap.of(2,3));
+    }
+
     private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
         @Override
         public void onEvent(Long entity) {
@@ -865,7 +995,7 @@ public class PropertyParserTest {
 
     private <T> PropertyParsingContext newContext(Class<T> entityClass, Field field) {
         entityContext = new EntityParsingContext(configContext, entityClass);
-
+        entityContext.setCurrentObjectMapper(new DefaultJacksonMapperFactory().getMapper(String.class));
         return entityContext.newPropertyContext(field);
     }
 
