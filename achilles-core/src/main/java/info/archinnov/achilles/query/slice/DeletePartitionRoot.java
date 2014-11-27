@@ -16,8 +16,7 @@
 
 package info.archinnov.achilles.query.slice;
 
-import info.archinnov.achilles.async.AchillesFuture;
-import info.archinnov.achilles.type.Empty;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 
@@ -74,5 +73,17 @@ public abstract class DeletePartitionRoot<TYPE, T extends DeletePartitionRoot<TY
     public void deleteMatching(Object... clusterings) {
         super.withClusteringsInternal(clusterings);
         super.deleteInternal();
+    }
+
+    /**
+     *
+     * Provide a consistency level for DELETE statement
+     *
+     * @param consistencyLevel
+     * @return Slice DSL
+     */
+    public T withConsistency(ConsistencyLevel consistencyLevel) {
+        this.properties.writeConsistency(consistencyLevel);
+        return getThis();
     }
 }

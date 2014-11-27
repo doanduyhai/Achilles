@@ -404,7 +404,7 @@ public abstract class AsyncSelectPartitionRoot<TYPE, T extends AsyncSelectPartit
          * @return Slice DSL
          */
         public T withConsistency(ConsistencyLevel consistencyLevel) {
-            AsyncSelectPartitionRoot.super.properties.consistency(consistencyLevel);
+            AsyncSelectPartitionRoot.super.properties.readConsistency(consistencyLevel);
             return getThis();
         }
 

@@ -154,14 +154,10 @@ public class SliceQueryExecutorTest {
 
     private List<Object> partitionComponents = Arrays.<Object>asList(partitionKey);
 
-    private ConsistencyLevel defaultReadLevel = ConsistencyLevel.EACH_QUORUM;
-    private ConsistencyLevel defaultWriteLevel = ConsistencyLevel.LOCAL_QUORUM;
     private FutureCallback<Object>[] asyncListeners = new FutureCallback[] { };
 
     @Before
     public void setUp() {
-        when(configContext.getDefaultReadConsistencyLevel()).thenReturn(defaultReadLevel);
-        when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(defaultWriteLevel);
         when(context.getEntityFacade()).thenReturn(entityFacade);
         when(meta.getIdMeta()).thenReturn(idMeta);
         when(meta.forSliceQuery().getClusteringOrderForSliceQuery()).thenReturn(new ClusteringOrder("col", Sorting.ASC));
@@ -184,7 +180,7 @@ public class SliceQueryExecutorTest {
         Row row = mock(Row.class);
         List<Row> rows = asList(row);
 
-        when(daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel)).thenReturn(bsWrapper);
+        when(daoContext.bindForSliceQuerySelect(sliceQueryProperties)).thenReturn(bsWrapper);
 
         when(daoContext.execute(bsWrapper)).thenReturn(futureResultSet);
         when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS)).thenReturn(futureRows);
@@ -217,7 +213,7 @@ public class SliceQueryExecutorTest {
 
     @Test
     public void should_create_iterator_for_clustered_entities_async() throws Exception {
-        when(daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel)).thenReturn(bsWrapper);
+        when(daoContext.bindForSliceQuerySelect(sliceQueryProperties)).thenReturn(bsWrapper);
 
         when(daoContext.execute(bsWrapper)).thenReturn(futureResultSet);
         when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ITERATOR)).thenReturn(futureIteratorRow);
@@ -239,7 +235,7 @@ public class SliceQueryExecutorTest {
 
     @Test
     public void should_delete_clustered_entities() throws Exception {
-        when(daoContext.bindForSliceQueryDelete(sliceQueryProperties, defaultWriteLevel)).thenReturn(bsWrapper);
+        when(daoContext.bindForSliceQueryDelete(sliceQueryProperties)).thenReturn(bsWrapper);
         when(daoContext.execute(bsWrapper)).thenReturn(futureResultSet);
         when(asyncUtils.transformFutureToEmpty(futureResultSet, executorService)).thenReturn(futureEmpty);
         when(asyncUtils.buildInterruptible(futureEmpty)).thenReturn(achillesFutureEmpty);

@@ -316,7 +316,7 @@ public abstract class AsyncIteratePartitionRoot<TYPE, T extends AsyncIteratePart
          * @return Slice DSL
          */
         public T withConsistency(ConsistencyLevel consistencyLevel) {
-            AsyncIteratePartitionRoot.super.properties.consistency(consistencyLevel);
+            AsyncIteratePartitionRoot.super.properties.readConsistency(consistencyLevel);
             return getThis();
         }
 

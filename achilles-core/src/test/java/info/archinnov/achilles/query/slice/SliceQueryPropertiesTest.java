@@ -15,6 +15,7 @@ import info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -116,14 +117,17 @@ public class SliceQueryPropertiesTest {
         final Delete delete = delete().from("table");
 
         //When
-        final RegularStatement statement = SliceQueryProperties.builder(meta, ClusteredEntity.class, SliceType.SELECT)
+        final SliceQueryProperties<ClusteredEntity> properties = SliceQueryProperties.builder(meta, ClusteredEntity.class, SliceType.SELECT)
                 .partitionKeysName(asList("id", "bucket")).lastPartitionKeyName("year")
                 .partitionKeys(partitionKeys).andPartitionKeysIn(partitionKeysIN)
                 .withClusteringKeysName(asList("date", "type"))
                 .withClusteringKeys(clusteringKeys)
-                .generateWhereClauseForDelete(delete);
+                .writeConsistency(ConsistencyLevel.ALL);
+
+        final RegularStatement statement = properties.generateWhereClauseForDelete(delete);
 
         //Then
+        assertThat(properties.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
         assertThat(statement.getQueryString()).isEqualTo("DELETE FROM table WHERE id=:id AND bucket=:bucket AND year IN :partitionComponentsIn AND date=:date AND type=:type;");
     }
 

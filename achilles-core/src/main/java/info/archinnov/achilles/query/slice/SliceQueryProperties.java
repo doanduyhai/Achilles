@@ -33,17 +33,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import com.datastax.driver.core.querybuilder.Select.Where;
-import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.BindMarker;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -54,14 +50,6 @@ public class SliceQueryProperties<T> {
 
     private static final Logger log = LoggerFactory.getLogger(SliceQueryProperties.class);
 
-    public static final int DEFAULT_LIMIT = 100;
-
-    private static final Function<String, Object> FROM_NAME_TO_BIND_MARKER = new Function<String, Object>() {
-        @Override
-        public BindMarker apply(String name) {
-            return bindMarker(name);
-        }
-    };
 
     private final EntityMeta entityMeta;
     private final Class<T> entityClass;
@@ -72,7 +60,8 @@ public class SliceQueryProperties<T> {
     private BoundingMode boundingMode = BoundingMode.INCLUSIVE_BOUNDS;
     private Optional<OrderingMode> orderingModeO = Optional.absent();
 
-    private Optional<ConsistencyLevel> consistencyLevelO = Optional.absent();
+    private ConsistencyLevel readConsistencyLevel;
+    private ConsistencyLevel writeConsistencyLevel;
 
     private List<Object> partitionKeys = new LinkedList<>();
     private List<String> partitionKeysName = new LinkedList<>();
@@ -96,6 +85,8 @@ public class SliceQueryProperties<T> {
         this.entityClass = entityClass;
         this.sliceType = sliceType;
         this.clusteringOrder = entityMeta.forSliceQuery().getClusteringOrderForSliceQuery();
+        this.readConsistencyLevel = entityMeta.config().getReadConsistencyLevel();
+        this.writeConsistencyLevel = entityMeta.config().getWriteConsistencyLevel();
     }
 
     public static <T> SliceQueryProperties<T> builder(EntityMeta entityMeta, Class<T> entityClass, SliceType sliceType) {
@@ -128,9 +119,15 @@ public class SliceQueryProperties<T> {
         return this;
     }
 
-    protected SliceQueryProperties<T>  consistency(ConsistencyLevel consistencyLevel) {
+    protected SliceQueryProperties<T> readConsistency(ConsistencyLevel consistencyLevel) {
         Validator.validateNotNull(consistencyLevel, "The consistency level should not be null");
-        this.consistencyLevelO = Optional.fromNullable(consistencyLevel);
+        this.readConsistencyLevel = consistencyLevel;
+        return this;
+    }
+
+    protected SliceQueryProperties<T> writeConsistency(ConsistencyLevel consistencyLevel) {
+        Validator.validateNotNull(consistencyLevel, "The consistency level should not be null");
+        this.writeConsistencyLevel = consistencyLevel;
         return this;
     }
 
@@ -321,8 +318,12 @@ public class SliceQueryProperties<T> {
         }
     }
 
-    public ConsistencyLevel getConsistencyLevelOr(ConsistencyLevel defaultConsistencyLevel) {
-        return consistencyLevelO.or(defaultConsistencyLevel);
+    public ConsistencyLevel getReadConsistencyLevel() {
+        return readConsistencyLevel;
+    }
+
+    public ConsistencyLevel getWriteConsistencyLevel() {
+        return writeConsistencyLevel;
     }
 
     public Class<T> getEntityClass() {

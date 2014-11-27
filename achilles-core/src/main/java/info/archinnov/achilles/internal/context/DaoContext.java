@@ -263,24 +263,22 @@ public class DaoContext {
         return asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW);
     }
 
-    public BoundStatementWrapper bindForSliceQuerySelect(SliceQueryProperties<?> sliceQueryProperties, ConsistencyLevel defaultReadConsistencyLevel) {
+    public BoundStatementWrapper bindForSliceQuerySelect(SliceQueryProperties<?> sliceQueryProperties) {
         final PreparedStatement ps = cacheManager.getCacheForSliceSelectAndIterator(session, dynamicPSCache, sliceQueryProperties);
-        return buildBSForSliceQuery(sliceQueryProperties, defaultReadConsistencyLevel, ps);
+        return buildBSForSliceQuery(sliceQueryProperties, sliceQueryProperties.getReadConsistencyLevel(), ps);
     }
 
-    public BoundStatementWrapper bindForSliceQueryDelete(SliceQueryProperties<?> sliceQueryProperties, ConsistencyLevel defaultWriteConsistencyLevel) {
+    public BoundStatementWrapper bindForSliceQueryDelete(SliceQueryProperties<?> sliceQueryProperties) {
         final PreparedStatement ps = cacheManager.getCacheForSliceDelete(session, dynamicPSCache, sliceQueryProperties);
-        return buildBSForSliceQuery(sliceQueryProperties, defaultWriteConsistencyLevel, ps);
+        return buildBSForSliceQuery(sliceQueryProperties, sliceQueryProperties.getWriteConsistencyLevel(), ps);
     }
 
-    private BoundStatementWrapper buildBSForSliceQuery(SliceQueryProperties<?> sliceQueryProperties, ConsistencyLevel defaultReadConsistencyLevel, PreparedStatement ps) {
+    private BoundStatementWrapper buildBSForSliceQuery(SliceQueryProperties<?> sliceQueryProperties, ConsistencyLevel consistencyLevel, PreparedStatement ps) {
         final Object[] boundValues = sliceQueryProperties.getBoundValues();
         final BoundStatement bs = ps.bind(boundValues);
         sliceQueryProperties.setFetchSizeToStatement(bs);
 
-        final ConsistencyLevel readLevel =  sliceQueryProperties.getConsistencyLevelOr(defaultReadConsistencyLevel);
-
-        return new BoundStatementWrapper(sliceQueryProperties.getEntityClass(),bs,boundValues, getCQLLevel(readLevel),
+        return new BoundStatementWrapper(sliceQueryProperties.getEntityClass(),bs,boundValues, getCQLLevel(consistencyLevel),
                 Optional.<LWTResultListener>absent(), Optional.<com.datastax.driver.core.ConsistencyLevel>absent());
     }
 

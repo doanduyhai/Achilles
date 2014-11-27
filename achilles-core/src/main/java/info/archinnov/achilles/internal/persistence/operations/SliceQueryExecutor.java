@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ResultSet;
@@ -50,16 +51,12 @@ public class SliceQueryExecutor {
     protected AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
     protected PersistenceContextFactory contextFactory;
     protected DaoContext daoContext;
-    protected ConsistencyLevel defaultReadLevel;
-    protected ConsistencyLevel defaultWriteLevel;
     protected ExecutorService executorService;
 
 
     public SliceQueryExecutor(PersistenceContextFactory contextFactory, ConfigurationContext configContext, DaoContext daoContext) {
         this.contextFactory = contextFactory;
         this.daoContext = daoContext;
-        this.defaultReadLevel = configContext.getDefaultReadConsistencyLevel();
-        this.defaultWriteLevel = configContext.getDefaultWriteConsistencyLevel();
         this.executorService = configContext.getExecutorService();
     }
 
@@ -95,7 +92,7 @@ public class SliceQueryExecutor {
     protected <T> ListenableFuture<List<T>> coreAsyncGet(SliceQueryProperties<T> sliceQueryProperties) {
         final EntityMeta meta = sliceQueryProperties.getEntityMeta();
 
-        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel);
+        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQuerySelect(sliceQueryProperties);
 
         final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(bsWrapper);
         final ListenableFuture<List<Row>> futureRows = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROWS);
@@ -125,7 +122,7 @@ public class SliceQueryExecutor {
 
     public <T> AchillesFuture<Iterator<T>> asyncIterator(final SliceQueryProperties<T> sliceQueryProperties) {
         log.debug("Get iterator for slice query asynchronously");
-        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel);
+        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQuerySelect(sliceQueryProperties);
         final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(bsWrapper);
         final ListenableFuture<Iterator<Row>> futureIterator = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ITERATOR);
 
@@ -147,7 +144,7 @@ public class SliceQueryExecutor {
 
     public <T> AchillesFuture<Empty> asyncDelete(final SliceQueryProperties<T> sliceQueryProperties) {
         log.debug("Slice delete");
-        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQueryDelete(sliceQueryProperties, defaultWriteLevel);
+        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQueryDelete(sliceQueryProperties);
         final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(bsWrapper);
         final ListenableFuture<Empty> listenableFuture = asyncUtils.transformFutureToEmpty(resultSetFuture, executorService);
         asyncUtils.maybeAddAsyncListeners(listenableFuture, sliceQueryProperties.getAsyncListeners(), executorService);
@@ -156,7 +153,7 @@ public class SliceQueryExecutor {
 
     protected <T> PersistenceContext buildContextForQuery( SliceQueryProperties<T> sliceQueryProperties) {
         log.trace("Build PersistenceContext for slice query");
-        ConsistencyLevel cl = sliceQueryProperties.getConsistencyLevelOr(defaultReadLevel);
+        ConsistencyLevel cl = sliceQueryProperties.getReadConsistencyLevel();
         return contextFactory.newContextForSliceQuery(sliceQueryProperties.getEntityClass(), sliceQueryProperties.getPartitionKeys(), cl);
     }
 

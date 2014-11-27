@@ -24,7 +24,6 @@ import static info.archinnov.achilles.query.slice.OrderingMode.ASCENDING;
 import static info.archinnov.achilles.query.slice.OrderingMode.DESCENDING;
 import java.util.Iterator;
 import com.google.common.util.concurrent.FutureCallback;
-import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -316,7 +315,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * @return Slice DSL
          */
         public T withConsistency(ConsistencyLevel consistencyLevel) {
-            IteratePartitionRoot.super.properties.consistency(consistencyLevel);
+            IteratePartitionRoot.super.properties.readConsistency(consistencyLevel);
             return getThis();
         }
 

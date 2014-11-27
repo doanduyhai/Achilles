@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import com.google.common.base.Joiner;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -56,23 +58,28 @@ public class CassandraLogAsserter {
         final Iterator<String> standardOutputs = asList(split(logStream.toString(), "\n")).iterator();
 
         List<ConsistencyLevel> founds = new LinkedList<>();
+        List<String> logs = new LinkedList<>();
+        logs.add("\n");
         ConsistencyLevel consistencyLevel = clIterator.next();
 
         try {
             while (standardOutputs.hasNext()) {
                 final String logLine = standardOutputs.next();
-
-                if (pattern.matcher(logLine).find() && checkForConsistency(consistencyLevel, logLine)) {
-                    founds.add(consistencyLevel);
-                    if (clIterator.hasNext()) {
-                        consistencyLevel = clIterator.next();
-                    } else {
-                        break;
+                if (pattern.matcher(logLine).find()) {
+                    logs.add(logLine);
+                    if(checkForConsistency(consistencyLevel, logLine)) {
+                        founds.add(consistencyLevel);
+                        if (clIterator.hasNext()) {
+                            consistencyLevel = clIterator.next();
+                        } else {
+                            break;
+                        }
                     }
                 }
             }
 
-            assertThat(founds).describedAs("expected consistency levels").isEqualTo(expectedConsistencyLevels);
+            final String joinedLogs = Joiner.on("\n").join(logs);
+            assertThat(founds).describedAs(joinedLogs + " expected consistency levels").isEqualTo(expectedConsistencyLevels);
 
         } finally {
             logStream = null;

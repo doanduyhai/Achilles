@@ -116,13 +116,13 @@ public abstract class SliceQueryRoot<TYPE, T extends SliceQueryRoot<TYPE, T>> {
 
     /**
      *
-     * Provide a consistency level for SELECT/DELETE statement
+     * Provide a consistency level for SELECT statement
      *
      * @param consistencyLevel
      * @return Slice DSL
      */
     public T withConsistency(ConsistencyLevel consistencyLevel) {
-        this.properties.consistency(consistencyLevel);
+        this.properties.readConsistency(consistencyLevel);
         return getThis();
     }
 

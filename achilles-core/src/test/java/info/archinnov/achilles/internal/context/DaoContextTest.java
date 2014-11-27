@@ -586,11 +586,11 @@ public class DaoContextTest {
         when(cacheManager.getCacheForSliceSelectAndIterator(session, dynamicPSCache, sliceQueryProperties)).thenReturn(ps);
         when(sliceQueryProperties.getEntityClass()).thenReturn(CompleteBean.class);
         when(sliceQueryProperties.getBoundValues()).thenReturn(boundValues);
-        when(sliceQueryProperties.getConsistencyLevelOr(EACH_QUORUM)).thenReturn(LOCAL_QUORUM);
+        when(sliceQueryProperties.getReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
         when(ps.bind(boundValues)).thenReturn(bs);
 
         //When
-        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQuerySelect(sliceQueryProperties, EACH_QUORUM);
+        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQuerySelect(sliceQueryProperties);
 
         //Then
         assertThat(bsWrapper.getStatement()).isSameAs(bs);
@@ -607,11 +607,11 @@ public class DaoContextTest {
         when(cacheManager.getCacheForSliceDelete(session, dynamicPSCache, sliceQueryProperties)).thenReturn(ps);
         when(sliceQueryProperties.getEntityClass()).thenReturn(CompleteBean.class);
         when(sliceQueryProperties.getBoundValues()).thenReturn(boundValues);
-        when(sliceQueryProperties.getConsistencyLevelOr(EACH_QUORUM)).thenReturn(LOCAL_QUORUM);
+        when(sliceQueryProperties.getWriteConsistencyLevel()).thenReturn(LOCAL_QUORUM);
         when(ps.bind(boundValues)).thenReturn(bs);
 
         //When
-        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQueryDelete(sliceQueryProperties, EACH_QUORUM);
+        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQueryDelete(sliceQueryProperties);
 
         //Then
         assertThat(bsWrapper.getStatement()).isSameAs(bs);
