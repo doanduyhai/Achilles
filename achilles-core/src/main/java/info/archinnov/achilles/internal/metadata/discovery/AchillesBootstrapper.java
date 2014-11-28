@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.internal.metadata.discovery;
 
-import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_TABLE;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,15 +82,15 @@ public class AchillesBootstrapper {
             }
         }
 
-        if (schemaContext.hasSimpleCounter()) {
-            if (tableMetaDatas.containsKey(ACHILLES_COUNTER_TABLE)) {
+        if (schemaContext.hasSimpleCounter()) {            
+            if (schemaContext.achillesCounterTableExists()) {
                 schemaContext.validateAchillesCounter();
             } else {
                 schemaContext.createTableForCounter();
             }
         }
     }
-
+    
     public DaoContext buildDaoContext(Session session, ParsingResult parsingResult,
             ConfigurationContext configContext) {
         log.debug("Build DaoContext");
