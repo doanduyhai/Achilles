@@ -177,6 +177,7 @@ public class AchillesBootstrapperTest {
         when(meta.config().getQualifiedTableName()).thenReturn("UserBean");
         when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
         when(schemaContext.hasSimpleCounter()).thenReturn(true);
+        when(schemaContext.achillesCounterTableExists()).thenReturn(true);
 
         bootstrapper.validateOrCreateTables(schemaContext);
 
@@ -195,6 +196,7 @@ public class AchillesBootstrapperTest {
         when(meta.config().getQualifiedTableName()).thenReturn("UserBean");
         when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
         when(schemaContext.hasSimpleCounter()).thenReturn(true);
+        when(schemaContext.achillesCounterTableExists()).thenReturn(false);
 
         bootstrapper.validateOrCreateTables(schemaContext);
 

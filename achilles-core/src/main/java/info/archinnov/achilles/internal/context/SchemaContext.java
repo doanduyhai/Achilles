@@ -13,8 +13,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package info.archinnov.achilles.internal.context;
+
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_TABLE;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,6 +31,7 @@ import info.archinnov.achilles.internal.table.TableUpdater;
 import info.archinnov.achilles.internal.table.TableValidator;
 
 public class SchemaContext {
+
     private ConfigurationContext configContext;
 
     private Cluster cluster;
@@ -90,5 +92,9 @@ public class SchemaContext {
 
     public void updateForEntity(EntityMeta entityMeta, TableMetadata tableMetaData) {
         tableUpdater.updateTableForEntity(session, entityMeta, tableMetaData);
+    }
+
+    public boolean achillesCounterTableExists() {
+        return cluster.getMetadata().getKeyspace(keyspaceName).getTable(ACHILLES_COUNTER_TABLE) != null;
     }
 }
