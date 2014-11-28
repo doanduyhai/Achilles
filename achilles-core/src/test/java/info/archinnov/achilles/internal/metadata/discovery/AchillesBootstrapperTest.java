@@ -133,7 +133,7 @@ public class AchillesBootstrapperTest {
     public void should_validate_and_update_tables() throws Exception {
         // Given
         Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta>of(UserBean.class, meta);
-        Map<String, TableMetadata> tableMetaDatas = ImmutableMap.of("userbean", tableMeta);
+        Map<String, TableMetadata> tableMetaDatas = ImmutableMap.of("UserBean", tableMeta);
 
         // When
         when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);

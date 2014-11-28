@@ -27,6 +27,7 @@ import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.type.TypedMap;
+import org.apache.commons.lang3.StringUtils;
 
 public class AchillesResource extends AchillesTestResource {
 

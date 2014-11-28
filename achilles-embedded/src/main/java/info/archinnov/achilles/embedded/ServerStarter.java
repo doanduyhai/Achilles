@@ -110,14 +110,6 @@ public enum ServerStarter {
         }
     }
 
-    public int getThriftPort() {
-        return thriftPort;
-    }
-
-    public int getCQLPort() {
-        return cqlPort;
-    }
-
     public OrderedShutdownHook getShutdownHook() {
         return orderedShutdownHook;
     }

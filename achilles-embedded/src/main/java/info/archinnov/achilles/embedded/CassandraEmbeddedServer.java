@@ -15,10 +15,13 @@
  */
 package info.archinnov.achilles.embedded;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.embedded.ServerStarter.CASSANDRA_EMBEDDED;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
 import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.ACHILLES_DML_STATEMENT;
 
+import com.google.common.base.Optional;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.persistence.AsyncManager;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -35,6 +38,8 @@ public class CassandraEmbeddedServer {
     public static final Logger LOGGER = LoggerFactory.getLogger(CassandraEmbeddedServer.class);
 
     public static final String CASSANDRA_HOST = "cassandraHost";
+
+    public static final String FORCE_TABLE_CREATION_FLAG = "forceTableCreation";
 
     private static final Object SEMAPHORE = new Object();
 
@@ -55,6 +60,7 @@ public class CassandraEmbeddedServer {
     public CassandraEmbeddedServer(TypedMap originalParameters, ConfigMap achillesParameters) {
         LOGGER.trace("Start Cassandra Embedded server with server and Achilles config");
         TypedMap parameters = CassandraEmbeddedConfigParameters.mergeWithDefaultParameters(originalParameters);
+        final ConfigMap augmentedAchillesConfig = augmentAchillesConfigWithCommandLineParameters(achillesParameters);
         String cassandraHost = System.getProperty(CASSANDRA_HOST);
 
         // No external Cassandra server, start an embedded instance
@@ -68,7 +74,7 @@ public class CassandraEmbeddedServer {
                 }
             }
         }
-        initializer.initializeFromParameters(cassandraHost, parameters, achillesParameters);
+        initializer.initializeFromParameters(cassandraHost, parameters, augmentedAchillesConfig);
     }
 
     public PersistenceManagerFactory getPersistenceManagerFactory(String keyspaceName) {
@@ -95,4 +101,15 @@ public class CassandraEmbeddedServer {
         DML_LOGGER.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", "  Simple query", query, "ALL");
     }
 
+    private ConfigMap augmentAchillesConfigWithCommandLineParameters(ConfigMap achillesConfig) {
+        final String forceTableCreation = System.getProperty(FORCE_TABLE_CREATION_FLAG);
+        if (StringUtils.isNotBlank(forceTableCreation)) {
+            final Boolean forceTableCreationFlag = Boolean.valueOf(forceTableCreation);
+            final ConfigMap augmentedConfigMap = ConfigMap.fromMap(achillesConfig);
+            augmentedConfigMap.put(FORCE_TABLE_CREATION, forceTableCreationFlag);
+            return augmentedConfigMap;
+        } else {
+            return achillesConfig;
+        }
+    }
 }
