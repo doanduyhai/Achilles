@@ -26,8 +26,6 @@ public interface PersistenceManagerOperations extends PersistentStateHolder {
 
     public <T> AchillesFuture<T> persist(T rawEntity);
 
-    public <T> AchillesFuture<T> batchPersist(T rawEntity);
-
     public <T> AchillesFuture<T> update(T proxy);
 
     public <T> AchillesFuture<T> delete();

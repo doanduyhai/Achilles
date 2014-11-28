@@ -33,7 +33,16 @@ public class EntityWithFieldLevelConstraint {
 	@NotNull
 	private String name;
 
+    @Column
+    private int age;
+
     public EntityWithFieldLevelConstraint() {
+    }
+
+    public EntityWithFieldLevelConstraint(Long id, String name, int age) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
     }
 
     public Long getId() {
@@ -51,4 +60,12 @@ public class EntityWithFieldLevelConstraint {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
 }

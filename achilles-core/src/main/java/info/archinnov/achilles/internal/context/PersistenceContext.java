@@ -288,7 +288,7 @@ public class PersistenceContext {
         }
 
         public <T> AchillesFuture<T> update(final T proxy) {
-            flushContext.triggerInterceptor(entityMeta, entity, PRE_UPDATE);
+            flushContext.triggerInterceptor(entityMeta, proxy, PRE_UPDATE);
             updater.update(entityFacade, proxy);
             final ListenableFuture<List<ResultSet>> resultSetFutures = flush();
             Function<List<ResultSet>, T> applyTriggers = new Function<List<ResultSet>, T>() {

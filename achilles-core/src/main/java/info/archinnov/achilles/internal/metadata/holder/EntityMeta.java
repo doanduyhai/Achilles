@@ -258,6 +258,10 @@ public class EntityMeta {
         this.hasStaticColumns = hasStaticColumns;
     }
 
+    public List<Interceptor<?>> getInterceptors() {
+        return interceptors;
+    }
+
     @Override
     public String toString() {
 

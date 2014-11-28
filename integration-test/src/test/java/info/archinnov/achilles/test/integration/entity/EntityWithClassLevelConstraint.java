@@ -97,8 +97,8 @@ public class EntityWithClassLevelConstraint {
 
 		@Override
 		public boolean isValid(EntityWithClassLevelConstraint entity, ConstraintValidatorContext context) {
-			return entity != null && StringUtils.isNotBlank(entity.firstname)
-					&& StringUtils.isNotBlank(entity.lastname);
+			return entity != null && StringUtils.isNotBlank(entity.getFirstname())
+					&& StringUtils.isNotBlank(entity.getLastname());
 		}
 
 	}

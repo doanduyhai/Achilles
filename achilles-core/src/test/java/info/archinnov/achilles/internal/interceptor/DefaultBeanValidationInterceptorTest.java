@@ -16,15 +16,26 @@
 
 package info.archinnov.achilles.internal.interceptor;
 
+import static com.google.common.collect.ImmutableMap.of;
 import static info.archinnov.achilles.interceptor.Event.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+
+import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.exception.AchillesBeanValidationException;
+import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
+import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import javax.validation.ConstraintViolation;
+import javax.validation.ElementKind;
 import javax.validation.Path;
 import javax.validation.Validator;
 
@@ -46,12 +57,16 @@ public class DefaultBeanValidationInterceptorTest {
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private ConstraintViolation<CompleteBean> violation;
 
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private EntityProxifier proxifier;
+
 	private DefaultBeanValidationInterceptor interceptor;
 
 	@Before
 	public void setUp() {
 		interceptor = new DefaultBeanValidationInterceptor(validator);
-	}
+        interceptor.proxifier = proxifier;
+    }
 
 	@Test
 	public void should_list_intercepted_events() throws Exception {
@@ -74,11 +89,17 @@ public class DefaultBeanValidationInterceptorTest {
 		// Given
 		boolean exceptionRaised = false;
 		CompleteBean entity = new CompleteBean();
-		Path propertyPath = mock(Path.class);
-		when(validator.validate(entity)).thenReturn(Sets.<ConstraintViolation<CompleteBean>> newHashSet(violation));
+        when(proxifier.getRealObject(entity)).thenReturn(entity);
+        Path propertyPath = mock(Path.class,RETURNS_DEEP_STUBS);
+        Path.Node node = mock(Path.Node.class);
+
+        final List<Path.Node> nodes = Arrays.asList(node);
+        when(validator.validate(entity)).thenReturn(Sets.newHashSet(violation));
 		when(violation.getLeafBean().getClass().getCanonicalName()).thenReturn("className");
 		when(violation.getPropertyPath()).thenReturn(propertyPath);
 		when(propertyPath.toString()).thenReturn("property");
+        when(propertyPath.iterator()).thenReturn(nodes.iterator());
+        when(node.getKind()).thenReturn(ElementKind.PROPERTY);
 		when(violation.getMessage()).thenReturn("violation");
 
 		try {
@@ -93,4 +114,42 @@ public class DefaultBeanValidationInterceptorTest {
 
 		assertThat(exceptionRaised).isTrue();
 	}
+
+    @Test
+    public void should_validate_only_dirty_fields_on_proxy() throws Exception {
+        //Given
+        boolean exceptionRaised = false;
+
+        CompleteBean entity = new CompleteBean();
+        when(proxifier.isProxy(entity)).thenReturn(true);
+        Method method = Object.class.getDeclaredMethod("toString");
+        DirtyChecker dirtyChecker = mock(DirtyChecker.class, RETURNS_DEEP_STUBS);
+        when(dirtyChecker.getPropertyMeta().getPropertyName()).thenReturn("field");
+        when(proxifier.getInterceptor(entity).getDirtyMap()).thenReturn(of(method, dirtyChecker));
+        when(proxifier.getRealObject(entity)).thenReturn(entity);
+
+        when(validator.validate(entity)).thenReturn(Sets.newHashSet(violation));
+
+        Path propertyPath = mock(Path.class,RETURNS_DEEP_STUBS);
+        Path.Node node = mock(Path.Node.class);
+        when(violation.getLeafBean().getClass().getCanonicalName()).thenReturn("className");
+        when(violation.getPropertyPath()).thenReturn(propertyPath);
+        when(propertyPath.toString()).thenReturn("property");
+        final List<Path.Node> nodes = Arrays.asList(node);
+        when(propertyPath.iterator()).thenReturn(nodes.iterator());
+        when(node.getKind()).thenReturn(ElementKind.BEAN);
+        when(violation.getMessage()).thenReturn("violation");
+
+        try {
+            // When
+            interceptor.onEvent(entity);
+        } catch (AchillesBeanValidationException ex) {
+            // Then
+            assertThat(ex.getMessage()).isEqualTo(
+                    "Bean validation error : \n\tproperty 'property' of class 'java.lang.String' violation\n");
+            exceptionRaised = true;
+        }
+
+        assertThat(exceptionRaised).isTrue();
+    }
 }
