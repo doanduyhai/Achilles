@@ -19,6 +19,7 @@ import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaValues;
+import info.archinnov.achilles.internal.proxy.AchillesProxyInterceptor;
 import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptorBuilder;
@@ -50,7 +51,7 @@ public class EntityProxifier {
 
         Class<T> baseClass = (Class<T>) entity.getClass();
         if (isProxy(entity)) {
-            ProxyInterceptor<?> interceptor = getInterceptor(entity);
+            AchillesProxyInterceptor interceptor = getInterceptor(entity);
             baseClass = (Class<T>) interceptor.getTarget().getClass();
         }
 
@@ -118,7 +119,7 @@ public class EntityProxifier {
 
         if (isProxy(proxy)) {
             Factory factory = (Factory) proxy;
-            ProxyInterceptor<T> interceptor = (ProxyInterceptor<T>) factory.getCallback(0);
+            AchillesProxyInterceptor interceptor = (AchillesProxyInterceptor) factory.getCallback(0);
             return (T) interceptor.getTarget();
         } else {
             return proxy;
@@ -130,13 +131,13 @@ public class EntityProxifier {
         return Factory.class.isAssignableFrom(entity.getClass());
     }
 
-    public <T> ProxyInterceptor<T> getInterceptor(T proxy) {
+    public <T> AchillesProxyInterceptor<T> getInterceptor(T proxy) {
         log.debug("Get interceptor from proxy {} ", proxy);
 
         Factory factory = (Factory) proxy;
 
         @SuppressWarnings("unchecked")
-        ProxyInterceptor<T> interceptor = (ProxyInterceptor<T>) factory.getCallback(0);
+        AchillesProxyInterceptor<T> interceptor = (AchillesProxyInterceptor<T>) factory.getCallback(0);
         return interceptor;
     }
 

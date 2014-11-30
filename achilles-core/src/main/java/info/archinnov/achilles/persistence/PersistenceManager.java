@@ -257,7 +257,7 @@ public class PersistenceManager extends CommonPersistenceManager {
      */
     public <T> T forUpdate(Class<T> entityClass, Object primaryKey) {
         log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
-        return super.getProxyInternal(entityClass, primaryKey, noOptions());
+        return super.getProxyForUpdateInternal(entityClass, primaryKey);
     }
 
 

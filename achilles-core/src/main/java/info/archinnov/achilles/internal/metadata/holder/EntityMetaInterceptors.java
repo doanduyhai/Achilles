@@ -27,16 +27,17 @@ public class EntityMetaInterceptors extends EntityMetaView{
     }
 
     public void intercept(Object entity, Event event) {
+        final Object realObject = proxifier.getRealObject(entity);
         List<Interceptor<?>> interceptors = getInterceptorsForEvent(event);
         if (interceptors.size() > 0) {
             for (Interceptor interceptor : interceptors) {
                 if (AchillesInternalInterceptor.class.isAssignableFrom(interceptor.getClass())) {
                     interceptor.onEvent(entity);
                 } else {
-                    interceptor.onEvent(proxifier.getRealObject(entity));
+                    interceptor.onEvent(realObject);
                 }
             }
-            Validator.validateNotNull(meta.forOperations().getPrimaryKey(entity),
+            Validator.validateNotNull(meta.forOperations().getPrimaryKey(realObject),
                     "The primary key should not be null after intercepting the event '%s'", event);
         }
     }

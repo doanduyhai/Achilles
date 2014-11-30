@@ -106,7 +106,6 @@ public class EntityMetaInterceptorsTest {
         view.intercept(entity, Event.POST_LOAD);
 
         //Then
-        verify(proxifier,never()).getRealObject(entity);
         verify(interceptor).onEvent(entity);
     }
 }

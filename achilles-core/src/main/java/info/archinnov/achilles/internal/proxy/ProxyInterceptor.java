@@ -37,7 +37,7 @@ import info.archinnov.achilles.type.Counter;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
-public class ProxyInterceptor<T> implements MethodInterceptor, ProxySerializable {
+public class ProxyInterceptor<T> implements MethodInterceptor, ProxySerializable, AchillesProxyInterceptor<T> {
 
     private static final transient Logger log = LoggerFactory.getLogger(ProxyInterceptor.class);
 
@@ -55,6 +55,7 @@ public class ProxyInterceptor<T> implements MethodInterceptor, ProxySerializable
     private transient Set<Method> alreadyLoaded;
     private transient EntityOperations context;
 
+    @Override
     public Object getTarget() {
         return this.target;
     }
@@ -205,10 +206,12 @@ public class ProxyInterceptor<T> implements MethodInterceptor, ProxySerializable
         return this.target;
     }
 
+    @Override
     public Map<Method, DirtyChecker> getDirtyMap() {
         return dirtyMap;
     }
 
+    @Override
     public Set<Method> getAlreadyLoaded() {
         return alreadyLoaded;
     }
@@ -217,6 +220,7 @@ public class ProxyInterceptor<T> implements MethodInterceptor, ProxySerializable
         return primaryKey;
     }
 
+    @Override
     public void setTarget(T target) {
         this.target = target;
     }
@@ -241,7 +245,8 @@ public class ProxyInterceptor<T> implements MethodInterceptor, ProxySerializable
         this.setterMetas = setterMetas;
     }
 
-    void setDirtyMap(Map<Method, DirtyChecker> dirtyMap) {
+    @Override
+    public void setDirtyMap(Map<Method, DirtyChecker> dirtyMap) {
         this.dirtyMap = dirtyMap;
     }
 

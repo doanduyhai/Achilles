@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import info.archinnov.achilles.internal.proxy.AchillesProxyInterceptor;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -196,7 +197,7 @@ public class EntityProxifierTest {
         enhancer.setCallback(interceptor);
         CompleteBean proxy = (CompleteBean) enhancer.create();
 
-        ProxyInterceptor<CompleteBean> actual = proxifier.getInterceptor(proxy);
+        AchillesProxyInterceptor<CompleteBean> actual = proxifier.getInterceptor(proxy);
 
         assertThat(actual).isSameAs(interceptor);
     }

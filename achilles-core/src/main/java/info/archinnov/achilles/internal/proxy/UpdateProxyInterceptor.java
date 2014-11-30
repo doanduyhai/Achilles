@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.proxy;
 
+import com.google.common.collect.Sets;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CounterLoader;
@@ -36,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class UpdateProxyInterceptor<T> implements MethodInterceptor, ProxySerializable {
+public class UpdateProxyInterceptor<T> implements MethodInterceptor, ProxySerializable, AchillesProxyInterceptor<T> {
 
     private static final transient Logger log = LoggerFactory.getLogger(UpdateProxyInterceptor.class);
 
@@ -51,6 +52,7 @@ public class UpdateProxyInterceptor<T> implements MethodInterceptor, ProxySerial
     private transient Map<Method, DirtyChecker> dirtyMap;
     private transient EntityOperations context;
 
+    @Override
     public Object getTarget() {
         return this.target;
     }
@@ -160,6 +162,7 @@ public class UpdateProxyInterceptor<T> implements MethodInterceptor, ProxySerial
         return this.target;
     }
 
+    @Override
     public Map<Method, DirtyChecker> getDirtyMap() {
         return dirtyMap;
     }
@@ -168,6 +171,7 @@ public class UpdateProxyInterceptor<T> implements MethodInterceptor, ProxySerial
         return primaryKey;
     }
 
+    @Override
     public void setTarget(T target) {
         this.target = target;
     }
@@ -192,7 +196,8 @@ public class UpdateProxyInterceptor<T> implements MethodInterceptor, ProxySerial
         this.setterMetas = setterMetas;
     }
 
-    void setDirtyMap(Map<Method, DirtyChecker> dirtyMap) {
+    @Override
+    public void setDirtyMap(Map<Method, DirtyChecker> dirtyMap) {
         this.dirtyMap = dirtyMap;
     }
 
@@ -200,8 +205,14 @@ public class UpdateProxyInterceptor<T> implements MethodInterceptor, ProxySerial
         return context;
     }
 
+    @Override
     public void setEntityOperations(EntityOperations context) {
         this.context = context;
+    }
+
+    @Override
+    public Set<Method> getAlreadyLoaded() {
+        throw new UnsupportedOperationException("Operation not supported by proxy for update");
     }
 
     private PropertyMeta getPropertyMetaByProperty(Method method) {

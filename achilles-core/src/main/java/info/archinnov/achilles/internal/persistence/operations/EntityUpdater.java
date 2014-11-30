@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import info.archinnov.achilles.internal.proxy.AchillesProxyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
@@ -58,7 +59,7 @@ public class EntityUpdater {
         Object realObject = proxifier.getRealObject(entity);
         context.setEntity(realObject);
 
-        ProxyInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
+        AchillesProxyInterceptor interceptor = proxifier.getInterceptor(entity);
         Map<Method, DirtyChecker> dirtyMap = interceptor.getDirtyMap();
         List<DirtyChecker> dirtyCheckers = new ArrayList<>(dirtyMap.values());
 

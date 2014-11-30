@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import info.archinnov.achilles.internal.proxy.AchillesProxyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
@@ -24,6 +25,9 @@ import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
+
+import java.lang.reflect.Method;
+import java.util.Set;
 
 public class EntityRefresher {
     private static final Logger log = LoggerFactory.getLogger(EntityRefresher.class);
@@ -37,7 +41,7 @@ public class EntityRefresher {
         log.debug("Refreshing entity of class {} and primary key {}", context.getEntityClass().getCanonicalName(),
                 primaryKey);
 
-        final ProxyInterceptor<T> interceptor = proxifier.getInterceptor(proxy);
+        final AchillesProxyInterceptor<T> interceptor = proxifier.getInterceptor(proxy);
         final Object entity = context.getEntity();
 
         interceptor.getDirtyMap().clear();
@@ -50,7 +54,7 @@ public class EntityRefresher {
         return asyncUtils.buildInterruptible(triggerInterceptors);
     }
 
-    protected <T> Function<T, T> updateProxyInterceptor(final EntityOperations context, final ProxyInterceptor<T> interceptor, final Object entity, final Object primaryKey) {
+    protected <T> Function<T, T> updateProxyInterceptor(final EntityOperations context, final AchillesProxyInterceptor<T> interceptor, final Object entity, final Object primaryKey) {
         return new Function<T, T>() {
                 @Override
                 public T apply(T freshEntity) {
@@ -58,8 +62,9 @@ public class EntityRefresher {
                         throw new AchillesStaleObjectStateException("The entity '" + entity + "' with primary_key '" + primaryKey + "' no longer exists in Cassandra");
                     }
                     interceptor.setTarget(freshEntity);
-                    interceptor.getAlreadyLoaded().clear();
-                    interceptor.getAlreadyLoaded().addAll(context.getAllGettersExceptCounters());
+                    final Set<Method> alreadyLoaded = interceptor.getAlreadyLoaded();
+                    alreadyLoaded.clear();
+                    alreadyLoaded.addAll(context.getAllGettersExceptCounters());
                     return freshEntity;
                 }
             };

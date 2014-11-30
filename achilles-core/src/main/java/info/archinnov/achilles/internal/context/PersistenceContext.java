@@ -320,7 +320,6 @@ public class PersistenceContext {
         }
 
         public AchillesFuture<Empty> deleteById() {
-            flushContext.triggerInterceptor(entityMeta, entity, PRE_DELETE);
             persister.delete(entityFacade);
             final ListenableFuture<List<ResultSet>> resultSetFutures = flush();
             Function<List<ResultSet>, Empty> toEmpty = new Function<List<ResultSet>, Empty>() {
