@@ -32,7 +32,7 @@
 	<dependency>
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-core</artifactId>
-		<version>3.0.12</version>
+		<version>3.0.13</version>
 	</dependency>
 ```
 
@@ -42,7 +42,7 @@
  	<dependency>
  		<groupId>info.archinnov</groupId>
  		<artifactId>achilles-junit</artifactId>
- 		<version>3.0.12</version>
+ 		<version>3.0.13</version>
  		<scope>test</scope>
  	</dependency>
 ```
