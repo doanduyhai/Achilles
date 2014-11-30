@@ -64,6 +64,13 @@
                 <role>Developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>ehsavoie</id>
+            <name>Emmanuel HUGONNET</name>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
     </developers>
 
     <properties>

@@ -32,7 +32,7 @@
 	<dependency>
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-core</artifactId>
-		<version>3.0.11</version>
+		<version>3.0.12</version>
 	</dependency>
 ```
 
@@ -42,7 +42,7 @@
  	<dependency>
  		<groupId>info.archinnov</groupId>
  		<artifactId>achilles-junit</artifactId>
- 		<version>3.0.11</version>
+ 		<version>3.0.12</version>
  		<scope>test</scope>
  	</dependency>
 ```
@@ -52,7 +52,7 @@
  1. cassandra 2.0.11
  2. cassandra-driver-core 2.1.2
  3. CGLIB nodep 2.2.2 for proxy building
- 4. Jackson core, annotations, databind & module jaxb annotations 2.2.3
+ 4. Jackson core, annotations, databind & module jaxb annotations 2.3.3
  5. org.reflections 0.9.9-RC1
  6. Guava 15.0
  7. slf4j-api 1.7.2
