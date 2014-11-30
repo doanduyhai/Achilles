@@ -82,11 +82,11 @@ import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
  *      AchillesFuture<User> managedUserFuture = asyncManager.find(User.class,1L);
  *  </code></pre>
  *
- *  <h3>V Creating proxy for update</h3>
+ *  <h3>V Direct update</h3>
  *  Please note that proxy creation always return immediately since we do not hit the database
  *  <pre class="code"><code class="java">
  *      // No data read from Cassandra
- *      User managedUserProxy = asyncManager.getProxy(User.class,1L).get();
+ *      User managedUserProxy = asyncManager.forUpdate(User.class,1L).get();
  *      managedUser.setAge(30);
  *
  *      // Direct update, no read from Cassandra has been done
@@ -104,21 +104,10 @@ import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
  *      AchillesFuture<User> userFuture = asyncManager.refresh(managedUser);
  *  </code></pre>
  *
- *  <h3>VII Initializing lazy fields for managed entity</h3>
+ *  <h3>VII Removing proxy from managed entities</h3>
  *  <pre class="code"><code class="java">
- *      // Create a proxy
- *      User managedUser = asyncManager.getProxy(User.class,1L).get();
- *      ...
- *      // Perform some logic
- *
- *      // Initialize all fields not yet loaded into the managed entity, including counter fields
- *      asyncManager.initialize(managedUser);
- *  </code></pre>
- *
- *  <h3>VIII Removing proxy from managed entities</h3>
- *  <pre class="code"><code class="java">
- *      // Create proxy
- *      User managedUser = asyncManager.getProxy(User.class,1L);
+ *      // Create managed entity
+ *      User managedUser = asyncManager.find(User.class,1L);
  *      ...
  *      // Perform some logic
  *
@@ -126,7 +115,7 @@ import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
  *      User transientUser = asyncManager.removeProxy(managedUser);
  *  </code></pre>
  *
- *  <h3>IX Accessing native Session object</h3>
+ *  <h3>VIII Accessing native Session object</h3>
  *  <pre class="code"><code class="java">
  *      Session session = asyncManager.getNativeSession();
  *      ...
@@ -135,7 +124,7 @@ import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
  *      session.execute("UPDATE users SET age=:age WHERE id=:id",30,10);
  *  </code></pre>
  *
- *  <h3>X JSON serialization/deserialization</h3>
+ *  <h3>IX JSON serialization/deserialization</h3>
  *  <pre class="code"><code class="java">
  *      // Serialize an object to JSON using the registered or default object mapper
  *      String json = asyncManager.serializeToJSON(myModel);
@@ -145,16 +134,16 @@ import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
  *      MyModel myModel = asyncManager.deserializeFromJSON(json);
  *  </code></pre>
  *
- *  <h3>XI Initializing all lazy fields</h3>
+ *  <h3>X Initializing all counter fields</h3>
  *  <pre class="code"><code class="java">
- *      // Create proxy
- *      User userProxy = asyncManager.getProxy(User.class,1L);
+ *      // Create managed entity
+ *      AchillesFuture@lt;User&gt; futureUser = asyncManager.find(User.class,1L);
  *      ...
  *      // Perform some logic
  *      ...
  *
- *      // Load all other lazy fields
- *      asyncManager.initialize(userProxy);
+ *      // Load all lazy counter fields
+ *      asyncManager.initialize(futureUser.get());
  *  </code></pre>
  * </p>
  *
@@ -295,8 +284,8 @@ public class AsyncManager extends CommonAsyncManager {
      * Initialize all lazy fields of a set of 'managed' entities
      *
      *  <pre class="code"><code class="java">
-     *      // Create a proxy
-     *      User userProxy = manager.getProxy(User.class,1L);
+     *      // Create a managed entity
+     *      User userProxy = manager.find(User.class,1L);
      *      ...
      *      // Perform some logic
      *
@@ -313,18 +302,18 @@ public class AsyncManager extends CommonAsyncManager {
     }
 
     /**
-     * Initialize all lazy fields of a list of 'managed' entities
+     * Initialize all counter fields of a list of 'managed' entities
      *
      *  <pre class="code"><code class="java">
-     *      // Create proxies
-     *      User userProxy1 = manager.getProxy(User.class,1L);
-     *      User userProxy2 = manager.getProxy(User.class,2L);
+     *      // Create managed entities
+     *      User user1 = manager.find(User.class,1L);
+     *      User user2 = manager.find(User.class,2L);
      *      ...
      *      // Perform some logic
      *      ...
      *
-     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
-     *      manager.initialize(Sets.newHashSet(userProxy1, userProxy2));
+     *      // Initialize all counter fields not yet loaded into the managed entity
+     *      manager.initialize(Sets.newHashSet(user1, user2));
      *  </code></pre>
      *
      * Raise an IllegalStateException if an entity is not 'managed'
@@ -335,18 +324,18 @@ public class AsyncManager extends CommonAsyncManager {
     }
 
     /**
-     * Initialize all lazy fields of a list of 'managed' entities
+     * Initialize all counter fields of a list of 'managed' entities
      *
      *  <pre class="code"><code class="java">
-     *      // Create proxies
-     *      User userProxy1 = manager.getProxy(User.class,1L);
-     *      User userProxy2 = manager.getProxy(User.class,2L);
+     *      // Create managed entities
+     *      User user1 = manager.find(User.class,1L);
+     *      User user2 = manager.find(User.class,2L);
      *      ...
      *      // Perform some logic
      *      ...
      *
-     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
-     *      manager.initialize(Arrays.asList(userProxy1, userProxy2));
+     *      // Initialize all counter fields not yet loaded into the managed entity
+     *      manager.initialize(Arrays.asList(user1, user2));
      *  </code></pre>
      *
      * Raise an IllegalStateException if an entity is not 'managed'
@@ -386,12 +375,12 @@ public class AsyncManager extends CommonAsyncManager {
      * entity
      * <br/>
      * <br/>
-     * If the argument is not a proxy objet, return itself <br/>
+     * If the argument is not a proxy object, return itself <br/>
      * Else, return the target object behind the proxy
      *
      *  <pre class="code"><code class="java">
-     *      // Create proxy
-     *      User managedUser = manager.getProxy(User.class,1L);
+     *      // Create managed entity
+     *      User managedUser = manager.find(User.class,1L);
      *      ...
      *      // Perform some logic
      *

@@ -85,7 +85,7 @@ import info.archinnov.achilles.type.Options;
  *  <h3>V Creating proxy for update</h3>
  *  <pre class="code"><code class="java">
  *      // No data read from Cassandra
- *      User managedUser = manager.getProxy(User.class,1L);
+ *      User managedUser = manager.forUpdate(User.class,1L);
  *      managedUser.setAge(30);
  *
  *      // Direct update, no read from Cassandra has been done
@@ -103,21 +103,10 @@ import info.archinnov.achilles.type.Options;
  *      manager.refresh(managedUser);
  *  </code></pre>
  *
- *  <h3>VII Initializing lazy fields for managed entity</h3>
+ *  <h3>VII Removing proxy from managed entities</h3>
  *  <pre class="code"><code class="java">
- *      // Create a proxy
- *      User managedUser = manager.getProxy(User.class,1L);
- *      ...
- *      // Perform some logic
- *
- *      // Initialize all fields not yet loaded into the managed entity, including counter fields
- *      manager.initialize(managedUser);
- *  </code></pre>
- *
- *  <h3>VIII Removing proxy from managed entities</h3>
- *  <pre class="code"><code class="java">
- *      // Create proxy
- *      User managedUser = manager.getProxy(User.class,1L);
+ *      // Create managed entity
+ *      User managedUser = manager.find(User.class,1L);
  *      ...
  *      // Perform some logic
  *
@@ -125,7 +114,7 @@ import info.archinnov.achilles.type.Options;
  *      User transientUser = manager.removeProxy(managedUser);
  *  </code></pre>
  *
- *  <h3>IX Accessing native Session object</h3>
+ *  <h3>VIII Accessing native Session object</h3>
  *  <pre class="code"><code class="java">
  *      Session session = manager.getNativeSession();
  *      ...
@@ -134,7 +123,7 @@ import info.archinnov.achilles.type.Options;
  *      session.execute("UPDATE users SET age=:age WHERE id=:id",30,10);
  *  </code></pre>
  *
- *  <h3>X JSON serialization/deserialization</h3>
+ *  <h3>IX JSON serialization/deserialization</h3>
  *  <pre class="code"><code class="java">
  *      // Serialize an object to JSON using the registered or default object mapper
  *      String json = manager.serializeToJSON(myModel);
@@ -144,16 +133,16 @@ import info.archinnov.achilles.type.Options;
  *      MyModel myModel = manager.deserializeFromJSON(json);
  *  </code></pre>
  *
- *  <h3>XI Initializing all lazy fields</h3>
+ *  <h3>X Initializing all counter fields</h3>
  *  <pre class="code"><code class="java">
- *      // Create proxy
- *      User userProxy = manager.getProxy(User.class,1L);
+ *      // Create managed entity
+ *      User user = manager.find(User.class,1L);
  *      ...
  *      // Perform some logic
  *      ...
  *
- *      // Load all other lazy fields
- *      manager.initialize(userProxy);
+ *      // Load all lazy counter fields
+ *      manager.initialize(user);
  *  </code></pre>
  * </p>
  *
@@ -277,7 +266,7 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      *  <pre class="code"><code class="java">
      *      // Create a proxy
-     *      User managedUser = manager.getProxy(User.class,1L);
+     *      User managedUser = manager.find(User.class,1L);
      *      ...
      *      // Perform some logic
      *
@@ -299,7 +288,7 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      *  <pre class="code"><code class="java">
      *      // Create a proxy
-     *      User managedUser = manager.getProxy(User.class,1L);
+     *      User managedUser = manager.find(User.class,1L);
      *      ...
      *      // Perform some logic
      *
@@ -318,16 +307,16 @@ public class PersistenceManager extends CommonPersistenceManager {
     }
 
     /**
-     * Initialize all lazy fields of a set of 'managed' entities
+     * Initialize all lazy counter fields of a set of 'managed' entities
      *
      *  <pre class="code"><code class="java">
-     *      // Create a proxy
-     *      User userProxy = manager.getProxy(User.class,1L);
+     *      // Create a managed entity
+     *      User user = manager.find(User.class,1L);
      *      ...
      *      // Perform some logic
      *
-     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
-     *      manager.initialize(userProxy);
+     *      // Initialize all counter fields not yet loaded into the managed entity
+     *      manager.initialize(user);
      *  </code></pre>
      *
      * Raise an IllegalStateException if an entity is not 'managed'
@@ -341,18 +330,18 @@ public class PersistenceManager extends CommonPersistenceManager {
     }
 
     /**
-     * Initialize all lazy fields of a list of 'managed' entities
+     * Initialize all lazy counter fields of a list of 'managed' entities
      *
      *  <pre class="code"><code class="java">
-     *      // Create proxies
-     *      User userProxy1 = manager.getProxy(User.class,1L);
-     *      User userProxy2 = manager.getProxy(User.class,2L);
+     *      // Create managed entities
+     *      User user1 = manager.find(User.class,1L);
+     *      User user2 = manager.find(User.class,2L);
      *      ...
      *      // Perform some logic
      *      ...
      *
-     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
-     *      manager.initialize(Sets.newHashSet(userProxy1, userProxy2));
+     *      // Initialize all counter fields not yet loaded into the managed entity
+     *      manager.initialize(Sets.newHashSet(user1, user2));
      *  </code></pre>
      *
      * Raise an IllegalStateException if an entity is not 'managed'
@@ -364,18 +353,18 @@ public class PersistenceManager extends CommonPersistenceManager {
     }
 
     /**
-     * Initialize all lazy fields of a list of 'managed' entities
+     * Initialize all lazy counter fields of a list of 'managed' entities
      *
      *  <pre class="code"><code class="java">
-     *      // Create proxies
-     *      User userProxy1 = manager.getProxy(User.class,1L);
-     *      User userProxy2 = manager.getProxy(User.class,2L);
+     *      // Create managed entities
+     *      User user1 = manager.find(User.class,1L);
+     *      User user2 = manager.find(User.class,2L);
      *      ...
      *      // Perform some logic
      *      ...
      *
-     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
-     *      manager.initialize(Arrays.asList(userProxy1, userProxy2));
+     *      // Initialize all counter fields not yet loaded into the managed entity
+     *      manager.initialize(Arrays.asList(user1, user2));
      *  </code></pre>
      *
      * Raise an IllegalStateException if an entity is not 'managed'
@@ -419,8 +408,8 @@ public class PersistenceManager extends CommonPersistenceManager {
      * Else, return the target object behind the proxy
      *
      *  <pre class="code"><code class="java">
-     *      // Create proxy
-     *      User managedUser = manager.getProxy(User.class,1L);
+     *      // Create managed entity
+     *      User managedUser = manager.find(User.class,1L);
      *      ...
      *      // Perform some logic
      *
