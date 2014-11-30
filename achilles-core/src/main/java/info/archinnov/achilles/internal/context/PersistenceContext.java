@@ -367,6 +367,11 @@ public class PersistenceContext {
             return proxifier.buildProxyWithNoFieldLoaded(entity, entityFacade);
         }
 
+        public <T> T getProxyForUpdate(Class<T> entityClass) {
+            T entity = loader.createEmptyEntity(entityFacade, entityClass);
+            return proxifier.buildProxyForUpdate(entity, entityFacade);
+        }
+
         public <T> AchillesFuture<T> refresh(T proxy) throws AchillesStaleObjectStateException {
             final AchillesFuture<T> achillesFuture = refresher.refresh(proxy, entityFacade);
 

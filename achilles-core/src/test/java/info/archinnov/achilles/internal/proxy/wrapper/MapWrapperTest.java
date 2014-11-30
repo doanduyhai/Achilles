@@ -220,7 +220,9 @@ public class MapWrapperTest {
 		map.put(1, "FR");
 		map.put(2, "Paris");
 
+        when(proxifier.removeProxy(1)).thenReturn(1);
         when(proxifier.removeProxy("FR")).thenReturn("FR");
+        when(proxifier.removeProxy(2)).thenReturn(2);
         when(proxifier.removeProxy("Paris")).thenReturn("Paris");
 
         // When

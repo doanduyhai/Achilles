@@ -138,15 +138,24 @@ abstract class AbstractPersistenceManager {
     }
 
     protected <T> T getProxyInternal(final Class<T> entityClass, final Object primaryKey, Options options) {
-        Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
-        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass), "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
+        Validator.validateNotNull(entityClass, "Entity class should not be null for get proxy");
+        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get proxy");
         Validator.validateTrue(entityMetaMap.containsKey(entityClass), "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 
         optionsValidator.validateNoAsyncListener(options);
         PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, options);
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         return context.getProxy(entityClass);
+    }
+
+    protected <T> T getProxyForUpdateInternal(final Class<T> entityClass, final Object primaryKey) {
+        Validator.validateNotNull(entityClass, "Entity class should not be null for get proxy for update");
+        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get proxy for update");
+        Validator.validateTrue(entityMetaMap.containsKey(entityClass), "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
+
+        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, noOptions());
+        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
+        return context.getProxyForUpdate(entityClass);
     }
 
     protected <T> AchillesFuture<T> asyncRefresh(final T entity, Options options) throws AchillesStaleObjectStateException {

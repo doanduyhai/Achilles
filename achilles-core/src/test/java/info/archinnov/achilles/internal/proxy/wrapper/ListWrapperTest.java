@@ -15,10 +15,7 @@
  */
 package info.archinnov.achilles.internal.proxy.wrapper;
 
-import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.APPEND_TO_LIST;
-import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.PREPEND_TO_LIST;
-import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_COLLECTION_OR_MAP;
-import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.*;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -44,6 +41,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -55,7 +53,7 @@ public class ListWrapperTest {
 
 	private Method setter;
 
-	@Mock
+	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private PropertyMeta propertyMeta;
 
 	@Mock
@@ -423,7 +421,12 @@ public class ListWrapperTest {
 		assertThat(target.get(0)).isEqualTo("a");
 
         DirtyChecker dirtyChecker = dirtyMap.get(setter);
-
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(propertyMeta);
+        DirtyCheckChangeSet changeSet = dirtyChecker.getChangeSets().get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(REMOVE_FROM_LIST_AT_INDEX);
+        assertThat(changeSet.getPropertyMeta()).isEqualTo(propertyMeta);
+        assertThat(changeSet.getEncodedListChangeAtIndex().getIndex()).isEqualTo(1);
+        assertThat(changeSet.getEncodedListChangeAtIndex().getElement()).isNull();
 	}
 
 	@Test
@@ -431,13 +434,20 @@ public class ListWrapperTest {
 
 		List<Object> target = Lists.<Object>newArrayList("a", "b", "c");
 		ListWrapper listWrapper = prepareListWrapper(target);
-		when(proxifier.removeProxy("d")).thenReturn("d");
+        when(propertyMeta.forTranscoding().encodeToCassandra(Arrays.asList("d"))).thenReturn(Arrays.asList("d"));
+        when(proxifier.removeProxy("d")).thenReturn("d");
 		listWrapper.set(1, "d");
 
 		assertThat(target).hasSize(3);
 		assertThat(target.get(1)).isEqualTo("d");
 
         DirtyChecker dirtyChecker = dirtyMap.get(setter);
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(propertyMeta);
+        DirtyCheckChangeSet changeSet = dirtyChecker.getChangeSets().get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(SET_TO_LIST_AT_INDEX);
+        assertThat(changeSet.getPropertyMeta()).isEqualTo(propertyMeta);
+        assertThat(changeSet.getEncodedListChangeAtIndex().getIndex()).isEqualTo(1);
+        assertThat(changeSet.getEncodedListChangeAtIndex().getElement()).isEqualTo("d");
 	}
 
 	@Test

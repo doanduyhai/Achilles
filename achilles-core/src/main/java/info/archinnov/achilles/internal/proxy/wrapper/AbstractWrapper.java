@@ -16,7 +16,11 @@
 package info.archinnov.achilles.internal.proxy.wrapper;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
@@ -48,5 +52,12 @@ public abstract class AbstractWrapper {
         this.proxifier = proxifier;
     }
 
-    protected abstract DirtyChecker getDirtyChecker();
+//    protected abstract DirtyChecker getDirtyChecker();
+
+    protected DirtyChecker getDirtyChecker() {
+        if(!dirtyMap.containsKey(setter)) {
+            dirtyMap.put(setter,new DirtyChecker(propertyMeta));
+        }
+        return dirtyMap.get(setter);
+    }
 }

@@ -155,12 +155,4 @@ public class SetWrapper extends AbstractWrapper implements Set<Object> {
 	public Collection<Object> getTarget() {
 		return this.target;
 	}
-
-    @Override
-    protected DirtyChecker getDirtyChecker() {
-        if(!dirtyMap.containsKey(setter)) {
-            dirtyMap.put(setter,new DirtyChecker(propertyMeta));
-        }
-        return dirtyMap.get(setter);
-    }
 }

@@ -95,18 +95,18 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 
 	@Override
 	public void putAll(Map<?, ?> map) {
-		Map<Object, Object> encodedMap = new HashMap<Object, Object>();
-		for (Entry<?, ?> entry : map.entrySet()) {
+        log.trace("Mark encodedMap property {} of entity class {} dirty upon new key/value pairs addition",
+                propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+        Map<Object, Object> encodedMap = new HashMap<>();
+        for (Entry<?, ?> entry : map.entrySet()) {
             final Object element = proxifier.removeProxy(entry.getValue());
-            final Object key = entry.getKey();
+            final Object key = proxifier.removeProxy(entry.getKey());
             encodedMap.put(key, element);
-		}
+        }
         if(encodedMap.size()>0) {
             getDirtyChecker().addElements(encodedMap);
         }
 
-		log.trace("Mark encodedMap property {} of entity class {} dirty upon new key/value pairs addition",
-				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 		this.target.putAll(encodedMap);
 	}
@@ -135,12 +135,4 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 	public Map<Object, Object> getTarget() {
 		return target;
 	}
-
-    @Override
-    protected DirtyChecker getDirtyChecker() {
-        if(!dirtyMap.containsKey(setter)) {
-            dirtyMap.put(setter,new DirtyChecker(propertyMeta));
-        }
-        return dirtyMap.get(setter);
-    }
 }

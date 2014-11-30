@@ -234,13 +234,4 @@ public class ListWrapper extends AbstractWrapper implements List<Object> {
 	public List<Object> getTarget() {
 		return target;
 	}
-
-    @Override
-    protected DirtyChecker getDirtyChecker() {
-        if(!dirtyMap.containsKey(setter)) {
-            dirtyMap.put(setter,new DirtyChecker(propertyMeta));
-        }
-        return dirtyMap.get(setter);
-    }
-
 }

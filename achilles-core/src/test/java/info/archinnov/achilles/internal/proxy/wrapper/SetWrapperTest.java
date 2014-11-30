@@ -67,11 +67,7 @@ public class SetWrapperTest {
         setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
         when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
-                .type(PropertyType.SIMPLE).accessors().build();
-
         entityMeta = new EntityMeta();
-//        entityMeta.setIdMeta(idMeta);
         dirtyMap = new HashMap<>();
     }
 

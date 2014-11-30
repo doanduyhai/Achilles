@@ -18,6 +18,7 @@ package info.archinnov.achilles.internal.persistence.operations;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaValues;
 import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptorBuilder;
@@ -79,8 +80,9 @@ public class EntityProxifier {
 
         EntityMeta meta = context.getEntityMeta();
         for (PropertyMeta pm : meta.getAllMetasExceptCounters()) {
-            Object value = pm.forValues().getValueFromField(entity);
-            pm.forValues().setValueToField(instance, value);
+            final PropertyMetaValues metaValues = pm.forValues();
+            Object value = metaValues.getValueFromField(entity);
+            metaValues.setValueToField(instance, value);
         }
 
         for (PropertyMeta pm : meta.getAllCounterMetas()) {
@@ -89,6 +91,22 @@ public class EntityProxifier {
 
         ((Factory) instance).setCallbacks(new Callback[] {
                 buildInterceptor(context, entity, alreadyLoaded),
+                NoOp.INSTANCE
+        });
+        return instance;
+    }
+
+    public <T> T buildProxyForUpdate(T entity, EntityOperations context) {
+
+        log.debug("Build Cglib proxy for update of entity {} ", entity);
+
+        Class<?> proxyClass = factory.createProxyClass(entity.getClass(), context.getConfigContext());
+
+        @SuppressWarnings("unchecked")
+        T instance = (T) instantiator.instantiate(proxyClass);
+
+        ((Factory) instance).setCallbacks(new Callback[] {
+                new ProxyInterceptorBuilder<>(context, entity).buildForUpdate(),
                 NoOp.INSTANCE
         });
         return instance;

@@ -45,9 +45,9 @@ public class ProxyInterceptorBuilder<T> {
     }
 
     public ProxyInterceptor<T> build() {
-        log.debug("Build interceptor for entity of class {}", context.getEntityMeta().getClassName());
+        log.debug("Build proxy interceptor for entity of class {}", context.getEntityMeta().getClassName());
 
-        ProxyInterceptor<T> interceptor = new ProxyInterceptor<T>();
+        ProxyInterceptor<T> interceptor = new ProxyInterceptor<>();
 
         EntityMeta entityMeta = context.getEntityMeta();
 
@@ -68,6 +68,32 @@ public class ProxyInterceptorBuilder<T> {
         interceptor.setDirtyMap(new HashMap<Method, DirtyChecker>());
         interceptor.setPrimaryKey(context.getPrimaryKey());
         interceptor.setAlreadyLoaded(alreadyLoaded);
+        return interceptor;
+    }
+
+    public UpdateProxyInterceptor<T> buildForUpdate() {
+        log.debug("Build update proxy interceptor for entity of class {}", context.getEntityMeta().getClassName());
+
+        UpdateProxyInterceptor<T> interceptor = new UpdateProxyInterceptor<>();
+
+        EntityMeta entityMeta = context.getEntityMeta();
+
+        String className = context.getEntityClass().getCanonicalName();
+        Validator.validateNotNull(target, "Target object for interceptor of '%s' should not be null", className);
+        Validator.validateNotNull(entityMeta.getGetterMetas(),
+                "Getters metadata for interceptor of '%s' should not be null", className);
+        Validator.validateNotNull(entityMeta.getSetterMetas(),
+                "Setters metadata for interceptor of '%s' should not be null", className);
+        Validator.validateNotNull(entityMeta.getIdMeta(), "Id metadata for '%s' should not be null", className);
+
+        interceptor.setTarget(target);
+        interceptor.setEntityOperations(context);
+        interceptor.setGetterMetas(entityMeta.getGetterMetas());
+        interceptor.setSetterMetas(entityMeta.getSetterMetas());
+        interceptor.setIdGetter(entityMeta.getIdMeta().getGetter());
+        interceptor.setIdSetter(entityMeta.getIdMeta().getSetter());
+        interceptor.setDirtyMap(new HashMap<Method, DirtyChecker>());
+        interceptor.setPrimaryKey(context.getPrimaryKey());
         return interceptor;
     }
 

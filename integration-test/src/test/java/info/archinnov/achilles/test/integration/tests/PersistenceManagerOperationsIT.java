@@ -16,8 +16,13 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -304,6 +309,126 @@ public class PersistenceManagerOperationsIT {
         assertThat(foundBean.getPreferences()).containsValue("FR");
         assertThat(foundBean.getPreferences()).containsValue("Paris");
         assertThat(foundBean.getPreferences()).containsValue("75014");
+    }
+
+    @Test
+    public void should_get_proxy_for_update() throws Exception {
+        //Given
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").age(35L)
+                .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+                .addPreference(2, "Paris").addPreference(3, "75014").buid();
+
+        manager.insert(entity);
+
+        //When
+        CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.setName("new name");
+        proxy.setAge(36L);
+        proxy.getFriends().add("qux");
+        proxy.getFollowers().add("Richard");
+        proxy.getPreferences().put(3, "75001");
+
+        manager.update(proxy);
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+
+        assertThat(found.getName()).isEqualTo("new name");
+        assertThat(found.getAge()).isEqualTo(36L);
+        assertThat(found.getFriends()).containsExactly("foo", "bar", "qux");
+        assertThat(found.getFollowers()).contains("George", "Paul", "Richard");
+
+        assertThat(found.getPreferences()).containsKey(1);
+        assertThat(found.getPreferences()).containsKey(2);
+        assertThat(found.getPreferences()).containsKey(3);
+
+        assertThat(found.getPreferences()).containsValue("FR");
+        assertThat(found.getPreferences()).containsValue("Paris");
+        assertThat(found.getPreferences()).containsValue("75001");
+    }
+
+    @Test
+    public void should_get_proxy_for_list_update() throws Exception {
+        //Given
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
+                .addFriends("foo", "bar").buid();
+
+        manager.insert(entity);
+
+        //When
+        CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        final List<String> friends = proxy.getFriends();
+        friends.add("qux"); // foo bar qux
+        friends.add(0,"alice"); // alice foo bar qux
+        friends.set(1, "bob"); // alice foo bob qux
+        friends.addAll(Arrays.asList("Richard", "Paul")); // alice foo bob qux Richard Paul
+
+        manager.update(proxy);
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+
+        assertThat(found.getFriends()).containsExactly("alice", "foo", "bob", "qux", "Richard", "Paul");
+    }
+
+    @Test
+    public void should_get_proxy_for_set_update() throws Exception {
+        //Given
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
+                .addFollowers("foo", "bar").buid();
+
+        manager.insert(entity);
+
+        //When
+        CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        final Set<String> followers = proxy.getFollowers();
+        followers.add("qux");
+        followers.addAll(Arrays.asList("bob", "alice"));
+        followers.remove("foo");
+        followers.removeAll(Arrays.asList("foo","bar"));
+
+        manager.update(proxy);
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+
+        assertThat(found.getFollowers()).contains("alice", "bob", "qux");
+    }
+
+    @Test
+    public void should_get_proxy_for_map_update() throws Exception {
+        //Given
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
+                .addPreference(1, "Paris").buid();
+
+        manager.insert(entity);
+
+        //When
+        CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        final Map<Integer, String> preferences = proxy.getPreferences();
+        preferences.put(1,"FR");
+        preferences.putAll(ImmutableMap.of(2, "Paris", 3, "Rue de la Paix"));
+        preferences.remove(2);
+
+        manager.update(proxy);
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+
+        final Map<Integer, String> foundPreferences = found.getPreferences();
+
+        assertThat(foundPreferences).hasSize(2);
+
+        assertThat(foundPreferences).containsKey(1);
+        assertThat(foundPreferences).doesNotContainKey(2);
+        assertThat(foundPreferences).containsKey(3);
+
+        assertThat(foundPreferences.get(1)).isEqualTo("FR");
+        assertThat(foundPreferences.get(3)).isEqualTo("Rue de la Paix");
     }
 
     @Test
