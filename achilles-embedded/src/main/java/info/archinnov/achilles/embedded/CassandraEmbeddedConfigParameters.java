@@ -18,7 +18,6 @@ package info.archinnov.achilles.embedded;
 
 import java.util.Set;
 import com.datastax.driver.core.ProtocolOptions.Compression;
-import com.datastax.driver.core.policies.FallthroughRetryPolicy;
 import com.datastax.driver.core.policies.Policies;
 import com.google.common.collect.ImmutableSet;
 import info.archinnov.achilles.type.TypedMap;
@@ -38,7 +37,7 @@ public class CassandraEmbeddedConfigParameters {
 
     public static final String SAVED_CACHES_FOLDER = "savedCachesFolder";
 
-    public static final String CONFIG_YAML_FILE = "configYamlFile";
+    public static final String LOGBACK_FILE = "logbackXmlFile";
 
     public static final String CLUSTER_NAME = "clusterName";
 
@@ -77,12 +76,12 @@ public class CassandraEmbeddedConfigParameters {
 
     static final String DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER = "target/cassandra_embedded/saved_caches";
 
-    static final String DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER = "/cassandra_triggers";
+    static final String DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER = "target/cassandra_embedded/cassandra_triggers";
 
     static final Set<String> DEFAULT_ACHILLES_TEST_FOLDERS = ImmutableSet.of(DEFAULT_ACHILLES_TEST_DATA_FOLDER,
             DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
 
-    static final String DEFAULT_ACHILLES_TEST_CONFIG_YAML_FILE = "target/cassandra_embedded/cassandra.yaml";
+    static final String DEFAULT_CASSANDRA_EMBEDDED_LOGBACK_FILE = "target/cassandra_embedded/logback.xml";
 
     static final String DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME = "Achilles Embedded Cassandra Cluster";
 
@@ -101,7 +100,7 @@ public class CassandraEmbeddedConfigParameters {
         defaultParams.put(DATA_FILE_FOLDER, DEFAULT_ACHILLES_TEST_DATA_FOLDER);
         defaultParams.put(COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER);
         defaultParams.put(SAVED_CACHES_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
-        defaultParams.put(CONFIG_YAML_FILE, DEFAULT_ACHILLES_TEST_CONFIG_YAML_FILE);
+        defaultParams.put(LOGBACK_FILE, DEFAULT_CASSANDRA_EMBEDDED_LOGBACK_FILE);
         defaultParams.put(CLUSTER_NAME, DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME);
         defaultParams.put(KEYSPACE_NAME, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);
         defaultParams.put(KEYSPACE_DURABLE_WRITE, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE);

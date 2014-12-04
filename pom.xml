@@ -75,7 +75,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <cassandra.version>2.0.11</cassandra.version>
+        <cassandra.version>2.1.2</cassandra.version>
         <datastax.driver.core.version>2.1.2</datastax.driver.core.version>
         <spring.version>3.2.0.RELEASE</spring.version>
         <cglib.version>2.2.2</cglib.version>

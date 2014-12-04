@@ -28,7 +28,6 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLUSTER_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.COMMIT_LOG_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CONFIG_YAML_FILE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DATA_FILE_FOLDER;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
@@ -421,9 +420,6 @@ public class CassandraEmbeddedServerBuilder {
 
         if (StringUtils.isNotBlank(savedCachesFolder))
             config.put(SAVED_CACHES_FOLDER, savedCachesFolder);
-
-        if (StringUtils.isNotBlank(configYamlFile))
-            config.put(CONFIG_YAML_FILE, configYamlFile);
 
         if (StringUtils.isNotBlank(clusterName))
             config.put(CLUSTER_NAME, clusterName);

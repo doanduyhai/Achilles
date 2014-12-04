@@ -24,22 +24,24 @@
 
 package info.archinnov.achilles.embedded;
 
-import static info.archinnov.achilles.embedded.CassandraConfig.cqlRandomPort;
-import static info.archinnov.achilles.embedded.CassandraConfig.storageRandomPort;
-import static info.archinnov.achilles.embedded.CassandraConfig.storageSslRandomPort;
-import static info.archinnov.achilles.embedded.CassandraConfig.thriftRandomPort;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_PORT;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_SSL_PORT;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_THRIFT_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_CONFIG_FILE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.COMMIT_LOG_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CONFIG_YAML_FILE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DATA_FILE_FOLDER;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_FOLDERS;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
+import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_THRIFT_PORT;
+import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT;
+import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT;
+import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_STORAGE_SSL_PORT;
+import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER;
+import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER;
+import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER;
+
 import static java.util.concurrent.TimeUnit.SECONDS;
 import java.io.File;
 import java.io.IOException;
@@ -83,13 +85,11 @@ public enum ServerStarter {
             log.debug("Do start embedded Cassandra server ");
             validateDataFolders(parameters);
             cleanCassandraDataFiles(parameters);
-            cleanCassandraConfigFile(parameters);
             randomizePortsIfNeeded(parameters);
 
-            CassandraConfig cassandraConfig = new CassandraConfig(parameters);
 
             // Start embedded server
-            CASSANDRA_EMBEDDED.start(cassandraConfig);
+            CASSANDRA_EMBEDDED.start(parameters);
         }
     }
 
@@ -114,7 +114,7 @@ public enum ServerStarter {
         return orderedShutdownHook;
     }
 
-    private void start(final CassandraConfig config) {
+    private void start(final TypedMap parameters) {
         if (isAlreadyRunning()) {
             log.debug("Cassandra is already running, not starting new one");
             return;
@@ -122,18 +122,17 @@ public enum ServerStarter {
 
         final String triggersDir = createTriggersFolder();
 
-        log.info(" Random embedded Cassandra RPC port/Thrift port = {}", config.getRPCPort());
-        log.info(" Random embedded Cassandra Native port/CQL port = {}", config.getCqlPort());
-        log.info(" Random embedded Cassandra Storage port = {}", config.getStoragePort());
-        log.info(" Random embedded Cassandra Storage SSL port = {}", config.getStorageSSLPort());
+        log.info(" Random embedded Cassandra RPC port/Thrift port = {}", parameters.getTyped(CASSANDRA_THRIFT_PORT));
+        log.info(" Random embedded Cassandra Native port/CQL port = {}", parameters.getTyped(CASSANDRA_CQL_PORT));
+        log.info(" Random embedded Cassandra Storage port = {}", parameters.getTyped(CASSANDRA_STORAGE_PORT));
+        log.info(" Random embedded Cassandra Storage SSL port = {}", parameters.getTyped(CASSANDRA_STORAGE_SSL_PORT));
         log.info(" Embedded Cassandra triggers directory = {}", triggersDir);
 
         log.info("Starting Cassandra...");
-        config.write();
 
         System.setProperty("cassandra.triggers_dir", triggersDir);
-        System.setProperty("cassandra.config", "file:" + config.getConfigFile().getAbsolutePath());
         System.setProperty("cassandra-foreground", "true");
+        System.setProperty("cassandra.config.loader","info.archinnov.achilles.embedded.AchillesCassandraConfig");
 
         final CountDownLatch startupLatch = new CountDownLatch(1);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -181,6 +180,10 @@ public enum ServerStarter {
         validateFolder(commitLogFolder);
         validateFolder(savedCachesFolder);
 
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER, dataFolder);
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER, commitLogFolder);
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER, savedCachesFolder);
+
     }
 
     private void validateFolder(String folderPath) {
@@ -220,20 +223,6 @@ public enum ServerStarter {
         }
     }
 
-    private void cleanCassandraConfigFile(TypedMap parameters) {
-        if (parameters.getTyped(CLEAN_CASSANDRA_CONFIG_FILE)) {
-            String configYamlFilePath = parameters.getTyped(CONFIG_YAML_FILE);
-            final File configYamlFile = new File(configYamlFilePath);
-            if (configYamlFile.exists()) {
-                String currentUser = System.getProperty("user.name");
-                Validator.validateTrue(configYamlFile.canWrite(),
-                        "No write credential. Please grant write permission for "
-                                + "the current user '%s' on file '%s'", currentUser, configYamlFile.getAbsolutePath());
-                configYamlFile.delete();
-            }
-        }
-    }
-
     private void randomizePortsIfNeeded(TypedMap parameters) {
         final Integer thriftPort = extractAndValidatePort(Optional.fromNullable(parameters.get(CASSANDRA_THRIFT_PORT))
                 .or(thriftRandomPort()), CASSANDRA_THRIFT_PORT);
@@ -250,6 +239,11 @@ public enum ServerStarter {
         parameters.put(CASSANDRA_STORAGE_PORT, storagePort);
         parameters.put(CASSANDRA_STORAGE_SSL_PORT, storageSSLPort);
 
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_THRIFT_PORT, thriftPort.toString());
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT, cqlPort.toString());
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT, storagePort.toString());
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_SSL_PORT, storageSSLPort.toString());
+
         ServerStarter.cqlPort = cqlPort;
         ServerStarter.thriftPort = thriftPort;
     }
@@ -263,7 +257,7 @@ public enum ServerStarter {
 
     private String createTriggersFolder() {
         log.trace("Create triggers folder");
-        final File triggersDir = new File(System.getProperty("java.io.tmpdir") + DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER);
+        final File triggersDir = new File( /*System.getProperty("java.io.tmpdir")+ */DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER);
         if (!triggersDir.exists()) {
             triggersDir.mkdir();
         }
@@ -291,4 +285,19 @@ public enum ServerStarter {
 
     }
 
+    private static int storageRandomPort() {
+        return PortFinder.findAvailableBetween(7001, 7500);
+    }
+
+    private static int storageSslRandomPort() {
+        return PortFinder.findAvailableBetween(7501, 7999);
+    }
+
+    private static int cqlRandomPort() {
+        return PortFinder.findAvailableBetween(9043, 9499);
+    }
+
+    private static int thriftRandomPort() {
+        return PortFinder.findAvailableBetween(9501, 9999);
+    }
 }
