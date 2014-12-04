@@ -21,6 +21,7 @@ import static info.archinnov.achilles.listener.LWTResultListener.LWTResult;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.INSERT;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.UPDATE;
+import static java.lang.String.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -102,48 +103,39 @@ public abstract class AbstractStatementWrapper {
     }
 
     public static void writeDMLStartBatch(BatchStatement.Type batchType) {
-        switch (batchType) {
-            case LOGGED:
-                dmlLogger.debug("");
-                dmlLogger.debug("");
-                dmlLogger.debug("****** BATCH LOGGED START ******");
-                dmlLogger.debug("");
-                break;
-            case UNLOGGED:
-                dmlLogger.debug("");
-                dmlLogger.debug("");
-                dmlLogger.debug("****** BATCH UNLOGGED START ******");
-                dmlLogger.debug("");
-                break;
-            case COUNTER:
-                dmlLogger.debug("");
-                dmlLogger.debug("");
-                dmlLogger.debug("****** BATCH COUNTER START ******");
-                dmlLogger.debug("");
-                break;
+        if(dmlLogger.isDebugEnabled()) {
+            StringBuilder builder = new StringBuilder("\n\n");
+            switch (batchType) {
+                case LOGGED:
+                    builder.append("****** BATCH LOGGED START ******\n");
+                    break;
+                case UNLOGGED:
+                    builder.append("****** BATCH UNLOGGED START ******\n");
+                    break;
+                case COUNTER:
+                    builder.append("****** BATCH COUNTER START ******\n");
+                    break;
+            }
+            dmlLogger.debug(builder.toString());
         }
     }
 
     public static void writeDMLEndBatch(BatchStatement.Type batchType, ConsistencyLevel consistencyLevel) {
-        switch (batchType) {
-            case LOGGED:
-                dmlLogger.debug("");
-                dmlLogger.debug("  ****** BATCH LOGGED END  with CONSISTENCY LEVEL [{}] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT");
-                dmlLogger.debug("");
-                dmlLogger.debug("");
-                break;
-            case UNLOGGED:
-                dmlLogger.debug("");
-                dmlLogger.debug("  ****** BATCH UNLOGGED END with CONSISTENCY LEVEL [{}] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT");
-                dmlLogger.debug("");
-                dmlLogger.debug("");
-                break;
-            case COUNTER:
-                dmlLogger.debug("");
-                dmlLogger.debug("  ****** BATCH COUNTER END with CONSISTENCY LEVEL [{}] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT");
-                dmlLogger.debug("");
-                dmlLogger.debug("");
-                break;
+        if(dmlLogger.isDebugEnabled()) {
+            StringBuilder builder = new StringBuilder("\n");
+            switch (batchType) {
+                case LOGGED:
+                    builder.append(format("  ****** BATCH LOGGED END  with CONSISTENCY LEVEL [%s] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT"));
+                    break;
+                case UNLOGGED:
+                    builder.append(format("  ****** BATCH UNLOGGED END with CONSISTENCY LEVEL [%s] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT"));
+                    break;
+                case COUNTER:
+                    builder.append(format("  ****** BATCH COUNTER END with CONSISTENCY LEVEL [%s] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT"));
+                    break;
+            }
+            builder.append("\n\n");
+            dmlLogger.debug(builder.toString());
         }
     }
 
@@ -151,12 +143,14 @@ public abstract class AbstractStatementWrapper {
         Logger actualLogger = displayDMLForEntity ? entityLogger : dmlLogger;
 
         if (actualLogger.isDebugEnabled()) {
-            actualLogger.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
+            StringBuilder builder = new StringBuilder();
+            builder.append(format("%s : [%s] with CONSISTENCY LEVEL [%s]", queryType, queryString, consistencyLevel));
+            if (ArrayUtils.isNotEmpty(values)) {
+                builder.append(format("\n\t bound values : %s", Arrays.asList(values)));
+            }
+            actualLogger.debug(builder.toString());
         }
 
-        if (ArrayUtils.isNotEmpty(values)) {
-            actualLogger.debug("\t bound values : {}", Arrays.asList(values));
-        }
     }
 
     protected boolean isLWTInsert(String queryString) {
@@ -236,26 +230,24 @@ public abstract class AbstractStatementWrapper {
         if (isTracingEnabled()) {
             Logger actualLogger = traceQueryForEntity ? entityLogger : dmlLogger;
             for (ExecutionInfo executionInfo : resultSet.getAllExecutionInfo()) {
-
-                actualLogger.trace("Query tracing at host {} with achieved consistency level {} ", executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel());
-                actualLogger.trace("****************************");
-                if (actualLogger.isTraceEnabled()) {
-                    actualLogger.trace(String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", "Description", "Source", "Source elapsed in micros", "Thread name"));
-                }
+                StringBuilder builder = new StringBuilder();
+                builder.append(format("Query tracing at host %s with achieved consistency level %s \n", executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel()));
+                builder.append("****************************\n");
+                builder.append(format("%1$-80s | %2$-16s | %3$-24s | %4$-20s\n", "Description", "Source", "Source elapsed in micros", "Thread name"));
                 try {
                     final QueryTrace queryTrace = executionInfo.getQueryTrace();
                     if (queryTrace != null) {
                         final List<QueryTrace.Event> events = new ArrayList<>(queryTrace.getEvents());
                         Collections.sort(events, EVENT_TRACE_COMPARATOR);
                         for (QueryTrace.Event event : events) {
-                            final String formatted = String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName());
-                            actualLogger.trace(formatted);
+                            builder.append(format("%1$-80s | %2$-16s | %3$-24s | %4$-20s\n", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName()));
                         }
                     }
                 } catch (TraceRetrievalException e) {
-                    actualLogger.trace(" ERROR: cannot retrieve trace for query {} because it may not be yet available", getQueryString());
+                    builder.append(format(" ERROR: cannot retrieve trace for query %s because it may not be yet available\n", getQueryString()));
                 }
-                actualLogger.trace("****************************");
+                builder.append("****************************\n");
+                actualLogger.trace(builder.toString());
             }
         }
     }
