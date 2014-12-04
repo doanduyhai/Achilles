@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.embedded.ServerStarter.CASSANDRA_EMBEDDED;
 import static info.archinnov.achilles.persistence.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
@@ -26,7 +25,6 @@ import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.annotations.Column;
@@ -77,7 +75,7 @@ public class SchemaUpdateIT {
         assertThat(found).isNotNull();
         assertThat(found.getUnmappedField()).isEqualTo("UNMAPPED");
 
-        assertThat(pm.getProxy(EntityWithNewSimpleField.class, id).getUnmappedField()).isEqualTo("UNMAPPED");
+        assertThat(pm.find(EntityWithNewSimpleField.class, id).getUnmappedField()).isEqualTo("UNMAPPED");
 
         session.close();
     }

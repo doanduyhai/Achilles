@@ -62,21 +62,6 @@ public class ClusteredEntityWithCounterIT {
 	}
 
 	@Test
-	public void should_persist_and_get_proxy() throws Exception {
-		long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
-		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
-
-		manager.insert(entity);
-
-		ClusteredEntityWithCounter found = manager.getProxy(ClusteredEntityWithCounter.class, compoundKey);
-
-		assertThat(found.getId()).isEqualTo(compoundKey);
-		assertThat(found.getCounter().get()).isEqualTo(counterValue);
-		assertThat(found.getVersion().get()).isNull();
-	}
-
-	@Test
 	public void should_update_modifications() throws Exception {
 		long initialValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		long increment = RandomUtils.nextLong(0,Long.MAX_VALUE);

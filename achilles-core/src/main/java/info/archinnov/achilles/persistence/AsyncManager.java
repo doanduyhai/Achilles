@@ -191,42 +191,6 @@ public class AsyncManager extends CommonAsyncManager {
         return super.asyncFind(entityClass, primaryKey, options);
     }
 
-
-    /**
-     * This method is deprecated, use {@link info.archinnov.achilles.persistence.AsyncManager}.forUpdate() instead
-     *
-     * @param entityClass
-     *            Entity type
-     * @param primaryKey
-     *            Primary key (Cassandra row key) of the entity to initialize
-     *
-     * @return T future proxy
-     */
-    @Deprecated
-    public <T> T getProxy(Class<T> entityClass, Object primaryKey) {
-        log.debug("Get reference asynchronously for entity class '{}' with primary key {}", entityClass, primaryKey);
-        return super.getProxyInternal(entityClass, primaryKey, noOptions());
-    }
-
-
-    /**
-     * This method is deprecated, use {@link info.archinnov.achilles.persistence.AsyncManager}.forUpdate() instead
-     *
-     * @param entityClass
-     *            Entity type
-     * @param primaryKey
-     *            Primary key (Cassandra row key) of the entity to initialize
-     * @param options
-     *            Options
-     *
-     * @return T future proxy
-     */
-    @Deprecated
-    public <T> T getProxy(final Class<T> entityClass, final Object primaryKey, Options options) {
-        log.debug("Get reference asynchronously for entity class '{}' with primary key {} and options {}", entityClass, primaryKey, options);
-        return super.getProxyInternal(entityClass, primaryKey, options);
-    }
-
     /**
      * Create a proxy for the entity update. An new empty entity will be created,
      * populated with the provided primary key and then proxified. This method

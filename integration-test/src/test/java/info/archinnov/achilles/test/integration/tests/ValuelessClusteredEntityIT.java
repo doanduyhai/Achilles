@@ -52,20 +52,6 @@ public class ValuelessClusteredEntityIT {
 	}
 
 	@Test
-	public void should_persist_and_get_proxy() throws Exception {
-		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		String name = "name";
-		CompoundKey compoundKey = new CompoundKey(id, name);
-		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
-
-		manager.insert(entity);
-
-		ValuelessClusteredEntity found = manager.getProxy(ValuelessClusteredEntity.class, compoundKey);
-
-		assertThat(found).isNotNull();
-	}
-
-	@Test
 	public void should_persist_with_ttl() throws Exception {
 		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		String name = "name";

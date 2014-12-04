@@ -43,21 +43,6 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	private ClusteredKey compoundKey;
 
 	@Test
-	public void should_persist_and_get_reference() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), Type.AUDIO);
-
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
-
-		manager.insert(entity);
-
-		ClusteredEntityWithEnumCompoundKey found = manager.getProxy(ClusteredEntityWithEnumCompoundKey.class,
-                                                                    compoundKey);
-
-		assertThat(found.getId()).isEqualTo(compoundKey);
-		assertThat(found.getValue()).isEqualTo("clustered_value");
-	}
-
-	@Test
 	public void should_persist_and_find() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), Type.AUDIO);
 

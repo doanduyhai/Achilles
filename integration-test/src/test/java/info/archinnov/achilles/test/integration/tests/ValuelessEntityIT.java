@@ -46,18 +46,6 @@ public class ValuelessEntityIT {
 	}
 
 	@Test
-	public void should_persist_and_get_proxy() throws Exception {
-		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		ValuelessEntity entity = new ValuelessEntity(id);
-
-		manager.insert(entity);
-
-		ValuelessEntity found = manager.getProxy(ValuelessEntity.class, id);
-
-		assertThat(found).isNotNull();
-	}
-
-	@Test
 	public void should_persist_with_ttl() throws Exception {
 		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		ValuelessEntity entity = new ValuelessEntity(id);

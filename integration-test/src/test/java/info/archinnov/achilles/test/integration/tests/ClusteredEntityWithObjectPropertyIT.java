@@ -62,20 +62,6 @@ public class ClusteredEntityWithObjectPropertyIT {
 	}
 
 	@Test
-	public void should_persist_and_get_proxy() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
-		Holder holder = new Holder("content");
-		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
-
-		manager.insert(entity);
-
-		ClusteredEntityWithObjectValue found = manager.getProxy(ClusteredEntityWithObjectValue.class, compoundKey);
-
-		assertThat(found.getId()).isEqualTo(compoundKey);
-		assertThat(found.getValue()).isEqualTo(holder);
-	}
-
-	@Test
 	public void should_merge_modifications() throws Exception {
 
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");

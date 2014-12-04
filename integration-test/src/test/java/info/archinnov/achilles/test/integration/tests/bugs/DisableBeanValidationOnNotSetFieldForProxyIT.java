@@ -29,7 +29,7 @@ public class DisableBeanValidationOnNotSetFieldForProxyIT {
         manager.insert(entity);
 
         //When
-        final EntityWithFieldLevelConstraint proxy = manager.getProxy(EntityWithFieldLevelConstraint.class, id);
+        final EntityWithFieldLevelConstraint proxy = manager.forUpdate(EntityWithFieldLevelConstraint.class, id);
         proxy.setAge(34);
 
         manager.update(proxy);
@@ -49,7 +49,7 @@ public class DisableBeanValidationOnNotSetFieldForProxyIT {
         manager.insert(entity);
 
         //When
-        final EntityWithFieldLevelConstraint proxy = manager.getProxy(EntityWithFieldLevelConstraint.class, id);
+        final EntityWithFieldLevelConstraint proxy = manager.forUpdate(EntityWithFieldLevelConstraint.class, id);
         proxy.setName(null);
 
         manager.update(proxy);

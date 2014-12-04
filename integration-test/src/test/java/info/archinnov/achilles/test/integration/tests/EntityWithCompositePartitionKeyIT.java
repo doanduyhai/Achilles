@@ -73,22 +73,6 @@ public class EntityWithCompositePartitionKeyIT {
 	}
 
 	@Test
-	public void should_persist_and_get_proxy() throws Exception {
-		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		EmbeddedKey compositeRowKey = new EmbeddedKey(id, "type");
-
-		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "clustered_value");
-
-		manager.insert(entity);
-
-		EntityWithCompositePartitionKey found = manager.getProxy(EntityWithCompositePartitionKey.class,
-                                                                 compositeRowKey);
-
-		assertThat(found.getId()).isEqualTo(compositeRowKey);
-		assertThat(found.getValue()).isEqualTo("clustered_value");
-	}
-
-	@Test
 	public void should_update_modifications() throws Exception {
 		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");

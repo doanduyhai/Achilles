@@ -202,40 +202,6 @@ public class PersistenceManager extends CommonPersistenceManager {
     }
 
     /**
-     * This method is deprecated, use {@link info.archinnov.achilles.persistence.PersistenceManager}.forUpdate() instead
-     *
-     * @param entityClass
-     *            Entity type
-     * @param primaryKey
-     *            Primary key (Cassandra row key) of the entity to initialize
-     *
-     * @return T proxy
-     */
-    @Deprecated
-    public <T> T getProxy(Class<T> entityClass, Object primaryKey) {
-        log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
-        return super.getProxyInternal(entityClass, primaryKey, noOptions());
-    }
-
-    /**
-     * This method is deprecated, use {@link info.archinnov.achilles.persistence.PersistenceManager}.forUpdate() instead
-     *
-     * @param entityClass
-     *            Entity type
-     * @param primaryKey
-     *            Primary key (Cassandra row key) of the entity to initialize
-     * @param options
-     *            options
-     */
-    @Deprecated
-    public <T> T getProxy(final Class<T> entityClass, final Object primaryKey, Options options) {
-         if (log.isDebugEnabled()) {
-            log.debug("Get reference for entity class '{}' with primary key {} and options {}", entityClass, primaryKey, options);
-        }
-        return super.getProxyInternal(entityClass, primaryKey, options);
-    }
-
-    /**
      * Create a proxy for the entity update. An new empty entity will be created,
      * populated with the provided primary key and then proxified. This method
      * never returns null. Use this method to perform direct update without

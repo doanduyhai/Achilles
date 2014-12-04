@@ -66,23 +66,6 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	}
 
 	@Test
-	public void should_persist_and_get_proxy() throws Exception {
-		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		Integer index = 11;
-		compoundKey = new EmbeddedKey(id, "type", index);
-
-		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
-
-		manager.insert(entity);
-
-		ClusteredEntityWithCompositePartitionKey found = manager.getProxy(
-                ClusteredEntityWithCompositePartitionKey.class, compoundKey);
-
-		assertThat(found.getId()).isEqualTo(compoundKey);
-		assertThat(found.getValue()).isEqualTo("clustered_value");
-	}
-
-	@Test
 	public void should_update_modifications() throws Exception {
 		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		Integer index = 11;

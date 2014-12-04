@@ -72,20 +72,6 @@ public class ClusteredEntityIT {
 	}
 
 	@Test
-	public void should_persist_and_get_proxy() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
-
-		entity = new ClusteredEntity(compoundKey, "clustered_value");
-
-		manager.insert(entity);
-
-		ClusteredEntity found = manager.getProxy(ClusteredEntity.class, compoundKey);
-
-		assertThat(found.getId()).isEqualTo(compoundKey);
-		assertThat(found.getValue()).isEqualTo("clustered_value");
-	}
-
-	@Test
 	public void should_update_with_ttl() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 		entity = new ClusteredEntity(compoundKey, "clustered_value");

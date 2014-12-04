@@ -137,17 +137,6 @@ abstract class AbstractPersistenceManager {
         return context.find(entityClass);
     }
 
-    protected <T> T getProxyInternal(final Class<T> entityClass, final Object primaryKey, Options options) {
-        Validator.validateNotNull(entityClass, "Entity class should not be null for get proxy");
-        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get proxy");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass), "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
-
-        optionsValidator.validateNoAsyncListener(options);
-        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, options);
-        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-        return context.getProxy(entityClass);
-    }
-
     protected <T> T getProxyForUpdateInternal(final Class<T> entityClass, final Object primaryKey) {
         Validator.validateNotNull(entityClass, "Entity class should not be null for get proxy for update");
         Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get proxy for update");

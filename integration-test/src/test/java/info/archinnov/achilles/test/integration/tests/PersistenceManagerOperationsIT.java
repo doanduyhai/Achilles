@@ -275,43 +275,6 @@ public class PersistenceManagerOperationsIT {
     }
 
     @Test
-    public void should_get_proxy() throws Exception {
-        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-                .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-                .addPreference(2, "Paris").addPreference(3, "75014").buid();
-
-        manager.insert(entity);
-
-        CompleteBean foundBean = manager.getProxy(CompleteBean.class, entity.getId());
-
-        assertThat(foundBean).isNotNull();
-
-        // Real object should be empty
-        CompleteBean realObject = manager.removeProxy(foundBean);
-
-        assertThat(realObject.getId()).isEqualTo(entity.getId());
-        assertThat(realObject.getName()).isNull();
-        assertThat(realObject.getAge()).isNull();
-        assertThat(realObject.getFriends()).isNull();
-        assertThat(realObject.getFollowers()).isNull();
-        assertThat(realObject.getPreferences()).isNull();
-
-        assertThat(foundBean.getId()).isEqualTo(entity.getId());
-        assertThat(foundBean.getName()).isEqualTo("DuyHai");
-        assertThat(foundBean.getAge()).isEqualTo(35L);
-        assertThat(foundBean.getFriends()).containsExactly("foo", "bar");
-        assertThat(foundBean.getFollowers()).contains("George", "Paul");
-
-        assertThat(foundBean.getPreferences()).containsKey(1);
-        assertThat(foundBean.getPreferences()).containsKey(2);
-        assertThat(foundBean.getPreferences()).containsKey(3);
-
-        assertThat(foundBean.getPreferences()).containsValue("FR");
-        assertThat(foundBean.getPreferences()).containsValue("Paris");
-        assertThat(foundBean.getPreferences()).containsValue("75014");
-    }
-
-    @Test
     public void should_get_proxy_for_update() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").age(35L)
@@ -510,11 +473,15 @@ public class PersistenceManagerOperationsIT {
     public void should_return_empty_list_instead_of_null_for_field_annotated_with_emptyIfNullCollection() throws Exception {
         //Given
         Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        final CompleteBean completeBean = new CompleteBean();
+        completeBean.setId(id);
 
-        final CompleteBean proxy = manager.getProxy(CompleteBean.class, id);
+        manager.insert(completeBean);
+
+        final CompleteBean found = manager.find(CompleteBean.class, id);
 
         //When
-        final List<String> friends = proxy.getFriends();
+        final List<String> friends = found.getFriends();
 
         //Then
         assertThat(friends).isNotNull().isEmpty();

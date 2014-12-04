@@ -110,40 +110,6 @@ public class StaticColumnIT {
     }
 
     @Test
-    public void should_lazy_load_static_and_non_static_column() throws Exception {
-        //Given
-        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        ClusteredEntityWithStaticColumn parisStreet = new ClusteredEntityWithStaticColumn(new ClusteredKey(partitionKey, "street1"), "Paris", "rue de la paix");
-
-        manager.insert(parisStreet);
-
-
-        //When
-        ClusteredEntityWithStaticColumn proxy = manager.getProxy(ClusteredEntityWithStaticColumn.class, parisStreet.getId());
-        assertThat(proxy.getStreet()).isEqualTo("rue de la paix");
-        assertThat(proxy.getCity()).isEqualTo("Paris");
-        proxy.setStreet("rue Lamartine");
-        manager.update(proxy);
-
-        //Then
-        final ClusteredEntityWithStaticColumn updated = manager.find(ClusteredEntityWithStaticColumn.class, parisStreet.getId());
-        assertThat(updated.getCity()).isEqualTo("Paris");
-        assertThat(updated.getStreet()).isEqualTo("rue Lamartine");
-
-        //When
-        proxy = manager.getProxy(ClusteredEntityWithStaticColumn.class, parisStreet.getId());
-        assertThat(proxy.getStreet()).isEqualTo("rue Lamartine");
-        assertThat(proxy.getCity()).isEqualTo("Paris");
-        proxy.setCity("Lyon");
-        manager.update(proxy);
-
-        final ClusteredEntityWithStaticColumn staticUpdated = manager.find(ClusteredEntityWithStaticColumn.class, parisStreet.getId());
-        assertThat(staticUpdated.getCity()).isEqualTo("Lyon");
-        assertThat(staticUpdated.getStreet()).isEqualTo("rue Lamartine");
-    }
-
-
-    @Test
     public void should_delete_static_and_non_static_column() throws Exception {
         //Given
         Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
@@ -199,30 +165,6 @@ public class StaticColumnIT {
         assertThat(updated.getCity()).isEqualTo("Lyon");
         assertThat(updated.getStreet()).isEqualTo("rue Lamartine");
     }
-
-    @Test
-    public void should_lazy_load_all_static_columns() throws Exception {
-        //Given
-        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        ClusteredEntityWithOnlyStaticColumns location = new ClusteredEntityWithOnlyStaticColumns(new ClusteredOnlyStaticColumnsKey(partitionKey, "location"), "Paris", "rue de la paix");
-
-        manager.insert(location);
-
-        //When
-        ClusteredEntityWithOnlyStaticColumns proxy = manager.getProxy(ClusteredEntityWithOnlyStaticColumns.class, location.getId());
-        assertThat(proxy.getCity()).isEqualTo("Paris");
-        assertThat(proxy.getStreet()).isEqualTo("rue de la paix");
-
-        proxy.setCity("Lyon");
-        proxy.setStreet("rue Lamartine");
-        manager.update(proxy);
-
-        //Then
-        final ClusteredEntityWithOnlyStaticColumns updated = manager.find(ClusteredEntityWithOnlyStaticColumns.class, location.getId());
-        assertThat(updated.getCity()).isEqualTo("Lyon");
-        assertThat(updated.getStreet()).isEqualTo("rue Lamartine");
-    }
-
 
     @Test
     public void should_delete_all_static_columns() throws Exception {
@@ -309,40 +251,6 @@ public class StaticColumnIT {
         assertThat(updated.getVersion().get()).isEqualTo(1L);
 
         //When
-        updated.getVersion().incr(2L);
-        manager.update(updated);
-
-        //Then
-        ClusteredEntityWithStaticCounter staticUpdated = manager.find(ClusteredEntityWithStaticCounter.class, entity.getId());
-        assertThat(staticUpdated.getCount().get()).isEqualTo(13L);
-        assertThat(staticUpdated.getVersion().get()).isEqualTo(3L);
-    }
-
-    @Test
-    public void should_lazy_load_static_counter_and_non_static_counter_column() throws Exception {
-        //Given
-        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        Counter version = CounterBuilder.incr(1L);
-        final Counter count = CounterBuilder.incr(11);
-        ClusteredEntityWithStaticCounter entity = new ClusteredEntityWithStaticCounter(new ClusteredKeyForCounter(partitionKey, "count1"), version, count);
-
-        manager.insert(entity);
-        //When
-        ClusteredEntityWithStaticCounter proxy = manager.getProxy(ClusteredEntityWithStaticCounter.class, entity.getId());
-        assertThat(proxy.getCount().get()).isEqualTo(11L);
-        assertThat(proxy.getVersion().get()).isEqualTo(1L);
-        proxy.getCount().incr(2L);
-        manager.update(proxy);
-
-        //Then
-        ClusteredEntityWithStaticCounter updated = manager.find(ClusteredEntityWithStaticCounter.class, entity.getId());
-        assertThat(updated.getCount().get()).isEqualTo(13L);
-        assertThat(updated.getVersion().get()).isEqualTo(1L);
-
-        //When
-        proxy = manager.getProxy(ClusteredEntityWithStaticCounter.class, entity.getId());
-        assertThat(proxy.getCount().get()).isEqualTo(13L);
-        assertThat(proxy.getVersion().get()).isEqualTo(1L);
         updated.getVersion().incr(2L);
         manager.update(updated);
 

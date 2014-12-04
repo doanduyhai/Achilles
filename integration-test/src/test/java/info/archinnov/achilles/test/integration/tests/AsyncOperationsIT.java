@@ -455,34 +455,4 @@ public class AsyncOperationsIT {
         assertThat(successSpy.get()).isNotNull().isInstanceOf(CompleteBean.class)
                 .isNotExactlyInstanceOf(Factory.class);
     }
-
-    @Test
-    public void should_notified_async_listener_for_staled_object_on_refresh() throws Exception {
-        //Given
-        final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicReference<Object> exceptionSpy = new AtomicReference<>();
-
-        FutureCallback<Object> exceptionCallBack = new FutureCallback<Object>() {
-            @Override
-            public void onSuccess(Object result) {
-                latch.countDown();
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                exceptionSpy.getAndSet(t);
-                latch.countDown();
-            }
-        };
-        final CompleteBean proxy = manager.getProxy(CompleteBean.class, 10L);
-
-        //When
-        manager.refresh(proxy, withAsyncListeners(exceptionCallBack));
-
-        latch.await();
-        Thread.sleep(100);
-
-        //Then
-        assertThat(exceptionSpy.get()).isNotNull().isInstanceOf(AchillesStaleObjectStateException.class);
-    }
 }
