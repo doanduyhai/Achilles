@@ -89,6 +89,7 @@
         <validator.version>5.0.2.Final</validator.version>
         <slf4j.version>1.7.2</slf4j.version>
 
+        <logback.version>1.1.2</logback.version>
         <fest.assert.version>2.0M8</fest.assert.version>
         <fest.util.version>1.2.3</fest.util.version>
         <junit.version>4.10</junit.version>
@@ -313,9 +314,14 @@
 
             <!-- TEST -->
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${slf4j.version}</version>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.easytesting</groupId>
@@ -343,8 +349,13 @@
     <dependencies>
         <!-- TEST -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
             <scope>test</scope>
         </dependency>
 

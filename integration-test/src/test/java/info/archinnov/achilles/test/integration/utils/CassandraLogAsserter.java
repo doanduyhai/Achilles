@@ -19,37 +19,43 @@ import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.split;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.OutputStreamAppender;
 import com.google.common.base.Joiner;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import org.junit.ComparisonFailure;
+import org.slf4j.LoggerFactory;
 
 public class CassandraLogAsserter {
     private static final String DRIVER_CONNECTION_LOGGER = "com.datastax.driver.core.Connection";
-    private Logger storageProxyLogger = Logger.getLogger(DRIVER_CONNECTION_LOGGER);
-    private WriterAppender writerAppender;
+    private Logger driverConnectionLogger = (Logger)LoggerFactory.getLogger(DRIVER_CONNECTION_LOGGER);
+    private OutputStreamAppender<ILoggingEvent> writerAppender;
     protected ByteArrayOutputStream logStream;
     private Pattern pattern = Pattern.compile("writing request [A-Z]+");
 
     public void prepareLogLevel() {
+        final LoggerContext loggerContext = driverConnectionLogger.getLoggerContext();
+        PatternLayoutEncoder ple = createPatternLayoutEncoder(loggerContext);
+        writerAppender = new OutputStreamAppender();
+        writerAppender.setContext(loggerContext);
+        writerAppender.setEncoder(ple);
         logStream = new ByteArrayOutputStream();
-        writerAppender = new WriterAppender();
-        writerAppender.setWriter(new OutputStreamWriter(logStream));
-        writerAppender.setLayout(new PatternLayout("%m %n"));
-        storageProxyLogger.removeAllAppenders();
-        storageProxyLogger.addAppender(writerAppender);
-        storageProxyLogger.setLevel(Level.TRACE);
+        writerAppender.setOutputStream(logStream);
+        writerAppender.start();
 
+        driverConnectionLogger.addAppender(writerAppender);
+        driverConnectionLogger.setLevel(Level.TRACE);
+        driverConnectionLogger.setAdditive(false);
     }
 
     public void assertConsistencyLevels(ConsistencyLevel... consistencyLevels) {
@@ -83,13 +89,9 @@ public class CassandraLogAsserter {
 
         } finally {
             logStream = null;
-            storageProxyLogger.setLevel(Level.WARN);
-            storageProxyLogger.removeAppender(writerAppender);
+            driverConnectionLogger.setLevel(Level.WARN);
+            driverConnectionLogger.detachAppender(writerAppender);
         }
-    }
-
-    protected boolean checkForConsistency(ConsistencyLevel consistencyLevel, String logLine) {
-        return logLine.contains("cl=" + consistencyLevel.name()) || logLine.contains("at consistency "+consistencyLevel.name());
     }
 
     public void assertSerialConsistencyLevels(ConsistencyLevel serialConsistencyLevel, ConsistencyLevel... consistencyLevels) {
@@ -144,8 +146,20 @@ public class CassandraLogAsserter {
 
         } finally {
             logStream = null;
-            storageProxyLogger.setLevel(Level.WARN);
-            storageProxyLogger.removeAppender(writerAppender);
+            driverConnectionLogger.setLevel(Level.WARN);
+            driverConnectionLogger.detachAppender(writerAppender);
         }
+    }
+
+    protected boolean checkForConsistency(ConsistencyLevel consistencyLevel, String logLine) {
+        return logLine.contains("cl=" + consistencyLevel.name()) || logLine.contains("at consistency "+consistencyLevel.name());
+    }
+
+    private PatternLayoutEncoder createPatternLayoutEncoder(LoggerContext loggerContext) {
+        PatternLayoutEncoder ple = new PatternLayoutEncoder();
+        ple.setPattern("%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n");
+        ple.setContext(loggerContext);
+        ple.start();
+        return ple;
     }
 }
