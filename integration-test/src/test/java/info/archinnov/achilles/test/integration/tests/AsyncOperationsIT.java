@@ -216,7 +216,7 @@ public class AsyncOperationsIT {
                 LWTResultSpy.getAndSet(lwtResult);
             }
         };
-        manager.insert(paul, withAsyncListeners(errorCallBack).ifNotExists().LWTResultListener(casListener));
+        manager.insert(paul, withAsyncListeners(errorCallBack).ifNotExists().lwtResultListener(casListener));
 
         //Then
         latch.await();
