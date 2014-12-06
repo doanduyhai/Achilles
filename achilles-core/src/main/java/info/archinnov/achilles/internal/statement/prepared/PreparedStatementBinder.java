@@ -66,7 +66,7 @@ public class PreparedStatementBinder {
 
         BoundStatement bs = ps.bind(values.toArray());
         return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
-                context.getCASResultListener(), context.getSerialConsistencyLevel());
+                context.getLWTResultListener(), context.getSerialConsistencyLevel());
     }
 
 
@@ -92,7 +92,7 @@ public class PreparedStatementBinder {
         BoundStatement bs = ps.bind(values.toArray());
 
         return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
-                context.getCASResultListener(), context.getSerialConsistencyLevel());
+                context.getLWTResultListener(), context.getSerialConsistencyLevel());
     }
 
     public BoundStatementWrapper bindForCollectionAndMapUpdate(PersistentStateHolder context, PreparedStatement ps, DirtyCheckChangeSet changeSet) {
@@ -150,10 +150,10 @@ public class PreparedStatementBinder {
         BoundStatement bs = ps.bind(values.toArray());
 
         return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
-                context.getCASResultListener(), context.getSerialConsistencyLevel());
+                context.getLWTResultListener(), context.getSerialConsistencyLevel());
     }
 
-    public BoundStatementWrapper bindForDeletion(PersistentStateHolder context, PreparedStatement ps, boolean onlyStaticColumns,ConsistencyLevel consistencyLevel) {
+  public BoundStatementWrapper bindForDeletion(PersistentStateHolder context, PreparedStatement ps, boolean onlyStaticColumns,ConsistencyLevel consistencyLevel) {
 
         List<Object> values = new ArrayList<>();
         final Options options = context.getOptions();
@@ -170,7 +170,7 @@ public class PreparedStatementBinder {
         BoundStatement bs = ps.bind(values.toArray());
 
         return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
-                context.getCASResultListener(), context.getSerialConsistencyLevel());
+                context.getLWTResultListener(), context.getSerialConsistencyLevel());
     }
 
     public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PersistentStateHolder context, PreparedStatement ps, boolean onlyStaticColumns,ConsistencyLevel consistencyLevel) {
@@ -184,7 +184,7 @@ public class PreparedStatementBinder {
 
         BoundStatement bs = ps.bind(values.toArray());
         return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
-                context.getCASResultListener(), context.getSerialConsistencyLevel());
+                context.getLWTResultListener(), context.getSerialConsistencyLevel());
     }
 
     public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(PersistentStateHolder context, PreparedStatement ps, PropertyMeta pm, Long increment, ConsistencyLevel consistencyLevel) {
