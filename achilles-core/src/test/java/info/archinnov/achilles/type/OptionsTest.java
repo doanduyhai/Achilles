@@ -27,16 +27,17 @@ public class OptionsTest {
     public void should_duplicate_without_ttl_and_timestamp() throws Exception {
         final LWTCondition LWTCondition = new LWTCondition("name", "John");
         Options options = OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(10)
-                .withTimestamp(100L).ifNotExists().ifConditions(LWTCondition);
+                .withTimestamp(100L).ifEqualCondition("name","John");
 
         Options newOptions = options.duplicateWithoutTtlAndTimestamp();
 
         assertThat(newOptions.getConsistencyLevel().get()).isSameAs(EACH_QUORUM);
         assertThat(newOptions.getTimestamp().isPresent()).isFalse();
         assertThat(newOptions.getTtl().isPresent()).isFalse();
-        assertThat(newOptions.isIfNotExists()).isTrue();
+        assertThat(newOptions.isIfNotExists()).isFalse();
+        assertThat(newOptions.isIfExists()).isFalse();
         assertThat(newOptions.hasLWTConditions()).isTrue();
-        assertThat(newOptions.getLWTConditions()).containsExactly(LWTCondition);
+        assertThat(newOptions.getLwtPredicates()).containsExactly(LWTCondition);
     }
 
     @Test

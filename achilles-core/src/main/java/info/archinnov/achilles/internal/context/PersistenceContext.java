@@ -217,7 +217,7 @@ public class PersistenceContext {
         }
 
         public List<LWTCondition> getCasConditions() {
-            return Optional.fromNullable(options.getLWTConditions()).or(new ArrayList<LWTCondition>());
+            return Optional.fromNullable(options.getLwtPredicates()).or(new ArrayList<LWTCondition>());
         }
 
         public boolean hasCasConditions() {

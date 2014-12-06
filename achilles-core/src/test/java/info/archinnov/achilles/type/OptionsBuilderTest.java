@@ -18,18 +18,35 @@ package info.archinnov.achilles.type;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import info.archinnov.achilles.exception.AchillesException;
 import org.junit.Test;
 
 public class OptionsBuilderTest {
 
 	@Test
 	public void should_create_options_with_all_parameters() throws Exception {
-		Options options = OptionsBuilder.withConsistency(ALL).withTtl(10).withTimestamp(100L);
+		Options options = OptionsBuilder.withConsistency(ALL).withTtl(10).withTimestamp(100L).ifExists();
 
 		assertThat(options.getConsistencyLevel().get()).isSameAs(ALL);
 		assertThat(options.getTtl().get()).isEqualTo(10);
 		assertThat(options.getTimestamp().get()).isEqualTo(100L);
+		assertThat(options.isIfExists()).isTrue();
 	}
+
+    @Test(expected = AchillesException.class)
+    public void should_fail_adding_if_not_exists_with_if_exist() throws Exception {
+        OptionsBuilder.ifExists().ifExists();
+    }
+
+    @Test(expected = AchillesException.class)
+    public void should_fail_adding_if_not_exists_with_if_condition() throws Exception {
+        OptionsBuilder.ifNotExists().ifEqualCondition("test","test");
+    }
+
+    @Test(expected = AchillesException.class)
+    public void should_fail_adding_if_exists_with_if_condition() throws Exception {
+        OptionsBuilder.ifExists().ifEqualCondition("test","test");
+    }
 
 	@Test
 	public void should_create_no_options() throws Exception {

@@ -53,9 +53,8 @@ import info.archinnov.achilles.type.TypedMap;
  *     }
  * };
  *
- *  persistenceManager.update(user, OptionsBuilder.
- *         ifConditions(Arrays.asList(
- *             new LWTCondition("login","jdoe")))
+ *  persistenceManager.update(user, OptionsBuilder
+ *         .ifEqualCondition("login","jdoe")
  *         .LWTResultListener(lwtListener));
  *
  * </code></pre>

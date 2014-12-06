@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.listener.LWTResultListener;
 
 /**
@@ -44,9 +45,9 @@ import info.archinnov.achilles.listener.LWTResultListener;
  * options = OptionsBuilder.ifNotExists();
  *
  * // LWT update conditions
- * options = OptionsBuilder.ifConditions(Arrays.asList(
- *              new LWTCondition("name","John"),
- *              new LWTCondition("age_in_years",33L));
+ * options = OptionsBuilder
+ *              .ifEqualCondition("name","John")
+ *              .ifEqualCondition("age_in_years",33L);
  *
  * // LWT result listener
  * options = OptionsBuilder.lwtResultListener(listener);
@@ -64,14 +65,16 @@ import info.archinnov.achilles.listener.LWTResultListener;
  */
 public class OptionsBuilder {
 
-    private static final NoOptions noOptions = new NoOptions();
+    private static final NoOptions NO_OPTIONS = new NoOptions();
+    private static final Options.LWTIfExists IF_EXISTS = Options.LWTIfExists.Singleton.INSTANCE.get();
+    private static final Options.LWTIfNotExists IF_NOT_EXISTS = Options.LWTIfNotExists.Singleton.INSTANCE.get();
 
     /**
      * Build an empty option
      * @return NoOptions
      */
     public static NoOptions noOptions() {
-        return noOptions;
+        return NO_OPTIONS;
     }
 
     /**
@@ -106,7 +109,23 @@ public class OptionsBuilder {
      * @return BuiltOptions
      */
     public static BuiltOptions ifNotExists() {
-        return new BuiltOptions(true);
+        return new BuiltOptions(IF_NOT_EXISTS);
+    }
+
+    /**
+     * Use IF EXISTS clause for DELETE operations. This has no effect on statements other than DELETE
+     * @return BuiltOptions
+     */
+    public static BuiltOptions ifExists() {
+        return new BuiltOptions(IF_EXISTS);
+    }
+
+    /**
+     * Use ifEqualCondition(String columnName, Object value)
+     */
+    @Deprecated
+    public static BuiltOptions ifConditions(LWTCondition... lwtConditions) {
+        return new BuiltOptions(lwtConditions);
     }
 
     /**
@@ -114,16 +133,16 @@ public class OptionsBuilder {
      *
      * <pre class="code"><code class="java">
      *
-     * Options options = OptionsBuilder.ifConditions(Arrays.asList(
-     *              new LWTCondition("name","John"),
-     *              new LWTCondition("age_in_years",33L));
+     * Options options = OptionsBuilder.ifEqualCondition("name","John");
      * </code></pre>
      *
-     * @param  LWTConditions list of LWTConditions
+     * @param columnName name of the column to be checked for LWT
+     * @param value expected value of the column to be checked for LWT
+     *
      * @return BuiltOptions
      */
-    public static BuiltOptions ifConditions(LWTCondition... LWTConditions) {
-        return new BuiltOptions(LWTConditions);
+    public static BuiltOptions ifEqualCondition(String columnName, Object value) {
+        return new BuiltOptions(new LWTCondition(columnName, value));
     }
 
     /**
@@ -151,8 +170,7 @@ public class OptionsBuilder {
      * };
      *
      * persistenceManager.update(user, OptionsBuilder.
-     *         ifConditions(Arrays.asList(
-     *             new LWTCondition("login","jdoe")))
+     *         .ifEqualCondition("login","jdoe")
      *         .lwtResultListener(lwtListener));
      * </code></pre>
      *
@@ -205,12 +223,8 @@ public class OptionsBuilder {
             super.timestamp = timestamp;
         }
 
-        protected BuiltOptions(boolean ifNotExists) {
-            super.ifNotExists = ifNotExists;
-        }
-
-        protected BuiltOptions(LWTCondition... LWTConditions) {
-            super.LWTConditions = Arrays.asList(LWTConditions);
+        protected BuiltOptions(LWTPredicate... lwtPredicates) {
+            super.lwtPredicates.addAll(Arrays.asList(lwtPredicates));
         }
 
         protected BuiltOptions(LWTResultListener listener) {
@@ -261,7 +275,8 @@ public class OptionsBuilder {
          * @return BuiltOptions
          */
         public BuiltOptions ifNotExists() {
-            super.ifNotExists = true;
+            Validator.validateEmpty(super.lwtPredicates, "There is already existing Lightweight Transaction predicate : '%s', cannot add IF NOT EXISTS", super.lwtPredicates.toString());
+            super.lwtPredicates.add(IF_NOT_EXISTS);
             return this;
         }
 
@@ -272,7 +287,35 @@ public class OptionsBuilder {
          * @return BuiltOptions
          */
         public BuiltOptions ifNotExists(boolean ifNotExists) {
-            super.ifNotExists = ifNotExists;
+            if (ifNotExists) {
+                Validator.validateEmpty(super.lwtPredicates, "There is already existing Lightweight Transaction predicate : '%s', cannot add IF NOT EXISTS", super.lwtPredicates.toString());
+                super.lwtPredicates.add(IF_NOT_EXISTS);
+            }
+            return this;
+        }
+
+
+        /**
+         * Use IF EXISTS clause for DELETE operations. This has no effect on statements other than DELETE
+         * @return BuiltOptions
+         */
+        public BuiltOptions ifExists() {
+            Validator.validateEmpty(super.lwtPredicates, "There is already existing Lightweight Transaction predicate : '%s', cannot add IF EXISTS", super.lwtPredicates.toString());
+            super.lwtPredicates.add(IF_EXISTS);
+            return this;
+        }
+
+        /**
+         * Use IF EXISTS clause for DELETE operations. This has no effect on statements other than DELETE
+         *
+         * @param ifExists whether to use IF NOT EXISTS clause
+         * @return BuiltOptions
+         */
+        public BuiltOptions ifExists(boolean ifExists) {
+            if (ifExists) {
+                Validator.validateEmpty(super.lwtPredicates, "There is already existing Lightweight Transaction predicate : '%s', cannot add IF EXISTS", super.lwtPredicates.toString());
+                super.lwtPredicates.add(IF_EXISTS);
+            }
             return this;
         }
 
@@ -300,9 +343,8 @@ public class OptionsBuilder {
          *     }
          * };
          *
-         * persistenceManager.update(user, OptionsBuilder.
-         *         ifConditions(Arrays.asList(
-         *             new LWTCondition("login","jdoe")))
+         * persistenceManager.update(user, OptionsBuilder
+         *         .ifEqualCondition("login","jdoe")
          *         .lwtResultListener(lwtListener));
          * </code></pre>
          *
@@ -315,38 +357,48 @@ public class OptionsBuilder {
         }
 
         /**
-         * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE
-         *
-         * <pre class="code"><code class="java">
-         *
-         * Options options = OptionsBuilder.ifConditions(Arrays.asList(
-         *              new LWTCondition("name","John"),
-         *              new LWTCondition("age_in_years",33L));
-         * </code></pre>
-         *
-         * @param LWTConditions varargs of LWTConditions
-         * @return BuiltOptions
+         * Use ifEqualCondition(String columnName, Object value) instead. Call this method again for multiple conditions
          */
-        public BuiltOptions ifConditions(LWTCondition... LWTConditions) {
-            super.LWTConditions = Arrays.asList(LWTConditions);
+        @Deprecated
+        public BuiltOptions ifConditions(LWTCondition... lwtConditions) {
+            Validator.validateFalse(lwtPredicates.contains(IF_EXISTS), "Cannot add IF = XXX with IF EXISTS");
+            Validator.validateFalse(lwtPredicates.contains(IF_NOT_EXISTS), "Cannot add IF = XXX with IF NOT EXISTS");
+            super.lwtPredicates.addAll(Arrays.asList(lwtConditions));
             return this;
         }
 
         /**
-         * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE
+         Use ifEqualCondition(String columnName, Object value) instead. Call this method again for multiple conditions
+         */
+        @Deprecated
+        public BuiltOptions ifConditions(List<LWTCondition> lwtConditions) {
+            super.lwtPredicates.addAll(lwtConditions);
+            return this;
+        }
+
+        /**
+         * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE. For multiple equal conditions, just call this method again
          *
          * <pre class="code"><code class="java">
          *
-         * Options options = OptionsBuilder.ifConditions(Arrays.asList(
-         *              new LWTCondition("name","John"),
-         *              new LWTCondition("age_in_years",33L));
+         * Options options = OptionsBuilder
+         *              .ifEqualCondition("name","John")
+         *              .ifEqualCondition("age_in_years",33L);
          * </code></pre>
          *
-         * @param LWTConditions list of LWTConditions
+         * @param columnName name of the column to be checked for LWT
+         * @param value expected value of the column to be checked for LWT
          * @return BuiltOptions
          */
-        public BuiltOptions ifConditions(List<LWTCondition> LWTConditions) {
-            super.LWTConditions = LWTConditions;
+        public BuiltOptions ifEqualCondition(String columnName, Object value) {
+            Validator.validateFalse(lwtPredicates.contains(IF_EXISTS), "Cannot add IF = XXX with IF EXISTS");
+            Validator.validateFalse(lwtPredicates.contains(IF_NOT_EXISTS), "Cannot add IF = XXX with IF NOT EXISTS");
+            super.lwtPredicates.add(new LWTCondition(columnName, value));
+            return this;
+        }
+
+        BuiltOptions lwtPredicates(List<LWTPredicate> lwtPredicates) {
+            super.lwtPredicates = lwtPredicates;
             return this;
         }
 
