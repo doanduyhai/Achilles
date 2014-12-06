@@ -17,7 +17,6 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.INSERT;
@@ -27,6 +26,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_SERIAL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.Options.LWTCondition;
+import static info.archinnov.achilles.type.OptionsBuilder.ifEqualCondition;
 import static info.archinnov.achilles.type.OptionsBuilder.lwtResultListener;
 import static info.archinnov.achilles.type.OptionsBuilder.ifConditions;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -113,20 +113,20 @@ public class LWTOperationsIT {
         //Given
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("id", 10L, "[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "name");
-        AchillesLightWeightTransactionException LWTException = null;
+        AchillesLightWeightTransactionException lwtException = null;
         manager.insert(entityWithEnum);
 
         //When
         try {
             manager.insert(entityWithEnum, OptionsBuilder.ifNotExists());
         } catch (AchillesLightWeightTransactionException ace) {
-            LWTException = ace;
+            lwtException = ace;
         }
 
-        assertThat(LWTException).isNotNull();
-        assertThat(LWTException.operation()).isEqualTo(INSERT);
-        assertThat(LWTException.currentValues()).isEqualTo(expectedCurrentValues);
-        assertThat(LWTException.toString()).isEqualTo("CAS operation INSERT cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, id=10, name=name}");
+        assertThat(lwtException).isNotNull();
+        assertThat(lwtException.operation()).isEqualTo(INSERT);
+        assertThat(lwtException.currentValues()).isEqualTo(expectedCurrentValues);
+        assertThat(lwtException.toString()).isEqualTo("CAS operation INSERT cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, id=10, name=name}");
     }
 
     @Test
@@ -149,15 +149,15 @@ public class LWTOperationsIT {
 
         manager.insert(entityWithEnum, OptionsBuilder.ifNotExists().LWTResultListener(listener));
 
-        final LWTResultListener.LWTResult LWTResult = atomicLWTResult.get();
-        assertThat(LWTResult.operation()).isEqualTo(INSERT);
-        assertThat(LWTResult.currentValues()).isEqualTo(expectedCurrentValues);
-        assertThat(LWTResult.toString()).isEqualTo("CAS operation INSERT cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, id=10, name=name}");
+        final LWTResultListener.LWTResult lwtResult = atomicLWTResult.get();
+        assertThat(lwtResult.operation()).isEqualTo(INSERT);
+        assertThat(lwtResult.currentValues()).isEqualTo(expectedCurrentValues);
+        assertThat(lwtResult.toString()).isEqualTo("CAS operation INSERT cannot be applied. Current values are: {[applied]=false, consistency_level=EACH_QUORUM, id=10, name=name}");
     }
 
 
     @Test
-    public void should_notify_listener_when_trying_to_insert_with_cas_and_ttl_because_already_exist() throws Exception {
+    public void should_notify_listener_when_trying_to_insert_with_lwt_and_ttl_because_already_exist() throws Exception {
         //Given
         final AtomicReference<LWTResultListener.LWTResult> atomicLWTResult = new AtomicReference(null);
         LWTResultListener listener = new LWTResultListener() {
@@ -192,7 +192,7 @@ public class LWTOperationsIT {
         managed.setName("Helen");
 
         //When
-        manager.insertOrUpdate(managed, ifConditions(new LWTCondition("name", "John"), new LWTCondition("consistency_level", EACH_QUORUM)));
+        manager.insertOrUpdate(managed, ifEqualCondition("name", "John").ifEqualCondition("consistency_level", EACH_QUORUM));
 
         //Then
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);
@@ -219,7 +219,7 @@ public class LWTOperationsIT {
         managed.getFriends().add("George");
 
         //When
-        manager.update(managed, ifConditions(new LWTCondition("age_in_years", 32L)));
+        manager.update(managed, ifEqualCondition("age_in_years", 32L));
 
         //Then
         final CompleteBean found = manager.find(CompleteBean.class, primaryKey);
@@ -239,7 +239,7 @@ public class LWTOperationsIT {
 
         //When
         try {
-            manager.update(managed, ifConditions(new LWTCondition("name", "name"), new LWTCondition("consistency_level", EACH_QUORUM)));
+            manager.update(managed, ifEqualCondition("name", "name").ifEqualCondition("consistency_level", EACH_QUORUM));
         } catch (AchillesLightWeightTransactionException ace) {
             LWTException = ace;
         }
@@ -271,9 +271,7 @@ public class LWTOperationsIT {
         managed.setName("Helen");
 
         //When
-        manager.update(managed,
-                ifConditions(new LWTCondition("name", "name"), new LWTCondition("consistency_level", EACH_QUORUM))
-                        .LWTResultListener(listener));
+        manager.update(managed,ifEqualCondition("name", "name").ifEqualCondition("consistency_level", EACH_QUORUM).LWTResultListener(listener));
 
         final LWTResultListener.LWTResult LWTResult = atomicCASResult.get();
         assertThat(LWTResult).isNotNull();
@@ -303,8 +301,8 @@ public class LWTOperationsIT {
         managed.setName("Helen");
 
         //When
-        manager.update(managed,
-                ifConditions(new LWTCondition("name", "name"), new LWTCondition("consistency_level", EACH_QUORUM))
+        manager.update(managed,ifEqualCondition("name", "name")
+                        .ifEqualCondition("consistency_level", EACH_QUORUM)
                         .LWTResultListener(listener)
                         .withTtl(100));
 
@@ -324,7 +322,7 @@ public class LWTOperationsIT {
         managed.getFollowers().remove("Paul");
 
         //When
-        manager.update(managed, ifConditions(new LWTCondition("name", "John")).withTtl(100));
+        manager.update(managed, ifEqualCondition("name", "John").withTtl(100));
 
         //Then
         final CompleteBean actual = manager.find(CompleteBean.class, entity.getId());
@@ -345,7 +343,7 @@ public class LWTOperationsIT {
         managed.getFriends().set(1, null);
 
         //When
-        manager.update(managed, ifConditions(new LWTCondition("name", "John")).withTtl(100));
+        manager.update(managed, ifEqualCondition("name", "John").withTtl(100));
 
         //Then
         final CompleteBean actual = manager.find(CompleteBean.class, entity.getId());
@@ -373,7 +371,7 @@ public class LWTOperationsIT {
         managed.getFollowers().add("Helen");
 
         //When
-        manager.update(managed, ifConditions(new LWTCondition("name", "Helen")).LWTResultListener(listener));
+        manager.update(managed, ifEqualCondition("name", "Helen").LWTResultListener(listener));
 
         //Then
         final LWTResultListener.LWTResult LWTResult = atomicLWTResult.get();

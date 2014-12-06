@@ -19,6 +19,9 @@ import static java.lang.String.format;
 import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
@@ -48,19 +51,26 @@ public class Validator {
     }
 
     public static void validateNotEmpty(Object[] arg, String message, Object... args) {
-        if (arg == null || arg.length== 0) {
+        if (ArrayUtils.isEmpty(arg)) {
             throw new AchillesException(format(message, args));
         }
     }
 
     public static void validateNotEmpty(Collection<?> arg, String message, Object... args) {
-        if (arg == null || arg.isEmpty()) {
+        if (CollectionUtils.isEmpty(arg)) {
             throw new AchillesException(format(message, args));
         }
     }
 
     public static void validateNotEmpty(Map<?, ?> arg, String message, Object... args) {
-        if (arg == null || arg.isEmpty()) {
+        if (MapUtils.isEmpty(arg)) {
+            throw new AchillesException(format(message, args));
+        }
+    }
+
+
+    public static void validateEmpty(Collection<?> arg, String message, Object... args) {
+        if (CollectionUtils.isNotEmpty(arg)) {
             throw new AchillesException(format(message, args));
         }
     }

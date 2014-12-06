@@ -95,7 +95,7 @@ public class StateHolderFacadeTest {
                 .withConsistency(LOCAL_ONE)
                 .withTimestamp(100L)
                 .withTtl(9)
-                .ifConditions(LWTCondition)
+                .ifEqualCondition("test","test")
                 .LWTResultListener(listener);
         context.options = options;
         context.entity = entity;
