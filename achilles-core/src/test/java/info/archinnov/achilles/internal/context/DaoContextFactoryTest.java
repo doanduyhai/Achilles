@@ -15,8 +15,6 @@
  */
 package info.archinnov.achilles.internal.context;
 
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder.completeBean;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import java.util.Arrays;
@@ -37,7 +35,6 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.internal.statement.cache.StatementCacheKey;
 import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator;
@@ -97,20 +94,6 @@ public class DaoContextFactoryTest {
     }
 
     @Test
-    public void should_get_delete_ps_transformer() throws Exception {
-
-        // When
-        when(queryGenerator.prepareDeletePSs(session, entityMeta)).thenReturn(deletePSs);
-
-        Function<EntityMeta, Map<String, PreparedStatement>> function = builder.getDeletePSTransformer(session);
-        ImmutableList<Map<String, PreparedStatement>> result = FluentIterable.from(Arrays.asList(entityMeta))
-                .transform(function).toList();
-
-        // Then
-        assertThat(result.get(0)).isSameAs(deletePSs);
-    }
-
-    @Test
     public void should_get_clustered_counter_ps_transformer() throws Exception {
 
         // When
@@ -131,13 +114,9 @@ public class DaoContextFactoryTest {
         // Given
         Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
         EntityMeta meta = new EntityMeta();
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
-
-//        meta.setPropertyMetas(ImmutableMap.of("name", nameMeta));
         entityMetaMap.put(CompleteBean.class, meta);
 
         when(queryGenerator.prepareSelectAll(session, meta)).thenReturn(selectEagerPS);
-        when(queryGenerator.prepareDeletePSs(session, meta)).thenReturn(deletePSs);
         when(queryGenerator.prepareSimpleCounterQueryMap(session)).thenReturn(counterQueryMap);
         when(parsingResult.getMetaMap()).thenReturn(entityMetaMap);
         when(parsingResult.hasSimpleCounter()).thenReturn(true);
@@ -148,7 +127,6 @@ public class DaoContextFactoryTest {
 
         // Then
         assertThat(Whitebox.<Map<Class<?>, PreparedStatement>>getInternalState(actual, "selectPSs")).containsValue(selectEagerPS);
-        assertThat(Whitebox.<Map<Class<?>, Map<String, PreparedStatement>>>getInternalState(actual, "deletePSs")).containsKey(CompleteBean.class);
         assertThat(Whitebox.<Cache<StatementCacheKey, PreparedStatement>>getInternalState(actual, "dynamicPSCache")).isInstanceOf(Cache.class);
         assertThat(Whitebox.<Map<CQLQueryType, PreparedStatement>>getInternalState(actual, "counterQueryMap")).isSameAs(counterQueryMap);
     }
@@ -158,13 +136,9 @@ public class DaoContextFactoryTest {
         // Given
         Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
         EntityMeta meta = new EntityMeta();
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
-
-//      meta.setPropertyMetas(ImmutableMap.of("name", nameMeta));
         entityMetaMap.put(CompleteBean.class, meta);
 
         when(queryGenerator.prepareSelectAll(session, meta)).thenReturn(selectEagerPS);
-        when(queryGenerator.prepareDeletePSs(session, meta)).thenReturn(deletePSs);
         when(parsingResult.getMetaMap()).thenReturn(entityMetaMap);
         when(configContext.getPreparedStatementLRUCacheSize()).thenReturn(100);
 
@@ -174,7 +148,6 @@ public class DaoContextFactoryTest {
 
         // Then
         assertThat(Whitebox.<Map<Class<?>, PreparedStatement>>getInternalState(actual, "selectPSs")).containsValue(selectEagerPS);
-        assertThat(Whitebox.<Map<Class<?>, Map<String, PreparedStatement>>>getInternalState(actual, "deletePSs")).containsKey(CompleteBean.class);
         assertThat(Whitebox.<Cache<StatementCacheKey, PreparedStatement>>getInternalState(actual, "dynamicPSCache")).isInstanceOf(Cache.class);
         assertThat(Whitebox.<Map<CQLQueryType, PreparedStatement>>getInternalState(actual, "counterQueryMap")).isEmpty();
     }

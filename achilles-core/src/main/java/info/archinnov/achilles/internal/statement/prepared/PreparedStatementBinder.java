@@ -16,6 +16,7 @@
 package info.archinnov.achilles.internal.statement.prepared;
 
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
+import static info.archinnov.achilles.type.Options.LWTCondition;
 import static org.apache.commons.lang3.ArrayUtils.addAll;
 
 import java.util.ArrayList;
@@ -87,7 +88,7 @@ public class PreparedStatementBinder {
         values.addAll(fetchTTLAndTimestampValues(context));
         values.addAll(fetchPropertiesValues(pms, entity));
         values.addAll(fetchPrimaryKeyValues(entityMeta, entity, onlyStaticColumns));
-        values.addAll(fetchCASConditionsValues(context, entityMeta));
+        values.addAll(fetchLWTConditionsValues(context, entityMeta));
         BoundStatement bs = ps.bind(values.toArray());
 
         return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
@@ -145,13 +146,32 @@ public class PreparedStatementBinder {
         }
 
         values.addAll(fetchPrimaryKeyValues(entityMeta, entity, changeSet.getPropertyMeta().structure().isStaticColumn()));
-        values.addAll(fetchCASConditionsValues(context, entityMeta));
+        values.addAll(fetchLWTConditionsValues(context, entityMeta));
         BoundStatement bs = ps.bind(values.toArray());
 
         return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
                 context.getCASResultListener(), context.getSerialConsistencyLevel());
     }
 
+    public BoundStatementWrapper bindForDeletion(PersistentStateHolder context, PreparedStatement ps, boolean onlyStaticColumns,ConsistencyLevel consistencyLevel) {
+
+        List<Object> values = new ArrayList<>();
+        final Options options = context.getOptions();
+        final Optional<Long> timestampO = options.getTimestamp();
+        final Object primaryKey = context.getPrimaryKey();
+        if (timestampO.isPresent()) {
+            values.add(timestampO.get());
+        }
+        PropertyMeta idMeta = context.getIdMeta();
+        values.addAll(bindPrimaryKey(primaryKey, idMeta, onlyStaticColumns));
+        values.addAll(fetchLWTConditionsValues(context, context.getEntityMeta()));
+
+        log.trace("Bind prepared statement for deletion of entity class {} with primary key {}", context.getEntityClass().getCanonicalName(), primaryKey);
+        BoundStatement bs = ps.bind(values.toArray());
+
+        return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
+                context.getCASResultListener(), context.getSerialConsistencyLevel());
+    }
 
     public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PersistentStateHolder context, PreparedStatement ps, boolean onlyStaticColumns,ConsistencyLevel consistencyLevel) {
 
@@ -288,10 +308,10 @@ public class PreparedStatementBinder {
         return values;
     }
 
-    private List<Object> fetchCASConditionsValues(PersistentStateHolder context, EntityMeta entityMeta) {
+    private List<Object> fetchLWTConditionsValues(PersistentStateHolder context, EntityMeta entityMeta) {
         List<Object> values = new ArrayList<>();
-        if (context.hasCasConditions()) {
-            for (Options.LWTCondition LWTCondition : context.getCasConditions()) {
+        if (context.hasLWTConditions()) {
+            for (LWTCondition LWTCondition : context.getLWTConditions()) {
                 values.add(entityMeta.forTranscoding().encodeCasConditionValue(LWTCondition));
             }
         }

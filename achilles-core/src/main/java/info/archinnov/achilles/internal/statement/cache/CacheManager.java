@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import info.archinnov.achilles.type.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
@@ -39,6 +40,8 @@ import info.archinnov.achilles.query.slice.SliceQueryProperties;
 
 public class CacheManager {
     private static final Logger log = LoggerFactory.getLogger(CacheManager.class);
+
+    static final Set<String> ALL_FIELDS = new HashSet<>();
 
     private final int maxLRUCacheSize;
 
@@ -103,6 +106,21 @@ public class CacheManager {
         PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
         if (ps == null) {
             ps = generator.prepareUpdateFields(session, entityMeta, pms, context.getOptions());
+            dynamicPSCache.put(cacheKey, ps);
+            displayCacheStatistics(dynamicPSCache);
+        }
+        return ps;
+    }
+
+    public PreparedStatement getCacheForDeletion(Session session, Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, PersistentStateHolder context) {
+        log.trace("Get cache for DELETE from entity class {}", context.getEntityClass());
+        Class<?> entityClass = context.getEntityClass();
+        EntityMeta entityMeta = context.getEntityMeta();
+        final Options options = context.getOptions();
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.DELETE_PARTITION, ALL_FIELDS, entityClass, options);
+        PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
+        if (ps == null) {
+            ps = generator.prepareDeletePS(session, entityMeta, options);
             dynamicPSCache.put(cacheKey, ps);
             displayCacheStatistics(dynamicPSCache);
         }

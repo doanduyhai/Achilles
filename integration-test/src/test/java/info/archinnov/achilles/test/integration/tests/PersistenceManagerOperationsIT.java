@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.type.OptionsBuilder.withTimestamp;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -23,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
+import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -485,5 +488,23 @@ public class PersistenceManagerOperationsIT {
 
         //Then
         assertThat(friends).isNotNull().isEmpty();
+    }
+
+    @Test
+    public void should_delete_with_timestamp() throws Exception {
+        //Given
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        final CompleteBean entity = CompleteBeanTestBuilder.builder().id(id).name("John").buid();
+        manager.insert(entity);
+
+        //When
+        manager.delete(entity, withTimestamp(1L));
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+
+        assertThat(found).isNotNull();
+        assertThat(found.getName()).isEqualTo("John");
+
     }
 }

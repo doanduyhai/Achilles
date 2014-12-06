@@ -70,8 +70,6 @@ public class DaoContext {
 
     protected  Map<Class<?>, PreparedStatement> selectPSs;
 
-    protected  Map<Class<?>, Map<String, PreparedStatement>> deletePSs;
-
     protected  Map<CQLQueryType, PreparedStatement> counterQueryMap;
 
     protected  Map<Class<?>, Map<CQLQueryType, Map<String, PreparedStatement>>> clusteredCounterQueryMap;
@@ -152,19 +150,13 @@ public class DaoContext {
         return asyncUtils.buildInterruptible(futureRows).getImmediately();
     }
 
-    public void bindForDeletion(DaoOperations context, EntityMeta entityMeta,String tableName) {
+    public void bindForDeletion(DaoOperations context, EntityMeta entityMeta) {
         log.debug("Push delete statement for PersistenceContext '{}'", context);
-        Class<?> entityClass = context.getEntityClass();
-        Map<String, PreparedStatement> psMap = deletePSs.get(entityClass);
 
-        if (psMap.containsKey(tableName)) {
-            ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
-            BoundStatementWrapper bsWrapper = binder.bindStatementWithOnlyPKInWhereClause(context, psMap.get(tableName),
-                    entityMeta.structure().hasOnlyStaticColumns(),consistencyLevel);
-            context.pushStatement(bsWrapper);
-        } else {
-            throw new AchillesException("Cannot find prepared statement for deletion for table '" + tableName + "'");
-        }
+        final PreparedStatement preparedStatement = cacheManager.getCacheForDeletion(session, dynamicPSCache, context);
+        ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
+        BoundStatementWrapper bsWrapper = binder.bindForDeletion(context, preparedStatement, entityMeta.structure().hasOnlyStaticColumns(),consistencyLevel);
+        context.pushStatement(bsWrapper);
     }
 
     // Simple counter
@@ -320,10 +312,6 @@ public class DaoContext {
 
     void setSelectPSs(Map<Class<?>, PreparedStatement> selectPSs) {
         this.selectPSs = selectPSs;
-    }
-
-    void setDeletePSs(Map<Class<?>, Map<String, PreparedStatement>> deletePSs) {
-        this.deletePSs = deletePSs;
     }
 
     void setCounterQueryMap(Map<CQLQueryType, PreparedStatement> counterQueryMap) {

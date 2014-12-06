@@ -37,7 +37,7 @@ public class OptionsTest {
         assertThat(newOptions.isIfNotExists()).isFalse();
         assertThat(newOptions.isIfExists()).isFalse();
         assertThat(newOptions.hasLWTConditions()).isTrue();
-        assertThat(newOptions.getLwtPredicates()).containsExactly(LWTCondition);
+        assertThat(newOptions.getLwtConditions()).containsExactly(LWTCondition);
     }
 
     @Test

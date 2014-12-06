@@ -50,9 +50,6 @@ public class DaoContextFactory {
         Map<Class<?>, PreparedStatement> selectPSMap = new HashMap<>(transformValues(metaMap,
                 getSelectPSTransformer(session)));
 
-        Map<Class<?>, Map<String, PreparedStatement>> deletePSMap = new HashMap<>(transformValues(
-                filterValues(metaMap, EXCLUDE_CLUSTERED_COUNTER_FILTER), getDeletePSTransformer(session)));
-
         Cache<StatementCacheKey, PreparedStatement> dynamicPSCache = newBuilder().maximumSize(
                 configContext.getPreparedStatementLRUCacheSize()).build();
 
@@ -67,12 +64,11 @@ public class DaoContextFactory {
                 transformValues(filterValues(metaMap, CLUSTERED_COUNTER_FILTER),
                         getClusteredCounterTransformer(session)));
 
-        displayPreparedStatementsStats(selectPSMap, deletePSMap, counterQueryMap, clusteredCounterQueriesMap);
+        displayPreparedStatementsStats(selectPSMap, counterQueryMap, clusteredCounterQueriesMap);
 
         DaoContext daoContext = new DaoContext();
         daoContext.setDynamicPSCache(dynamicPSCache);
         daoContext.setSelectPSs(selectPSMap);
-        daoContext.setDeletePSs(deletePSMap);
         daoContext.setCounterQueryMap(counterQueryMap);
         daoContext.setClusteredCounterQueryMap(clusteredCounterQueriesMap);
         daoContext.setSession(session);
@@ -91,15 +87,6 @@ public class DaoContextFactory {
         };
     }
 
-    Function<EntityMeta, Map<String, PreparedStatement>> getDeletePSTransformer(final Session session) {
-        return new Function<EntityMeta, Map<String, PreparedStatement>>() {
-            @Override
-            public Map<String, PreparedStatement> apply(EntityMeta meta) {
-                return queryGenerator.prepareDeletePSs(session, meta);
-            }
-        };
-    }
-
     Function<EntityMeta, Map<CQLQueryType, Map<String, PreparedStatement>>> getClusteredCounterTransformer(
             final Session session) {
         return new Function<EntityMeta, Map<CQLQueryType, Map<String, PreparedStatement>>>() {
@@ -110,13 +97,12 @@ public class DaoContextFactory {
         };
     }
 
-    private void displayPreparedStatementsStats(Map<Class<?>, PreparedStatement> selectPSMap, Map<Class<?>, Map<String, PreparedStatement>> deletePSMap,
+    private void displayPreparedStatementsStats(Map<Class<?>, PreparedStatement> selectPSMap,
             Map<CQLQueryType, PreparedStatement> counterQueryMap, Map<Class<?>, Map<CQLQueryType, Map<String, PreparedStatement>>> clusteredCounterQueriesMap) {
-        log.info("Prepare {} SELECT, {} DELETE, {} COUNTER SELECT and {} CLUSTERED COUNTER SELECT " +
-                "statements", selectPSMap.size(), deletePSMap.size(), counterQueryMap
+        log.info("Prepare {} SELECT, {} COUNTER SELECT and {} CLUSTERED COUNTER SELECT " +
+                "statements", selectPSMap.size(), counterQueryMap
                 .size(), clusteredCounterQueriesMap.size());
         int totalPreparedStatementsCount = selectPSMap.size()
-                + deletePSMap.size()
                 + counterQueryMap.size()
                 + clusteredCounterQueriesMap.size();
         log.info("Total prepared statements so far : {}", totalPreparedStatementsCount);
