@@ -70,7 +70,7 @@ public class BatchStatementWrapperTest {
     public void should_get_query_string() throws Exception {
         //Given
         when(statementWrapper.getQueryString()).thenReturn("SELECT * FROM");
-        statementWrapper.LWTResultListener = Optional.fromNullable(LWTResultListener);
+        statementWrapper.lwtResultListener = Optional.fromNullable(LWTResultListener);
 
         //When
         BatchStatementWrapper wrapper = new BatchStatementWrapper(LOGGED, asList(statementWrapper),
@@ -82,12 +82,12 @@ public class BatchStatementWrapperTest {
         verify(statementWrapper).activateQueryTracing();
         assertThat(wrapper.getStatement().getConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.ALL);
         assertThat(wrapper.getStatement().getSerialConsistencyLevel()).isNull();
-        assertThat(wrapper.LWTResultListener.get()).isInstanceOf(BatchStatementWrapper.CompositeLWTResultListener.class);
+        assertThat(wrapper.lwtResultListener.get()).isInstanceOf(BatchStatementWrapper.CompositeLWTResultListener.class);
 
-        wrapper.LWTResultListener.get().onSuccess();
+        wrapper.lwtResultListener.get().onSuccess();
         verify(LWTResultListener).onSuccess();
 
-        wrapper.LWTResultListener.get().onError(LWTResult);
+        wrapper.lwtResultListener.get().onError(LWTResult);
         verify(LWTResultListener).onError(LWTResult);
     }
 
@@ -95,7 +95,7 @@ public class BatchStatementWrapperTest {
     public void should_log_dml_statements() throws Exception {
         //Given
         when(statementWrapper.isTracingEnabled()).thenReturn(true);
-        statementWrapper.LWTResultListener = Optional.fromNullable(LWTResultListener);
+        statementWrapper.lwtResultListener = Optional.fromNullable(LWTResultListener);
 
         //When
         BatchStatementWrapper wrapper = new BatchStatementWrapper(LOGGED, asList(statementWrapper),
@@ -105,7 +105,7 @@ public class BatchStatementWrapperTest {
         //Then
         verify(statementWrapper).activateQueryTracing();
         verify(statementWrapper).logDMLStatement("aa");
-        assertThat(wrapper.LWTResultListener.get()).isInstanceOf(BatchStatementWrapper.CompositeLWTResultListener.class);
+        assertThat(wrapper.lwtResultListener.get()).isInstanceOf(BatchStatementWrapper.CompositeLWTResultListener.class);
     }
 
 }

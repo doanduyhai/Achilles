@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.Empty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,7 +225,7 @@ public class PersistenceContext {
             return options.hasLWTConditions();
         }
 
-        public Optional getCASResultListener() {
+        public Optional<LWTResultListener> getLWTResultListener() {
             return options.getLWTResultListener();
         }
 

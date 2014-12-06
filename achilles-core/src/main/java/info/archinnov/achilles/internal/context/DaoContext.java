@@ -44,7 +44,6 @@ import com.google.common.base.Optional;
 import com.google.common.cache.Cache;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.context.facade.DaoOperations;
@@ -134,7 +133,7 @@ public class DaoContext {
             ConsistencyLevel writeLevel = overrider.getWriteLevel(context);
             final Pair<Update.Where, Object[]> pair = statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet);
             context.pushStatement(new RegularStatementWrapper(context.getEntityClass(), pair.left, pair.right, getCQLLevel(writeLevel),
-				 context.getCASResultListener(), context.getSerialConsistencyLevel()));
+				 context.getLWTResultListener(), context.getSerialConsistencyLevel()));
         } else {
             PreparedStatement ps = cacheManager.getCacheForCollectionAndMapOperation(session, dynamicPSCache, context, propertyMeta, changeSet);
             BoundStatementWrapper bsWrapper = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
@@ -155,7 +154,7 @@ public class DaoContext {
 
         final PreparedStatement preparedStatement = cacheManager.getCacheForDeletion(session, dynamicPSCache, context);
         ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
-        BoundStatementWrapper bsWrapper = binder.bindForDeletion(context, preparedStatement, entityMeta.structure().hasOnlyStaticColumns(),consistencyLevel);
+        BoundStatementWrapper bsWrapper = binder.bindForDeletion(context, preparedStatement, entityMeta.structure().hasOnlyStaticColumns(), consistencyLevel);
         context.pushStatement(bsWrapper);
     }
 

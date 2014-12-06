@@ -86,6 +86,10 @@ public class OptionsBuilder {
         return new BuiltOptions(consistencyLevel);
     }
 
+    static BuiltOptions withConsistencyO(Optional<ConsistencyLevel> consistencyLevelO) {
+        return new BuiltOptions(consistencyLevelO, true);
+    }
+
     /**
      * Use provided time to live <strong>in seconds</strong>
      * @param ttl
@@ -212,15 +216,19 @@ public class OptionsBuilder {
      */
     public static class BuiltOptions extends Options {
         protected BuiltOptions(ConsistencyLevel consistencyLevel) {
-            super.consistency = consistencyLevel;
+            super.consistency = Optional.fromNullable(consistencyLevel);
+        }
+
+        protected BuiltOptions(Optional<ConsistencyLevel> consistencyLevelO, boolean flag) {
+            super.consistency = consistencyLevelO;
         }
 
         protected BuiltOptions(Integer ttl) {
-            super.ttl = ttl;
+            super.ttl = Optional.fromNullable(ttl);
         }
 
         protected BuiltOptions(Long timestamp) {
-            super.timestamp = timestamp;
+            super.timestamp = Optional.fromNullable(timestamp);
         }
 
         protected BuiltOptions(LWTPredicate... lwtPredicates) {
@@ -228,7 +236,7 @@ public class OptionsBuilder {
         }
 
         protected BuiltOptions(LWTResultListener listener) {
-            super.LWTResultListenerO = Optional.fromNullable(listener);
+            super.lwtResultListenerO = Optional.fromNullable(listener);
         }
 
         protected BuiltOptions(Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyO) {
@@ -245,7 +253,7 @@ public class OptionsBuilder {
          * @return BuiltOptions
          */
         public BuiltOptions withConsistency(ConsistencyLevel consistencyLevel) {
-            super.consistency = consistencyLevel;
+            super.consistency = Optional.fromNullable(consistencyLevel);
             return this;
         }
 
@@ -255,10 +263,14 @@ public class OptionsBuilder {
          * @return BuiltOptions
          */
         public BuiltOptions withTtl(Integer ttl) {
-            super.ttl = ttl;
+            super.ttl = Optional.fromNullable(ttl);
             return this;
         }
 
+        BuiltOptions withTtlO(Optional<Integer> ttlO) {
+            super.ttl = ttlO;
+            return this;
+        }
 
         /**
          * Use provided timestamp <strong>in micro seconds</strong>
@@ -266,7 +278,12 @@ public class OptionsBuilder {
          * @return BuiltOptions
          */
         public BuiltOptions withTimestamp(Long timestamp) {
-            super.timestamp = timestamp;
+            super.timestamp = Optional.fromNullable(timestamp);
+            return this;
+        }
+
+        BuiltOptions withTimestampO(Optional<Long> timestampO) {
+            super.timestamp = timestampO;
             return this;
         }
 
@@ -360,7 +377,7 @@ public class OptionsBuilder {
          * @return BuiltOptions
          */
         public BuiltOptions lwtResultListener(LWTResultListener listener) {
-            super.LWTResultListenerO = Optional.fromNullable(listener);
+            super.lwtResultListenerO = Optional.fromNullable(listener);
             return this;
         }
 

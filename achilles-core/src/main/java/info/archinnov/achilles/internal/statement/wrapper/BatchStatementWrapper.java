@@ -49,7 +49,7 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
         this.consistencyLevelO = consistencyLevelO;
         this.serialConsistencyLevelO = serialConsistencyLevel;
         this.compositeCASResultListener = new CompositeLWTResultListener();
-        super.LWTResultListener = Optional.<LWTResultListener>fromNullable(this.compositeCASResultListener);
+        super.lwtResultListener = Optional.<LWTResultListener>fromNullable(this.compositeCASResultListener);
         this.batchStatement = createBatchStatement(batchType, statementWrappers);
     }
 
@@ -60,8 +60,8 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
             statementWrapper.activateQueryTracing();
             tracingEnabled |= statementWrapper.isTracingEnabled();
 
-            if (statementWrapper.LWTResultListener.isPresent()) {
-                this.compositeCASResultListener.addCASResultListener(statementWrapper.LWTResultListener.get());
+            if (statementWrapper.lwtResultListener.isPresent()) {
+                this.compositeCASResultListener.addCASResultListener(statementWrapper.lwtResultListener.get());
             }
 
             if (statementWrapper instanceof NativeStatementWrapper) {

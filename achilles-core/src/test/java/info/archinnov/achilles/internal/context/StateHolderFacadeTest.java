@@ -116,7 +116,7 @@ public class StateHolderFacadeTest {
         assertThat(facade.getConsistencyLevel().get()).isEqualTo(LOCAL_ONE);
         assertThat(facade.hasLWTConditions()).isTrue();
         assertThat(facade.getLWTConditions()).contains(LWTCondition);
-        assertThat(facade.getCASResultListener().get()).isSameAs(listener);
+        assertThat(facade.getLWTResultListener().get()).isSameAs(listener);
 
         assertThat(facade.getAllCountersMeta()).containsExactly(counterMeta);
         assertThat(facade.getAllGettersExceptCounters()).containsExactly(nameMeta.getGetter());
