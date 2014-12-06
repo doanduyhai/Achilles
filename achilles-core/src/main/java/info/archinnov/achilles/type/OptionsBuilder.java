@@ -320,6 +320,14 @@ public class OptionsBuilder {
         }
 
          /**
+         * Use lwtResultListener()
+         */
+         @Deprecated
+        public BuiltOptions LWTResultListener(LWTResultListener listener) {
+             return lwtResultListener(listener);
+         }
+
+        /**
          * Inject a LWT result listener for all LWT operations
          *
          * <pre class="code"><code class="java">
@@ -351,7 +359,7 @@ public class OptionsBuilder {
          * @param listener LWTResultListener
          * @return BuiltOptions
          */
-        public BuiltOptions LWTResultListener(LWTResultListener listener) {
+        public BuiltOptions lwtResultListener(LWTResultListener listener) {
             super.LWTResultListenerO = Optional.fromNullable(listener);
             return this;
         }
@@ -403,11 +411,27 @@ public class OptionsBuilder {
         }
 
         /**
+         * Use lwtLocalSerial()
+         */
+        @Deprecated
+        public BuiltOptions LWTLocalSerial() {
+            return lwtLocalSerial();
+        }
+
+        /**
+         * Use lwtLocalSerial(boolean localSerial)
+         */
+        @Deprecated
+        BuiltOptions LWTLocalSerial(boolean localSerial) {
+            return lwtLocalSerial(localSerial);
+        }
+
+        /**
          * Force LOCAL_SERIAL consistency for all LWT operations.
          * By default LWT operations are performed using SERIAL serial consistency level
          * @return BuiltOptions
          */
-        public BuiltOptions LWTLocalSerial() {
+        public BuiltOptions lwtLocalSerial() {
             super.serialConsistencyO = Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
             return this;
         }
@@ -419,7 +443,7 @@ public class OptionsBuilder {
          * @param localSerial whether to use LOCAL_SERIAL
          * @return BuiltOptions
          */
-        BuiltOptions LWTLocalSerial(boolean localSerial) {
+        BuiltOptions lwtLocalSerial(boolean localSerial) {
             if (localSerial) {
                 super.serialConsistencyO = Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
             }

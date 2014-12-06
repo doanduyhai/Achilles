@@ -123,24 +123,24 @@ public class Options {
     public Options duplicateWithoutTtlAndTimestamp() {
         return OptionsBuilder.withConsistency(consistency)
                 .lwtPredicates(lwtPredicates)
-                .LWTResultListener(LWTResultListenerO.orNull())
-                .LWTLocalSerial(serialConsistencyO.isPresent());
+                .lwtResultListener(LWTResultListenerO.orNull())
+                .lwtLocalSerial(serialConsistencyO.isPresent());
     }
 
     public Options duplicateWithNewConsistencyLevel(ConsistencyLevel consistencyLevel) {
         return OptionsBuilder.withConsistency(consistencyLevel)
                 .withTtl(ttl).withTimestamp(timestamp)
                 .lwtPredicates(lwtPredicates)
-                .LWTResultListener(LWTResultListenerO.orNull())
-                .LWTLocalSerial(serialConsistencyO.isPresent());
+                .lwtResultListener(LWTResultListenerO.orNull())
+                .lwtLocalSerial(serialConsistencyO.isPresent());
     }
 
     public Options duplicateWithNewTimestamp(Long timestamp) {
         return OptionsBuilder.withConsistency(consistency)
                 .withTtl(ttl).withTimestamp(timestamp)
                 .lwtPredicates(lwtPredicates)
-                .LWTResultListener(LWTResultListenerO.orNull())
-                .LWTLocalSerial(serialConsistencyO.isPresent());
+                .lwtResultListener(LWTResultListenerO.orNull())
+                .lwtLocalSerial(serialConsistencyO.isPresent());
     }
 
     public static abstract class LWTPredicate {
