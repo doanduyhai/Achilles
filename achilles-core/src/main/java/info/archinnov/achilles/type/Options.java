@@ -17,8 +17,12 @@ package info.archinnov.achilles.type;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+
+import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.listener.LWTResultListener;
 import org.apache.commons.collections.CollectionUtils;
 import com.datastax.driver.core.querybuilder.Clause;
@@ -29,15 +33,20 @@ import info.archinnov.achilles.internal.validation.Validator;
 
 public class Options {
 
+    private static final Predicate<LWTPredicate> FILTER_LWT_CONDITION = new Predicate<LWTPredicate>() {
+        @Override
+        public boolean apply(LWTPredicate predicate) {
+            return predicate.type() == LWTPredicate.LWTType.EQUAL_CONDITION;
+        }
+    };
+
     ConsistencyLevel consistency;
 
     Integer ttl;
 
     Long timestamp;
 
-    boolean ifNotExists;
-
-    List<LWTCondition> LWTConditions;
+    List<LWTPredicate> lwtPredicates = new ArrayList<>();
 
     Optional<LWTResultListener> LWTResultListenerO = Optional.absent();
 
@@ -45,8 +54,7 @@ public class Options {
 
     Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyO = Optional.absent();
 
-    Options() {
-    }
+    Options() {}
 
     public Optional<ConsistencyLevel> getConsistencyLevel() {
         return Optional.fromNullable(consistency);
@@ -61,15 +69,20 @@ public class Options {
     }
 
     public boolean isIfNotExists() {
-        return ifNotExists;
+        return lwtPredicates.size() == 1 && lwtPredicates.get(0).type() == LWTPredicate.LWTType.IF_NOT_EXISTS;
     }
 
-    public List<LWTCondition> getLWTConditions() {
-        return LWTConditions;
+    public boolean isIfExists() {
+        return lwtPredicates.size() == 1 && lwtPredicates.get(0).type() == LWTPredicate.LWTType.IF_EXISTS;
+    }
+
+    public List<LWTCondition> getLwtPredicates() {
+        final List<?> lwtPredicates1 = FluentIterable.from(lwtPredicates).filter(FILTER_LWT_CONDITION).toList();
+        return (List<LWTCondition>)lwtPredicates1;
     }
 
     public boolean hasLWTConditions() {
-        return CollectionUtils.isNotEmpty(LWTConditions);
+        return CollectionUtils.isNotEmpty(lwtPredicates);
     }
 
     public Optional<LWTResultListener> getLWTResultListener() {
@@ -94,8 +107,9 @@ public class Options {
                 .add("Consistency Level", this.consistency)
                 .add("Time to live", this.ttl)
                 .add("Timestamp", this.timestamp)
-                .add("IF NOT EXISTS ? ", this.ifNotExists)
-                .add("CAS conditions", this.LWTConditions)
+                .add("IF NOT EXISTS ? ", this.isIfNotExists())
+                .add("IF EXISTS ? ", this.isIfExists())
+                .add("CAS conditions", this.lwtPredicates)
                 .add("CAS result listener optional", this.LWTResultListenerO)
                 .add("Async listeners", this.asyncListeners)
 				.add("Serial consistency", this.serialConsistencyO)
@@ -104,7 +118,7 @@ public class Options {
 
     public Options duplicateWithoutTtlAndTimestamp() {
         return OptionsBuilder.withConsistency(consistency)
-                .ifNotExists(ifNotExists).ifConditions(LWTConditions)
+                .lwtPredicates(lwtPredicates)
                 .LWTResultListener(LWTResultListenerO.orNull())
                 .LWTLocalSerial(serialConsistencyO.isPresent());
     }
@@ -112,7 +126,7 @@ public class Options {
     public Options duplicateWithNewConsistencyLevel(ConsistencyLevel consistencyLevel) {
         return OptionsBuilder.withConsistency(consistencyLevel)
                 .withTtl(ttl).withTimestamp(timestamp)
-                .ifNotExists(ifNotExists).ifConditions(LWTConditions)
+                .lwtPredicates(lwtPredicates)
                 .LWTResultListener(LWTResultListenerO.orNull())
                 .LWTLocalSerial(serialConsistencyO.isPresent());
     }
@@ -120,19 +134,69 @@ public class Options {
     public Options duplicateWithNewTimestamp(Long timestamp) {
         return OptionsBuilder.withConsistency(consistency)
                 .withTtl(ttl).withTimestamp(timestamp)
-                .ifNotExists(ifNotExists).ifConditions(LWTConditions)
+                .lwtPredicates(lwtPredicates)
                 .LWTResultListener(LWTResultListenerO.orNull())
                 .LWTLocalSerial(serialConsistencyO.isPresent());
     }
 
+    public static abstract class LWTPredicate {
+        public abstract LWTType type();
+        public static enum LWTType {
+            IF_NOT_EXISTS, IF_EXISTS, EQUAL_CONDITION;
+        }
+    }
 
-    public static class LWTCondition {
+    public static class LWTIfNotExists extends LWTPredicate {
+        @Override
+        public LWTType type() {
+            return LWTType.IF_NOT_EXISTS;
+        }
+
+        private LWTIfNotExists(){};
+
+        public static enum Singleton {
+            INSTANCE;
+
+            private final LWTIfNotExists instance = new LWTIfNotExists();
+
+            public LWTIfNotExists get() {
+                return instance;
+            }
+        }
+
+    }
+
+    public static class LWTIfExists extends LWTPredicate {
+        @Override
+        public LWTType type() {
+            return LWTType.IF_EXISTS;
+        }
+
+        private LWTIfExists(){};
+
+        public static enum Singleton {
+            INSTANCE;
+
+            private final LWTIfExists instance = new LWTIfExists();
+
+            public LWTIfExists get() {
+                return instance;
+            }
+        }
+    }
+
+    public static class LWTCondition extends LWTPredicate {
 
         private String columnName;
         private Object value;
 
+        @Override
+        public LWTType type() {
+          return LWTType.EQUAL_CONDITION;
+        }
+
         public LWTCondition(String columnName, Object value) {
-            Validator.validateNotBlank(columnName, "CAS condition column cannot be blank");
+            Validator.validateNotBlank(columnName, "Lightweight Transaction condition column cannot be blank");
             this.columnName = columnName;
             this.value = value;
         }
@@ -168,15 +232,14 @@ public class Options {
 
             LWTCondition that = (LWTCondition) o;
 
-            return columnName.equals(that.columnName) && value.equals(that.value);
-
+            return Objects.equal(this.type(), that.type())
+                && Objects.equal(this.columnName, that.columnName)
+                && Objects.equal(this.value, that.value);
         }
 
         @Override
         public int hashCode() {
-            int result = columnName.hashCode();
-            result = 31 * result + value.hashCode();
-            return result;
+            return Objects.hashCode(this.type(), this.columnName, this.value);
         }
 
 

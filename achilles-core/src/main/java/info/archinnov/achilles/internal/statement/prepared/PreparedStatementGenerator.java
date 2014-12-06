@@ -119,7 +119,7 @@ public class PreparedStatementGenerator {
         Update update = update(metaConfig.getKeyspaceName(), metaConfig.getTableName());
         final Update.Conditions updateConditions = update.onlyIf();
         if (options.hasLWTConditions()) {
-            for (LWTCondition LWTCondition : options.getLWTConditions()) {
+            for (LWTCondition LWTCondition : options.getLwtPredicates()) {
                 updateConditions.and(LWTCondition.toClauseForPreparedStatement());
             }
         }
@@ -276,7 +276,7 @@ public class PreparedStatementGenerator {
         final Update.Conditions conditions = update(metaConfig.getKeyspaceName(), metaConfig.getTableName()).onlyIf();
 
         if (options.hasLWTConditions()) {
-            for (LWTCondition LWTCondition : options.getLWTConditions()) {
+            for (LWTCondition LWTCondition : options.getLwtPredicates()) {
                 conditions.and(LWTCondition.toClauseForPreparedStatement());
             }
         }

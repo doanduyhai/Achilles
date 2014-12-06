@@ -48,6 +48,7 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder.completeBean;
 import static info.archinnov.achilles.type.Options.LWTCondition;
 import static info.archinnov.achilles.type.OptionsBuilder.ifConditions;
+import static info.archinnov.achilles.type.OptionsBuilder.ifEqualCondition;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -188,7 +189,7 @@ public class PreparedStatementGeneratorTest {
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareUpdateFields(session, meta, asList(nameMeta, ageMeta),
-                ifConditions(new LWTCondition("name", "John")).withTimestamp(100L));
+                ifEqualCondition("name", "John").withTimestamp(100L));
 
         assertThat(actual).isSameAs(ps);
 
@@ -360,7 +361,7 @@ public class PreparedStatementGeneratorTest {
 
         //When
         final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, changeSet,
-                ifConditions(new LWTCondition("name", "John")).withTimestamp(100L));
+                ifEqualCondition("name", "John").withTimestamp(100L));
 
         //Then
         assertThat(actual).isSameAs(ps);

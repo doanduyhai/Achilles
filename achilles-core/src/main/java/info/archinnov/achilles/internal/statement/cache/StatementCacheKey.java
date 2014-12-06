@@ -109,7 +109,7 @@ public class StatementCacheKey {
         private static OptionsCacheKey fromOptions(Options options) {
             boolean hasTimestamp = options.getTimestamp().isPresent();
             boolean ifNotExists = options.isIfNotExists();
-            List<LWTCondition> LWTConditions = Optional.fromNullable(options.getLWTConditions()).or(Collections.<LWTCondition>emptyList());
+            List<LWTCondition> LWTConditions = Optional.fromNullable(options.getLwtPredicates()).or(Collections.<LWTCondition>emptyList());
             return new OptionsCacheKey(hasTimestamp, ifNotExists, LWTConditions);
         }
 
