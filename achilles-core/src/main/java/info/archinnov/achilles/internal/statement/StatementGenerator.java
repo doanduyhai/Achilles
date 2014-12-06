@@ -49,7 +49,7 @@ public class StatementGenerator {
 
         final Optional<Integer> ttlO = context.getTtl();
         final Optional<Long> timestampO = context.getTimestamp();
-        final List<LWTCondition> LWTConditions = context.getCasConditions();
+        final List<LWTCondition> LWTConditions = context.getLWTConditions();
 
         final Update.Conditions conditions = update(metaConfig.getKeyspaceName(), metaConfig.getTableName()).onlyIf();
         List<Object> LWTEncodedValues = addAndEncodeLWTConditions(meta, LWTConditions, conditions);

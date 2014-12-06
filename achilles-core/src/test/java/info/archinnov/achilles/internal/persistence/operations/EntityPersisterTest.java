@@ -97,7 +97,7 @@ public class EntityPersisterTest {
         persister.delete(context);
 
         // Then
-        verify(context).bindForDeletion("table");
+        verify(context).bindForDeletion();
         verify(counterPersister).deleteRelatedCounters(context);
     }
 

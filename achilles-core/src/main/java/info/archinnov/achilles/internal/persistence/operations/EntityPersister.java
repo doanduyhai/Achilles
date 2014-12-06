@@ -45,7 +45,7 @@ public class EntityPersister {
         if (entityMeta.structure().isClusteredCounter()) {
             context.bindForClusteredCounterDeletion();
         } else {
-            context.bindForDeletion(entityMeta.config().getQualifiedTableName());
+            context.bindForDeletion();
             counterPersister.deleteRelatedCounters(context);
         }
     }

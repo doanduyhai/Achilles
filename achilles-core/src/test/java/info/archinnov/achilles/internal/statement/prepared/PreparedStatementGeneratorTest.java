@@ -66,6 +66,7 @@ import com.datastax.driver.core.querybuilder.Update.Assignments;
 import com.datastax.driver.core.querybuilder.Update.Conditions;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaStatementGenerator;
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -233,23 +234,6 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(actual).isSameAs(ps);
         assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM ks.table WHERE id=:id;");
-    }
-
-
-    @Test
-    public void should_delete_entity_having_single_key() throws Exception {
-        when(meta.structure().hasOnlyStaticColumns()).thenReturn(true);
-
-        when(idMeta.forStatementGeneration().generateWhereClauseForDelete(Mockito.eq(true), isA(Delete.class)))
-                .thenReturn(delete().from("ks","table").where(eq("id", bindMarker("id"))));
-
-        when(session.prepare(queryCaptor.capture())).thenReturn(ps);
-
-        Map<String, PreparedStatement> actual = generator.prepareDeletePSs(session, meta);
-
-        assertThat(actual).hasSize(1);
-        assertThat(actual).containsValue(ps);
-        assertThat(queryCaptor.getValue()).isEqualTo("DELETE FROM ks.table WHERE id=:id;");
     }
 
     @Test
@@ -577,5 +561,91 @@ public class PreparedStatementGeneratorTest {
         assertThat(actual).isSameAs(ps);
         assertThat(deleteCaptor.getValue().getQueryString()).isEqualTo("DELETE FROM ks.table;");
         assertThat(queryCaptor.getValue()).isEqualTo("DELETE FROM ks.table;");
+    }
+
+    @Test
+    public void should_prepare_for_simple_delete() throws Exception {
+        //Given
+        final ArgumentCaptor<Delete> deleteCaptor = ArgumentCaptor.forClass(Delete.class);
+        when(meta.structure().hasOnlyStaticColumns()).thenReturn(false);
+        final Delete deleteStatement = delete().from("test");
+        when(idMeta.forStatementGeneration().generateWhereClauseForDelete(Mockito.eq(false),deleteCaptor.capture())).thenReturn(deleteStatement);
+        when(session.prepare(deleteStatement)).thenReturn(ps);
+
+        //When
+        final PreparedStatement preparedStatement = generator.prepareDeletePS(session, meta, OptionsBuilder.noOptions());
+
+        //Then
+        assertThat(preparedStatement).isSameAs(ps);
+        assertThat(deleteCaptor.getValue().toString()).isEqualTo("DELETE FROM ks.table;");
+    }
+
+
+    @Test
+    public void should_prepare_for_simple_delete_with_timestamp() throws Exception {
+        //Given
+        final ArgumentCaptor<Delete> deleteCaptor = ArgumentCaptor.forClass(Delete.class);
+        when(meta.structure().hasOnlyStaticColumns()).thenReturn(false);
+        final Delete deleteStatement = delete().from("test");
+        when(idMeta.forStatementGeneration().generateWhereClauseForDelete(Mockito.eq(false),deleteCaptor.capture())).thenReturn(deleteStatement);
+        when(session.prepare(deleteStatement)).thenReturn(ps);
+
+        //When
+        final PreparedStatement preparedStatement = generator.prepareDeletePS(session, meta, OptionsBuilder.withTimestamp(10L));
+
+        //Then
+        assertThat(preparedStatement).isSameAs(ps);
+        assertThat(deleteCaptor.getValue().toString()).isEqualTo("DELETE FROM ks.table USING TIMESTAMP :timestamp;");
+    }
+
+    @Test
+    public void should_prepare_for_simple_delete_with_IF_EXISTS() throws Exception {
+        //Given
+        final ArgumentCaptor<Delete> deleteCaptor = ArgumentCaptor.forClass(Delete.class);
+        when(meta.structure().hasOnlyStaticColumns()).thenReturn(false);
+        final Delete deleteStatement = delete().from("test");
+        when(idMeta.forStatementGeneration().generateWhereClauseForDelete(Mockito.eq(false),deleteCaptor.capture())).thenReturn(deleteStatement);
+        when(session.prepare(deleteStatement)).thenReturn(ps);
+
+        //When
+        final PreparedStatement preparedStatement = generator.prepareDeletePS(session, meta, OptionsBuilder.ifExists());
+
+        //Then
+        assertThat(preparedStatement).isSameAs(ps);
+        assertThat(deleteCaptor.getValue().toString()).isEqualTo("DELETE FROM ks.table IF EXISTS;");
+    }
+
+    @Test
+    public void should_prepare_for_simple_delete_with_many_LWT_conditions() throws Exception {
+        //Given
+        final ArgumentCaptor<Delete> deleteCaptor = ArgumentCaptor.forClass(Delete.class);
+        when(meta.structure().hasOnlyStaticColumns()).thenReturn(false);
+        final Delete deleteStatement = delete().from("test");
+        when(idMeta.forStatementGeneration().generateWhereClauseForDelete(Mockito.eq(false),deleteCaptor.capture())).thenReturn(deleteStatement);
+        when(session.prepare(deleteStatement)).thenReturn(ps);
+
+        //When
+        final PreparedStatement preparedStatement = generator.prepareDeletePS(session, meta, OptionsBuilder.ifEqualCondition("name","toto").ifEqualCondition("age",30));
+
+        //Then
+        assertThat(preparedStatement).isSameAs(ps);
+        assertThat(deleteCaptor.getValue().toString()).isEqualTo("DELETE FROM ks.table IF name=:name AND age=:age;");
+    }
+
+    @Test
+    public void should_prepare_for_simple_delete_with_timestamp_and_many_LWT_conditions() throws Exception {
+        //Given
+        final ArgumentCaptor<Delete> deleteCaptor = ArgumentCaptor.forClass(Delete.class);
+        when(meta.structure().hasOnlyStaticColumns()).thenReturn(false);
+        final Delete deleteStatement = delete().from("test");
+        when(idMeta.forStatementGeneration().generateWhereClauseForDelete(Mockito.eq(false),deleteCaptor.capture())).thenReturn(deleteStatement);
+        when(session.prepare(deleteStatement)).thenReturn(ps);
+
+        //When
+        final PreparedStatement preparedStatement = generator.prepareDeletePS(session, meta, OptionsBuilder.withTimestamp(10L).ifEqualCondition("name","toto").ifEqualCondition("age",30));
+
+        //Then
+        assertThat(preparedStatement).isSameAs(ps);
+        assertThat(deleteCaptor.getValue().toString()).isEqualTo("DELETE FROM ks.table USING TIMESTAMP :timestamp IF name=:name AND age=:age;");
     }
 }

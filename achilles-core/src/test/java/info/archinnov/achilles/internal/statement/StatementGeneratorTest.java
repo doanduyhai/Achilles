@@ -100,7 +100,7 @@ public class StatementGeneratorTest {
         when(context.getIdMeta()).thenReturn(idMeta);
         when(context.getTtl()).thenReturn(Optional.fromNullable(10));
         when(context.getTimestamp()).thenReturn(Optional.fromNullable(100L));
-        when(context.getCasConditions()).thenReturn(asList(LWTCondition));
+        when(context.getLWTConditions()).thenReturn(asList(LWTCondition));
 
         when(entityMeta.forTranscoding().encodeCasConditionValue(LWTCondition)).thenReturn("DuyHai_encoded");
         when(entityMeta.config().getKeyspaceName()).thenReturn("ks");
@@ -136,7 +136,7 @@ public class StatementGeneratorTest {
         when(context.getIdMeta()).thenReturn(idMeta);
         when(context.getTtl()).thenReturn(Optional.fromNullable(10));
         when(context.getTimestamp()).thenReturn(Optional.fromNullable(100L));
-        when(context.getCasConditions()).thenReturn(new ArrayList<LWTCondition>());
+        when(context.getLWTConditions()).thenReturn(new ArrayList<LWTCondition>());
 
         when(entityMeta.config().getQualifiedTableName()).thenReturn("table");
 

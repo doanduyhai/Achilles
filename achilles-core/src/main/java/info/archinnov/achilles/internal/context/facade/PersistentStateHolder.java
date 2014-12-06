@@ -53,9 +53,9 @@ public interface PersistentStateHolder {
 
     public Optional<com.datastax.driver.core.ConsistencyLevel> getSerialConsistencyLevel();
 
-    public List<Options.LWTCondition> getCasConditions();
+    public List<Options.LWTCondition> getLWTConditions();
 
-    public boolean hasCasConditions();
+    public boolean hasLWTConditions();
 
     public Optional getCASResultListener();
 

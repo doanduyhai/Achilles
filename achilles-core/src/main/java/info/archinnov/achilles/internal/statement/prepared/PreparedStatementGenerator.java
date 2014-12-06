@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.datastax.driver.core.querybuilder.*;
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaStatementGenerator;
 import info.archinnov.achilles.internal.statement.StatementHelper;
@@ -51,11 +52,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
-import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
@@ -119,7 +116,7 @@ public class PreparedStatementGenerator {
         Update update = update(metaConfig.getKeyspaceName(), metaConfig.getTableName());
         final Update.Conditions updateConditions = update.onlyIf();
         if (options.hasLWTConditions()) {
-            for (LWTCondition LWTCondition : options.getLwtPredicates()) {
+            for (LWTCondition LWTCondition : options.getLwtConditions()) {
                 updateConditions.and(LWTCondition.toClauseForPreparedStatement());
             }
         }
@@ -254,20 +251,28 @@ public class PreparedStatementGenerator {
         }
     }
 
-    public Map<String, PreparedStatement> prepareDeletePSs(Session session, EntityMeta entityMeta) {
+    public PreparedStatement prepareDeletePS(Session session, EntityMeta entityMeta, Options options) {
 
         log.trace("Generate prepared statement for DELETE of {}", entityMeta);
 
         PropertyMeta idMeta = entityMeta.getIdMeta();
         final EntityMetaConfig metaConfig = entityMeta.config();
 
-        Map<String, PreparedStatement> deletePSs = new HashMap<>();
-
         Delete mainFrom = delete().from(metaConfig.getKeyspaceName(), metaConfig.getTableName());
+        final Optional<Long> timestampO = options.getTimestamp();
+        if (timestampO.isPresent()) {
+            mainFrom.using(QueryBuilder.timestamp(bindMarker("timestamp")));
+        }
+        if (options.isIfExists()) {
+            mainFrom.ifExists();
+        } else if (options.hasLWTConditions()) {
+            final List<LWTCondition> lwtConditions = options.getLwtConditions();
+            for (LWTCondition lwtCondition : lwtConditions) {
+                mainFrom.onlyIf(lwtCondition.toClauseForPreparedStatement());
+            }
+        }
         RegularStatement mainStatement = idMeta.forStatementGeneration().generateWhereClauseForDelete(entityMeta.structure().hasOnlyStaticColumns(), mainFrom);
-        deletePSs.put(metaConfig.getQualifiedTableName(), session.prepare(mainStatement.getQueryString()));
-
-        return deletePSs;
+        return session.prepare(mainStatement);
     }
 
     public PreparedStatement prepareCollectionAndMapUpdate(Session session, EntityMeta meta, DirtyCheckChangeSet changeSet, Options options) {
@@ -276,7 +281,7 @@ public class PreparedStatementGenerator {
         final Update.Conditions conditions = update(metaConfig.getKeyspaceName(), metaConfig.getTableName()).onlyIf();
 
         if (options.hasLWTConditions()) {
-            for (LWTCondition LWTCondition : options.getLwtPredicates()) {
+            for (LWTCondition LWTCondition : options.getLwtConditions()) {
                 conditions.and(LWTCondition.toClauseForPreparedStatement());
             }
         }

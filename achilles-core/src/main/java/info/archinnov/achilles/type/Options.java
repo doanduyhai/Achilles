@@ -76,9 +76,13 @@ public class Options {
         return lwtPredicates.size() == 1 && lwtPredicates.get(0).type() == LWTPredicate.LWTType.IF_EXISTS;
     }
 
-    public List<LWTCondition> getLwtPredicates() {
+    public List<LWTCondition> getLwtConditions() {
         final List<?> lwtPredicates1 = FluentIterable.from(lwtPredicates).filter(FILTER_LWT_CONDITION).toList();
         return (List<LWTCondition>)lwtPredicates1;
+    }
+
+    public List<LWTPredicate> getLwtPredicates() {
+        return lwtPredicates;
     }
 
     public boolean hasLWTConditions() {
