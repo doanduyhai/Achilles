@@ -77,7 +77,7 @@ public class SchemaUpdateIT {
         assertThat(found).isNotNull();
         assertThat(found.getUnmappedField()).isEqualTo("UNMAPPED");
 
-        assertThat(pm.getProxy(EntityWithNewSimpleField.class, id).getUnmappedField()).isEqualTo("UNMAPPED");
+        assertThat(pm.find(EntityWithNewSimpleField.class, id).getUnmappedField()).isEqualTo("UNMAPPED");
 
         session.close();
     }

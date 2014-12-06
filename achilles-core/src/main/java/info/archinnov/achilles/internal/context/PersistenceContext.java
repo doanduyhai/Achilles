@@ -216,11 +216,11 @@ public class PersistenceContext {
             return options.getSerialConsistency();
         }
 
-        public List<LWTCondition> getCasConditions() {
-            return Optional.fromNullable(options.getLwtPredicates()).or(new ArrayList<LWTCondition>());
+        public List<LWTCondition> getLWTConditions() {
+            return Optional.fromNullable(options.getLwtConditions()).or(new ArrayList<LWTCondition>());
         }
 
-        public boolean hasCasConditions() {
+        public boolean hasLWTConditions() {
             return options.hasLWTConditions();
         }
 
@@ -449,8 +449,8 @@ public class PersistenceContext {
             daoContext.pushCollectionAndMapUpdateStatement(daoFacade, changeSet);
         }
 
-        public void bindForDeletion(String tableName) {
-            daoContext.bindForDeletion(daoFacade, entityMeta,tableName);
+        public void bindForDeletion() {
+            daoContext.bindForDeletion(daoFacade, entityMeta);
         }
 
         // Simple counter

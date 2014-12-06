@@ -124,8 +124,6 @@ public class CacheManagerTest {
     @Test
     public void should_generate_select_prepared_statement_when_not_found_in_cache() throws Exception {
         EntityMeta meta = new EntityMeta();
-//        meta.setTableName("table");
-
         PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).propertyName("name").type(SIMPLE)
                 .build();
 
@@ -144,7 +142,6 @@ public class CacheManagerTest {
     @Test
     public void should_get_cache_for_entity_insert() throws Exception {
         EntityMeta meta = new EntityMeta();
-//        meta.setTableName("table");
 
         PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
         PropertyMeta ageMeta = completeBean(Void.class, String.class).propertyName("age").type(SIMPLE).build();
@@ -165,7 +162,6 @@ public class CacheManagerTest {
     @Test
     public void should_generate_insert_prepared_statement_when_not_found_in_cache() throws Exception {
         EntityMeta meta = new EntityMeta();
-//        meta.setTableName("table");
 
         PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
 
@@ -190,7 +186,6 @@ public class CacheManagerTest {
     @Test
     public void should_get_cache_for_fields_update() throws Exception {
         EntityMeta meta = new EntityMeta();
-//        meta.setTableName("table");
 
         PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
         PropertyMeta ageMeta = completeBean(Void.class, String.class).propertyName("age").type(SIMPLE).build();
@@ -211,7 +206,6 @@ public class CacheManagerTest {
     @Test
     public void should_generate_update_prepared_statement_when_not_found_in_cache() throws Exception {
         EntityMeta meta = new EntityMeta();
-//        meta.setTableName("table");
 
         PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
         PropertyMeta ageMeta = completeBean(Void.class, String.class).propertyName("age").type(SIMPLE).build();
@@ -340,5 +334,24 @@ public class CacheManagerTest {
         //Then
         assertThat(actual).isSameAs(ps);
         verify(cache).put(cacheKey,ps);
+    }
+
+    @Test
+    public void should_generate_delete() throws Exception {
+        //Given
+        final EntityMeta entityMeta = mock(EntityMeta.class);
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.DELETE_PARTITION, CacheManager.ALL_FIELDS, CompleteBean.class, noOptions());
+        when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getEntityMeta()).thenReturn(entityMeta);
+        when(context.getOptions()).thenReturn(noOptions());
+        when(cache.getIfPresent(cacheKey)).thenReturn(null);
+        when(generator.prepareDeletePS(session, entityMeta, noOptions())).thenReturn(ps);
+
+        //When
+        final PreparedStatement preparedStatement = manager.getCacheForDeletion(session, cache, context);
+
+        //Then
+        assertThat(preparedStatement).isSameAs(ps);
+        verify(cache).put(cacheKey, ps);
     }
 }

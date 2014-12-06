@@ -32,6 +32,7 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.Options.LWTCondition;
 import static java.util.Arrays.asList;
+import static java.util.Arrays.fill;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -41,6 +42,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,7 +97,7 @@ public class PreparedStatementBinderTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private DirtyCheckChangeSet changeSet;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PersistenceContext.StateHolderFacade context;
 
     @Mock
@@ -654,8 +657,8 @@ public class PreparedStatementBinderTest {
 
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
-        when(context.hasCasConditions()).thenReturn(true);
-        when(context.getCasConditions()).thenReturn(asList(LWTCondition));
+        when(context.hasLWTConditions()).thenReturn(true);
+        when(context.getLWTConditions()).thenReturn(asList(LWTCondition));
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
 
@@ -679,5 +682,39 @@ public class PreparedStatementBinderTest {
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         assertThat(asList(actual.getValues())).containsExactly(0, 1, null, primaryKey, "John");
+    }
+
+    @Test
+    public void should_bind_for_deletion_with_simple_id_and_timestamp_and_lwt_conditions() throws Exception {
+        long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        final LWTCondition nameLWTCondition = new LWTCondition("name", "John");
+        final LWTCondition ageLWTCondition = new LWTCondition("age", 33);
+        final OptionsBuilder.BuiltOptions options = OptionsBuilder.withTimestamp(10L)
+                .ifEqualCondition("name", "John")
+                .ifEqualCondition("age", 33);
+
+        when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
+        when(context.getOptions()).thenReturn(options);
+        when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getPrimaryKey()).thenReturn(primaryKey);
+        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
+
+        when(context.hasLWTConditions()).thenReturn(true);
+        when(context.getLWTConditions()).thenReturn(Arrays.asList(nameLWTCondition, ageLWTCondition));
+
+        when(entityMeta.forTranscoding().encodeCasConditionValue(nameLWTCondition)).thenReturn("John");
+        when(entityMeta.forTranscoding().encodeCasConditionValue(ageLWTCondition)).thenReturn(33);
+        when(overrider.getWriteLevel(context)).thenReturn(ALL);
+
+        when(context.getSerialConsistencyLevel()).thenReturn(fromNullable(ConsistencyLevel.LOCAL_SERIAL));
+
+        when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
+
+        BoundStatementWrapper actual = binder.bindForDeletion(context, ps, false, info.archinnov.achilles.type.ConsistencyLevel.ALL);
+
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
+        assertThat(asList(actual.getValues())).containsExactly(10L, primaryKey, "John", 33);
     }
 }

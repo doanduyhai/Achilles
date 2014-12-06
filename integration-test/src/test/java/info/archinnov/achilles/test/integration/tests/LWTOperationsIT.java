@@ -26,9 +26,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_SERIAL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.Options.LWTCondition;
-import static info.archinnov.achilles.type.OptionsBuilder.ifEqualCondition;
-import static info.archinnov.achilles.type.OptionsBuilder.lwtResultListener;
-import static info.archinnov.achilles.type.OptionsBuilder.ifConditions;
+import static info.archinnov.achilles.type.OptionsBuilder.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
@@ -413,6 +411,35 @@ public class LWTOperationsIT {
         assertThat(LWTResult).isNotNull();
         assertThat(LWTResult.operation()).isEqualTo(UPDATE);
         assertThat(LWTResult.currentValues()).isEqualTo(expectedCurrentValues);
+    }
+
+    @Test
+    public void should_delete_if_exists() throws Exception {
+        //Given
+        CompleteBean entity = builder().randomId().name("John").buid();
+        manager.insert(entity);
+
+        //When
+        manager.deleteById(CompleteBean.class, entity.getId(), ifExists());
+    }
+
+    @Test(expected = AchillesLightWeightTransactionException.class)
+    public void should_exception_when_deleting_non_existing() throws Exception {
+        manager.deleteById(CompleteBean.class, 10L, ifExists());
+    }
+
+    @Test
+    public void should_delete_with_lwt_conditions() throws Exception {
+        //Given
+        CompleteBean entity = builder().randomId().name("John").age(33L).buid();
+        manager.insert(entity);
+
+        //When
+        manager.deleteById(CompleteBean.class, entity.getId(),
+                ifEqualCondition("name", "John").ifEqualCondition("age_in_years",33L));
+
+        //Then
+        assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
     }
 
 }

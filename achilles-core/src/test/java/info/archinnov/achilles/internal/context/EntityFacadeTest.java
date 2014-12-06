@@ -131,9 +131,9 @@ public class EntityFacadeTest {
 
     @Test
     public void should_bind_for_deletion() throws Exception {
-        facade.bindForDeletion("table");
+        facade.bindForDeletion();
 
-        verify(daoContext).bindForDeletion(context.daoFacade, meta, "table");
+        verify(daoContext).bindForDeletion(context.daoFacade, meta);
     }
 
 

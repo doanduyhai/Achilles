@@ -36,7 +36,7 @@ public interface EntityOperations extends PersistentStateHolder {
 
     public void pushCollectionAndMapUpdateStatements(DirtyCheckChangeSet changeSet);
 
-    public void bindForDeletion(String tableName);
+    public void bindForDeletion();
 
     // Simple counter
     public void bindForSimpleCounterIncrement(PropertyMeta counterMeta, Long increment);
