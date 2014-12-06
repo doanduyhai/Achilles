@@ -33,7 +33,7 @@ public class RegularStatementWrapper extends AbstractStatementWrapper {
             ConsistencyLevel consistencyLevel, Optional<LWTResultListener> LWTResultListener, Optional<ConsistencyLevel> serialConsistencyLevel) {
         super(entityClass, boundValues);
         this.regularStatement = regularStatement;
-        super.LWTResultListener = LWTResultListener;
+        super.lwtResultListener = LWTResultListener;
         this.regularStatement.setConsistencyLevel(consistencyLevel);
         if (serialConsistencyLevel.isPresent()) {
             this.regularStatement.setSerialConsistencyLevel(serialConsistencyLevel.get());

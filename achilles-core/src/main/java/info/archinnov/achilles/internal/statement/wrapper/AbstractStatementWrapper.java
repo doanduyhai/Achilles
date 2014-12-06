@@ -63,7 +63,7 @@ public abstract class AbstractStatementWrapper {
     protected RowMethodInvoker invoker = RowMethodInvoker.Singleton.INSTANCE.get();
     protected AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
 
-    protected Optional<LWTResultListener> LWTResultListener = Optional.absent();
+    protected Optional<LWTResultListener> lwtResultListener = Optional.absent();
 
     protected Object[] values = new Object[] { };
     protected boolean traceQueryForEntity = false;
@@ -209,16 +209,16 @@ public abstract class AbstractStatementWrapper {
     }
 
     protected void notifyLWTError(LWTResult LWTResult) {
-        if (LWTResultListener.isPresent()) {
-            LWTResultListener.get().onError(LWTResult);
+        if (lwtResultListener.isPresent()) {
+            lwtResultListener.get().onError(LWTResult);
         } else {
             throw new AchillesLightWeightTransactionException(LWTResult);
         }
     }
 
     protected void notifyCASSuccess() {
-        if (LWTResultListener.isPresent()) {
-            LWTResultListener.get().onSuccess();
+        if (lwtResultListener.isPresent()) {
+            lwtResultListener.get().onSuccess();
         }
     }
 

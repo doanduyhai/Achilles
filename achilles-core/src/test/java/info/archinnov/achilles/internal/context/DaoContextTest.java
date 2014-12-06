@@ -73,7 +73,6 @@ import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -268,7 +267,7 @@ public class DaoContextTest {
 
         when(overrider.getWriteLevel(context)).thenReturn(EACH_QUORUM);
         when(statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet)).thenReturn(pair);
-        when(context.getCASResultListener()).thenReturn(lwtResultListener);
+        when(context.getLWTResultListener()).thenReturn(lwtResultListener);
         when(context.getSerialConsistencyLevel()).thenReturn(fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
 
         // When
@@ -296,7 +295,7 @@ public class DaoContextTest {
 
         when(overrider.getWriteLevel(context)).thenReturn(EACH_QUORUM);
         when(statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet)).thenReturn(pair);
-        when(context.getCASResultListener()).thenReturn(lwtResultListener);
+        when(context.getLWTResultListener()).thenReturn(lwtResultListener);
 
         when(statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet)).thenReturn(pair);
 

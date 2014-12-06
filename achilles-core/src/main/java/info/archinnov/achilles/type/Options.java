@@ -19,6 +19,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Predicate;
@@ -40,32 +41,32 @@ public class Options {
         }
     };
 
-    ConsistencyLevel consistency;
+    Optional<ConsistencyLevel> consistency = Optional.absent();
 
-    Integer ttl;
+    Optional<Integer> ttl = Optional.absent();
 
-    Long timestamp;
+    Optional<Long> timestamp = Optional.absent();
 
     List<LWTPredicate> lwtPredicates = new ArrayList<>();
 
-    Optional<LWTResultListener> LWTResultListenerO = Optional.absent();
+    Optional<LWTResultListener> lwtResultListenerO = Optional.absent();
 
-    List<FutureCallback<Object>> asyncListeners;
+    List<FutureCallback<Object>> asyncListeners = new ArrayList<>();
 
     Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyO = Optional.absent();
 
     Options() {}
 
     public Optional<ConsistencyLevel> getConsistencyLevel() {
-        return Optional.fromNullable(consistency);
+        return consistency;
     }
 
     public Optional<Integer> getTtl() {
-        return Optional.fromNullable(ttl);
+        return ttl;
     }
 
     public Optional<Long> getTimestamp() {
-        return Optional.fromNullable(timestamp);
+        return timestamp;
     }
 
     public boolean isIfNotExists() {
@@ -90,7 +91,7 @@ public class Options {
     }
 
     public Optional<LWTResultListener> getLWTResultListener() {
-        return LWTResultListenerO;
+        return lwtResultListenerO;
     }
 
     public List<FutureCallback<Object>> getAsyncListeners() {
@@ -114,32 +115,32 @@ public class Options {
                 .add("IF NOT EXISTS ? ", this.isIfNotExists())
                 .add("IF EXISTS ? ", this.isIfExists())
                 .add("CAS conditions", this.lwtPredicates)
-                .add("CAS result listener optional", this.LWTResultListenerO)
+                .add("CAS result listener optional", this.lwtResultListenerO)
                 .add("Async listeners", this.asyncListeners)
 				.add("Serial consistency", this.serialConsistencyO)
                 .toString();
     }
 
     public Options duplicateWithoutTtlAndTimestamp() {
-        return OptionsBuilder.withConsistency(consistency)
+        return OptionsBuilder.withConsistencyO(consistency)
                 .lwtPredicates(lwtPredicates)
-                .lwtResultListener(LWTResultListenerO.orNull())
+                .lwtResultListener(lwtResultListenerO.orNull())
                 .lwtLocalSerial(serialConsistencyO.isPresent());
     }
 
     public Options duplicateWithNewConsistencyLevel(ConsistencyLevel consistencyLevel) {
         return OptionsBuilder.withConsistency(consistencyLevel)
-                .withTtl(ttl).withTimestamp(timestamp)
+                .withTtlO(ttl).withTimestampO(timestamp)
                 .lwtPredicates(lwtPredicates)
-                .lwtResultListener(LWTResultListenerO.orNull())
+                .lwtResultListener(lwtResultListenerO.orNull())
                 .lwtLocalSerial(serialConsistencyO.isPresent());
     }
 
     public Options duplicateWithNewTimestamp(Long timestamp) {
-        return OptionsBuilder.withConsistency(consistency)
-                .withTtl(ttl).withTimestamp(timestamp)
+        return OptionsBuilder.withConsistencyO(consistency)
+                .withTtlO(ttl).withTimestamp(timestamp)
                 .lwtPredicates(lwtPredicates)
-                .lwtResultListener(LWTResultListenerO.orNull())
+                .lwtResultListener(lwtResultListenerO.orNull())
                 .lwtLocalSerial(serialConsistencyO.isPresent());
     }
 

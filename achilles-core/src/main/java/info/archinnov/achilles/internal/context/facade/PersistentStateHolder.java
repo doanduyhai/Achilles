@@ -24,6 +24,7 @@ import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 
@@ -57,7 +58,7 @@ public interface PersistentStateHolder {
 
     public boolean hasLWTConditions();
 
-    public Optional getCASResultListener();
+    public Optional<LWTResultListener> getLWTResultListener();
 
     public Set<Method> getAllGettersExceptCounters();
 

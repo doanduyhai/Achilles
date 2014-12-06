@@ -33,7 +33,7 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
     public NativeStatementWrapper(Class<?> entityClass, Statement statement, Object[] values, Optional<LWTResultListener> LWTResultListener) {
         super(entityClass, values);
         this.statement = statement;
-        super.LWTResultListener = LWTResultListener;
+        super.lwtResultListener = LWTResultListener;
     }
 
 
