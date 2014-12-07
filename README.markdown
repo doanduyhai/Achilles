@@ -17,7 +17,7 @@
 - All new **Cassandra 2.0** features
 - Life cycle interceptors
 - Bean Validation (JSR-303)
-- Distributed CAS operation support
+- **Lightweight Transaction** support
 - Multi-keyspace
 - Naming Strategy
 - Type Transformer
@@ -46,11 +46,37 @@
  		<scope>test</scope>
  	</dependency>
 ```
+ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Cassandra** versions
 
+<br/>
+<table border="1">
+	<thead>
+		<tr>
+			<th>Achilles version</th>
+			<th>Java Driver version</th>
+			<th>Cassandra version</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>3.1.1</td>
+			<td>2.1.2</td>
+			<td>2.1.1</td>
+		</tr>		
+		<tr>
+			<td>3.0.14</td>
+			<td>2.1.2</td>
+			<td>2.0.11</td>
+		</tr>
+    </tbody>
+</table>    
+
+ 
+ 
  For now, **Achilles** depends on the following libraries:
-
- 1. cassandra 2.0.11
- 2. cassandra-driver-core 2.1.2
+ 
+ 1. cassandra (see matrix version above)
+ 2. cassandra-driver-core (see matrix version above)
  3. CGLIB nodep 2.2.2 for proxy building
  4. Jackson core, annotations, databind & module jaxb annotations 2.3.3
  5. org.reflections 0.9.9-RC1
