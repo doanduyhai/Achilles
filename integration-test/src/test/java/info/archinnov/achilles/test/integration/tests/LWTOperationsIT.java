@@ -326,11 +326,6 @@ public class LWTOperationsIT {
         assertThat(actual.getFollowers()).containsOnly("Helen", "Andrew");
     }
 
-    /**
-     * Ignore until https://issues.apache.org/jira/browse/CASSANDRA-7499 is solved
-     * @throws Exception
-     */
-    @Ignore
     @Test
     public void should_update_list_at_index_with_cas_condition() throws Exception {
         //Given
