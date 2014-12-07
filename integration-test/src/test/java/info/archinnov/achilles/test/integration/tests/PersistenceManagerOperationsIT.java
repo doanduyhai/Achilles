@@ -24,9 +24,11 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -221,7 +223,7 @@ public class PersistenceManagerOperationsIT {
         exception.expect(IllegalAccessException.class);
         exception.expectMessage("Cannot change primary key value for existing entity");
 
-        entity.setId(RandomUtils.nextLong(0,Long.MAX_VALUE));
+        entity.setId(RandomUtils.nextLong(0, Long.MAX_VALUE));
     }
 
     @Test
@@ -340,6 +342,34 @@ public class PersistenceManagerOperationsIT {
     }
 
     @Test
+    @Ignore
+    //FIXME Inconsistencies because list mutations are applied as batch so orderning is not guaranteed
+    public void should_intercept_switching_list() throws Exception {
+        //Given
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
+                .addFriends("foo", "bar").buid();
+
+        manager.insert(entity);
+
+        //When
+        CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.setFriends(Arrays.asList("a","b","c"));
+        final List<String> friends = proxy.getFriends();
+        friends.add("qux"); // a b c qux
+        friends.add(0,"alice"); // alice a b c qux
+        friends.set(1, "bob"); // alice a bob c qux
+        friends.addAll(Arrays.asList("Richard", "Paul")); // alice a bob c qux Richard Paul
+
+        manager.update(proxy);
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+
+        assertThat(found.getFriends()).containsExactly("alice", "a", "bob", "c", "qux", "Richard", "Paul");
+    }
+
+    @Test
     public void should_get_proxy_for_set_update() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
@@ -362,6 +392,33 @@ public class PersistenceManagerOperationsIT {
         final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 
         assertThat(found.getFollowers()).contains("alice", "bob", "qux");
+    }
+
+    @Test
+    public void should_intercept_switching_set() throws Exception {
+        //Given
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
+                .addFollowers("foo", "bar").buid();
+
+        manager.insert(entity);
+
+        //When
+        CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.setFollowers(Sets.newHashSet("a","c","c"));
+        final Set<String> followers = proxy.getFollowers();
+        followers.add("qux");
+        followers.addAll(Arrays.asList("bob", "alice"));
+        followers.remove("foo");
+        followers.remove("b");
+        followers.removeAll(Arrays.asList("foo","bar"));
+
+        manager.update(proxy);
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+
+        assertThat(found.getFollowers()).contains("a", "c", "alice", "bob", "qux");
     }
 
     @Test
@@ -395,6 +452,45 @@ public class PersistenceManagerOperationsIT {
 
         assertThat(foundPreferences.get(1)).isEqualTo("FR");
         assertThat(foundPreferences.get(3)).isEqualTo("Rue de la Paix");
+    }
+
+    @Test
+    public void should_intercept_switching_map() throws Exception {
+        //Given
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
+                .addPreference(1, "Paris").buid();
+
+        manager.insert(entity);
+
+        //When
+        CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.setPreferences(ImmutableMap.of(10, "10", 11, "11"));
+
+        final Map<Integer, String> preferences = proxy.getPreferences();
+        preferences.put(1,"FR");
+        preferences.putAll(ImmutableMap.of(2, "Paris", 3, "Rue de la Paix"));
+        preferences.remove(2);
+        preferences.remove(10);
+
+        manager.update(proxy);
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+
+        final Map<Integer, String> foundPreferences = found.getPreferences();
+
+        assertThat(foundPreferences).hasSize(3);
+
+        assertThat(foundPreferences).containsKey(1);
+        assertThat(foundPreferences).doesNotContainKey(2);
+        assertThat(foundPreferences).containsKey(3);
+        assertThat(foundPreferences).doesNotContainKey(10);
+        assertThat(foundPreferences).containsKey(11);
+
+        assertThat(foundPreferences.get(1)).isEqualTo("FR");
+        assertThat(foundPreferences.get(3)).isEqualTo("Rue de la Paix");
+        assertThat(foundPreferences.get(11)).isEqualTo("11");
     }
 
     @Test
