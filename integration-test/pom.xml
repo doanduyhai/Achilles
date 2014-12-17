@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles</artifactId>
-		<version>3.0.15-SNAPSHOT</version>
+		<version>3.0.15</version>
 	</parent>
 	<artifactId>integration-test</artifactId>
 	<name>Achilles Internal Integration Test</name>
