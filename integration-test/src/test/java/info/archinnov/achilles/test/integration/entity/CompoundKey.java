@@ -15,13 +15,14 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class CompoundKey {
-	@Order(1)
+	@PartitionKey
 	private Long index;
 
-	@Order(2)
+    @ClusteringColumn
 	private String name;
 
 	public CompoundKey() {

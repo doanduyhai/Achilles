@@ -16,16 +16,18 @@
 package info.archinnov.achilles.test.mapping.entity;
 
 import java.util.UUID;
-import info.archinnov.achilles.annotations.Order;
+
+import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class TweetCompoundKey {
-	@Order(2)
+    @ClusteringColumn(1)
 	private String author;
 
-	@Order(1)
+	@PartitionKey
 	private UUID id;
 
-	@Order(3)
+    @ClusteringColumn(2)
 	private Integer retweetCount;
 
 	public TweetCompoundKey() {

@@ -16,10 +16,8 @@
 package info.archinnov.achilles.test.integration.entity;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithStaticCounter.TABLE_NAME;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Order;
+
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.Counter;
 
 @Entity(table = TABLE_NAME)
@@ -95,12 +93,10 @@ public class ClusteredEntityWithStaticCounter {
 	}
 
 	public static class ClusteredKeyForCounter {
-		@Column
-		@Order(1)
+		@PartitionKey
 		private Long id;
 
-		@Column
-		@Order(2)
+        @ClusteringColumn
 		private String name;
 
 		public ClusteredKeyForCounter() {

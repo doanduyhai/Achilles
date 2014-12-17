@@ -17,18 +17,16 @@
 package info.archinnov.achilles.test.parser.entity;
 
 import java.util.UUID;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.annotations.TimeUUID;
+
+import info.archinnov.achilles.annotations.*;
 
 public class EmbeddedKeyWithTimeUUID {
 
 	@TimeUUID
-	@Order(1)
-	@Column
+	@PartitionKey
 	private UUID date;
 
-	@Order(2)
+    @ClusteringColumn
 	@Column(name = "ranking")
 	private int rank;
 

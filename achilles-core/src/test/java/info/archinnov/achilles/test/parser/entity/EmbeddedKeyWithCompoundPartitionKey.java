@@ -16,20 +16,19 @@
 package info.archinnov.achilles.test.parser.entity;
 
 import java.util.UUID;
-import info.archinnov.achilles.annotations.Order;
+
+import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.PartitionKey;
 
 public class EmbeddedKeyWithCompoundPartitionKey {
 
-	@PartitionKey
-	@Order(1)
+	@PartitionKey(1)
 	private Long id;
 
-	@PartitionKey
-	@Order(2)
+	@PartitionKey(2)
 	private String type;
 
-	@Order(3)
+    @ClusteringColumn
 	private UUID date;
 
 	public Long getId() {

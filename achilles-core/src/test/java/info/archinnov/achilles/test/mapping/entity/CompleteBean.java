@@ -19,10 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Order;
+
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.Counter;
 
 @Entity
@@ -144,10 +142,10 @@ public class CompleteBean {
 	}
 
 	public static class UserTweetKey {
-		@Order(1)
+		@PartitionKey
 		private String user;
 
-		@Order(2)
+        @ClusteringColumn
 		private UUID tweet;
 
 		public UserTweetKey() {

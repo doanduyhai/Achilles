@@ -155,7 +155,7 @@ public class EmbeddedIdParserTest {
         parser = new EmbeddedIdParser(new PropertyParsingContext(context, nameField));
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(format("The component ordering is wrong for @EmbeddedId class '%s'",EmbeddedKeyWithNegativeOrder.class.getCanonicalName()));
+        exception.expectMessage(format("The partition components ordering is wrong for @EmbeddedId class '%s'",EmbeddedKeyWithNegativeOrder.class.getCanonicalName()));
 
         parser.parseEmbeddedId(EmbeddedKeyWithNegativeOrder.class, propertyParser);
     }
@@ -168,7 +168,7 @@ public class EmbeddedIdParserTest {
         parser = new EmbeddedIdParser(new PropertyParsingContext(context, nameField));
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(format("There should be at least 2 fields annotated with @Order for the @EmbeddedId class '%s'",EmbeddedKeyWithNoAnnotation.class.getCanonicalName()));
+        exception.expectMessage(format("Please use @PartitionKey and @ClusteringColumn annotations for the @EmbeddedId class '%s'",EmbeddedKeyWithNoAnnotation.class.getCanonicalName()));
 
         parser.parseEmbeddedId(EmbeddedKeyWithNoAnnotation.class, propertyParser);
     }
@@ -181,7 +181,7 @@ public class EmbeddedIdParserTest {
         parser = new EmbeddedIdParser(new PropertyParsingContext(context, nameField));
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(format("The order '1' is duplicated in @EmbeddedId class '%s",EmbeddedKeyWithDuplicateOrder.class.getCanonicalName()));
+        exception.expectMessage(format("The partition components ordering is wrong for @EmbeddedId class '%s",EmbeddedKeyWithDuplicateOrder.class.getCanonicalName()));
 
         parser.parseEmbeddedId(EmbeddedKeyWithDuplicateOrder.class, propertyParser);
     }
@@ -195,7 +195,7 @@ public class EmbeddedIdParserTest {
         parser = new EmbeddedIdParser(new PropertyParsingContext(context, userField));
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(format("There should be at least 2 fields annotated with @Order for the @EmbeddedId class '%s'",EmbeddedKeyWithOnlyOneComponent.class.getCanonicalName()));
+        exception.expectMessage(format("There should be at least 2 fields annotated with @PartitionKey or @ClusteringColumn for the @EmbeddedId class '%s'",EmbeddedKeyWithOnlyOneComponent.class.getCanonicalName()));
         parser.parseEmbeddedId(EmbeddedKeyWithOnlyOneComponent.class, propertyParser);
     }
 
@@ -234,7 +234,7 @@ public class EmbeddedIdParserTest {
 
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(format("The composite partition key ordering is wrong for @EmbeddedId class '%s'",EmbeddedKeyWithInconsistentCompoundPartitionKey.class.getCanonicalName()));
+        exception.expectMessage(format("The partition components ordering is wrong for @EmbeddedId class '%s'",EmbeddedKeyWithInconsistentCompoundPartitionKey.class.getCanonicalName()));
         parser.parseEmbeddedId(EmbeddedKeyWithInconsistentCompoundPartitionKey.class, propertyParser);
     }
 

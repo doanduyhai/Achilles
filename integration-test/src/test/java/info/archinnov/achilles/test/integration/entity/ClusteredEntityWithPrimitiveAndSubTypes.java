@@ -15,11 +15,7 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.*;
 
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -70,18 +66,13 @@ public class ClusteredEntityWithPrimitiveAndSubTypes {
     }
 
 	public static class ClusteredKey {
-		@Column
-		@Order(1)
-        @PartitionKey
+		@PartitionKey(1)
 		private Long id;
 
-		@Column
-		@Order(2)
-        @PartitionKey
+        @PartitionKey(2)
 		private int bucket;
 
-        @Column
-        @Order(3)
+        @ClusteringColumn
         private ByteBuffer date;
 
 		public ClusteredKey() {

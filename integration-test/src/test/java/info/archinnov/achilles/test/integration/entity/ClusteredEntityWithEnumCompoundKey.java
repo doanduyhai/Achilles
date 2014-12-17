@@ -17,10 +17,7 @@ package info.archinnov.achilles.test.integration.entity;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.TABLE_NAME;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.*;
 
 @Entity(table = TABLE_NAME)
 public class ClusteredEntityWithEnumCompoundKey {
@@ -90,12 +87,10 @@ public class ClusteredEntityWithEnumCompoundKey {
 	}
 
 	public static class ClusteredKey {
-		@Column
-		@Order(1)
+		@PartitionKey
 		private Long id;
 
-		@Column
-		@Order(2)
+        @ClusteringColumn
 		private Type type;
 
 		public ClusteredKey() {

@@ -18,10 +18,8 @@ package info.archinnov.achilles.test.integration.entity;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import java.util.Comparator;
 import java.util.Objects;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Order;
+
+import info.archinnov.achilles.annotations.*;
 
 @Entity(table = TABLE_NAME)
 public class ClusteredEntity {
@@ -94,16 +92,13 @@ public class ClusteredEntity {
     }
 
     public static class ClusteredKey {
-        @Column
-        @Order(1)
+        @PartitionKey
         private Long id;
 
-        @Column
-        @Order(2)
+        @ClusteringColumn(1)
         private Integer count;
 
-        @Column
-        @Order(3)
+        @ClusteringColumn(2)
         private String name;
 
         public ClusteredKey() {

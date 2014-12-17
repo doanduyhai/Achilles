@@ -24,7 +24,8 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Indicates that this component is part of the partition key.Useful to define a <strong>composite partition key</strong>
+ * Indicates that this component is part of the partition key.Useful to define a <strong>composite partition key</strong>.
+ * Please note that the ordering <strong>starts at 1</strong>
  *
  * <pre class="code"><code class="java">
  *
@@ -36,15 +37,11 @@ import java.lang.annotation.Target;
  *   public static class CompoundKey {
  *
  *      // Partition key component 1
- *      {@literal @}Column
- *      {@literal @}Order(1)
- *      <strong>{@literal @}PartitionKey</strong>
+ *      <strong>{@literal @}PartitionKey(1)</strong>
  *      private Long userId;
  *
  *      // Partition key component 2. Date in YYYYMMDD
- *      {@literal @}Column
- *      {@literal @}Order(2)
- *      <strong>{@literal @}PartitionKey</strong>
+ *      <strong>{@literal @}PartitionKey(2)</strong>
  *      private int date;
  *   }
  *
@@ -56,5 +53,11 @@ import java.lang.annotation.Target;
 @Target({ ElementType.FIELD })
 @Documented
 public @interface PartitionKey {
+
+    /**
+     * The order of this partition key, <strong>starting at 1</strong>
+     * @return
+     */
+    int value() default 1;
 
 }

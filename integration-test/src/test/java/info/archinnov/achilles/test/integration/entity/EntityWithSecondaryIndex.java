@@ -16,11 +16,7 @@
 
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Index;
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.*;
 
 @Entity
 public class EntityWithSecondaryIndex {
@@ -71,10 +67,10 @@ public class EntityWithSecondaryIndex {
 
 	public static class EmbeddedKey {
 
-		@Order(1)
+		@PartitionKey
 		private Long id;
 
-		@Order(2)
+        @ClusteringColumn
 		private Integer rank;
 
 		public EmbeddedKey() {

@@ -16,20 +16,20 @@
 
 package info.archinnov.achilles.test.parser.entity;
 
+import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class EmbeddedKeyWithMutipleReversedPosition {
 
-	@Order(1)
-	@Column
+	@PartitionKey
 	private String name;
 
-	@Order(value=2, reversed=true)
+    @ClusteringColumn(value = 1, reversed = true)
 	@Column(name = "ranking")
 	private int rank;
 
-	@Order(value=3, reversed=true)
+    @ClusteringColumn(value = 2, reversed = true)
 	@Column(name = "number")
 	private int number;
 

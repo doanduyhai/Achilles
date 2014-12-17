@@ -59,12 +59,10 @@ public class ClusteredEntityWithConsistencyLevel {
     }
 
     public static class ClusteredKey {
-        @Column
-        @Order(1)
+        @PartitionKey
         private Long id;
 
-        @Column
-        @Order(2)
+        @ClusteringColumn
         private Date date;
 
         public ClusteredKey() {

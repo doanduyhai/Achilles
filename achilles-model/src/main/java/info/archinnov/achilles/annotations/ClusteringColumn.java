@@ -16,29 +16,47 @@
 
 package info.archinnov.achilles.annotations;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
- * Deprecated, please use the
- * <strong>{@literal @}PartitionKey(value = x)</strong> and
- * <strong>{@literal @}ClusteringColumn(value = yyy)</strong> alternative
+ * Indicates that this component is a clustering column key. Please note that the ordering <strong>starts at 1</strong>
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   <strong>{@literal @}EmbeddedId</strong>
+ *   private CompoundKey compoundKey;
+ *
+ *   ...
+ *
+ *   public static class CompoundKey {
+ *
+ *      // Partition key component
+ *      <strong>{@literal @}PartitionKey</strong>
+ *      private Long userId;
+ *
+ *      // Clustering column 1. Date in YYYYMMDD
+ *      <strong>{@literal @}ClusteringColumn(1)</strong>
+ *      private int date;
+ *
+ *      // Clustering column 2. type
+ *      <strong>{@literal @}ClusteringColumn(2)</strong>
+ *      private String type;
+ *   }
+ *
+ * </code></pre>
+ * </p>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#clusteringcolumn" target="_blank">@ClusteringColumn</a>
  */
-@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
 @Documented
-public @interface Order {
+public @interface ClusteringColumn {
 
-	/**
-	 * <p>
-	 * Indicates the order. <strong>The order index start at 1</strong>
-	 * </p>
-	 */
-	int value();
+    /**
+     * The order of this clustering column, <strong>starting at 1</strong>
+     * @return
+     */
+    int value() default 1;
 
     /**
      * <p>
@@ -56,18 +74,17 @@ public @interface Order {
      *   public static class CompoundKey {
      *
      *      // Partition key
-     *      {@literal @}Column
-     *      <strong>{@literal @}Order(1)</strong>
+     *      <strong>{@literal @}PartitionKey</strong>
      *      private Long userId;
      *
-     *      // Clustering key
-     *      {@literal @}Column
-     *      {@literal @}Order(value = 2, <strong>reversed = true</strong>)
+     *      // Clustering column
+     *      {@literal @}ClusteringColumn(value = 1, <strong>reversed = true</strong>)
      *      private UUID time;
      *   }
      *
      * </code></pre>
      *
      */
-	boolean reversed() default false;
+    boolean reversed() default false;
+
 }

@@ -17,12 +17,10 @@
 package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.PartitionKey;
 
 public class EmbeddedKeyParent {
 
-    @Order(1)
     @PartitionKey
     @Column(name = "partition_key")
     protected String partitionKey;
