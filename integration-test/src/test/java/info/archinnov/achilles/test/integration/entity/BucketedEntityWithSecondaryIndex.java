@@ -16,11 +16,7 @@
 
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Index;
-import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.*;
 
 public class BucketedEntityWithSecondaryIndex {
 
@@ -57,15 +53,13 @@ public class BucketedEntityWithSecondaryIndex {
 
 	public static class EmbeddedKey {
 
-		@PartitionKey
-		@Order(1)
+		@PartitionKey(1)
 		private Long id;
 
-		@PartitionKey
-		@Order(2)
+		@PartitionKey(2)
 		private String type;
 
-		@Order(3)
+        @ClusteringColumn
 		private Integer rank;
 
 		public EmbeddedKey() {

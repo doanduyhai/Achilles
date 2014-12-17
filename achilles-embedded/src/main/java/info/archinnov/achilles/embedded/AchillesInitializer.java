@@ -17,15 +17,7 @@
 package info.archinnov.achilles.embedded;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.BUILD_NATIVE_SESSION_ONLY;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLUSTER_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.COMPRESSION_TYPE;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_HOST;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.LOAD_BALANCING_POLICY;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.RECONNECTION_POLICY;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.RETRY_POLICY;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
 import java.util.regex.Pattern;
 
@@ -71,9 +63,10 @@ public class AchillesInitializer {
 
     private void initialize(String cassandraHost, TypedMap parameters, ConfigMap achillesParameters) {
 
-        String keyspaceName = extractAndValidateKeyspaceName(achillesParameters);
         Boolean keyspaceDurableWrite = parameters.getTyped(KEYSPACE_DURABLE_WRITE);
         Boolean nativeSessionOnly = parameters.getTyped(BUILD_NATIVE_SESSION_ONLY);
+        Boolean nativeClusterOnly = parameters.getTyped(BUILD_NATIVE_CLUSTER_ONLY);
+
 
         String hostname;
         int cqlPort;
@@ -89,6 +82,13 @@ public class AchillesInitializer {
 
         final Cluster cluster = createCluster(hostname, cqlPort, parameters);
 
+
+        if (nativeClusterOnly) {
+            //Break here, nothing more to do
+            return;
+        }
+
+        String keyspaceName = extractAndValidateKeyspaceName(achillesParameters);
         createKeyspaceIfNeeded(cluster, keyspaceName, keyspaceDurableWrite);
 
         if (nativeSessionOnly) {
@@ -164,5 +164,9 @@ public class AchillesInitializer {
             session.execute(createKeyspaceStatement.toString());
         }
         session.close();
+    }
+
+    public Cluster getSingletonCluster() {
+        return singletonCluster;
     }
 }

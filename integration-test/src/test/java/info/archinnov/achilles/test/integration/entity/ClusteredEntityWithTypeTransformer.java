@@ -92,12 +92,10 @@ public class ClusteredEntityWithTypeTransformer {
     }
 
     public static class ClusteredKey {
-        @Column
-        @Order(1)
+        @PartitionKey
         private Long id;
 
-        @Column
-        @Order(2)
+        @ClusteringColumn
         @TypeTransformer(valueCodecClass = CountToInt.class)
         private MyCount count;
 

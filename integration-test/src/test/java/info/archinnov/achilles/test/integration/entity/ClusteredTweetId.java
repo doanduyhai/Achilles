@@ -17,19 +17,21 @@ package info.archinnov.achilles.test.integration.entity;
 
 import java.util.Date;
 import java.util.UUID;
+
+import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class ClusteredTweetId {
-	@Order(1)
+	@PartitionKey
 	@Column(name = "user_id")
 	private Long userId;
 
-	@Order(2)
+    @ClusteringColumn(1)
 	@Column(name = "tweet_id")
 	private UUID tweetId;
 
-	@Order(3)
+    @ClusteringColumn(2)
 	@Column(name = "creation_date")
 	private Date creationDate;
 

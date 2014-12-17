@@ -16,16 +16,15 @@
 
 package info.archinnov.achilles.test.parser.entity;
 
+import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Order;
 
 public class EmbeddedKeyWithBadReversedPosition {
 
-	@Order(value=1, reversed=true)
-	@Column
+    @ClusteringColumn(value=1, reversed=true)
 	private String name;
 
-	@Order(2)
+    @ClusteringColumn(2)
 	@Column(name = "ranking")
 	private int rank;
 

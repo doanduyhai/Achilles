@@ -61,6 +61,8 @@ public class CassandraEmbeddedConfigParameters {
 
     public static final String BUILD_NATIVE_SESSION_ONLY = "buildNativeSessionOnly";
 
+    public static final String BUILD_NATIVE_CLUSTER_ONLY = "buildNativeClusterOnly";
+
     public static final String KEYSPACE_NAME = "keyspaceName";
 
     /*
@@ -109,6 +111,7 @@ public class CassandraEmbeddedConfigParameters {
         defaultParams.put(RETRY_POLICY, Policies.defaultRetryPolicy());
         defaultParams.put(RECONNECTION_POLICY, Policies.defaultReconnectionPolicy());
         defaultParams.put(BUILD_NATIVE_SESSION_ONLY, false);
+        defaultParams.put(BUILD_NATIVE_CLUSTER_ONLY, false);
         defaultParams.putAll(parameters);
 
         return defaultParams;

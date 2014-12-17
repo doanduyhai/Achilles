@@ -28,6 +28,7 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLUSTER_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.COMMIT_LOG_FOLDER;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CONFIG_YAML_FILE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DATA_FILE_FOLDER;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
@@ -36,6 +37,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.datastax.driver.core.Cluster;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import com.datastax.driver.core.Session;
@@ -105,6 +108,8 @@ public class CassandraEmbeddedServerBuilder {
 
     private boolean buildNativeSessionOnly = false;
 
+    private boolean buildNativeClusterOnly = false;
+
     private Map<ConfigurationParameters, Object> achillesConfigParams = new HashMap<>();
 
     private CassandraEmbeddedServerBuilder() {
@@ -155,8 +160,8 @@ public class CassandraEmbeddedServerBuilder {
     }
 
     /**
-     * Bootstrap Achilles without entity packages. Only nativeQuery() and
-     * nativeSession() are useful in this mode
+     * Bootstrap Achilles without entity packages. Only nativeQuery(),
+     * nativeSession() and nativeCluster() are useful in this mode
      *
      * @return CassandraEmbeddedServerBuilder
      */
@@ -391,6 +396,19 @@ public class CassandraEmbeddedServerBuilder {
         return embeddedServer.getNativeSession(keyspace);
     }
 
+    /**
+     * Start an embedded Cassandra server but DO NOT bootstrap Achilles
+     *
+     * @return native Java driver core Cluster
+     */
+    public Cluster buildNativeClusterOnly() {
+        this.buildNativeClusterOnly = true;
+        TypedMap parameters = buildConfigMap();
+        ConfigMap achillesParameters = buildAchillesConfigMap();
+        final CassandraEmbeddedServer embeddedServer = new CassandraEmbeddedServer(parameters, achillesParameters);
+        return embeddedServer.getNativeCluster();
+    }
+
 
     private ConfigMap buildAchillesConfigMap() {
         ConfigMap config = new ConfigMap();
@@ -437,7 +455,10 @@ public class CassandraEmbeddedServerBuilder {
             config.put(CASSANDRA_STORAGE_SSL_PORT, storageSSLPort);
 
         config.put(KEYSPACE_DURABLE_WRITE, durableWrite);
+
         config.put(BUILD_NATIVE_SESSION_ONLY, buildNativeSessionOnly);
+
+        config.put(BUILD_NATIVE_CLUSTER_ONLY, buildNativeClusterOnly);
 
         TypedMap parameters = CassandraEmbeddedConfigParameters.mergeWithDefaultParameters(config);
         return parameters;

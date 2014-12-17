@@ -15,13 +15,14 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class EmbeddedKeyWithNegativeOrder {
-	@Order(-1)
+	@PartitionKey(-1)
 	private String name;
 
-	@Order(0)
+    @ClusteringColumn(0)
 	private int rank;
 
 	public String getName() {

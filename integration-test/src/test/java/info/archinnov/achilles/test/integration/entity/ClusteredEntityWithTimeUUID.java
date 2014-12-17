@@ -17,11 +17,8 @@ package info.archinnov.achilles.test.integration.entity;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUUID.TABLE_NAME;
 import java.util.UUID;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.annotations.TimeUUID;
+
+import info.archinnov.achilles.annotations.*;
 
 @Entity(table = TABLE_NAME)
 public class ClusteredEntityWithTimeUUID {
@@ -59,13 +56,11 @@ public class ClusteredEntityWithTimeUUID {
     }
 
     public static class ClusteredKey {
-        @Column
-        @Order(1)
+        @PartitionKey
         private Long id;
 
         @TimeUUID
-        @Column
-        @Order(2)
+        @ClusteringColumn
         private UUID date;
 
         public ClusteredKey() {

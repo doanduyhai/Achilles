@@ -23,16 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import info.archinnov.achilles.annotations.*;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.internal.utils.UUIDGen;
@@ -295,10 +291,10 @@ public class SchemaUpdateIT {
 
         public static class Compound {
 
-            @Order(1)
+            @PartitionKey
             private Long id;
 
-            @Order(2)
+            @ClusteringColumn
             @TimeUUID
             private UUID date;
 

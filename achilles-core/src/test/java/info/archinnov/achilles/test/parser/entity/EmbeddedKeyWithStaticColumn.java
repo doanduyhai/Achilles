@@ -15,14 +15,15 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
+import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class EmbeddedKeyWithStaticColumn {
-	@Order(1)
+	@PartitionKey
 	private String name;
 
-	@Order(2)
+    @ClusteringColumn
     @Column(name = "rank", staticColumn = true)
 	private int rank;
 

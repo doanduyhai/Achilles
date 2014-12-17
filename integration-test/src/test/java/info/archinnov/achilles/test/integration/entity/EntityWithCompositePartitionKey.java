@@ -21,7 +21,6 @@ import static info.archinnov.achilles.test.integration.entity.EntityWithComposit
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.PartitionKey;
 
 @Entity(table = TABLE_NAME)
@@ -61,12 +60,10 @@ public class EntityWithCompositePartitionKey {
 
 	public static class EmbeddedKey {
 
-		@PartitionKey
-		@Order(1)
+		@PartitionKey(1)
 		private Long id;
 
-		@PartitionKey
-		@Order(2)
+		@PartitionKey(2)
 		private String type;
 
 		public EmbeddedKey() {

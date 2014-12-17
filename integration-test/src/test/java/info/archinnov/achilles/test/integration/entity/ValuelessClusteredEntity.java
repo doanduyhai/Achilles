@@ -15,9 +15,7 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.*;
 
 @Entity
 public class ValuelessClusteredEntity {
@@ -41,10 +39,10 @@ public class ValuelessClusteredEntity {
 	}
 
 	public static class CompoundKey {
-		@Order(1)
+		@PartitionKey
 		private Long id;
 
-		@Order(2)
+        @ClusteringColumn
 		private String name;
 
 		public CompoundKey() {

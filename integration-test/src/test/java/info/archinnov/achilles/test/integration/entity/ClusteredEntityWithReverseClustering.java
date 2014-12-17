@@ -17,10 +17,7 @@ package info.archinnov.achilles.test.integration.entity;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithReverseClustering.TABLE_NAME;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.*;
 
 @Entity(table = TABLE_NAME)
 public class ClusteredEntityWithReverseClustering {
@@ -94,16 +91,13 @@ public class ClusteredEntityWithReverseClustering {
 	}
 
 	public static class ClusteredKey {
-		@Column
-		@Order(1)
+		@PartitionKey
 		private Long id;
 
-		@Column
-		@Order(value = 2,reversed = true)
+        @ClusteringColumn(value = 1,reversed = true)
 		private Integer count;
 
-		@Column
-		@Order(3)
+        @ClusteringColumn(2)
 		private String name;
 
 		public ClusteredKey() {

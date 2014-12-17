@@ -15,16 +15,17 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class CorrectEmbeddedReversedKey {
-	@Order(1)
+	@PartitionKey
 	private String name;
 
-	@Order(value=2, reversed=true)
+    @ClusteringColumn(value=1, reversed=true)
 	private int rank;
 
-    @Order(value=3, reversed=true)
+    @ClusteringColumn(value=2, reversed=true)
     private int count;
 
 	public String getName() {

@@ -16,12 +16,12 @@
 
 package info.archinnov.achilles.test.parser.entity;
 
+import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Order;
 
 public class EmbeddedKeyChild1 extends EmbeddedKeyParent {
 
-    @Order(2)
+    @ClusteringColumn
     @Column(name = "clustering_key")
     protected Long clustering;
 
