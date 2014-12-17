@@ -295,7 +295,7 @@ public class PersistenceContext {
             Function<List<ResultSet>, T> applyTriggers = new Function<List<ResultSet>, T>() {
                 @Override
                 public T apply(List<ResultSet> input) {
-                    flushContext.triggerInterceptor(entityMeta, entity, POST_UPDATE);
+                    flushContext.triggerInterceptor(entityMeta, proxy, POST_UPDATE);
                     return proxy;
                 }
             };
