@@ -17,6 +17,8 @@
 package info.archinnov.achilles.embedded;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+
+import com.datastax.driver.core.Cluster;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -43,8 +45,15 @@ public class CassandraEmbeddedServerBuilderTest {
                 .withKeyspaceName("keyspace1")
                 .buildPersistenceManagerFactory();
 
+        final Cluster cluster = CassandraEmbeddedServerBuilder
+                .noEntityPackages()
+                .buildNativeClusterOnly();
+
 
         assertThat(factory1).isNotEqualTo(factory2);
         assertThat(factory1).isEqualTo(factory3);
+        assertThat(factory1.createPersistenceManager().getNativeSession().getCluster()).isSameAs(cluster);
+        assertThat(factory2.createPersistenceManager().getNativeSession().getCluster()).isSameAs(cluster);
+        assertThat(factory3.createPersistenceManager().getNativeSession().getCluster()).isSameAs(cluster);
     }
 }

@@ -20,6 +20,7 @@ import static info.archinnov.achilles.embedded.ServerStarter.CASSANDRA_EMBEDDED;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
 import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.ACHILLES_DML_STATEMENT;
 
+import com.datastax.driver.core.Cluster;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.persistence.AsyncManager;
@@ -93,6 +94,9 @@ public class CassandraEmbeddedServer {
         return REPOSITORY.getSessionForKeyspace(keyspaceName);
     }
 
+    public Cluster getNativeCluster() {
+        return initializer.getSingletonCluster();
+    }
 
     public void truncateTable(String keyspaceName, String tableName) {
         String query = "TRUNCATE " + tableName;
