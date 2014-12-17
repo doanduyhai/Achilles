@@ -18,11 +18,7 @@ package info.archinnov.achilles.test.integration.entity;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCompositePartitionKey.TABLE_NAME;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.*;
 
 @Entity(table = TABLE_NAME)
 public class ClusteredEntityWithCompositePartitionKey {
@@ -61,15 +57,13 @@ public class ClusteredEntityWithCompositePartitionKey {
 
 	public static class EmbeddedKey {
 
-		@PartitionKey
-		@Order(1)
+		@PartitionKey(1)
 		private Long id;
 
-		@PartitionKey
-		@Order(2)
+		@PartitionKey(2)
 		private String type;
 
-		@Order(3)
+        @ClusteringColumn(1)
 		private Integer indexes;
 
 		public EmbeddedKey() {

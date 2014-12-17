@@ -16,10 +16,7 @@
 
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 
 import java.nio.ByteBuffer;
@@ -52,18 +49,16 @@ public class ClusteredEntityForTranscoding {
 
 	public static class EmbeddedKey {
 
-		@PartitionKey
-		@Order(1)
+		@PartitionKey(1)
 		private long id;
 
-		@PartitionKey
-		@Order(2)
+		@PartitionKey(2)
 		private PropertyType type;
 
-		@Order(3)
+        @ClusteringColumn(1)
 		private Integer year;
 
-        @Order(4)
+        @ClusteringColumn(2)
         private ByteBuffer bytes;
 
 		public EmbeddedKey() {

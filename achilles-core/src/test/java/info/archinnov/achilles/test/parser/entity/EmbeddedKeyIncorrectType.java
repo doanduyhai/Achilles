@@ -16,13 +16,15 @@
 package info.archinnov.achilles.test.parser.entity;
 
 import java.util.List;
-import info.archinnov.achilles.annotations.Order;
+
+import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class EmbeddedKeyIncorrectType {
-	@Order(1)
+	@PartitionKey
 	private List<String> name;
 
-	@Order(2)
+    @ClusteringColumn
 	private int rank;
 
 	public List<String> getName() {

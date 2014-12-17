@@ -17,12 +17,13 @@
 package info.archinnov.achilles.test.parser.entity;
 
 import java.util.UUID;
+
+import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Order;
 
 public class EmbeddedKeyChild3 extends EmbeddedKeyChild2 {
 
-    @Order(3)
+    @ClusteringColumn
     @Column(name = "clustering_key")
     private UUID clustering;
 

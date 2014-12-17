@@ -1,10 +1,6 @@
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.annotations.Strategy;
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.NamingStrategy;
 
 @Entity(table = "caseSensitiveNaming")
@@ -55,10 +51,10 @@ public class ClusteredEntityWithNamingStrategy {
 
     public static class EmbeddedKey {
 
-        @Order(1)
+        @PartitionKey
         private Long partitionKey;
 
-        @Order(2)
+        @ClusteringColumn
         @Column(name = "clustering")
         private String clusteringKey;
 

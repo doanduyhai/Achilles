@@ -17,13 +17,11 @@
 package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.PartitionKey;
 
 public class EmbeddedKeyChild2 extends EmbeddedKeyParent {
 
-    @Order(2)
-    @PartitionKey
+    @PartitionKey(2)
     @Column(name = "partition_key2")
     protected Long partitionKey2;
 

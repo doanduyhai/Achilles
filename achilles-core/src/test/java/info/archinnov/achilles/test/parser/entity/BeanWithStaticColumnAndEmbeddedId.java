@@ -18,8 +18,6 @@ package info.archinnov.achilles.test.parser.entity;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.PartitionKey;
 
 @Entity
@@ -33,12 +31,10 @@ public class BeanWithStaticColumnAndEmbeddedId {
 
     public static class Embedded {
 
-        @Order(1)
-        @PartitionKey
+        @PartitionKey(1)
         private Long id;
 
-        @Order(2)
-        @PartitionKey
+        @PartitionKey(2)
         private int date;
 
         public Long getId() {

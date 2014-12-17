@@ -15,14 +15,15 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class ClusteredMessageId {
 
-	@Order(1)
+	@PartitionKey
 	private Long id;
 
-	@Order(2)
+    @ClusteringColumn
 	private Type type;
 
 	public ClusteredMessageId() {

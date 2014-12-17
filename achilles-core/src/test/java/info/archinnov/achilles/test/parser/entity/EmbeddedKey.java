@@ -15,17 +15,17 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
+import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class EmbeddedKey {
 
-	@Order(1)
+    @PartitionKey
 	@Column(name = "id")
 	private Long userId;
 
-	@Order(2)
-	@Column
+    @ClusteringColumn
 	private String name;
 
 	public EmbeddedKey() {

@@ -16,14 +16,17 @@
 package info.archinnov.achilles.test.parser.entity;
 
 import java.lang.annotation.ElementType;
-import info.archinnov.achilles.annotations.Order;
+
+import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class EmbeddedKeyWithEnum {
 
-	@Order(1)
+	@PartitionKey
 	private Long id;
 
-	@Order(2)
+    @ClusteringColumn
+
 	private ElementType type;
 
 	public Long getId() {
