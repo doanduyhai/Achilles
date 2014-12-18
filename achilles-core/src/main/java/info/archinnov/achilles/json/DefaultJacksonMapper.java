@@ -26,6 +26,7 @@ public enum DefaultJacksonMapper {
 
     private static ObjectMapper defaultJacksonMapper() {
         ObjectMapper defaultMapper = new ObjectMapper();
+        defaultMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
         defaultMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         defaultMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         AnnotationIntrospector primary = new JacksonAnnotationIntrospector();
