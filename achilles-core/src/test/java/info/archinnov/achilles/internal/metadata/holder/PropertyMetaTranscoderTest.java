@@ -1,7 +1,7 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
 import static info.archinnov.achilles.internal.metadata.holder.EmbeddedIdPropertiesBuilder.buildEmbeddedIdProperties;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COMPOUND_PRIMARY_KEY;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.MAP;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SET;
@@ -35,7 +35,7 @@ public class PropertyMetaTranscoderTest {
     private PropertyMeta meta;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private EmbeddedIdProperties embeddedIdProperties;
+    private CompoundPKProperties compoundPKProperties;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta entityMeta;
@@ -45,7 +45,7 @@ public class PropertyMetaTranscoderTest {
     @Before
     public void setUp() {
         view = new PropertyMetaTranscoder(meta);
-        when(meta.getEmbeddedIdProperties()).thenReturn(embeddedIdProperties);
+        when(meta.getCompoundPKProperties()).thenReturn(compoundPKProperties);
     }
 
     @Test
@@ -56,7 +56,7 @@ public class PropertyMetaTranscoderTest {
 
         CompleteBean pk = new CompleteBean();
 
-        when(meta.type()).thenReturn(EMBEDDED_ID);
+        when(meta.type()).thenReturn(COMPOUND_PRIMARY_KEY);
         when(meta.forValues().instantiate()).thenReturn(pk);
 
         PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
@@ -64,7 +64,7 @@ public class PropertyMetaTranscoderTest {
 
         final PartitionComponents partitionComponents = new PartitionComponents(asList(idMeta));
         final ClusteringComponents clusteringComponents = new ClusteringComponents(asList(dateMeta), Arrays.<ClusteringOrder>asList());
-        when(meta.getEmbeddedIdProperties()).thenReturn(buildEmbeddedIdProperties(partitionComponents, clusteringComponents, "entity"));
+        when(meta.getCompoundPKProperties()).thenReturn(buildEmbeddedIdProperties(partitionComponents, clusteringComponents, "entity"));
 
         when(idMeta.forTranscoding().decodeFromCassandra(id)).thenReturn(id);
         when(dateMeta.forTranscoding().decodeFromCassandra(date)).thenReturn(date);
@@ -201,14 +201,14 @@ public class PropertyMetaTranscoderTest {
 
         CompleteBean pk = new CompleteBean();
 
-        when(meta.type()).thenReturn(EMBEDDED_ID);
+        when(meta.type()).thenReturn(COMPOUND_PRIMARY_KEY);
 
         PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta dateMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
         final PartitionComponents partitionComponents = new PartitionComponents(asList(idMeta));
         final ClusteringComponents clusteringComponents = new ClusteringComponents(asList(dateMeta), Arrays.<ClusteringOrder>asList());
-        when(meta.getEmbeddedIdProperties()).thenReturn(buildEmbeddedIdProperties(partitionComponents, clusteringComponents, "entity"));
+        when(meta.getCompoundPKProperties()).thenReturn(buildEmbeddedIdProperties(partitionComponents, clusteringComponents, "entity"));
 
         when(idMeta.forTranscoding().getAndEncodeValueForCassandra(pk)).thenReturn(id);
         when(dateMeta.forTranscoding().getAndEncodeValueForCassandra(pk)).thenReturn(date);
@@ -226,11 +226,11 @@ public class PropertyMetaTranscoderTest {
 
         CompleteBean pk = new CompleteBean();
 
-        when(meta.type()).thenReturn(EMBEDDED_ID);
+        when(meta.type()).thenReturn(COMPOUND_PRIMARY_KEY);
 
         PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
-        when(meta.getEmbeddedIdProperties().getPartitionComponents()).thenReturn(new PartitionComponents(asList(idMeta)));
+        when(meta.getCompoundPKProperties().getPartitionComponents()).thenReturn(new PartitionComponents(asList(idMeta)));
 
         when(idMeta.forTranscoding().getAndEncodeValueForCassandra(pk)).thenReturn(id);
 
@@ -244,7 +244,7 @@ public class PropertyMetaTranscoderTest {
     @Test
     public void should_encode_null_pk() throws Exception {
         //Given
-        when(meta.type()).thenReturn(EMBEDDED_ID);
+        when(meta.type()).thenReturn(COMPOUND_PRIMARY_KEY);
 
         //When
         final List<Object> encoded = view.encodeToComponents(null, true);
@@ -284,11 +284,11 @@ public class PropertyMetaTranscoderTest {
         final Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final int bucket = 10;
 
-        when(meta.type()).thenReturn(EMBEDDED_ID);
+        when(meta.type()).thenReturn(COMPOUND_PRIMARY_KEY);
         PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta bucketMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta anotherMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        when(meta.getEmbeddedIdProperties().getPartitionComponents()).thenReturn(new PartitionComponents(asList(idMeta, bucketMeta, anotherMeta)));
+        when(meta.getCompoundPKProperties().getPartitionComponents()).thenReturn(new PartitionComponents(asList(idMeta, bucketMeta, anotherMeta)));
         when(idMeta.forTranscoding().encodeToCassandra(id)).thenReturn(id);
         when(bucketMeta.forTranscoding().encodeToCassandra(bucket)).thenReturn(bucket);
 
@@ -304,10 +304,10 @@ public class PropertyMetaTranscoderTest {
         //Given
         final int bucket1 = 10, bucket2 = 11;
 
-        when(meta.type()).thenReturn(EMBEDDED_ID);
+        when(meta.type()).thenReturn(COMPOUND_PRIMARY_KEY);
         PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta bucketMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        when(meta.getEmbeddedIdProperties().getPartitionComponents()).thenReturn(new PartitionComponents(asList(idMeta, bucketMeta)));
+        when(meta.getCompoundPKProperties().getPartitionComponents()).thenReturn(new PartitionComponents(asList(idMeta, bucketMeta)));
         when(bucketMeta.forTranscoding().encodeToCassandra(bucket1)).thenReturn(bucket1);
         when(bucketMeta.forTranscoding().encodeToCassandra(bucket2)).thenReturn(bucket2);
 
@@ -325,10 +325,10 @@ public class PropertyMetaTranscoderTest {
         final Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final int bucket = 10;
 
-        when(meta.type()).thenReturn(EMBEDDED_ID);
+        when(meta.type()).thenReturn(COMPOUND_PRIMARY_KEY);
         PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta bucketMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        when(meta.getEmbeddedIdProperties().getClusteringComponents()).thenReturn(new ClusteringComponents(asList(idMeta, bucketMeta), Arrays.<ClusteringOrder>asList()));
+        when(meta.getCompoundPKProperties().getClusteringComponents()).thenReturn(new ClusteringComponents(asList(idMeta, bucketMeta), Arrays.<ClusteringOrder>asList()));
         when(idMeta.forTranscoding().encodeToCassandra(id)).thenReturn(id);
         when(bucketMeta.forTranscoding().encodeToCassandra(bucket)).thenReturn(bucket);
 
@@ -344,10 +344,10 @@ public class PropertyMetaTranscoderTest {
         //Given
         final int bucket1 = 10, bucket2 = 11;
 
-        when(meta.type()).thenReturn(EMBEDDED_ID);
+        when(meta.type()).thenReturn(COMPOUND_PRIMARY_KEY);
         PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta bucketMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        when(meta.getEmbeddedIdProperties().getClusteringComponents()).thenReturn(new ClusteringComponents(asList(idMeta, bucketMeta), Arrays.<ClusteringOrder>asList()));
+        when(meta.getCompoundPKProperties().getClusteringComponents()).thenReturn(new ClusteringComponents(asList(idMeta, bucketMeta), Arrays.<ClusteringOrder>asList()));
         when(bucketMeta.forTranscoding().encodeToCassandra(bucket1)).thenReturn(bucket1);
         when(bucketMeta.forTranscoding().encodeToCassandra(bucket2)).thenReturn(bucket2);
 

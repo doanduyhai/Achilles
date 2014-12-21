@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import info.archinnov.achilles.test.parser.entity.CompoundPK;
 import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
@@ -69,7 +70,6 @@ import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PreparedStatementBinderTest {
@@ -178,7 +178,7 @@ public class PreparedStatementBinderTest {
         String name = "name";
         String address = "30 WallStreet";
         int age = 30;
-        EmbeddedKey primaryKey = new EmbeddedKey(userId, name);
+        CompoundPK primaryKey = new CompoundPK(userId, name);
 
         PropertyMeta addressMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta ageMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
@@ -202,7 +202,7 @@ public class PreparedStatementBinderTest {
     public void should_bind_with_only_pk_in_where_clause() throws Exception {
         long userId = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String name = "name";
-        EmbeddedKey primaryKey = new EmbeddedKey(userId, name);
+        CompoundPK primaryKey = new CompoundPK(userId, name);
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(context.getPrimaryKey()).thenReturn(primaryKey);

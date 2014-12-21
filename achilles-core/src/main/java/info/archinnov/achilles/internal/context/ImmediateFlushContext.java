@@ -23,7 +23,6 @@ import static com.google.common.collect.FluentIterable.from;
 import static java.util.Arrays.asList;
 import java.util.List;
 
-import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.type.Empty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

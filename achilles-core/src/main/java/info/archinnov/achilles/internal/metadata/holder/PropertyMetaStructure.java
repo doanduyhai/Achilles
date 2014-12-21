@@ -8,12 +8,12 @@ public class PropertyMetaStructure extends PropertyMetaView {
     }
 
     public boolean isEmbeddedId() {
-        return meta.type().isEmbeddedId();
+        return meta.type().isCompoundPK();
     }
 
     public boolean isClustered() {
         if (isEmbeddedId()) {
-            return meta.getEmbeddedIdProperties().getClusteringComponents().isClustered();
+            return meta.getCompoundPKProperties().getClusteringComponents().isClustered();
         }
         return false;
     }

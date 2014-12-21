@@ -20,7 +20,7 @@ import info.archinnov.achilles.annotations.*;
 @Entity
 public class ValuelessClusteredEntity {
 
-	@EmbeddedId
+	@CompoundPrimaryKey
 	private CompoundKey id;
 
 	public ValuelessClusteredEntity() {

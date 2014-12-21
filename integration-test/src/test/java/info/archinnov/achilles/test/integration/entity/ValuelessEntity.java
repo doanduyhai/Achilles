@@ -16,13 +16,13 @@
 package info.archinnov.achilles.test.integration.entity;
 
 import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 @Entity(table = ValuelessEntity.TABLE_NAME)
 public class ValuelessEntity {
 
     public static final String TABLE_NAME = "valueless_entity";
-    @Id
+    @PartitionKey
 	private Long id;
 
 	public ValuelessEntity() {

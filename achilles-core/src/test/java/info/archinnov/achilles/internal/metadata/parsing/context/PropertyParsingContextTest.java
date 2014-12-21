@@ -32,7 +32,7 @@ import java.lang.reflect.Field;
 public class PropertyParsingContextTest {
 
     @Test
-    public void should_set_primaryKey_to_true_when_embedded_id() throws Exception {
+    public void should_set_primaryKey_to_true_when_compound_pk() throws Exception {
         //Given
         EntityParsingContext entityContext = mock(EntityParsingContext.class, RETURNS_DEEP_STUBS);
         when(entityContext.getCurrentEntityClass()).thenReturn((Class) CompleteBean.class);
@@ -41,10 +41,10 @@ public class PropertyParsingContextTest {
         PropertyParsingContext context = new PropertyParsingContext(entityContext, field);
 
         //When
-        context.setEmbeddedId(true);
+        context.setCompoundPrimaryKey(true);
 
         //Then
-        assertThat(context.isEmbeddedId()).isTrue();
+        assertThat(context.isCompoundPrimaryKey()).isTrue();
         assertThat(context.isPrimaryKey()).isTrue();
         assertThat(context.<CompleteBean>getCurrentEntityClass()).isEqualTo(CompleteBean.class);
         assertThat(context.getCurrentCQLColumnName()).isEqualTo("age_in_years");

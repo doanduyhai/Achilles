@@ -71,12 +71,12 @@ public class MapCodecImplTest {
                 .withValueCodec(valueCodec);
 
         //When
-        Map<String, String> encoded = mapCodec.encode(ImmutableMap.of(PropertyType.COUNTER, 1, PropertyType.ID, 2));
+        Map<String, String> encoded = mapCodec.encode(ImmutableMap.of(PropertyType.COUNTER, 1, PropertyType.PARTITION_KEY, 2));
         Map<PropertyType, Integer> decoded = mapCodec.decode(ImmutableMap.of("LIST", "3", "SET", "4"));
 
         //Then
         assertThat(encoded.get("COUNTER")).isEqualTo("1");
-        assertThat(encoded.get("ID")).isEqualTo("2");
+        assertThat(encoded.get("PARTITION_KEY")).isEqualTo("2");
 
         assertThat(decoded.get(PropertyType.LIST)).isEqualTo(3);
         assertThat(decoded.get(PropertyType.SET)).isEqualTo(4);
@@ -114,12 +114,12 @@ public class MapCodecImplTest {
                 .withValueType(String.class);
 
         //When
-        Map<String, String> encoded = mapCodec.encode(ImmutableMap.of(PropertyType.COUNTER, "1", PropertyType.ID, "2"));
+        Map<String, String> encoded = mapCodec.encode(ImmutableMap.of(PropertyType.COUNTER, "1", PropertyType.PARTITION_KEY, "2"));
         Map<PropertyType, String> decoded = mapCodec.decode(ImmutableMap.of("LIST", "3", "SET", "4"));
 
         //Then
         assertThat(encoded.get("COUNTER")).isEqualTo("1");
-        assertThat(encoded.get("ID")).isEqualTo("2");
+        assertThat(encoded.get("PARTITION_KEY")).isEqualTo("2");
 
         assertThat(decoded.get(PropertyType.LIST)).isEqualTo("3");
         assertThat(decoded.get(PropertyType.SET)).isEqualTo("4");
@@ -157,12 +157,12 @@ public class MapCodecImplTest {
                 .withValueCodec(valueCodec);
 
         //When
-        Map<PropertyType, String> encoded = mapCodec.encode(ImmutableMap.of(PropertyType.COUNTER, 1, PropertyType.ID, 2));
+        Map<PropertyType, String> encoded = mapCodec.encode(ImmutableMap.of(PropertyType.COUNTER, 1, PropertyType.PARTITION_KEY, 2));
         Map<PropertyType, Integer> decoded = mapCodec.decode(ImmutableMap.of(PropertyType.LIST, "3", PropertyType.SET, "4"));
 
         //Then
         assertThat(encoded.get(PropertyType.COUNTER)).isEqualTo("1");
-        assertThat(encoded.get(PropertyType.ID)).isEqualTo("2");
+        assertThat(encoded.get(PropertyType.PARTITION_KEY)).isEqualTo("2");
 
         assertThat(decoded.get(PropertyType.LIST)).isEqualTo(3);
         assertThat(decoded.get(PropertyType.SET)).isEqualTo(4);
@@ -174,12 +174,12 @@ public class MapCodecImplTest {
         MapCodec<PropertyType, Integer, PropertyType, Integer> mapCodec = MapCodecBuilder.withKeyType(PropertyType.class).withValueType(Integer.class);
 
         //When
-        Map<PropertyType, Integer> encoded = mapCodec.encode(ImmutableMap.of(PropertyType.COUNTER, 1, PropertyType.ID, 2));
+        Map<PropertyType, Integer> encoded = mapCodec.encode(ImmutableMap.of(PropertyType.COUNTER, 1, PropertyType.PARTITION_KEY, 2));
         Map<PropertyType, Integer> decoded = mapCodec.decode(ImmutableMap.of(PropertyType.LIST, 3, PropertyType.SET, 4));
 
         //Then
         assertThat(encoded.get(PropertyType.COUNTER)).isEqualTo(1);
-        assertThat(encoded.get(PropertyType.ID)).isEqualTo(2);
+        assertThat(encoded.get(PropertyType.PARTITION_KEY)).isEqualTo(2);
 
         assertThat(decoded.get(PropertyType.LIST)).isEqualTo(3);
         assertThat(decoded.get(PropertyType.SET)).isEqualTo(4);

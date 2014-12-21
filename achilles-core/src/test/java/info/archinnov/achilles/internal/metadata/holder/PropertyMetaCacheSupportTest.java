@@ -19,10 +19,10 @@ public class PropertyMetaCacheSupportTest {
     private PropertyMeta meta;
 
     @Test
-    public void should_extract_clustered_fields_from_embedded_id() throws Exception {
+    public void should_extract_clustered_fields_from_compound_pk() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(meta.getEmbeddedIdProperties().getCQLComponentNames()).thenReturn(Arrays.asList("a", "b"));
+        when(meta.getCompoundPKProperties().getCQLComponentNames()).thenReturn(Arrays.asList("a", "b"));
         final PropertyMetaCacheSupport view = new PropertyMetaCacheSupport(meta);
 
         //When

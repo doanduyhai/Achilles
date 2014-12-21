@@ -20,7 +20,7 @@ import info.archinnov.achilles.annotations.*;
 
 public class BucketedEntityWithSecondaryIndex {
 
-	@EmbeddedId
+	@CompoundPrimaryKey
 	private EmbeddedKey id;
 
 	@Column

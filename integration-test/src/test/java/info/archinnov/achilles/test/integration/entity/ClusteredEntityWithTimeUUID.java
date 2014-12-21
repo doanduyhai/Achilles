@@ -25,7 +25,7 @@ public class ClusteredEntityWithTimeUUID {
 
     public static final String TABLE_NAME = "clustered_with_time_uuid";
 
-    @EmbeddedId
+    @CompoundPrimaryKey
     private ClusteredKey id;
 
     @Column

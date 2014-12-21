@@ -15,28 +15,42 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.Column;
+import java.util.Date;
+
+import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.PartitionKey;
 
-public class EmbeddedKeyWithOnlyOneComponent {
+public class CompoundPKWithDuplicateOrder {
+	@PartitionKey(1)
+	private String name;
 
-	@PartitionKey
-	@Column(name = "id")
-	private Long userId;
+    @PartitionKey(1)
+	private int rank;
 
-	public EmbeddedKeyWithOnlyOneComponent() {
+    @ClusteringColumn
+	private Date date;
+
+	public String getName() {
+		return name;
 	}
 
-	public EmbeddedKeyWithOnlyOneComponent(Long userId, String name) {
-		this.userId = userId;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public Long getUserId() {
-		return userId;
+	public int getRank() {
+		return rank;
 	}
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
+	public void setRank(int rank) {
+		this.rank = rank;
 	}
 
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
 }

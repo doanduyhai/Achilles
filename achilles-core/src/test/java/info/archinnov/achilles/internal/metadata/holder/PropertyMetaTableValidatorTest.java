@@ -38,7 +38,7 @@ public class PropertyMetaTableValidatorTest {
     private PropertyMeta meta;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private EmbeddedIdProperties embeddedIdProperties;
+    private CompoundPKProperties compoundPKProperties;
 
     @Mock
     private TableMetadata tableMetadata;
@@ -54,7 +54,7 @@ public class PropertyMetaTableValidatorTest {
     @Before
     public void setUp() {
         view = new PropertyMetaTableValidator(meta);
-        when(meta.getEmbeddedIdProperties()).thenReturn(embeddedIdProperties);
+        when(meta.getCompoundPKProperties()).thenReturn(compoundPKProperties);
         when(tableMetadata.getName()).thenReturn("table");
     }
 
@@ -66,7 +66,7 @@ public class PropertyMetaTableValidatorTest {
 
         PropertyMeta partitionMeta1 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta partitionMeta2 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        when(embeddedIdProperties.getPartitionComponents()).thenReturn(new PartitionComponents(asList(partitionMeta1, partitionMeta2)));
+        when(compoundPKProperties.getPartitionComponents()).thenReturn(new PartitionComponents(asList(partitionMeta1, partitionMeta2)));
 
         when(partitionMeta1.getCQLColumnName()).thenReturn("id");
         when(partitionMeta2.getCQLColumnName()).thenReturn("name");
@@ -90,7 +90,7 @@ public class PropertyMetaTableValidatorTest {
 
         PropertyMeta clusteringMeta1 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta clusteringMeta2 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        when(embeddedIdProperties.getClusteringComponents()).thenReturn(new ClusteringComponents(asList(clusteringMeta1, clusteringMeta2), Arrays.<ClusteringOrder>asList()));
+        when(compoundPKProperties.getClusteringComponents()).thenReturn(new ClusteringComponents(asList(clusteringMeta1, clusteringMeta2), Arrays.<ClusteringOrder>asList()));
 
         when(clusteringMeta1.getCQLColumnName()).thenReturn("id");
         when(clusteringMeta2.getCQLColumnName()).thenReturn("name");

@@ -18,7 +18,7 @@ package info.archinnov.achilles.internal.metadata.holder;
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.STATIC_COLUMN_FILTER;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EXCLUDE_COUNTER_TYPE;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EXCLUDE_ID_AND_COUNTER_TYPE;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EXCLUDE_PK_AND_COUNTER_TYPE;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EXCLUDE_ID_TYPES;
 
 import java.lang.reflect.Method;
@@ -84,7 +84,7 @@ public class EntityMetaBuilder {
         meta.setAllMetasExceptId(allMetasExceptId);
 
         List<PropertyMeta> allMetasExceptIdAndCounters = new ArrayList<>(from(propertyMetas.values()).filter(
-                EXCLUDE_ID_AND_COUNTER_TYPE).toList());
+                EXCLUDE_PK_AND_COUNTER_TYPE).toList());
         meta.setAllMetasExceptIdAndCounters(allMetasExceptIdAndCounters);
 
         List<PropertyMeta> allMetasExceptCounters = new ArrayList<>(from(propertyMetas.values()).filter(

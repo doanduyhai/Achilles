@@ -16,13 +16,13 @@
 package info.archinnov.achilles.test.integration.entity;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.CompoundPrimaryKey;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.type.Counter;
 
 @Entity
 public class ClusteredTweetEntity {
-	@EmbeddedId
+	@CompoundPrimaryKey
 	private ClusteredTweetId id;
 
 	@Column

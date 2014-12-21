@@ -15,13 +15,13 @@
  */
 package info.archinnov.achilles.internal.reflection;
 
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.PARTITION_KEY;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.test.parser.entity.CompoundPK;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -167,7 +167,7 @@ public class ReflectionInvokerTest {
 		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		CompleteBean bean = new CompleteBean(id);
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).type(ID).propertyName("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).type(PARTITION_KEY).propertyName("id")
 				.accessors().build();
 
 		Object key = invoker.getPrimaryKey(bean, idMeta);
@@ -177,7 +177,7 @@ public class ReflectionInvokerTest {
 	@Test
 	public void should_exception_when_getting_primary_key() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).type(ID).propertyName("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).type(PARTITION_KEY).propertyName("id")
 				.accessors().build();
 
 		exception.expect(AchillesException.class);
@@ -196,7 +196,7 @@ public class ReflectionInvokerTest {
 
 	@Test
 	public void should_instanciate_entity_from_class() throws Exception {
-		EmbeddedKey actual = invoker.instantiate(EmbeddedKey.class);
+		CompoundPK actual = invoker.instantiate(CompoundPK.class);
 		assertThat(actual).isNotNull();
 		assertThat(actual.getUserId()).isNull();
 		assertThat(actual.getName()).isNull();

@@ -102,7 +102,7 @@ public class PropertyMetaTestBuilder<T, K, V> {
         }
 
         if (!partitionBuilder.getPropertyMetas().isEmpty()) {
-            pm.setEmbeddedIdProperties(EmbeddedIdPropertiesBuilder.buildEmbeddedIdProperties(partitionBuilder.buildPartitionKeys(), clusteringBuilder.buildClusteringKeys(), entityClassName));
+            pm.setCompoundPKProperties(EmbeddedIdPropertiesBuilder.buildEmbeddedIdProperties(partitionBuilder.buildPartitionKeys(), clusteringBuilder.buildClusteringKeys(), entityClassName));
         }
 
         if (counterIdMeta != null || fqcn != null) {

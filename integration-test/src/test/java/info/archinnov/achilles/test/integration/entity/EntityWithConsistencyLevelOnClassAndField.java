@@ -18,17 +18,15 @@ package info.archinnov.achilles.test.integration.entity;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
+
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.Counter;
 
 @Entity
 @Consistency(read = THREE, write = QUORUM)
 public class EntityWithConsistencyLevelOnClassAndField {
 
-    @Id
+    @PartitionKey
     private Long id;
 
     @Column

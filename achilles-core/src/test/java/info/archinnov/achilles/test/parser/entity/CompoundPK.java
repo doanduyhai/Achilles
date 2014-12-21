@@ -15,20 +15,34 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import java.util.Date;
-
 import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.PartitionKey;
 
-public class EmbeddedKeyWithDuplicateOrder {
-	@PartitionKey(1)
-	private String name;
+public class CompoundPK {
 
-    @PartitionKey(1)
-	private int rank;
+    @PartitionKey
+	@Column(name = "id")
+	private Long userId;
 
     @ClusteringColumn
-	private Date date;
+	private String name;
+
+	public CompoundPK() {
+	}
+
+	public CompoundPK(Long userId, String name) {
+		this.userId = userId;
+		this.name = name;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
 
 	public String getName() {
 		return name;
@@ -36,21 +50,5 @@ public class EmbeddedKeyWithDuplicateOrder {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public int getRank() {
-		return rank;
-	}
-
-	public void setRank(int rank) {
-		this.rank = rank;
-	}
-
-	public Date getDate() {
-		return date;
-	}
-
-	public void setDate(Date date) {
-		this.date = date;
 	}
 }

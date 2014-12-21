@@ -57,14 +57,14 @@ public class PropertyMeta {
 
     public static final Function<PropertyMeta, List<String>> GET_CQL_COLUMN_NAMES_FROM_EMBEDDED_ID = new Function<PropertyMeta, List<String>>() {
         @Override
-        public List<String> apply(PropertyMeta embeddedIdMeta) {
-            return embeddedIdMeta.getEmbeddedIdProperties().getCQLComponentNames();
+        public List<String> apply(PropertyMeta compoundPKMeta) {
+            return compoundPKMeta.getCompoundPKProperties().getCQLComponentNames();
         }
     };
 
     ObjectMapper defaultJacksonMapperForCounter = DefaultJacksonMapper.COUNTER.get();
 
-    private EmbeddedIdProperties embeddedIdProperties;
+    private CompoundPKProperties compoundPKProperties;
     private String entityClassName;
     private Class<?> valueClass;
     private Class<?> keyClass;
@@ -239,12 +239,12 @@ public class PropertyMeta {
         this.field = field;
     }
 
-    EmbeddedIdProperties getEmbeddedIdProperties() {
-        return embeddedIdProperties;
+    CompoundPKProperties getCompoundPKProperties() {
+        return compoundPKProperties;
     }
 
-    void setEmbeddedIdProperties(EmbeddedIdProperties embeddedIdProperties) {
-        this.embeddedIdProperties = embeddedIdProperties;
+    void setCompoundPKProperties(CompoundPKProperties compoundPKProperties) {
+        this.compoundPKProperties = compoundPKProperties;
     }
 
     public void setIdMetaForCounterProperties(PropertyMeta idMeta) {
@@ -352,7 +352,7 @@ public class PropertyMeta {
     public String toString() {
         return Objects.toStringHelper(this.getClass()).add("type", type).add("entityClassName", entityClassName)
                 .add("propertyName", propertyName).add("keyClass", keyClass).add("valueClass", valueClass)
-                .add("counterProperties", counterProperties).add("embeddedIdProperties", embeddedIdProperties)
+                .add("counterProperties", counterProperties).add("compoundPKProperties", compoundPKProperties)
                 .add("consistencyLevels", consistencyLevels).toString();
     }
 

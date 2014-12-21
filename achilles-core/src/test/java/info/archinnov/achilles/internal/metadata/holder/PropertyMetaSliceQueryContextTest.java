@@ -3,7 +3,6 @@ package info.archinnov.achilles.internal.metadata.holder;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,18 +21,18 @@ public class PropertyMetaSliceQueryContextTest {
     private PropertyMeta meta;
 
     @Mock
-    private EmbeddedIdProperties embeddedIdProperties;
+    private CompoundPKProperties compoundPKProperties;
 
 
     @Test
-    public void should_instantiate_embeddedId_with_partition_components() throws Exception {
+    public void should_instantiate_compound_pk_with_partition_components() throws Exception {
         //Given
         CompleteBean pk = new CompleteBean();
         List<Field> fields = Arrays.asList(CompleteBean.class.getDeclaredField("id"), CompleteBean.class.getDeclaredField("name"));
         List<Object> components = Arrays.<Object>asList(10L, "DuyHai");
         when(meta.<CompleteBean>getValueClass()).thenReturn(CompleteBean.class);
         when(meta.forValues().instantiate()).thenReturn(pk);
-        when(meta.getEmbeddedIdProperties().getPartitionComponents().getComponentFields()).thenReturn(fields);
+        when(meta.getCompoundPKProperties().getPartitionComponents().getComponentFields()).thenReturn(fields);
 
         PropertyMetaSliceQueryContext view = new PropertyMetaSliceQueryContext(meta);
 

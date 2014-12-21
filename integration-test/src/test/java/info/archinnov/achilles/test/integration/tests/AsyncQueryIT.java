@@ -880,8 +880,8 @@ public class AsyncQueryIT {
     }
 
     private void insertClusteredEntity(Long partitionKey, int count, String name, String clusteredValue) {
-        ClusteredEntity.ClusteredKey embeddedId = new ClusteredEntity.ClusteredKey(partitionKey, count, name);
-        ClusteredEntity entity = new ClusteredEntity(embeddedId, clusteredValue);
+        ClusteredEntity.CompoundPK compoundPK = new ClusteredEntity.CompoundPK(partitionKey, count, name);
+        ClusteredEntity entity = new ClusteredEntity(compoundPK, clusteredValue);
         asyncManager.insert(entity).getImmediately();
     }
 

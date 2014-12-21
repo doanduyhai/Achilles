@@ -16,17 +16,14 @@
 
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Strategy;
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.InsertStrategy;
 
 @Entity
 @Strategy(insert = InsertStrategy.NOT_NULL_FIELDS)
 public class BeanWithInsertStrategy {
 
-    @Id
+    @PartitionKey
     private Long id;
 
     @Column

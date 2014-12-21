@@ -28,14 +28,14 @@ public class PropertyMetaTableCreatorTest {
     private PropertyMeta meta;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private EmbeddedIdProperties embeddedIdProperties;
+    private CompoundPKProperties compoundPKProperties;
 
     private PropertyMetaTableCreator view;
 
     @Before
     public void setUp() {
         view = new PropertyMetaTableCreator(meta);
-        when(meta.getEmbeddedIdProperties()).thenReturn(embeddedIdProperties);
+        when(meta.getCompoundPKProperties()).thenReturn(compoundPKProperties);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class PropertyMetaTableCreatorTest {
         final Create create = mock(Create.class);
         PropertyMeta partitionMeta1 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta partitionMeta2 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        when(embeddedIdProperties.getPartitionComponents()).thenReturn(new PartitionComponents(asList(partitionMeta1, partitionMeta2)));
+        when(compoundPKProperties.getPartitionComponents()).thenReturn(new PartitionComponents(asList(partitionMeta1, partitionMeta2)));
 
         when(partitionMeta1.getCQLColumnName()).thenReturn("id");
         when(partitionMeta2.getCQLColumnName()).thenReturn("name");
@@ -68,7 +68,7 @@ public class PropertyMetaTableCreatorTest {
         final Create create = mock(Create.class);
         PropertyMeta clusteringMeta1 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta clusteringMeta2 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        when(embeddedIdProperties.getClusteringComponents()).thenReturn(new ClusteringComponents(asList(clusteringMeta1, clusteringMeta2), Arrays.<ClusteringOrder>asList()));
+        when(compoundPKProperties.getClusteringComponents()).thenReturn(new ClusteringComponents(asList(clusteringMeta1, clusteringMeta2), Arrays.<ClusteringOrder>asList()));
 
         when(clusteringMeta1.getCQLColumnName()).thenReturn("id");
         when(clusteringMeta2.getCQLColumnName()).thenReturn("name");
@@ -126,7 +126,7 @@ public class PropertyMetaTableCreatorTest {
         when(meta.structure().isClustered()).thenReturn(true);
         ArgumentCaptor<ClusteringOrder> clusteringOrdersCaptor = ArgumentCaptor.forClass(ClusteringOrder.class);
 
-        when(embeddedIdProperties.getClusteringComponents().getClusteringOrders()).thenReturn(asList(clusteringOrder));
+        when(compoundPKProperties.getClusteringComponents().getClusteringOrders()).thenReturn(asList(clusteringOrder));
         when(tableOptions.clusteringOrder(clusteringOrdersCaptor.capture())).thenReturn(tableOptions);
 
         //When

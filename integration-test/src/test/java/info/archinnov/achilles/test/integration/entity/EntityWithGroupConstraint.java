@@ -20,7 +20,7 @@ import static info.archinnov.achilles.test.integration.entity.EntityWithGroupCon
 import static java.util.Arrays.asList;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.exception.AchillesBeanValidationException;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
@@ -37,7 +37,7 @@ import javax.validation.constraints.NotNull;
 public class EntityWithGroupConstraint {
 	public static final String TABLE_NAME = "entity_group_constrained";
 
-	@Id
+	@PartitionKey
 	private Long id;
 
 	@Column

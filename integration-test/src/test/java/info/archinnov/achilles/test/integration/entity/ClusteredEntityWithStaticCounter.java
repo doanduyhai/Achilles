@@ -25,7 +25,7 @@ public class ClusteredEntityWithStaticCounter {
 
 	public static final String TABLE_NAME = "clustered_with_static_counter";
 
-	@EmbeddedId
+	@CompoundPrimaryKey
 	private ClusteredKeyForCounter id;
 
     @Column(staticColumn = true)

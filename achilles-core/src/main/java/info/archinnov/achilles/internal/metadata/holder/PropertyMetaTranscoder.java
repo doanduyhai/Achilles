@@ -24,12 +24,12 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
         if (log.isTraceEnabled()) {
             log.trace("Decode CQL components {} into compound primary key {} for entity class {}", components, meta.getPropertyName(), meta.getEntityClassName());
         }
-        Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot decode components '%s' for the property '%s' which is not a compound primary key", components, meta.propertyName);
+        Validator.validateTrue(meta.type() == PropertyType.COMPOUND_PRIMARY_KEY, "Cannot decode components '%s' for the property '%s' which is not a compound primary key", components, meta.propertyName);
         if (CollectionUtils.isEmpty(components)) {
             return components;
         }
         final Object newInstance = meta.forValues().instantiate();
-        final List<PropertyMeta> propertyMetas = meta.getEmbeddedIdProperties().propertyMetas;
+        final List<PropertyMeta> propertyMetas = meta.getCompoundPKProperties().propertyMetas;
 
         Validator.validateTrue(components.size() == propertyMetas.size(), "There should be exactly '%s' Cassandra columns to decode into an '%s' instance", propertyMetas.size(), newInstance.getClass().getCanonicalName());
 
@@ -47,7 +47,7 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
         }
         switch (meta.type()) {
             case SIMPLE:
-            case ID:
+            case PARTITION_KEY:
                 return meta.getSimpleCodec().decode(fromCassandra);
             case LIST:
                 return meta.getListCodec().decode((List) fromCassandra);
@@ -66,7 +66,7 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
         }
         switch (meta.type()) {
             case SIMPLE:
-            case ID:
+            case PARTITION_KEY:
                 return (T)meta.getSimpleCodec().encode(fromJava);
             case LIST:
                 return (T)meta.getListCodec().encode((List) fromJava);
@@ -95,18 +95,18 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
 
     public List<Object> encodeToComponents(Object compoundKey, boolean onlyPartitionComponents) {
         log.trace("Encode compound primary key {} to CQL components with 'onlyPartitionComponents' : {}", compoundKey, onlyPartitionComponents);
-        Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot encode object '%s' for the property '%s' which is not a compound primary key", compoundKey, meta.propertyName);
+        Validator.validateTrue(meta.type() == PropertyType.COMPOUND_PRIMARY_KEY, "Cannot encode object '%s' for the property '%s' which is not a compound primary key", compoundKey, meta.propertyName);
         List<Object> encoded = new ArrayList<>();
         if (compoundKey == null) {
             return encoded;
         }
 
         if (onlyPartitionComponents) {
-            for (PropertyMeta partitionKeyMeta : meta.getEmbeddedIdProperties().getPartitionComponents().propertyMetas) {
+            for (PropertyMeta partitionKeyMeta : meta.getCompoundPKProperties().getPartitionComponents().propertyMetas) {
                 encoded.add(partitionKeyMeta.forTranscoding().getAndEncodeValueForCassandra(compoundKey));
             }
         } else {
-            for (PropertyMeta partitionKeyMeta : meta.getEmbeddedIdProperties().propertyMetas) {
+            for (PropertyMeta partitionKeyMeta : meta.getCompoundPKProperties().propertyMetas) {
                 encoded.add(partitionKeyMeta.forTranscoding().getAndEncodeValueForCassandra(compoundKey));
             }
         }
@@ -115,32 +115,32 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
 
     List<Object> encodePartitionComponents(List<Object> rawPartitionComponents) {
         log.trace("Encode {} to CQL partition components", rawPartitionComponents);
-        Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot encode partition components '%s' for the property '%s' which is not a compound primary key", rawPartitionComponents, meta.propertyName);
-        final List<PropertyMeta> partitionMetas = meta.getEmbeddedIdProperties().getPartitionComponents().propertyMetas;
+        Validator.validateTrue(meta.type() == PropertyType.COMPOUND_PRIMARY_KEY, "Cannot encode partition components '%s' for the property '%s' which is not a compound primary key", rawPartitionComponents, meta.propertyName);
+        final List<PropertyMeta> partitionMetas = meta.getCompoundPKProperties().getPartitionComponents().propertyMetas;
         Validator.validateTrue(rawPartitionComponents.size() <= partitionMetas.size(),"There should be no more than '%s' partition components to be encoded for class '%s'", rawPartitionComponents, meta.getEntityClassName());
         return encodeElements(rawPartitionComponents, partitionMetas);
     }
 
     List<Object> encodePartitionComponentsIN(List<Object> rawPartitionComponentsIN) {
         log.trace("Encode {} to CQL partition components IN", rawPartitionComponentsIN);
-        Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot encode partition components '%s' for the property '%s' which is not a compound primary key", rawPartitionComponentsIN, meta.propertyName);
-        final List<PropertyMeta> partitionMetas = meta.getEmbeddedIdProperties().getPartitionComponents().propertyMetas;
+        Validator.validateTrue(meta.type() == PropertyType.COMPOUND_PRIMARY_KEY, "Cannot encode partition components '%s' for the property '%s' which is not a compound primary key", rawPartitionComponentsIN, meta.propertyName);
+        final List<PropertyMeta> partitionMetas = meta.getCompoundPKProperties().getPartitionComponents().propertyMetas;
         final PropertyMeta lastPartitionComponentMeta = partitionMetas.get(partitionMetas.size() - 1);
         return encodeLastComponent(rawPartitionComponentsIN, lastPartitionComponentMeta);
     }
 
     List<Object> encodeClusteringKeys(List<Object> rawClusteringKeys) {
         log.trace("Encode {} to CQL clustering keys", rawClusteringKeys);
-        Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot encode clustering components '%s' for the property '%s' which is not a compound primary key", rawClusteringKeys, meta.propertyName);
-        final List<PropertyMeta> clusteringMetas = meta.getEmbeddedIdProperties().getClusteringComponents().propertyMetas;
+        Validator.validateTrue(meta.type() == PropertyType.COMPOUND_PRIMARY_KEY, "Cannot encode clustering components '%s' for the property '%s' which is not a compound primary key", rawClusteringKeys, meta.propertyName);
+        final List<PropertyMeta> clusteringMetas = meta.getCompoundPKProperties().getClusteringComponents().propertyMetas;
         Validator.validateTrue(rawClusteringKeys.size() <= clusteringMetas.size(),"There should be no more than '%s' clustering components to be encoded for class '%s'", rawClusteringKeys, meta.getEntityClassName());
         return encodeElements(rawClusteringKeys, clusteringMetas);
     }
 
     List<Object> encodeClusteringKeysIN(List<Object> rawClusteringKeysIN) {
         log.trace("Encode {} to CQL clustering keys IN", rawClusteringKeysIN);
-        Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot encode clustering components '%s' for the property '%s' which is not a compound primary key", rawClusteringKeysIN, meta.propertyName);
-        final List<PropertyMeta> clusteringMetas = meta.getEmbeddedIdProperties().getClusteringComponents().propertyMetas;
+        Validator.validateTrue(meta.type() == PropertyType.COMPOUND_PRIMARY_KEY, "Cannot encode clustering components '%s' for the property '%s' which is not a compound primary key", rawClusteringKeysIN, meta.propertyName);
+        final List<PropertyMeta> clusteringMetas = meta.getCompoundPKProperties().getClusteringComponents().propertyMetas;
         final PropertyMeta lastClusteringKeyMeta = clusteringMetas.get(clusteringMetas.size() - 1);
         return encodeLastComponent(rawClusteringKeysIN, lastClusteringKeyMeta);
     }

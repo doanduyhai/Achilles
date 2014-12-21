@@ -3,7 +3,6 @@ package info.archinnov.achilles.internal.metadata.codec;
 import static org.fest.assertions.api.Assertions.*;
 
 import info.archinnov.achilles.exception.AchillesTranscodingException;
-import info.archinnov.achilles.internal.metadata.codec.EnumOrdinalCodec;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,11 +22,11 @@ public class EnumOrdinalCodecTest {
 
         //When
         Integer encoded = codec.encode(PropertyType.COUNTER);
-        PropertyType decoded = codec.decode(PropertyType.ID.ordinal());
+        PropertyType decoded = codec.decode(PropertyType.PARTITION_KEY.ordinal());
 
         //Then
         assertThat(encoded).isEqualTo(PropertyType.COUNTER.ordinal());
-        assertThat(decoded).isSameAs(PropertyType.ID);
+        assertThat(decoded).isSameAs(PropertyType.PARTITION_KEY);
     }
 
     @Test(expected = AchillesTranscodingException.class)

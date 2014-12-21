@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Optional;
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.test.parser.entity.BeanWithKeyspaceAndTableName;
 import info.archinnov.achilles.test.parser.entity.BeanWithNamingStrategy;
@@ -43,12 +44,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Strategy;
-import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -311,7 +306,7 @@ public class EntityIntrospectorTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void should_get_inherited_field_by_annotation() throws Exception {
-        Field id = introspector.getInheritedPrivateFields(ChildBean.class, Id.class);
+        Field id = introspector.getInheritedPrivateFields(ChildBean.class, PartitionKey.class);
 
         assertThat(id.getName()).isEqualTo("id");
         assertThat(id.getType()).isEqualTo((Class) Long.class);

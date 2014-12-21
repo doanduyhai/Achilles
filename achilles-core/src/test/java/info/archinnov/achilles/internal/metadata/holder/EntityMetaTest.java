@@ -18,7 +18,7 @@ package info.archinnov.achilles.internal.metadata.holder;
 import static info.archinnov.achilles.interceptor.Event.POST_INSERT;
 import static info.archinnov.achilles.interceptor.Event.PRE_INSERT;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COMPOUND_PRIMARY_KEY;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
@@ -122,7 +122,7 @@ public class EntityMetaTest {
     public void should_return_false_for_is_clustered_counter_if_value_less() throws Exception {
         EntityMeta entityMeta = new EntityMeta();
         PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
-                .type(PropertyType.ID).build();
+                .type(PropertyType.PARTITION_KEY).build();
 
         entityMeta.setClusteredEntity(false);
         entityMeta.setPropertyMetas(ImmutableMap.of("idMeta", idMeta));
@@ -134,7 +134,7 @@ public class EntityMetaTest {
     public void should_return_false_for_is_clustered_counter_if_not_counter_type() throws Exception {
         EntityMeta entityMeta = new EntityMeta();
         PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
-                .type(PropertyType.ID).build();
+                .type(PropertyType.PARTITION_KEY).build();
 
         PropertyMeta nameMeta = PropertyMetaTestBuilder
                 //
@@ -150,7 +150,7 @@ public class EntityMetaTest {
         EntityMeta entityMeta = new EntityMeta();
 
         PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
-                .type(PropertyType.ID).build();
+                .type(PropertyType.PARTITION_KEY).build();
 
         entityMeta.setPropertyMetas(ImmutableMap.of("idMeta", idMeta));
 
@@ -158,9 +158,9 @@ public class EntityMetaTest {
     }
 
     @Test
-    public void should_return_true_when_has_embedded_id() throws Exception {
+    public void should_return_true_when_has_compound_pk() throws Exception {
         PropertyMeta idMeta = new PropertyMeta();
-        idMeta.setType(EMBEDDED_ID);
+        idMeta.setType(COMPOUND_PRIMARY_KEY);
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
 
@@ -223,7 +223,7 @@ public class EntityMetaTest {
         CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
         EntityMeta entityMeta = new EntityMeta();
         PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
-                .type(PropertyType.EMBEDDED_ID).accessors().build();
+                .type(PropertyType.COMPOUND_PRIMARY_KEY).accessors().build();
 //        idMeta.setInvoker(new ReflectionInvoker());
         entityMeta.setIdMeta(idMeta);
         entityMeta.forInterception().addInterceptor(createInterceptorForCompleteBean(PRE_INSERT, 30L));

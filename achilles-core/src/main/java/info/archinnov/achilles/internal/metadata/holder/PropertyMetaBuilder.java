@@ -41,7 +41,7 @@ public class PropertyMetaBuilder {
     private ObjectMapper objectMapper;
     private CounterProperties counterProperties;
 
-    private EmbeddedIdProperties embeddedIdProperties;
+    private CompoundPKProperties compoundPKProperties;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
     private boolean timeUUID = false;
     private boolean emptyCollectionAndMapIfNull = false;
@@ -89,7 +89,7 @@ public class PropertyMetaBuilder {
         meta.setValueClass(valueClass);
         meta.setGetter(accessors[0]);
         meta.setSetter(accessors[1]);
-        meta.setEmbeddedIdProperties(embeddedIdProperties);
+        meta.setCompoundPKProperties(compoundPKProperties);
         meta.setCounterProperties(counterProperties);
         meta.setConsistencyLevels(consistencyLevels);
         meta.setTimeUUID(timeUUID);
@@ -120,8 +120,8 @@ public class PropertyMetaBuilder {
         return this;
     }
 
-    public PropertyMetaBuilder embeddedIdProperties(EmbeddedIdProperties embeddedIdProperties) {
-        this.embeddedIdProperties = embeddedIdProperties;
+    public PropertyMetaBuilder compoundPKProperties(CompoundPKProperties compoundPKProperties) {
+        this.compoundPKProperties = compoundPKProperties;
         return this;
     }
 

@@ -26,8 +26,8 @@ public class ClusteredEntity {
 
     public static final String TABLE_NAME = "clustered";
 
-    @EmbeddedId
-    private ClusteredKey id;
+    @CompoundPrimaryKey
+    private CompoundPK id;
 
     @Column
     private String value;
@@ -36,20 +36,20 @@ public class ClusteredEntity {
     }
 
     public ClusteredEntity(Long id, Integer count, String name, String value) {
-        this.id = new ClusteredKey(id, count, name);
+        this.id = new CompoundPK(id, count, name);
         this.value = value;
     }
 
-    public ClusteredEntity(ClusteredKey id, String value) {
+    public ClusteredEntity(CompoundPK id, String value) {
         this.id = id;
         this.value = value;
     }
 
-    public ClusteredKey getId() {
+    public CompoundPK getId() {
         return id;
     }
 
-    public void setId(ClusteredKey id) {
+    public void setId(CompoundPK id) {
         this.id = id;
     }
 
@@ -91,7 +91,7 @@ public class ClusteredEntity {
                 '}';
     }
 
-    public static class ClusteredKey {
+    public static class CompoundPK {
         @PartitionKey
         private Long id;
 
@@ -101,10 +101,10 @@ public class ClusteredEntity {
         @ClusteringColumn(2)
         private String name;
 
-        public ClusteredKey() {
+        public CompoundPK() {
         }
 
-        public ClusteredKey(Long id, Integer count, String name) {
+        public CompoundPK(Long id, Integer count, String name) {
             this.id = id;
             this.count = count;
             this.name = name;
@@ -159,7 +159,7 @@ public class ClusteredEntity {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            ClusteredKey other = (ClusteredKey) obj;
+            CompoundPK other = (CompoundPK) obj;
 
             return Objects.equals(this.id, other.id) &&
                     Objects.equals(this.count, other.count) &&

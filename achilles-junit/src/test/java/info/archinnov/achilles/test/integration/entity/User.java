@@ -15,14 +15,11 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.JSON;
+import info.archinnov.achilles.annotations.*;
 
 @Entity
 public class User {
-	@Id
+	@PartitionKey
 	private Long id;
 
 	@Column

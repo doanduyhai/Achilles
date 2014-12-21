@@ -19,12 +19,10 @@ import static info.archinnov.achilles.internal.metadata.holder.EntityMetaBuilder
 import java.lang.reflect.Field;
 import java.util.List;
 
+import info.archinnov.achilles.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
@@ -57,11 +55,11 @@ public class EntityParser {
         List<Field> inheritedFields = introspector.getInheritedPrivateFields(entityClass);
         for (Field field : inheritedFields) {
             PropertyParsingContext propertyContext = context.newPropertyContext(field);
-            if (filter.hasAnnotation(field, Id.class)) {
+            if (filter.hasAnnotation(field, Id.class) || filter.hasAnnotation(field, PartitionKey.class)) {
                 propertyContext.setPrimaryKey(true);
                 idMeta = parser.parse(propertyContext);
-            } else if (filter.hasAnnotation(field, EmbeddedId.class)) {
-                propertyContext.setEmbeddedId(true);
+            } else if (filter.hasAnnotation(field, EmbeddedId.class) || filter.hasAnnotation(field, CompoundPrimaryKey.class)) {
+                propertyContext.setCompoundPrimaryKey(true);
                 idMeta = parser.parse(propertyContext);
             } else if (filter.hasAnnotation(field, Column.class)) {
                 parser.parse(propertyContext);
