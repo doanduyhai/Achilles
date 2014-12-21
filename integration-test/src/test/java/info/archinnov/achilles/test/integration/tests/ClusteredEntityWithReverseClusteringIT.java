@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithReverseClustering.CompoundPK;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithReverseClustering.TABLE_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -27,7 +28,6 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithReverseClustering;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithReverseClustering.ClusteredKey;
 
 public class ClusteredEntityWithReverseClusteringIT {
 	@Rule
@@ -115,8 +115,8 @@ public class ClusteredEntityWithReverseClusteringIT {
 	}
 
 	private void insertClusteredEntity(Long partitionKey, int count, String name, String clusteredValue) {
-		ClusteredKey embeddedId = new ClusteredKey(partitionKey, count, name);
-		ClusteredEntityWithReverseClustering entity = new ClusteredEntityWithReverseClustering(embeddedId,
+		CompoundPK compoundPK = new CompoundPK(partitionKey, count, name);
+		ClusteredEntityWithReverseClustering entity = new ClusteredEntityWithReverseClustering(compoundPK,
 				clusteredValue);
 		manager.insert(entity);
 	}

@@ -15,10 +15,10 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 public class GrandParentBean {
-	@Id
+	@PartitionKey
 	private Long id;
 
 	public Long getId() {

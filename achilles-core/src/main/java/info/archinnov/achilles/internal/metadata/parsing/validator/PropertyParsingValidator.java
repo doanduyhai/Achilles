@@ -55,10 +55,10 @@ public class PropertyParsingValidator {
 
         final Set<String> distincCQLColumNames = new HashSet<>();
         final List<String> cqlColumnNames = new ArrayList<>(FluentIterable.from(context.getPropertyMetas().values())
-                .filter(PropertyType.EXCLUDE_EMBEDDED_ID_TYPE)
+                .filter(PropertyType.EXCLUDE_COMPOUND_PK_TYPE)
                 .transform(GET_CQL_COLUMN_NAME).toList());
         final List<String> cqlPrimaryKeyColumnNames = FluentIterable.from(context.getPropertyMetas().values())
-                .filter(PropertyType.EMBEDDED_ID_TYPE)
+                .filter(PropertyType.COMPOUND_PK_TYPE)
                 .first()
                 .transform(PropertyMeta.GET_CQL_COLUMN_NAMES_FROM_EMBEDDED_ID)
                 .or(new ArrayList<String>());
@@ -118,7 +118,7 @@ public class PropertyParsingValidator {
             Validator.validateBeanMappingTrue(PropertyParser.isSupportedType(context.getCurrentField().getType()),
                     "Property '%s' of entity '%s' cannot be indexed because the type '%s' is not supported", fieldName,
                     className, context.getCurrentField().getType().getCanonicalName());
-            Validator.validateBeanMappingFalse(context.isEmbeddedId(),
+            Validator.validateBeanMappingFalse(context.isCompoundPrimaryKey(),
                     "Property '%s' of entity '%s' is part of a compound primary key and therefore cannot be indexed",
                     fieldName, className);
 

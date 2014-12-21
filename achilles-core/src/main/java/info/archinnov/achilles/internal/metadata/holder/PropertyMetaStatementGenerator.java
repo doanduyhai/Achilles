@@ -27,12 +27,12 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
         log.debug("Generate INSERT primary key for id meta {}", meta);
         if (meta.structure().isEmbeddedId()) {
             if (onlyStaticColumns) {
-                for (PropertyMeta partitionComponents : meta.getEmbeddedIdProperties().getPartitionComponents().propertyMetas) {
+                for (PropertyMeta partitionComponents : meta.getCompoundPKProperties().getPartitionComponents().propertyMetas) {
                     final String cqlColumnName = partitionComponents.getCQLColumnName();
                     insert.value(cqlColumnName, bindMarker(cqlColumnName));
                 }
             } else {
-                for (String component : meta.getEmbeddedIdProperties().getCQLComponentNames()) {
+                for (String component : meta.getCompoundPKProperties().getCQLComponentNames()) {
                     insert.value(component, bindMarker(component));
                 }
             }
@@ -59,9 +59,9 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
         int i = 0;
         List<String> componentNames;
         if (pmO.isPresent() && pmO.get().structure().isStaticColumn()) {
-            componentNames =  meta.getEmbeddedIdProperties().getPartitionComponents().getCQLComponentNames();
+            componentNames =  meta.getCompoundPKProperties().getPartitionComponents().getCQLComponentNames();
         } else {
-            componentNames = meta.getEmbeddedIdProperties().getCQLComponentNames();
+            componentNames = meta.getCompoundPKProperties().getCQLComponentNames();
         }
         for (String partitionKey : componentNames) {
             if (i++ == 0) {
@@ -87,9 +87,9 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
         Delete.Where where = null;
         List<String> componentNames;
         if (onlyStaticColumns) {
-            componentNames = meta.getEmbeddedIdProperties().getPartitionComponents().getCQLComponentNames();
+            componentNames = meta.getCompoundPKProperties().getPartitionComponents().getCQLComponentNames();
         } else {
-            componentNames = meta.getEmbeddedIdProperties().getCQLComponentNames();
+            componentNames = meta.getCompoundPKProperties().getCQLComponentNames();
         }
 
         int i = 0;
@@ -130,7 +130,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
         Update.Where where = null;
         int i = 0;
         if (onlyStaticColumns) {
-            for (String partitionKeys : meta.getEmbeddedIdProperties().getPartitionComponents().getCQLComponentNames()) {
+            for (String partitionKeys : meta.getCompoundPKProperties().getPartitionComponents().getCQLComponentNames()) {
                 if (i++ == 0) {
                     where = assignments.where(eq(partitionKeys, bindMarker(partitionKeys)));
                 } else {
@@ -138,7 +138,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
                 }
             }
         } else {
-            for (String clusteredId : meta.getEmbeddedIdProperties().getCQLComponentNames()) {
+            for (String clusteredId : meta.getCompoundPKProperties().getCQLComponentNames()) {
                 if (i++ == 0) {
                     where = assignments.where(eq(clusteredId, bindMarker(clusteredId)));
                 } else {
@@ -164,7 +164,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
 
     private Pair<Update.Where, Object[]> generateWhereClauseForUpdateWithCompound(Object primaryKey, PropertyMeta pm, Update.Assignments update) {
         log.debug("Generate plain UPDATE WHERE clause with compound primary key for property meta {}", pm);
-        List<String> componentNames = meta.getEmbeddedIdProperties().getCQLComponentNames();
+        List<String> componentNames = meta.getCompoundPKProperties().getCQLComponentNames();
         List<Object> encodedComponents = meta.forTranscoding().encodeToComponents(primaryKey, pm.structure().isStaticColumn());
         Object[] boundValues = new Object[encodedComponents.size()];
         Update.Where where = null;
@@ -184,7 +184,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
     public Select.Selection prepareSelectField(Select.Selection select) {
         log.debug("Prepare SELECT clause for property meta {}", meta);
         if (meta.structure().isEmbeddedId()) {
-            for (String component : meta.getEmbeddedIdProperties().getCQLComponentNames()) {
+            for (String component : meta.getCompoundPKProperties().getCQLComponentNames()) {
                 select = select.column(component);
             }
             return select;

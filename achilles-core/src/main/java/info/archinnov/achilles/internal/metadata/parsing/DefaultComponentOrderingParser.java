@@ -25,15 +25,15 @@ public class DefaultComponentOrderingParser extends ComponentOrderingParser {
     }
 
     @Override
-    Map<Integer, Field> extractComponentsOrdering(Class<?> embeddedIdClass) {
+    Map<Integer, Field> extractComponentsOrdering(Class<?> compoundPKClass) {
 
-        log.trace("Extract components ordering from embedded id class {} ", embeddedIdClass.getCanonicalName());
+        log.trace("Extract components ordering from compound primary key class {} ", compoundPKClass.getCanonicalName());
 
-        String embeddedIdClassName = embeddedIdClass.getCanonicalName();
+        String compoundPKClassName = compoundPKClass.getCanonicalName();
 
 
         final List<Field> partitionComponents =
-                FluentIterable.from(ReflectionUtils.getAllFields(embeddedIdClass, ReflectionUtils.<Field>withAnnotation(PartitionKey.class)))
+                FluentIterable.from(ReflectionUtils.getAllFields(compoundPKClass, ReflectionUtils.<Field>withAnnotation(PartitionKey.class)))
                 .toSortedList(new Comparator<Field>() {
                     @Override
                     public int compare(Field o1, Field o2) {
@@ -44,7 +44,7 @@ public class DefaultComponentOrderingParser extends ComponentOrderingParser {
                 });
 
         final List<Field> clusteringColumns =
-                FluentIterable.from(ReflectionUtils.getAllFields(embeddedIdClass, ReflectionUtils.<Field>withAnnotation(ClusteringColumn.class)))
+                FluentIterable.from(ReflectionUtils.getAllFields(compoundPKClass, ReflectionUtils.<Field>withAnnotation(ClusteringColumn.class)))
                 .toSortedList(new Comparator<Field>() {
                     @Override
                     public int compare(Field o1, Field o2) {
@@ -55,8 +55,8 @@ public class DefaultComponentOrderingParser extends ComponentOrderingParser {
                 });
 
 
-        validatePartitionComponentsOrder(partitionComponents, format("The partition components ordering is wrong for @EmbeddedId class '%s'", embeddedIdClassName));
-        validateClusteringColumnsOrder(clusteringColumns, format("The clustering keys ordering is wrong for @EmbeddedId class '%s'", embeddedIdClassName));
+        validatePartitionComponentsOrder(partitionComponents, format("The partition components ordering is wrong for @CompoundPrimaryKey class '%s'", compoundPKClassName));
+        validateClusteringColumnsOrder(clusteringColumns, format("The clustering keys ordering is wrong for @CompoundPrimaryKey class '%s'", compoundPKClassName));
 
 
         Map<Integer, Field> result = new HashMap<>();
@@ -68,17 +68,17 @@ public class DefaultComponentOrderingParser extends ComponentOrderingParser {
             }
         }
 
-        Validator.validateBeanMappingTrue(result.size()>1, format("There should be at least 2 fields annotated with @PartitionKey or @ClusteringColumn for the @EmbeddedId class '%s'",embeddedIdClassName));
+        Validator.validateBeanMappingTrue(result.size()>1, format("There should be at least 2 fields annotated with @PartitionKey or @ClusteringColumn for the @CompoundPrimaryKey class '%s'",compoundPKClassName));
         return result;
     }
 
     @Override
-    List<ClusteringOrder> extractClusteringOrder(Class<?> embeddedIdClass) {
+    List<ClusteringOrder> extractClusteringOrder(Class<?> compoundPKClass) {
 
-        log.trace("Extract clustering component order from embedded id class {} ",embeddedIdClass.getCanonicalName());
+        log.trace("Extract clustering component order from compound primary key class {} ", compoundPKClass.getCanonicalName());
 
         final List<Field> clusteringColumns =
-                FluentIterable.from(ReflectionUtils.getAllFields(embeddedIdClass, ReflectionUtils.<Field>withAnnotation(ClusteringColumn.class)))
+                FluentIterable.from(ReflectionUtils.getAllFields(compoundPKClass, ReflectionUtils.<Field>withAnnotation(ClusteringColumn.class)))
                         .toSortedList(new Comparator<Field>() {
                             @Override
                             public int compare(Field o1, Field o2) {

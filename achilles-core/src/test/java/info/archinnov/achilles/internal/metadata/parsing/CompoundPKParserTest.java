@@ -23,13 +23,13 @@ import java.lang.reflect.Field;
 import java.util.UUID;
 
 import info.archinnov.achilles.internal.metadata.holder.ClusteringComponents;
+import info.archinnov.achilles.internal.metadata.holder.CompoundPKProperties;
 import info.archinnov.achilles.internal.metadata.holder.PartitionComponents;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyChild2;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyParent;
+import info.archinnov.achilles.test.parser.entity.*;
 import info.archinnov.achilles.type.NamingStrategy;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,29 +39,16 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
-import info.archinnov.achilles.test.parser.entity.CorrectEmbeddedKey;
-import info.archinnov.achilles.test.parser.entity.CorrectEmbeddedReversedKey;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyAsCompoundPartitionKey;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyChild1;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyChild3;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyIncorrectType;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithCompoundPartitionKey;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithDuplicateOrder;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithInconsistentCompoundPartitionKey;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithNegativeOrder;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithNoAnnotation;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithOnlyOneComponent;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithStaticColumn;
+import info.archinnov.achilles.test.parser.entity.CompoundPKWithDuplicateOrder;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EmbeddedIdParserTest {
+public class CompoundPKParserTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @InjectMocks
-    private EmbeddedIdParser parser;
+    private CompoundPKParser parser;
 
     private PropertyParser propertyParser = new PropertyParser();
 
@@ -81,16 +68,16 @@ public class EmbeddedIdParserTest {
     }
 
     @Test
-    public void should_parse_embedded_id() throws Exception {
+    public void should_parse_compound_pk() throws Exception {
         when(context.getCurrentEntityClass()).thenReturn((Class) CorrectEmbeddedKey.class);
 
 
         final Field nameField = CorrectEmbeddedKey.class.getDeclaredField("name");
         final Field rankField = CorrectEmbeddedKey.class.getDeclaredField("rank");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, nameField));
+        parser = new CompoundPKParser(new PropertyParsingContext(context, nameField));
 
 
-        EmbeddedIdProperties props = parser.parseEmbeddedId(CorrectEmbeddedKey.class, propertyParser);
+        CompoundPKProperties props = parser.parseCompoundPK(CorrectEmbeddedKey.class, propertyParser);
 
         final PartitionComponents partitionComponents = props.getPartitionComponents();
         assertThat(partitionComponents.getComponentClasses()).containsExactly(String.class);
@@ -107,16 +94,16 @@ public class EmbeddedIdParserTest {
     }
 
     @Test
-    public void should_parse_embedded_id_with_reversed_key() throws Exception {
+    public void should_parse_compound_pk_with_reversed_key() throws Exception {
 
         when(context.getCurrentEntityClass()).thenReturn((Class) CorrectEmbeddedReversedKey.class);
 
         final Field nameField = CorrectEmbeddedReversedKey.class.getDeclaredField("name");
         final Field rankField = CorrectEmbeddedReversedKey.class.getDeclaredField("rank");
         final Field countField = CorrectEmbeddedReversedKey.class.getDeclaredField("count");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, nameField));
+        parser = new CompoundPKParser(new PropertyParsingContext(context, nameField));
 
-        EmbeddedIdProperties props = parser.parseEmbeddedId(CorrectEmbeddedReversedKey.class, propertyParser);
+        CompoundPKProperties props = parser.parseCompoundPK(CorrectEmbeddedReversedKey.class, propertyParser);
 
         final PartitionComponents partitionComponents = props.getPartitionComponents();
         assertThat(partitionComponents.getComponentClasses()).containsExactly(String.class);
@@ -133,82 +120,82 @@ public class EmbeddedIdParserTest {
     }
 
     @Test
-    public void should_exception_when_embedded_id_incorrect_type() throws Exception {
+    public void should_exception_when_compound_pk_incorrect_type() throws Exception {
 
         when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyIncorrectType.class);
 
         final Field nameField = EmbeddedKeyIncorrectType.class.getDeclaredField("name");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, nameField));
+        parser = new CompoundPKParser(new PropertyParsingContext(context, nameField));
 
         exception.expect(AchillesBeanMappingException.class);
         exception.expectMessage(format("The column '%s' cannot be a list because it belongs to the partition key","name"));
 
-        parser.parseEmbeddedId(EmbeddedKeyIncorrectType.class, propertyParser);
+        parser.parseCompoundPK(EmbeddedKeyIncorrectType.class, propertyParser);
     }
 
     @Test
-    public void should_exception_when_embedded_id_wrong_key_order() throws Exception {
+    public void should_exception_when_compound_pk_wrong_key_order() throws Exception {
 
         when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithNegativeOrder.class);
 
         final Field nameField = EmbeddedKeyIncorrectType.class.getDeclaredField("name");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, nameField));
+        parser = new CompoundPKParser(new PropertyParsingContext(context, nameField));
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(format("The partition components ordering is wrong for @EmbeddedId class '%s'",EmbeddedKeyWithNegativeOrder.class.getCanonicalName()));
+        exception.expectMessage(format("The partition components ordering is wrong for @CompoundPrimaryKey class '%s'",EmbeddedKeyWithNegativeOrder.class.getCanonicalName()));
 
-        parser.parseEmbeddedId(EmbeddedKeyWithNegativeOrder.class, propertyParser);
+        parser.parseCompoundPK(EmbeddedKeyWithNegativeOrder.class, propertyParser);
     }
 
     @Test
-    public void should_exception_when_embedded_id_has_no_annotation() throws Exception {
+    public void should_exception_when_compound_pk_has_no_annotation() throws Exception {
         when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithNoAnnotation.class);
 
         final Field nameField = EmbeddedKeyWithNoAnnotation.class.getDeclaredField("name");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, nameField));
+        parser = new CompoundPKParser(new PropertyParsingContext(context, nameField));
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(format("Please use @PartitionKey and @ClusteringColumn annotations for the @EmbeddedId class '%s'",EmbeddedKeyWithNoAnnotation.class.getCanonicalName()));
+        exception.expectMessage(format("Please use @PartitionKey and @ClusteringColumn annotations for the @CompoundPrimaryKey class '%s'",EmbeddedKeyWithNoAnnotation.class.getCanonicalName()));
 
-        parser.parseEmbeddedId(EmbeddedKeyWithNoAnnotation.class, propertyParser);
+        parser.parseCompoundPK(EmbeddedKeyWithNoAnnotation.class, propertyParser);
     }
 
     @Test
-    public void should_exception_when_embedded_id_has_duplicate_order() throws Exception {
-        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithDuplicateOrder.class);
+    public void should_exception_when_compound_pk_has_duplicate_order() throws Exception {
+        when(context.getCurrentEntityClass()).thenReturn((Class) CompoundPKWithDuplicateOrder.class);
 
-        final Field nameField = EmbeddedKeyWithDuplicateOrder.class.getDeclaredField("name");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, nameField));
+        final Field nameField = CompoundPKWithDuplicateOrder.class.getDeclaredField("name");
+        parser = new CompoundPKParser(new PropertyParsingContext(context, nameField));
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(format("The partition components ordering is wrong for @EmbeddedId class '%s",EmbeddedKeyWithDuplicateOrder.class.getCanonicalName()));
+        exception.expectMessage(format("The partition components ordering is wrong for @CompoundPrimaryKey class '%s",CompoundPKWithDuplicateOrder.class.getCanonicalName()));
 
-        parser.parseEmbeddedId(EmbeddedKeyWithDuplicateOrder.class, propertyParser);
+        parser.parseCompoundPK(CompoundPKWithDuplicateOrder.class, propertyParser);
     }
 
 
     @Test
-    public void should_exception_when_embedded_id_has_only_one_component() throws Exception {
-        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithOnlyOneComponent.class);
+    public void should_exception_when_compound_pk_has_only_one_component() throws Exception {
+        when(context.getCurrentEntityClass()).thenReturn((Class) CompoundPKWithOnlyOneComponent.class);
 
-        final Field userField = EmbeddedKeyWithOnlyOneComponent.class.getDeclaredField("userId");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, userField));
+        final Field userField = CompoundPKWithOnlyOneComponent.class.getDeclaredField("userId");
+        parser = new CompoundPKParser(new PropertyParsingContext(context, userField));
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(format("There should be at least 2 fields annotated with @PartitionKey or @ClusteringColumn for the @EmbeddedId class '%s'",EmbeddedKeyWithOnlyOneComponent.class.getCanonicalName()));
-        parser.parseEmbeddedId(EmbeddedKeyWithOnlyOneComponent.class, propertyParser);
+        exception.expectMessage(format("There should be at least 2 fields annotated with @PartitionKey or @ClusteringColumn for the @CompoundPrimaryKey class '%s'",CompoundPKWithOnlyOneComponent.class.getCanonicalName()));
+        parser.parseCompoundPK(CompoundPKWithOnlyOneComponent.class, propertyParser);
     }
 
     @Test
-    public void should_parse_embedded_id_with_compound_partition_key() throws Exception {
-        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithCompoundPartitionKey.class);
+    public void should_parse_compound_pk_with_compound_partition_key() throws Exception {
+        when(context.getCurrentEntityClass()).thenReturn((Class) CompoundPKWithCompositePartitionKey.class);
 
-        final Field idField = EmbeddedKeyWithCompoundPartitionKey.class.getDeclaredField("id");
-        final Field typeField = EmbeddedKeyWithCompoundPartitionKey.class.getDeclaredField("type");
-        final Field dateField = EmbeddedKeyWithCompoundPartitionKey.class.getDeclaredField("date");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, idField));
+        final Field idField = CompoundPKWithCompositePartitionKey.class.getDeclaredField("id");
+        final Field typeField = CompoundPKWithCompositePartitionKey.class.getDeclaredField("type");
+        final Field dateField = CompoundPKWithCompositePartitionKey.class.getDeclaredField("date");
+        parser = new CompoundPKParser(new PropertyParsingContext(context, idField));
 
-        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyWithCompoundPartitionKey.class, propertyParser);
+        CompoundPKProperties props = parser.parseCompoundPK(CompoundPKWithCompositePartitionKey.class, propertyParser);
 
         final PartitionComponents partitionComponents = props.getPartitionComponents();
         assertThat(partitionComponents.getComponentClasses()).containsExactly(Long.class, String.class);
@@ -226,41 +213,41 @@ public class EmbeddedIdParserTest {
     }
 
     @Test
-    public void should_exception_when_embedded_id_has_inconsistent_compound_partition_key() throws Exception {
+    public void should_exception_when_compound_pk_has_inconsistent_compound_partition_key() throws Exception {
         when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithInconsistentCompoundPartitionKey.class);
 
         final Field idField = EmbeddedKeyWithInconsistentCompoundPartitionKey.class.getDeclaredField("id");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, idField));
+        parser = new CompoundPKParser(new PropertyParsingContext(context, idField));
 
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(format("The partition components ordering is wrong for @EmbeddedId class '%s'",EmbeddedKeyWithInconsistentCompoundPartitionKey.class.getCanonicalName()));
-        parser.parseEmbeddedId(EmbeddedKeyWithInconsistentCompoundPartitionKey.class, propertyParser);
+        exception.expectMessage(format("The partition components ordering is wrong for @CompoundPrimaryKey class '%s'",EmbeddedKeyWithInconsistentCompoundPartitionKey.class.getCanonicalName()));
+        parser.parseCompoundPK(EmbeddedKeyWithInconsistentCompoundPartitionKey.class, propertyParser);
     }
 
     @Test
-    public void should_exception_when_embedded_id_has_static_column() throws Exception {
+    public void should_exception_when_compound_pk_has_static_column() throws Exception {
         when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithStaticColumn.class);
 
         final Field nameField = EmbeddedKeyWithStaticColumn.class.getDeclaredField("name");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, nameField));
+        parser = new CompoundPKParser(new PropertyParsingContext(context, nameField));
 
         exception.expect(AchillesBeanMappingException.class);
         exception.expectMessage(format("The property 'rank' of class '%s' cannot be a static column because it belongs to the primary key", EmbeddedKeyWithStaticColumn.class.getCanonicalName()));
 
-        parser.parseEmbeddedId(EmbeddedKeyWithStaticColumn.class, propertyParser);
+        parser.parseCompoundPK(EmbeddedKeyWithStaticColumn.class, propertyParser);
     }
 
     @Test
-    public void should_parse_embedded_id_as_compound_partition_key() throws Exception {
+    public void should_parse_compound_pk_as_compound_partition_key() throws Exception {
 
         when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyAsCompoundPartitionKey.class);
 
         final Field idField = EmbeddedKeyAsCompoundPartitionKey.class.getDeclaredField("id");
         final Field typeField = EmbeddedKeyAsCompoundPartitionKey.class.getDeclaredField("type");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, idField));
+        parser = new CompoundPKParser(new PropertyParsingContext(context, idField));
 
-        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyAsCompoundPartitionKey.class, propertyParser);
+        CompoundPKProperties props = parser.parseCompoundPK(EmbeddedKeyAsCompoundPartitionKey.class, propertyParser);
 
         final PartitionComponents partitionComponents = props.getPartitionComponents();
         assertThat(partitionComponents.getComponentClasses()).containsExactly(Long.class, String.class);
@@ -277,15 +264,15 @@ public class EmbeddedIdParserTest {
     }
 
     @Test
-    public void should_parse_embedded_key_with_inheritance() throws Exception {
+    public void should_parse_compound_pk_with_inheritance() throws Exception {
         //When
         when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyChild1.class);
 
         final Field partitionKeyField = EmbeddedKeyParent.class.getDeclaredField("partitionKey");
         final Field clusteringKeyField = EmbeddedKeyChild1.class.getDeclaredField("clustering");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, partitionKeyField));
+        parser = new CompoundPKParser(new PropertyParsingContext(context, partitionKeyField));
 
-        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyChild1.class, propertyParser);
+        CompoundPKProperties props = parser.parseCompoundPK(EmbeddedKeyChild1.class, propertyParser);
 
         //Then
         final PartitionComponents partitionComponents = props.getPartitionComponents();
@@ -303,16 +290,16 @@ public class EmbeddedIdParserTest {
     }
 
     @Test
-    public void should_parse_embedded_key_with_complicated_inheritance() throws Exception {
+    public void should_parse_compound_pk_with_complicated_inheritance() throws Exception {
         //When
         when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyChild3.class);
 
         final Field partitionKey1Field = EmbeddedKeyParent.class.getDeclaredField("partitionKey");
         final Field partitionKey2Field = EmbeddedKeyChild2.class.getDeclaredField("partitionKey2");
         final Field clusteringKeyField = EmbeddedKeyChild3.class.getDeclaredField("clustering");
-        parser = new EmbeddedIdParser(new PropertyParsingContext(context, partitionKey1Field));
+        parser = new CompoundPKParser(new PropertyParsingContext(context, partitionKey1Field));
 
-        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyChild3.class, propertyParser);
+        CompoundPKProperties props = parser.parseCompoundPK(EmbeddedKeyChild3.class, propertyParser);
 
         //Then
         final PartitionComponents partitionComponents = props.getPartitionComponents();

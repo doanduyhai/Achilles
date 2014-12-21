@@ -115,7 +115,7 @@ public class CodecFactoryTest {
         //Then
         assertThat(codec).isInstanceOf(EnumNameCodec.class);
         assertThat(codec.encode(PropertyType.COUNTER)).isEqualTo("COUNTER");
-        assertThat(codec.decode("ID")).isEqualTo(PropertyType.ID);
+        assertThat(codec.decode("PARTITION_KEY")).isEqualTo(PropertyType.PARTITION_KEY);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class CodecFactoryTest {
         //Then
         assertThat(codec).isInstanceOf(EnumOrdinalCodec.class);
         assertThat(codec.encode(PropertyType.COUNTER)).isEqualTo(6);
-        assertThat(codec.decode(0)).isEqualTo(PropertyType.ID);
+        assertThat(codec.decode(0)).isEqualTo(PropertyType.PARTITION_KEY);
     }
 
     @Test
@@ -279,7 +279,7 @@ public class CodecFactoryTest {
 
         //When
         final ListCodec codec = factory.parseListField(createContext(field));
-        final List<Object> encoded = codec.encode(Arrays.<Object>asList(PropertyType.ID, PropertyType.EMBEDDED_ID));
+        final List<Object> encoded = codec.encode(Arrays.<Object>asList(PropertyType.PARTITION_KEY, PropertyType.COMPOUND_PRIMARY_KEY));
         final List<Object> decoded = codec.decode(Arrays.<Object>asList(2, 3, 4));
 
         //Then
@@ -351,7 +351,7 @@ public class CodecFactoryTest {
 
         //When
         final SetCodec codec = factory.parseSetField(createContext(field));
-        final Set<Object> encoded = codec.encode(Sets.newSet(PropertyType.ID, PropertyType.EMBEDDED_ID));
+        final Set<Object> encoded = codec.encode(Sets.newSet(PropertyType.PARTITION_KEY, PropertyType.COMPOUND_PRIMARY_KEY));
         final Set<Object> decoded = codec.decode(Sets.newSet(2, 3, 4));
 
         //Then
@@ -404,12 +404,12 @@ public class CodecFactoryTest {
 
         //When
         final MapCodec codec = factory.parseMapField(createContext(field));
-        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.COUNTER, ElementType.FIELD, PropertyType.ID, ElementType.METHOD));
+        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.COUNTER, ElementType.FIELD, PropertyType.PARTITION_KEY, ElementType.METHOD));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of("LIST", "CONSTRUCTOR", "SET", "PARAMETER"));
 
         //Then
         assertThat(encoded.get("COUNTER")).isEqualTo("FIELD");
-        assertThat(encoded.get("ID")).isEqualTo("METHOD");
+        assertThat(encoded.get("PARTITION_KEY")).isEqualTo("METHOD");
 
         assertThat(decoded.get(PropertyType.LIST)).isEqualTo(ElementType.CONSTRUCTOR);
         assertThat(decoded.get(PropertyType.SET)).isEqualTo(ElementType.PARAMETER);
@@ -426,7 +426,7 @@ public class CodecFactoryTest {
 
         //When
         final MapCodec codec = factory.parseMapField(createContext(field));
-        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.ID, ElementType.FIELD, PropertyType.EMBEDDED_ID, ElementType.METHOD));
+        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.PARTITION_KEY, ElementType.FIELD, PropertyType.COMPOUND_PRIMARY_KEY, ElementType.METHOD));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of(3, "CONSTRUCTOR", 4, "PARAMETER"));
 
         //Then
@@ -448,12 +448,12 @@ public class CodecFactoryTest {
 
         //When
         final MapCodec<Object, Object, Object, Object> codec = factory.parseMapField(createContext(field));
-        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.COUNTER, 1, PropertyType.ID, 2));
+        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.COUNTER, 1, PropertyType.PARTITION_KEY, 2));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of("LIST", 3, "SET", 4));
 
         //Then
         assertThat(encoded.get("COUNTER")).isEqualTo(1);
-        assertThat(encoded.get("ID")).isEqualTo(2);
+        assertThat(encoded.get("PARTITION_KEY")).isEqualTo(2);
 
         assertThat(decoded.get(PropertyType.LIST)).isEqualTo(3);
         assertThat(decoded.get(PropertyType.SET)).isEqualTo(4);
@@ -471,7 +471,7 @@ public class CodecFactoryTest {
 
         //When
         final MapCodec<Object, Object, Object, Object> codec = factory.parseMapField(createContext(field));
-        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.ID, 100, PropertyType.EMBEDDED_ID, 200));
+        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.PARTITION_KEY, 100, PropertyType.COMPOUND_PRIMARY_KEY, 200));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of(3, 3, 4, 4));
 
         //Then
@@ -516,12 +516,12 @@ public class CodecFactoryTest {
 
         //When
         final MapCodec codec = factory.parseMapField(createContext(field));
-        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(1, PropertyType.COUNTER, 2, PropertyType.ID));
+        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(1, PropertyType.COUNTER, 2, PropertyType.PARTITION_KEY));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of(3, "LIST", 4, "SET"));
 
         //Then
         assertThat(encoded.get(1)).isEqualTo("COUNTER");
-        assertThat(encoded.get(2)).isEqualTo("ID");
+        assertThat(encoded.get(2)).isEqualTo("PARTITION_KEY");
 
         assertThat(decoded.get(3)).isEqualTo(PropertyType.LIST);
         assertThat(decoded.get(4)).isEqualTo(PropertyType.SET);
@@ -538,7 +538,7 @@ public class CodecFactoryTest {
 
         //When
         final MapCodec codec = factory.parseMapField(createContext(field));
-        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(1, PropertyType.ID, 2, PropertyType.EMBEDDED_ID));
+        Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(1, PropertyType.PARTITION_KEY, 2, PropertyType.COMPOUND_PRIMARY_KEY));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of(3, 3, 4, 4));
 
         //Then

@@ -1,9 +1,6 @@
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.TypeTransformer;
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 import info.archinnov.achilles.type.NamingStrategy;
@@ -17,7 +14,7 @@ public class EntityWithTypeTransformer {
 
     public static final String TABLE_NAME = "type_transforming";
 
-    @Id
+    @PartitionKey
     private Long id;
 
     @TypeTransformer(valueCodecClass = LongToString.class)

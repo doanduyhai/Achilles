@@ -20,7 +20,7 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.test.integration.entity.EntityWithClassLevelConstraint.ValidEntity;
 
 import java.lang.annotation.Documented;
@@ -39,7 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 public class EntityWithClassLevelConstraint {
 	public static final String TABLE_NAME = "entity_class_constrained";
 
-	@Id
+	@PartitionKey
 	private Long id;
 
 	@Column

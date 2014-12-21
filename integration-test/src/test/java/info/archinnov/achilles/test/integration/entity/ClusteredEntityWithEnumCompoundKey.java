@@ -24,7 +24,7 @@ public class ClusteredEntityWithEnumCompoundKey {
 
 	public static final String TABLE_NAME = "clustered_with_enum_compound";
 
-	@EmbeddedId
+	@CompoundPrimaryKey
 	private ClusteredKey id;
 
 	@Column

@@ -27,7 +27,7 @@ import info.archinnov.achilles.type.Counter;
 @Consistency(read = ConsistencyLevel.ONE, write = ConsistencyLevel.ALL)
 public class Bean {
 
-	@Id
+	@PartitionKey
 	private Long id;
 
 	@Column

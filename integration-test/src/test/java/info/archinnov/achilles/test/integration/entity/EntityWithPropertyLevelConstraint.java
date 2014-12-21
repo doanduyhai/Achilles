@@ -18,7 +18,7 @@ package info.archinnov.achilles.test.integration.entity;
 import static info.archinnov.achilles.test.integration.entity.EntityWithPropertyLevelConstraint.TABLE_NAME;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 import javax.validation.constraints.NotNull;
 
@@ -26,7 +26,7 @@ import javax.validation.constraints.NotNull;
 public class EntityWithPropertyLevelConstraint {
 	public static final String TABLE_NAME = "entity_property_constrained";
 
-	@Id
+	@PartitionKey
 	private Long id;
 
 	@Column

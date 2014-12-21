@@ -16,15 +16,13 @@
 package info.archinnov.achilles.test.integration.entity;
 
 import java.util.UUID;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.JSON;
+
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.Counter;
 
 @Entity
 public class Tweet {
-	@Id
+	@PartitionKey
 	private UUID id;
 
 	@Column

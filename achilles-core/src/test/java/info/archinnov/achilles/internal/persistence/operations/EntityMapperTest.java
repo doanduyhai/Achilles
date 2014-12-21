@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaRowExtractor;
+import info.archinnov.achilles.test.parser.entity.CompoundPK;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,7 +54,6 @@ import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMapperTest {
@@ -143,17 +143,17 @@ public class EntityMapperTest {
     @Test
     public void should_set_compound_key_to_entity() throws Exception {
         //Given
-        EmbeddedKey embeddedKey = new EmbeddedKey();
+        CompoundPK compoundPK = new CompoundPK();
         PropertyMetaRowExtractor rowExtractor = mock(PropertyMetaRowExtractor.class);
         when(pm.forRowExtraction()).thenReturn(rowExtractor);
         when(pm.structure().isEmbeddedId()).thenReturn(true);
-        when(rowExtractor.extractCompoundPrimaryKeyFromRow(row, entityMeta, MANAGED)).thenReturn(embeddedKey);
+        when(rowExtractor.extractCompoundPrimaryKeyFromRow(row, entityMeta, MANAGED)).thenReturn(compoundPK);
 
         //When
         entityMapper.setPropertyToEntity(row, entityMeta, pm, entity);
 
         //Then
-        verify(pm.forValues()).setValueToField(entity, embeddedKey);
+        verify(pm.forValues()).setValueToField(entity, compoundPK);
     }
 
     @Test
@@ -188,7 +188,7 @@ public class EntityMapperTest {
     @Test
     public void should_map_row_to_entity_with_primary_key() throws Exception {
         ClusteredEntity entity = new ClusteredEntity();
-        EmbeddedKey embeddedKey = new EmbeddedKey();
+        CompoundPK compoundPK = new CompoundPK();
         PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
         when(idMeta.structure().isEmbeddedId()).thenReturn(true);
@@ -199,12 +199,12 @@ public class EntityMapperTest {
         when(columnDefs.iterator()).thenReturn(Arrays.<Definition>asList().iterator());
         when(entityMeta.forOperations().instanciate()).thenReturn(entity);
         when(entityMeta.getIdMeta()).thenReturn(idMeta);
-        when(idMeta.forRowExtraction().extractCompoundPrimaryKeyFromRow(row, entityMeta, MANAGED)).thenReturn(embeddedKey);
+        when(idMeta.forRowExtraction().extractCompoundPrimaryKeyFromRow(row, entityMeta, MANAGED)).thenReturn(compoundPK);
 
         ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, propertiesMap, MANAGED);
 
         assertThat(actual).isSameAs(entity);
-        verify(idMeta.forValues()).setValueToField(entity, embeddedKey);
+        verify(idMeta.forValues()).setValueToField(entity, compoundPK);
     }
 
     @Test

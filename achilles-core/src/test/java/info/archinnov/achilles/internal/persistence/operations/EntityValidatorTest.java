@@ -26,7 +26,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntityWithCounter;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.test.parser.entity.CompoundPK;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -100,7 +100,7 @@ public class EntityValidatorTest {
 	@Test
 	public void should_validate_clustered_id() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-		EmbeddedKey clusteredId = new EmbeddedKey(11L, "name");
+		CompoundPK clusteredId = new CompoundPK(11L, "name");
 
 		when(entityMeta.forOperations().getPrimaryKey(bean)).thenReturn(clusteredId);
         when(proxifier.getRealObject(bean)).thenReturn(bean);
@@ -113,7 +113,7 @@ public class EntityValidatorTest {
     @Test
     public void should_validate_clustered_id_for_static_columns_only() throws Exception {
         CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-        EmbeddedKey clusteredId = new EmbeddedKey(11L, null);
+        CompoundPK clusteredId = new CompoundPK(11L, null);
         PropertyMeta staticColumnMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
         when(entityMeta.forOperations().getPrimaryKey(bean)).thenReturn(clusteredId);

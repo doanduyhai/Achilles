@@ -19,7 +19,7 @@ package info.archinnov.achilles.test.integration.entity;
 import static info.archinnov.achilles.test.integration.entity.EntityWithAllTypes.TABLE_NAME;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.PartitionKey;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -32,7 +32,7 @@ public class EntityWithAllTypes {
 
 	public static final String TABLE_NAME = "entity_with_all_types";
 
-	@Id
+	@PartitionKey
 	private Long id;
 
 	@Column

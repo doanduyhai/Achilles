@@ -25,7 +25,7 @@ public class ClusteredEntityWithCounter {
 
 	public static final String TABLE_NAME = "clustered_with_counter_value";
 
-	@EmbeddedId
+	@CompoundPrimaryKey
 	private ClusteredKey id;
 
 	@Column

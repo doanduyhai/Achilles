@@ -150,7 +150,7 @@ public class SchemaUpdateIT {
     @Entity(keyspace = "schema_dynamic_update", table = "new_simple_field")
     public static class EntityWithNewSimpleField {
 
-        @Id
+        @PartitionKey
         private Long id;
 
         @Column(name = "existing_field")
@@ -239,7 +239,7 @@ public class SchemaUpdateIT {
     @Entity(keyspace = "schema_dynamic_update_counter", table = "new_counter_field")
     public static class ClusteredCounterEntityWithNewCounterField {
 
-        @EmbeddedId
+        @CompoundPrimaryKey
         private Compound id;
 
         @Column(name = "existing_counter")
@@ -330,7 +330,7 @@ public class SchemaUpdateIT {
     @Entity(table = "entity_with_index")
     public static class EntityWithIndex {
 
-        @Id
+        @PartitionKey
         private Long id;
 
         @Column

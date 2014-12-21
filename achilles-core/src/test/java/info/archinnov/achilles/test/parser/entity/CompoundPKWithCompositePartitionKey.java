@@ -15,40 +15,43 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
+import java.util.UUID;
+
 import info.archinnov.achilles.annotations.ClusteringColumn;
-import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.PartitionKey;
 
-public class EmbeddedKey {
+public class CompoundPKWithCompositePartitionKey {
 
-    @PartitionKey
-	@Column(name = "id")
-	private Long userId;
+	@PartitionKey(1)
+	private Long id;
+
+	@PartitionKey(2)
+	private String type;
 
     @ClusteringColumn
-	private String name;
+	private UUID date;
 
-	public EmbeddedKey() {
+	public Long getId() {
+		return id;
 	}
 
-	public EmbeddedKey(Long userId, String name) {
-		this.userId = userId;
-		this.name = name;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
-	public Long getUserId() {
-		return userId;
+	public String getType() {
+		return type;
 	}
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
+	public void setType(String type) {
+		this.type = type;
 	}
 
-	public String getName() {
-		return name;
+	public UUID getDate() {
+		return date;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setDate(UUID date) {
+		this.date = date;
 	}
 }

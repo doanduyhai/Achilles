@@ -42,7 +42,7 @@ public class LegacyComponentOrderingParserTest {
     }
 
     @Test
-    public void should_parse_embedded_id() throws Exception {
+    public void should_parse_compound_pk() throws Exception {
         //Given
         class Test {
 

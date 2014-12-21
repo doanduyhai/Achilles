@@ -26,7 +26,7 @@ import info.archinnov.achilles.type.Counter;
 public class CompleteBean {
 
     public static final String TABLE_NAME = "CompleteBean";
-    @Id
+    @PartitionKey
     private Long id;
 
     @Column

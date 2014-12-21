@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue.CompoundPK;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue.TABLE_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -29,7 +30,6 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue.ClusteredKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue.Holder;
 
 public class ClusteredEntityWithObjectPropertyIT {
@@ -43,13 +43,13 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 	private ClusteredEntityWithObjectValue entity;
 
-	private ClusteredKey compoundKey;
+	private CompoundPK compoundKey;
 
 	private ObjectMapper mapper = new ObjectMapper();
 
 	@Test
 	public void should_persist_and_find() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
+		compoundKey = new CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
@@ -63,7 +63,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 	@Test
 	public void should_persist_and_get_proxy() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
+		compoundKey = new CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
@@ -78,7 +78,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 	@Test
 	public void should_merge_modifications() throws Exception {
 
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
+		compoundKey = new CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 		Holder holder = new Holder("content");
 		Holder newHolder = new Holder("new_content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
@@ -95,7 +95,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 	@Test
 	public void should_delete() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
+		compoundKey = new CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
@@ -111,7 +111,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 	public void should_refresh() throws Exception {
 
 		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		compoundKey = new ClusteredKey(partitionKey, "name");
+		compoundKey = new CompoundPK(partitionKey, "name");
 		Holder holder = new Holder("content");
 		Holder newHolder = new Holder("new_content");
 
@@ -225,8 +225,8 @@ public class ClusteredEntityWithObjectPropertyIT {
 	}
 
 	private void insertClusteredEntity(Long partitionKey, String name, Holder clusteredValue) {
-		ClusteredKey embeddedId = new ClusteredKey(partitionKey, name);
-		ClusteredEntityWithObjectValue entity = new ClusteredEntityWithObjectValue(embeddedId, clusteredValue);
+		CompoundPK compoundPK = new CompoundPK(partitionKey, name);
+		ClusteredEntityWithObjectValue entity = new ClusteredEntityWithObjectValue(compoundPK, clusteredValue);
 		manager.insert(entity);
 	}
 

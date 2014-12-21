@@ -25,7 +25,7 @@ public class ClusteredEntityWithCompositePartitionKey {
 
 	public static final String TABLE_NAME = "clustered_with_composite_pk";
 
-	@EmbeddedId
+	@CompoundPrimaryKey
 	private EmbeddedKey id;
 
 	@Column

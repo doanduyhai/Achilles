@@ -26,7 +26,6 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 public class ClusteredEntityIT {
@@ -40,11 +39,11 @@ public class ClusteredEntityIT {
 
 	private ClusteredEntity entity;
 
-	private ClusteredKey compoundKey;
+	private ClusteredEntity.CompoundPK compoundKey;
 
 	@Test
 	public void should_persist_and_find() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
+		compoundKey = new ClusteredEntity.CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -58,7 +57,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_persist_with_ttl() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
+		compoundKey = new ClusteredEntity.CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -73,7 +72,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_persist_and_get_proxy() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
+		compoundKey = new ClusteredEntity.CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -87,7 +86,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_update_with_ttl() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
+		compoundKey = new ClusteredEntity.CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 		entity = manager.insert(entity, OptionsBuilder.withTtl(1));
 
@@ -100,7 +99,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_update_modifications() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
+		compoundKey = new ClusteredEntity.CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -116,7 +115,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_delete() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
+		compoundKey = new ClusteredEntity.CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -130,7 +129,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_delete_by_id() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
+		compoundKey = new ClusteredEntity.CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -148,7 +147,7 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		int count = RandomUtils.nextInt(0,Integer.MAX_VALUE);
 		String name = "name";
-		compoundKey = new ClusteredKey(partitionKey, count, name);
+		compoundKey = new ClusteredEntity.CompoundPK(partitionKey, count, name);
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 

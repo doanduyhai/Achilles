@@ -34,22 +34,22 @@ public class PropertyMetaStatementGeneratorTest {
     private PropertyMeta meta;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private EmbeddedIdProperties embeddedIdProperties;
+    private CompoundPKProperties compoundPKProperties;
 
     private PropertyMetaStatementGenerator view;
 
     @Before
     public void setUp() {
         view = new PropertyMetaStatementGenerator(meta);
-        when(meta.getEmbeddedIdProperties()).thenReturn(embeddedIdProperties);
+        when(meta.getCompoundPKProperties()).thenReturn(compoundPKProperties);
         when(meta.getEntityClassName()).thenReturn("entity");
     }
 
     @Test
-    public void should_prepare_insert_primary_key_for_embedded_id() throws Exception {
+    public void should_prepare_insert_primary_key_for_compound_pk() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         Insert insert = QueryBuilder.insertInto("table");
 
         //When
@@ -60,14 +60,14 @@ public class PropertyMetaStatementGeneratorTest {
     }
 
     @Test
-    public void should_prepare_insert_primary_key_for_embedded_id_with_only_static_columns() throws Exception {
+    public void should_prepare_insert_primary_key_for_compound_pk_with_only_static_columns() throws Exception {
         //Given
         PropertyMeta meta1 = mock(PropertyMeta.class);
         when(meta1.getCQLColumnName()).thenReturn("id");
 
         PartitionComponents partitionComponents = new PartitionComponents(asList(meta1));
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(meta.getEmbeddedIdProperties().getPartitionComponents()).thenReturn(partitionComponents);
+        when(meta.getCompoundPKProperties().getPartitionComponents()).thenReturn(partitionComponents);
         Insert insert = QueryBuilder.insertInto("table");
 
         //When
@@ -92,11 +92,11 @@ public class PropertyMetaStatementGeneratorTest {
     }
 
     @Test
-    public void should_prepare_where_clause_for_select_with_embedded_id() throws Exception {
+    public void should_prepare_where_clause_for_select_with_compound_pk() throws Exception {
         //Given
         Optional<PropertyMeta> pmO = Optional.absent();
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         Select select = QueryBuilder.select().from("table");
 
         //When
@@ -107,7 +107,7 @@ public class PropertyMetaStatementGeneratorTest {
     }
 
     @Test
-    public void should_prepare_where_clause_for_select_with_embedded_id_and_static_column() throws Exception {
+    public void should_prepare_where_clause_for_select_with_compound_pk_and_static_column() throws Exception {
         //Given
         PropertyMeta staticMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         when(staticMeta.structure().isStaticColumn()).thenReturn(true);
@@ -115,7 +115,7 @@ public class PropertyMetaStatementGeneratorTest {
         Optional<PropertyMeta> pmO = Optional.fromNullable(staticMeta);
 
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
+        when(compoundPKProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
         Select select = QueryBuilder.select().from("table");
 
         //When
@@ -142,10 +142,10 @@ public class PropertyMetaStatementGeneratorTest {
 
 
     @Test
-    public void should_prepare_where_clause_for_delete_with_embedded_id() throws Exception {
+    public void should_prepare_where_clause_for_delete_with_compound_pk() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         Delete delete = QueryBuilder.delete().from("table");
 
         //When
@@ -156,10 +156,10 @@ public class PropertyMetaStatementGeneratorTest {
     }
 
     @Test
-    public void should_prepare_where_clause_for_delete_with_embedded_id_and_static_column() throws Exception {
+    public void should_prepare_where_clause_for_delete_with_compound_pk_and_static_column() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
+        when(compoundPKProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
         Delete delete = QueryBuilder.delete().from("table");
 
         //When
@@ -210,11 +210,11 @@ public class PropertyMetaStatementGeneratorTest {
     }
 
     @Test
-    public void should_prepare_common_where_clause_for_update_with_embedded_id() throws Exception {
+    public void should_prepare_common_where_clause_for_update_with_compound_pk() throws Exception {
         //Given
         final Assignments assignments = update("table").with();
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         //When
         final Where actual = view.prepareCommonWhereClauseForUpdate(assignments, false);
@@ -224,11 +224,11 @@ public class PropertyMetaStatementGeneratorTest {
     }
 
     @Test
-    public void should_prepare_common_where_clause_for_update_with_embedded_id_and_static_column() throws Exception {
+    public void should_prepare_common_where_clause_for_update_with_compound_pk_and_static_column() throws Exception {
         //Given
         final Assignments assignments = update("table").with();
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
+        when(compoundPKProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
 
         //When
         final Where actual = view.prepareCommonWhereClauseForUpdate(assignments, true);
@@ -252,7 +252,7 @@ public class PropertyMetaStatementGeneratorTest {
     }
 
     @Test
-    public void should_generate_where_clause_for_update_with_embedded_id() throws Exception {
+    public void should_generate_where_clause_for_update_with_compound_pk() throws Exception {
         //Given
         Object entity = new Object();
         CompleteBean pk = new CompleteBean();
@@ -262,7 +262,7 @@ public class PropertyMetaStatementGeneratorTest {
 
         final Assignments assignments = update("table").with();
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         when(pm.structure().isStaticColumn()).thenReturn(false);
         when(meta.forTranscoding().encodeToComponents(pk, false)).thenReturn(Arrays.<Object>asList(10L, "DuyHai"));
 
@@ -296,11 +296,11 @@ public class PropertyMetaStatementGeneratorTest {
     }
 
     @Test
-    public void should_prepare_select_fields_for_embedded_id() throws Exception {
+    public void should_prepare_select_fields_for_compound_pk() throws Exception {
         //Given
         final Selection select = select();
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         //When
         final Selection actual = view.prepareSelectField(select);

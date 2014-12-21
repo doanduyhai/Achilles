@@ -20,7 +20,7 @@ import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.Entity
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROW;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.PARTITION_KEY;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -152,7 +152,7 @@ public class TypedQueryTest {
     @Test
     public void should_get_all_managed_with_select_star_async() throws Exception {
         // Given
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(ID).accessors().build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(PARTITION_KEY).accessors().build();
 
         PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).accessors().build();
 
@@ -198,7 +198,7 @@ public class TypedQueryTest {
     public void should_get_first_entity_async() throws Exception {
         // When
         PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
-                .type(PropertyType.ID).accessors().build();
+                .type(PropertyType.PARTITION_KEY).accessors().build();
 
         PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name")
                 .type(PropertyType.SIMPLE).accessors().build();

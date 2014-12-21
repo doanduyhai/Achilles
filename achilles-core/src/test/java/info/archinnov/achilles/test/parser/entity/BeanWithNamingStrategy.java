@@ -1,16 +1,14 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Strategy;
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.NamingStrategy;
 
 @Entity(keyspace = "myKeyspace", table = "myTable")
 @Strategy(naming = NamingStrategy.SNAKE_CASE)
 public class BeanWithNamingStrategy {
 
-    @Id(name = "my_Id")
+    @PartitionKey
+    @Column(name = "my_Id")
     private Long id;
 
     @Column

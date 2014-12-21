@@ -27,14 +27,14 @@ public class LegacyComponentOrderingParser extends ComponentOrderingParser {
     }
 
     @Override
-    Map<Integer, Field> extractComponentsOrdering(Class<?> embeddedIdClass) {
-        log.trace("Extract components ordering from embedded id class {} ", embeddedIdClass.getCanonicalName());
+    Map<Integer, Field> extractComponentsOrdering(Class<?> compoundPKClass) {
+        log.trace("Extract components ordering from compound primary key class {} ", compoundPKClass.getCanonicalName());
 
-        String embeddedIdClassName = embeddedIdClass.getCanonicalName();
+        String compoundPKClassName = compoundPKClass.getCanonicalName();
         Map<Integer, Field> components = new TreeMap<>();
 
         @SuppressWarnings("unchecked")
-        Set<Field> candidateFields = getAllFields(embeddedIdClass, ReflectionUtils.<Field>withAnnotation(Order.class));
+        Set<Field> candidateFields = getAllFields(compoundPKClass, ReflectionUtils.<Field>withAnnotation(Order.class));
 
         Set<Integer> orders = new HashSet<>();
         int orderSum = 0;
@@ -43,25 +43,25 @@ public class LegacyComponentOrderingParser extends ComponentOrderingParser {
         for (Field candidateField : candidateFields) {
             Order orderAnnotation = candidateField.getAnnotation(Order.class);
             int order = orderAnnotation.value();
-            orderSum = validateNoDuplicateOrderAndType(embeddedIdClassName, orders, orderSum, order);
+            orderSum = validateNoDuplicateOrderAndType(compoundPKClassName, orders, orderSum, order);
             components.put(order, candidateField);
         }
 
-        validateConsistentPartitionKeys(components, embeddedIdClassName);
-        validateConsistentOrdering(embeddedIdClassName, orderSum, componentCount);
-        Validator.validateBeanMappingTrue(componentCount > 1,"There should be at least 2 fields annotated with @Order for the @EmbeddedId class '%s'",
-                embeddedIdClass.getCanonicalName());
+        validateConsistentPartitionKeys(components, compoundPKClassName);
+        validateConsistentOrdering(compoundPKClassName, orderSum, componentCount);
+        Validator.validateBeanMappingTrue(componentCount > 1,"There should be at least 2 fields annotated with @Order for the @CompoundPrimaryKey class '%s'",
+                compoundPKClass.getCanonicalName());
         return components;
     }
 
     @Override
-    List<Create.Options.ClusteringOrder> extractClusteringOrder(Class<?> embeddedIdClass) {
-        log.trace("Extract clustering component order from embedded id class {} ", embeddedIdClass.getCanonicalName());
+    List<Create.Options.ClusteringOrder> extractClusteringOrder(Class<?> compoundPKClass) {
+        log.trace("Extract clustering component order from compound primary key class {} ", compoundPKClass.getCanonicalName());
 
         List<Create.Options.ClusteringOrder> sortOrders = new ArrayList<>();
 
         @SuppressWarnings("unchecked")
-        Set<Field> candidateFields = getAllFields(embeddedIdClass, ReflectionUtils.withAnnotation(Order.class));
+        Set<Field> candidateFields = getAllFields(compoundPKClass, ReflectionUtils.withAnnotation(Order.class));
         final List<Field> clusteringFields = FluentIterable.from(candidateFields).filter(new Predicate<Field>() {
             @Override
             public boolean apply(Field field) {
@@ -88,26 +88,25 @@ public class LegacyComponentOrderingParser extends ComponentOrderingParser {
     }
 
 
-    private int validateNoDuplicateOrderAndType(String embeddedIdClassName, Set<Integer> orders, int orderSum,int order) {
-        log.debug("Validate type and component ordering for embedded id class {} ", embeddedIdClassName);
-        Validator.validateBeanMappingTrue(orders.add(order), "The order '%s' is duplicated in @EmbeddedId class '%s'",
-                order, embeddedIdClassName);
+    private int validateNoDuplicateOrderAndType(String compoundPKClassName, Set<Integer> orders, int orderSum,int order) {
+        log.debug("Validate type and component ordering for compound primary key class {} ", compoundPKClassName);
+        Validator.validateBeanMappingTrue(orders.add(order), "The order '%s' is duplicated in @CompoundPrimaryKey class '%s'", order, compoundPKClassName);
 
         orderSum += order;
 
         return orderSum;
     }
 
-    private void validateConsistentOrdering(String embeddedIdClassName, int orderSum, int componentCount) {
+    private void validateConsistentOrdering(String compoundPKClassName, int orderSum, int componentCount) {
         int check = (componentCount * (componentCount + 1)) / 2;
 
-        log.debug("Validate component ordering for @EmbeddedId class {} ", embeddedIdClassName);
+        log.debug("Validate component ordering for @CompoundPrimaryKey class {} ", compoundPKClassName);
 
-        Validator.validateBeanMappingTrue(orderSum == check, "The component ordering is wrong for @EmbeddedId class '%s'", embeddedIdClassName);
+        Validator.validateBeanMappingTrue(orderSum == check, "The component ordering is wrong for @CompoundPrimaryKey class '%s'", compoundPKClassName);
     }
 
-    private void validateConsistentPartitionKeys(Map<Integer, Field> componentsOrdering, String embeddedIdClassName) {
-        log.debug("Validate composite partition key component ordering for @EmbeddedId class {} ", embeddedIdClassName);
+    private void validateConsistentPartitionKeys(Map<Integer, Field> componentsOrdering, String compoundPKClassName) {
+        log.debug("Validate composite partition key component ordering for @CompoundPrimaryKey class {} ", compoundPKClassName);
         int orderSum = 0;
         int orderCount = 0;
         for (Integer order : componentsOrdering.keySet()) {
@@ -122,6 +121,6 @@ public class LegacyComponentOrderingParser extends ComponentOrderingParser {
          * Math formula : sum of N consecutive integers = N * (N+1)/2
          */
         int check = (orderCount * (orderCount + 1)) / 2;
-        Validator.validateBeanMappingTrue(orderSum == check, "The composite partition key ordering is wrong for @EmbeddedId class '%s'", embeddedIdClassName);
+        Validator.validateBeanMappingTrue(orderSum == check, "The composite partition key ordering is wrong for @CompoundPrimaryKey class '%s'", compoundPKClassName);
     }
 }

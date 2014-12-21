@@ -18,14 +18,14 @@ package info.archinnov.achilles.test.integration.entity;
 import static info.archinnov.achilles.test.integration.entity.EntityWithEnum.TABLE_NAME;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 @Entity(table = TABLE_NAME)
 public class EntityWithEnum {
     public static final String TABLE_NAME = "entity_with_enum";
 
-    @Id
+    @PartitionKey
     private Long id;
 
     @Column

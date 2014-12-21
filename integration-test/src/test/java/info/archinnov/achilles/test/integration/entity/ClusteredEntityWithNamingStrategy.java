@@ -7,8 +7,8 @@ import info.archinnov.achilles.type.NamingStrategy;
 @Strategy(naming = NamingStrategy.CASE_SENSITIVE)
 public class ClusteredEntityWithNamingStrategy {
 
-    @EmbeddedId
-    private EmbeddedKey embeddedKey;
+    @CompoundPrimaryKey
+    private CompoundPK compoundPK;
 
     @Column
     private String firstName;
@@ -20,17 +20,17 @@ public class ClusteredEntityWithNamingStrategy {
     }
 
     public ClusteredEntityWithNamingStrategy(Long partitionKey, String clusteringKey, String firstName, String lastName) {
-        this.embeddedKey = new EmbeddedKey(partitionKey, clusteringKey);
+        this.compoundPK = new CompoundPK(partitionKey, clusteringKey);
         this.firstName = firstName;
         this.lastName = lastName;
     }
 
-    public EmbeddedKey getEmbeddedKey() {
-        return embeddedKey;
+    public CompoundPK getCompoundPK() {
+        return compoundPK;
     }
 
-    public void setEmbeddedKey(EmbeddedKey embeddedKey) {
-        this.embeddedKey = embeddedKey;
+    public void setCompoundPK(CompoundPK compoundPK) {
+        this.compoundPK = compoundPK;
     }
 
     public String getFirstName() {
@@ -49,7 +49,7 @@ public class ClusteredEntityWithNamingStrategy {
         this.lastName = lastName;
     }
 
-    public static class EmbeddedKey {
+    public static class CompoundPK {
 
         @PartitionKey
         private Long partitionKey;
@@ -58,10 +58,10 @@ public class ClusteredEntityWithNamingStrategy {
         @Column(name = "clustering")
         private String clusteringKey;
 
-        public EmbeddedKey() {
+        public CompoundPK() {
         }
 
-        public EmbeddedKey(Long partitionKey, String clusteringKey) {
+        public CompoundPK(Long partitionKey, String clusteringKey) {
             this.partitionKey = partitionKey;
             this.clusteringKey = clusteringKey;
         }

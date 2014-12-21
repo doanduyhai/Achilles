@@ -16,23 +16,23 @@
 package info.archinnov.achilles.test.mapping.entity;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.CompoundPrimaryKey;
 import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.test.parser.entity.CompoundPK;
 
 @Entity
 public class ClusteredEntity {
-	@EmbeddedId
-	private EmbeddedKey id;
+	@CompoundPrimaryKey
+	private CompoundPK id;
 
 	@Column
 	private String value;
 
-	public EmbeddedKey getId() {
+	public CompoundPK getId() {
 		return id;
 	}
 
-	public void setId(EmbeddedKey id) {
+	public void setId(CompoundPK id) {
 		this.id = id;
 	}
 

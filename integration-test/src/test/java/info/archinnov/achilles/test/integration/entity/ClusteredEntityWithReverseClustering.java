@@ -24,8 +24,8 @@ public class ClusteredEntityWithReverseClustering {
 
 	public static final String TABLE_NAME = "clustered_with_reversed_clustering";
 
-	@EmbeddedId
-	private ClusteredKey id;
+	@CompoundPrimaryKey
+	private CompoundPK id;
 
 	@Column
 	private String value;
@@ -34,20 +34,20 @@ public class ClusteredEntityWithReverseClustering {
 	}
 
 	public ClusteredEntityWithReverseClustering(Long id, Integer count, String name, String value) {
-		this.id = new ClusteredKey(id, count, name);
+		this.id = new CompoundPK(id, count, name);
 		this.value = value;
 	}
 
-	public ClusteredEntityWithReverseClustering(ClusteredKey id, String value) {
+	public ClusteredEntityWithReverseClustering(CompoundPK id, String value) {
 		this.id = id;
 		this.value = value;
 	}
 
-	public ClusteredKey getId() {
+	public CompoundPK getId() {
 		return id;
 	}
 
-	public void setId(ClusteredKey id) {
+	public void setId(CompoundPK id) {
 		this.id = id;
 	}
 
@@ -90,7 +90,7 @@ public class ClusteredEntityWithReverseClustering {
 		return true;
 	}
 
-	public static class ClusteredKey {
+	public static class CompoundPK {
 		@PartitionKey
 		private Long id;
 
@@ -100,10 +100,10 @@ public class ClusteredEntityWithReverseClustering {
         @ClusteringColumn(2)
 		private String name;
 
-		public ClusteredKey() {
+		public CompoundPK() {
 		}
 
-		public ClusteredKey(Long id, Integer count, String name) {
+		public CompoundPK(Long id, Integer count, String name) {
 			this.id = id;
 			this.count = count;
 			this.name = name;
@@ -151,7 +151,7 @@ public class ClusteredEntityWithReverseClustering {
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			ClusteredKey other = (ClusteredKey) obj;
+			CompoundPK other = (CompoundPK) obj;
 			if (count == null) {
 				if (other.count != null)
 					return false;

@@ -22,17 +22,17 @@ public abstract class ComponentOrderingParser {
 
     protected PropertyParsingContext context;
 
-    public static ComponentOrderingParser determineAppropriateParser(Class<?> embeddedIdClass, PropertyParsingContext context) {
-        final Set<Field> partitionKeyAnnotations = ReflectionUtils.getAllFields(embeddedIdClass, ReflectionUtils.<Field>withAnnotation(PartitionKey.class));
-        final Set<Field> clusteringColumnAnnotations = ReflectionUtils.getAllFields(embeddedIdClass, ReflectionUtils.<Field>withAnnotation(ClusteringColumn.class));
-        final Set<Field> orderAnnotations = ReflectionUtils.getAllFields(embeddedIdClass, ReflectionUtils.<Field>withAnnotation(Order.class));
+    public static ComponentOrderingParser determineAppropriateParser(Class<?> compoundPKClass, PropertyParsingContext context) {
+        final Set<Field> partitionKeyAnnotations = ReflectionUtils.getAllFields(compoundPKClass, ReflectionUtils.<Field>withAnnotation(PartitionKey.class));
+        final Set<Field> clusteringColumnAnnotations = ReflectionUtils.getAllFields(compoundPKClass, ReflectionUtils.<Field>withAnnotation(ClusteringColumn.class));
+        final Set<Field> orderAnnotations = ReflectionUtils.getAllFields(compoundPKClass, ReflectionUtils.<Field>withAnnotation(Order.class));
 
         if (clusteringColumnAnnotations.size() > 0 && orderAnnotations.size() > 0) {
-            throw new AchillesBeanMappingException(format("You should stop using the deprecated @Order annotation in favor of @PartitionKey and @ClusteringColumn for the @EmbeddedId class '%s'", embeddedIdClass.getCanonicalName()));
+            throw new AchillesBeanMappingException(format("You should stop using the deprecated @Order annotation in favor of @PartitionKey and @ClusteringColumn for the @CompoundPrimaryKey class '%s'", compoundPKClass.getCanonicalName()));
         }
 
         if (clusteringColumnAnnotations.size() + orderAnnotations.size() + partitionKeyAnnotations.size() == 0) {
-            throw new AchillesBeanMappingException(format("Please use @PartitionKey and @ClusteringColumn annotations for the @EmbeddedId class '%s'", embeddedIdClass.getCanonicalName()));
+            throw new AchillesBeanMappingException(format("Please use @PartitionKey and @ClusteringColumn annotations for the @CompoundPrimaryKey class '%s'", compoundPKClass.getCanonicalName()));
         }
 
         if (orderAnnotations.size() > 0) {
@@ -46,9 +46,9 @@ public abstract class ComponentOrderingParser {
         this.context = context;
     }
 
-    abstract Map<Integer, Field> extractComponentsOrdering(Class<?> embeddedIdClass);
+    abstract Map<Integer, Field> extractComponentsOrdering(Class<?> compoundPKClass);
 
-    abstract List<Create.Options.ClusteringOrder> extractClusteringOrder(Class<?> embeddedIdClass);
+    abstract List<Create.Options.ClusteringOrder> extractClusteringOrder(Class<?> compoundPKClass);
 
     protected void validateNotStaticColumn(Field field) {
         Column column = field.getAnnotation(Column.class);

@@ -24,23 +24,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *  <p>
- * Define a simple partition key for an entity
- *
- * <pre class="code"><code class="java">
- *
- *   <strong>{@literal @}Id</strong>
- *   private Long userId;
- *
- *   //Custom column name
- *   <strong>{@literal @}Id(name = "id")</strong>
- *   private Long userId;
- * </code></pre>
- * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#id" target="_blank">@Id</a>
+ *  Deprecated, use @{@link info.archinnov.achilles.annotations.PartitionKey} instead
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Documented
+@Deprecated
 public @interface Id {
 	/**
 	 * (<strong>Optional</strong>) The name of the partition key. Defaults to the field name.

@@ -20,7 +20,6 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static java.lang.String.format;
 import static org.mockito.Mockito.when;
 
-import info.archinnov.achilles.internal.persistence.operations.TypedQueryValidator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -97,7 +96,7 @@ public class TypedQueryValidatorTest {
 
     @Test
     public void should_exception_when_missing_id_column() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").cqlColumnName("id").type(PropertyType.ID).build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").cqlColumnName("id").type(PropertyType.PARTITION_KEY).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
 
@@ -111,7 +110,7 @@ public class TypedQueryValidatorTest {
 
     @Test
     public void should_skip_id_column_validation_when_select_star() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(PropertyType.ID).build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(PropertyType.PARTITION_KEY).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
 

@@ -1,15 +1,11 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COMPOUND_PRIMARY_KEY;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_ONE;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,9 +27,9 @@ public class PropertyMetaStructureTest {
     }
 
     @Test
-    public void should_return_is_embedded_id() throws Exception {
+    public void should_return_is_compound_pk() throws Exception {
         //Given
-        when(meta.type()).thenReturn(EMBEDDED_ID);
+        when(meta.type()).thenReturn(COMPOUND_PRIMARY_KEY);
 
         //When
 

@@ -21,7 +21,7 @@ import info.archinnov.achilles.annotations.*;
 @Entity
 public class EntityWithSecondaryIndex {
 
-	@EmbeddedId
+	@CompoundPrimaryKey
 	private EmbeddedKey id;
 
 	@Column

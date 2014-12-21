@@ -26,8 +26,8 @@ public class CompositeClusteredEntity {
 
 	public static final String TABLE_NAME = "composite_clustered";
 
-	@EmbeddedId
-	private ClusteredKey id;
+	@CompoundPrimaryKey
+	private CompoundPK id;
 
 	@Column
 	private String value;
@@ -36,20 +36,20 @@ public class CompositeClusteredEntity {
 	}
 
 	public CompositeClusteredEntity(Long id, String bucket, Integer count, String name, String value) {
-		this.id = new ClusteredKey(id, bucket, count,name);
+		this.id = new CompoundPK(id, bucket, count,name);
 		this.value = value;
 	}
 
-	public CompositeClusteredEntity(ClusteredKey id, String value) {
+	public CompositeClusteredEntity(CompoundPK id, String value) {
 		this.id = id;
 		this.value = value;
 	}
 
-	public ClusteredKey getId() {
+	public CompoundPK getId() {
 		return id;
 	}
 
-	public void setId(ClusteredKey id) {
+	public void setId(CompoundPK id) {
 		this.id = id;
 	}
 
@@ -89,7 +89,7 @@ public class CompositeClusteredEntity {
        return Objects.hash(this.id,this.value);
     }
 
-    public static class ClusteredKey {
+    public static class CompoundPK {
         @PartitionKey(1)
 		private Long id;
 
@@ -102,10 +102,10 @@ public class CompositeClusteredEntity {
         @ClusteringColumn(2)
 		private String name;
 
-		public ClusteredKey() {
+		public CompoundPK() {
 		}
 
-		public ClusteredKey(Long id, String bucket, Integer count, String name) {
+		public CompoundPK(Long id, String bucket, Integer count, String name) {
 			this.id = id;
             this.bucket = bucket;
             this.count = count;

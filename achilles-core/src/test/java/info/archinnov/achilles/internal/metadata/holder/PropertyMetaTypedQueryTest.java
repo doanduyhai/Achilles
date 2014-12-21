@@ -25,10 +25,10 @@ public class PropertyMetaTypedQueryTest {
     }
 
     @Test
-    public void should_validate_typed_query_for_embedded_id() throws Exception {
+    public void should_validate_typed_query_for_compound_pk() throws Exception {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(true);
-        when(meta.getEmbeddedIdProperties().getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(meta.getCompoundPKProperties().getCQLComponentNames()).thenReturn(asList("id", "name"));
         when(meta.<CompleteBean>getCqlValueClass()).thenReturn(CompleteBean.class);
 
         //When

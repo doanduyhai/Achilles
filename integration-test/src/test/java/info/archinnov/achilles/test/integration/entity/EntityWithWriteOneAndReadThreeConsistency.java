@@ -20,10 +20,7 @@ import static info.archinnov.achilles.test.integration.entity.EntityWithWriteOne
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.*;
 
 @Entity(table = TABLE_NAME)
 @Consistency(read = THREE, write = ONE)
@@ -31,7 +28,7 @@ public class EntityWithWriteOneAndReadThreeConsistency {
 
 	public static final String TABLE_NAME = "consistency_test2";
 
-	@Id
+	@PartitionKey
 	private Long id;
 
 	@Column
