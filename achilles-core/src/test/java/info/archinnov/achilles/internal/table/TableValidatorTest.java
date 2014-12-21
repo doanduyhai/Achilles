@@ -29,8 +29,8 @@ import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_P
 import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_TABLE;
 import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COMPOUND_PRIMARY_KEY;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.PARTITION_KEY;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.MAP;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SET;
@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import com.datastax.driver.core.ColumnMetadataBuilder;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
+import info.archinnov.achilles.test.parser.entity.CompoundPK;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,7 +64,6 @@ import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.Counter;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -97,7 +97,7 @@ public class TableValidatorTest {
 
     @Test
     public void should_validate_id_for_entity() throws Exception {
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).cqlColumnName("id").type(ID).build();
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).cqlColumnName("id").type(PARTITION_KEY).build();
         PropertyMeta nameMeta = completeBean(Void.class, String.class).cqlColumnName("name").type(SIMPLE).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
@@ -115,11 +115,11 @@ public class TableValidatorTest {
     }
 
     @Test
-    public void should_validate_embedded_id_for_entity() throws Exception {
+    public void should_validate_compound_pk_for_entity() throws Exception {
         PropertyMeta userId = valueClass(Long.class).propertyName("userId").cqlColumnName("userid").type(SIMPLE).build();
         PropertyMeta name = valueClass(String.class).propertyName("name").cqlColumnName("name").type(SIMPLE).build();
 
-        PropertyMeta idMeta = valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+        PropertyMeta idMeta = valueClass(CompoundPK.class).type(COMPOUND_PRIMARY_KEY)
                 .propertyName("compound")
                 .partitionKeyMetas(userId).clusteringKeyMetas(name)
                 .clusteringOrders(new ClusteringOrder("name", Sorting.ASC))
@@ -149,7 +149,7 @@ public class TableValidatorTest {
 
     @Test
     public void should_validate_simple_field_for_entity() throws Exception {
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).cqlColumnName("id").type(ID).build();
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).cqlColumnName("id").type(PARTITION_KEY).build();
         PropertyMeta simpleMeta = completeBean(Void.class, String.class).cqlColumnName("name").type(SIMPLE)
                 .build();
 
@@ -169,7 +169,7 @@ public class TableValidatorTest {
 
     @Test
     public void should_validate_collection_and_map_fields_for_entity() throws Exception {
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).cqlColumnName("id").type(ID).build();
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).cqlColumnName("id").type(PARTITION_KEY).build();
 
         PropertyMeta listMeta = completeBean(Void.class, String.class).cqlColumnName("friends").type(LIST).build();
         PropertyMeta setMeta = completeBean(Void.class, String.class).cqlColumnName("followers").type(SET).build();
@@ -202,7 +202,7 @@ public class TableValidatorTest {
         PropertyMeta userId = valueClass(Long.class).cqlColumnName("userid").type(SIMPLE).build();
         PropertyMeta name = valueClass(String.class).cqlColumnName("name").type(SIMPLE).build();
 
-        PropertyMeta idMeta = valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+        PropertyMeta idMeta = valueClass(CompoundPK.class).type(COMPOUND_PRIMARY_KEY)
                 .propertyName("compound")
                 .partitionKeyMetas(userId).clusteringKeyMetas(name)
                 .clusteringOrders(new ClusteringOrder("name", Sorting.ASC))

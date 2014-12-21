@@ -18,10 +18,10 @@ package info.archinnov.achilles.internal.metadata.parsing;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.lang.reflect.Field;
+
+import info.archinnov.achilles.annotations.PartitionKey;
 import org.junit.Test;
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.internal.metadata.parsing.PropertyFilter;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.ParentBean;
@@ -36,8 +36,15 @@ public class PropertyFilterTest {
 		assertThat(filter.matches(name)).isTrue();
 	}
 
+    @Test
+    public void should_match_partition_key() throws Exception {
+        Field name = CompleteBean.class.getDeclaredField("id");
+
+        assertThat(filter.matches(name)).isTrue();
+    }
+
 	@Test
-	public void should_match_embedded_id() throws Exception {
+	public void should_match_compound_pk() throws Exception {
 		Field clusteredId = BeanWithClusteredId.class.getDeclaredField("id");
 
 		assertThat(filter.matches(clusteredId)).isTrue();
@@ -75,6 +82,6 @@ public class PropertyFilterTest {
 	public void should_not_have_annotation() throws Exception {
 		Field name = CompleteBean.class.getDeclaredField("name");
 
-		assertThat(filter.hasAnnotation(name, Id.class)).isFalse();
+		assertThat(filter.hasAnnotation(name, PartitionKey.class)).isFalse();
 	}
 }

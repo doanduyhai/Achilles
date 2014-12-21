@@ -24,8 +24,8 @@ public class ClusteredEntityWithObjectValue {
 
 	public static final String TABLE_NAME = "clustered_with_object_value";
 
-	@EmbeddedId
-	private ClusteredKey id;
+	@CompoundPrimaryKey
+	private CompoundPK id;
 
 	@Column
     @JSON
@@ -34,16 +34,16 @@ public class ClusteredEntityWithObjectValue {
 	public ClusteredEntityWithObjectValue() {
 	}
 
-	public ClusteredEntityWithObjectValue(ClusteredKey id, Holder value) {
+	public ClusteredEntityWithObjectValue(CompoundPK id, Holder value) {
 		this.id = id;
 		this.value = value;
 	}
 
-	public ClusteredKey getId() {
+	public CompoundPK getId() {
 		return id;
 	}
 
-	public void setId(ClusteredKey id) {
+	public void setId(CompoundPK id) {
 		this.id = id;
 	}
 
@@ -86,17 +86,17 @@ public class ClusteredEntityWithObjectValue {
 		return true;
 	}
 
-	public static class ClusteredKey {
+	public static class CompoundPK {
 		@PartitionKey
 		private Long id;
 
         @ClusteringColumn
 		private String name;
 
-		public ClusteredKey() {
+		public CompoundPK() {
 		}
 
-		public ClusteredKey(Long id, String name) {
+		public CompoundPK(Long id, String name) {
 			this.id = id;
 			this.name = name;
 		}
@@ -134,7 +134,7 @@ public class ClusteredEntityWithObjectValue {
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			ClusteredKey other = (ClusteredKey) obj;
+			CompoundPK other = (CompoundPK) obj;
 			if (id == null) {
 				if (other.id != null)
 					return false;

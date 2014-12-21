@@ -27,13 +27,13 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
 
     public void validatePrimaryKeyComponents(TableMetadata tableMetadata, boolean partitionKey) {
         log.debug("Validate existing primary key component from table {} against entity class {}",tableMetadata.getName(), meta.getEntityClassName());
-        Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot validate compound primary keys components against Cassandra meta data because entity '%s' does not have a compound primary key", meta.getEntityClassName());
+        Validator.validateNotNull(meta.getCompoundPKProperties(), "Cannot validate compound primary keys components against Cassandra meta data because entity '%s' does not have a compound primary key", meta.getEntityClassName());
         if (partitionKey) {
-            for (PropertyMeta partitionMeta : meta.getEmbeddedIdProperties().getPartitionComponents().propertyMetas) {
+            for (PropertyMeta partitionMeta : meta.getCompoundPKProperties().getPartitionComponents().propertyMetas) {
                 validatePartitionComponent(tableMetadata, partitionMeta);
             }
         } else {
-            for (PropertyMeta clusteringMeta : meta.getEmbeddedIdProperties().getClusteringComponents().propertyMetas) {
+            for (PropertyMeta clusteringMeta : meta.getCompoundPKProperties().getClusteringComponents().propertyMetas) {
                 validateClusteringComponent(tableMetadata, clusteringMeta);
             }
         }

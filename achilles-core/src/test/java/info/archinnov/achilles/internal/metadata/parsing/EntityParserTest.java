@@ -16,14 +16,14 @@
 package info.archinnov.achilles.internal.metadata.parsing;
 
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COMPOUND_PRIMARY_KEY;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.PARTITION_KEY;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Map;
 
 import com.google.common.base.Optional;
-import info.archinnov.achilles.test.parser.entity.BeanWithKeyspaceAndTableName;
+import info.archinnov.achilles.test.parser.entity.*;
 import info.archinnov.achilles.type.NamingStrategy;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,19 +42,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.json.JacksonMapperFactory;
-import info.archinnov.achilles.test.parser.entity.Bean;
-import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
-import info.archinnov.achilles.test.parser.entity.BeanWithDuplicatedColumnName;
-import info.archinnov.achilles.test.parser.entity.BeanWithIdAndColumnAnnotationsOnSameField;
-import info.archinnov.achilles.test.parser.entity.BeanWithInsertStrategy;
-import info.archinnov.achilles.test.parser.entity.BeanWithNoId;
-import info.archinnov.achilles.test.parser.entity.BeanWithSimpleCounter;
-import info.archinnov.achilles.test.parser.entity.BeanWithStaticColumnAndEmbeddedId;
-import info.archinnov.achilles.test.parser.entity.BeanWithStaticColumnNotClustered;
-import info.archinnov.achilles.test.parser.entity.ChildBean;
-import info.archinnov.achilles.test.parser.entity.ClusteredEntity;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
-import info.archinnov.achilles.test.parser.entity.UserBean;
+import info.archinnov.achilles.test.parser.entity.CompoundPK;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.InsertStrategy;
@@ -128,7 +116,7 @@ public class EntityParserTest {
 
         assertThat(id.getPropertyName()).isEqualTo("id");
         assertThat(id.<Long>getValueClass()).isEqualTo(Long.class);
-        assertThat(id.type()).isEqualTo(ID);
+        assertThat(id.type()).isEqualTo(PARTITION_KEY);
         assertThat(id.config().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
         assertThat(id.config().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
@@ -183,14 +171,14 @@ public class EntityParserTest {
     }
 
     @Test
-    public void should_parse_entity_with_embedded_id() throws Exception {
+    public void should_parse_entity_with_compound_pk() throws Exception {
         initEntityParsingContext(BeanWithClusteredId.class);
 
         EntityMeta meta = parser.parseEntity(entityContext);
 
         assertThat(meta).isNotNull();
 
-        assertThat(meta.<EmbeddedKey>getIdClass()).isEqualTo(EmbeddedKey.class);
+        assertThat(meta.<CompoundPK>getIdClass()).isEqualTo(CompoundPK.class);
         PropertyMeta idMeta = meta.getIdMeta();
 
         assertThat(idMeta.structure().isEmbeddedId()).isTrue();
@@ -260,7 +248,7 @@ public class EntityParserTest {
 
         expectedEx.expect(AchillesBeanMappingException.class);
         expectedEx.expectMessage("The entity '" + BeanWithNoId.class.getCanonicalName()
-                + "' should have at least one field with info.archinnov.achilles.annotations.Id/info.archinnov.achilles.annotations.EmbeddedId annotation");
+                + "' should have at least one field with info.archinnov.achilles.annotations.PartitionKey/info.archinnov.achilles.annotations.CompoundPrimaryKey annotation");
         parser.parseEntity(entityContext);
     }
 
@@ -274,7 +262,7 @@ public class EntityParserTest {
     }
 
     @Test
-    public void should_exception_when_entity_with_embedded_id_and_static_column_and_not_clustered() throws Exception {
+    public void should_exception_when_entity_with_compound_pk_and_static_column_and_not_clustered() throws Exception {
         initEntityParsingContext(BeanWithStaticColumnAndEmbeddedId.class);
 
         expectedEx.expect(AchillesBeanMappingException.class);
@@ -299,10 +287,10 @@ public class EntityParserTest {
         assertThat(meta.structure().isClusteredEntity()).isTrue();
 
         assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
-        assertThat(meta.getIdMeta().<EmbeddedKey>getValueClass()).isEqualTo(EmbeddedKey.class);
+        assertThat(meta.getIdMeta().<CompoundPK>getValueClass()).isEqualTo(CompoundPK.class);
 
         assertThat(meta.getPropertyMetas()).hasSize(2);
-        assertThat(meta.getPropertyMetas().get("id").type()).isEqualTo(EMBEDDED_ID);
+        assertThat(meta.getPropertyMetas().get("id").type()).isEqualTo(COMPOUND_PRIMARY_KEY);
         assertThat(meta.getPropertyMetas().get("value").type()).isEqualTo(SIMPLE);
         assertThat(meta.getPropertyMetas().get("value").structure().isStaticColumn()).isTrue();
     }

@@ -17,7 +17,7 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import static info.archinnov.achilles.internal.metadata.holder.EntityMetaBuilder.entityMetaBuilder;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COMPOUND_PRIMARY_KEY;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -133,11 +133,11 @@ public class EntityMetaBuilderTest {
         propertyMetas.put("id", idMeta);
         propertyMetas.put("counter", counterMeta);
 
-        when(idMeta.type()).thenReturn(EMBEDDED_ID);
+        when(idMeta.type()).thenReturn(COMPOUND_PRIMARY_KEY);
         when(idMeta.<Long>getValueClass()).thenReturn(Long.class);
         when(idMeta.structure().isEmbeddedId()).thenReturn(true);
         when(idMeta.structure().isClustered()).thenReturn(true);
-        when(idMeta.getEmbeddedIdProperties().getClusteringComponents().getComponentClasses()).thenReturn(Arrays.<Class<?>>asList(String.class));
+        when(idMeta.getCompoundPKProperties().getClusteringComponents().getComponentClasses()).thenReturn(Arrays.<Class<?>>asList(String.class));
         List<PropertyMeta> eagerMetas = new ArrayList<>();
         eagerMetas.add(counterMeta);
 

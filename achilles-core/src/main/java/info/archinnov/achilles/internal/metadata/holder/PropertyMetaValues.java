@@ -22,7 +22,7 @@ public class PropertyMetaValues extends PropertyMetaView {
         if(log.isTraceEnabled()) {
             log.trace("Extract primary from entity {} of class {}", entity, meta.getEntityClassName());
         }
-        if (meta.type().isId()) {
+        if (meta.type().isPrimaryKey()) {
             return invoker.getPrimaryKey(entity, meta);
         } else {
             throw new IllegalStateException("Cannot get primary key on a non id field '" + meta.propertyName + "'");

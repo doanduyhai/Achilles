@@ -34,7 +34,7 @@ public class EntityParsingValidator {
 		log.debug("Validate that entity class {} has an id meta", entityClass.getCanonicalName());
 
 		Validator.validateBeanMappingFalse(idMeta == null, "The entity '" + entityClass.getCanonicalName()
-				+ "' should have at least one field with info.archinnov.achilles.annotations.Id/info.archinnov.achilles.annotations.EmbeddedId annotation");
+				+ "' should have at least one field with info.archinnov.achilles.annotations.PartitionKey/info.archinnov.achilles.annotations.CompoundPrimaryKey annotation");
 
 	}
 

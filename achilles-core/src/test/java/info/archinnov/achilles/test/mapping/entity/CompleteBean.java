@@ -25,7 +25,7 @@ import info.archinnov.achilles.type.Counter;
 
 @Entity
 public class CompleteBean {
-	@Id
+	@PartitionKey
 	private Long id;
 
 	@Column

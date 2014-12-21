@@ -16,12 +16,15 @@
 package info.archinnov.achilles.internal.metadata.parsing;
 
 import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaBuilder.factory;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COMPOUND_PRIMARY_KEY;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.PARTITION_KEY;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.MAP;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SET;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
+import static org.apache.commons.lang3.StringUtils.contains;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -38,25 +41,16 @@ import java.util.Set;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
 
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.internal.metadata.codec.ListCodec;
 import info.archinnov.achilles.internal.metadata.codec.MapCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
-import org.apache.commons.lang3.StringUtils;
+import info.archinnov.achilles.internal.metadata.holder.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.EmptyCollectionIfNull;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Index;
-import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.internal.metadata.holder.CounterProperties;
-import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
-import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
+import info.archinnov.achilles.internal.metadata.holder.CompoundPKProperties;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.internal.metadata.parsing.validator.PropertyParsingValidator;
 import info.archinnov.achilles.internal.validation.Validator;
@@ -194,10 +188,10 @@ public class PropertyParser {
             propertyMeta = parseMapProperty(context);
         } else if (Counter.class.isAssignableFrom(fieldType)) {
             propertyMeta = parseCounterProperty(context);
-        } else if (context.isEmbeddedId()) {
-            propertyMeta = parseEmbeddedId(context);
+        } else if (context.isCompoundPrimaryKey()) {
+            propertyMeta = parseCompoundPrimaryKey(context);
         } else if (context.isPrimaryKey()) {
-            propertyMeta = parseId(context);
+            propertyMeta = parsePartitionKey(context);
         } else {
             propertyMeta = parseSimpleProperty(context);
             String indexName = getIndexName(field);
@@ -211,39 +205,56 @@ public class PropertyParser {
         return propertyMeta;
     }
 
-    protected PropertyMeta parseId(PropertyParsingContext context) {
+    protected PropertyMeta parsePartitionKey(PropertyParsingContext context) {
         log.debug("Parsing property {} as id of entity class {}", context.getCurrentPropertyName(), context
                 .getCurrentEntityClass().getCanonicalName());
 
         PropertyMeta idMeta = parseSimpleProperty(context);
-        idMeta.setType(ID);
-        Id id = context.getCurrentField().getAnnotation(Id.class);
-        String propertyName = StringUtils.isNotBlank(id.name()) ? id.name() : context.getCurrentPropertyName();
-        idMeta.setPropertyName(propertyName);
+        idMeta.setType(PARTITION_KEY);
+
+        final Id id = context.getCurrentField().getAnnotation(Id.class);
+        final PartitionKey partitionKey = context.getCurrentField().getAnnotation(PartitionKey.class);
+        final Column column = context.getCurrentField().getAnnotation(Column.class);
+
+        if (partitionKey != null) {
+            Validator.validateBeanMappingTrue(partitionKey.value() == 1,"Partition key order should be equal to 1 for simple primary key for entity '%s'",context.getCurrentEntityClass().getCanonicalName());
+        }
+
+        final String cqlColumnName;
+        if (id != null && isNotBlank(id.name())) {
+            cqlColumnName = id.name();
+        } else if (column != null && isNotBlank(column.name())) {
+            cqlColumnName = column.name();
+        } else {
+            cqlColumnName = context.getCurrentCQLColumnName();
+        }
+
+        idMeta.setCQLColumnName(cqlColumnName);
+        idMeta.setPropertyName(context.getCurrentPropertyName());
 
         return idMeta;
     }
 
-    protected PropertyMeta parseEmbeddedId(PropertyParsingContext context) {
-        log.debug("Parsing property {} as embedded id of entity class {}", context.getCurrentPropertyName(), context
+    protected PropertyMeta parseCompoundPrimaryKey(PropertyParsingContext context) {
+        log.debug("Parsing property {} as compound primary key of entity class {}", context.getCurrentPropertyName(), context
                 .getCurrentEntityClass().getCanonicalName());
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
-        final Class<?> embeddedIdClass = field.getType();
+        final Class<?> compoundPKClass = field.getType();
 
-        Validator.validateInstantiable(embeddedIdClass);
+        Validator.validateInstantiable(compoundPKClass);
 
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
-        PropertyType type = EMBEDDED_ID;
+        PropertyType type = COMPOUND_PRIMARY_KEY;
 
-        EmbeddedIdProperties embeddedIdProperties = extractEmbeddedIdProperties(embeddedIdClass, context);
+        CompoundPKProperties compoundPKProperties = extractCopoundPKProperties(compoundPKClass, context);
         PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-                .propertyName(context.getCurrentPropertyName()).embeddedIdProperties(embeddedIdProperties)
+                .propertyName(context.getCurrentPropertyName()).compoundPKProperties(compoundPKProperties)
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors).field(field)
-                .consistencyLevels(context.getCurrentConsistencyLevels()).build(Void.class, embeddedIdClass);
+                .consistencyLevels(context.getCurrentConsistencyLevels()).build(Void.class, compoundPKClass);
 
-        log.trace("Built embedded id property meta for property {} of entity class {} : {}",
+        log.trace("Built compound primary key meta for property {} of entity class {} : {}",
                 propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(), propertyMeta);
         return propertyMeta;
     }
@@ -410,11 +421,11 @@ public class PropertyParser {
 
     }
 
-    private EmbeddedIdProperties extractEmbeddedIdProperties(Class<?> keyClass, PropertyParsingContext context) {
+    private CompoundPKProperties extractCopoundPKProperties(Class<?> keyClass, PropertyParsingContext context) {
         log.trace("Parsing compound key class", keyClass.getCanonicalName());
-        EmbeddedIdProperties embeddedIdProperties = new EmbeddedIdParser(context).parseEmbeddedId(keyClass, this);
-        log.trace("Built compound key properties", embeddedIdProperties);
-        return embeddedIdProperties;
+        CompoundPKProperties compoundPKProperties = new CompoundPKParser(context).parseCompoundPK(keyClass, this);
+        log.trace("Built compound key properties", compoundPKProperties);
+        return compoundPKProperties;
     }
 
     private void parseSimpleCounterConsistencyLevel(PropertyParsingContext context, PropertyMeta propertyMeta) {

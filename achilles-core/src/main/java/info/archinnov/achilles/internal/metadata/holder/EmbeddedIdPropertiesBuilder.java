@@ -46,9 +46,9 @@ public class EmbeddedIdPropertiesBuilder {
 		return new ClusteringComponents(propertyMetas, clusteringOrders);
 	}
 
-    public static EmbeddedIdProperties buildEmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents, String entityName) {
+    public static CompoundPKProperties buildEmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents, String entityName) {
         final List<PropertyMeta> propertyMetas = new ArrayList<>(partitionComponents.propertyMetas);
         propertyMetas.addAll(clusteringComponents.propertyMetas);
-        return new EmbeddedIdProperties(partitionComponents, clusteringComponents, propertyMetas, entityName);
+        return new CompoundPKProperties(partitionComponents, clusteringComponents, propertyMetas, entityName);
     }
 }

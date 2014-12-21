@@ -24,7 +24,7 @@ public class ClusteredEntityWithStaticColumn {
 
 	public static final String TABLE_NAME = "clustered_with_static_column";
 
-	@EmbeddedId
+	@CompoundPrimaryKey
 	private ClusteredKey id;
 
 	@Column(staticColumn = true)

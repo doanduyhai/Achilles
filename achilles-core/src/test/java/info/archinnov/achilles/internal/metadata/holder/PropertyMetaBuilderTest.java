@@ -26,7 +26,7 @@ import info.archinnov.achilles.internal.metadata.codec.MapCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.Bean;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.test.parser.entity.CompoundPK;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.Pair;
 
@@ -77,16 +77,16 @@ public class PropertyMetaBuilderTest {
 	@Test
 	public void should_build_compound_id() throws Exception {
 
-        EmbeddedIdProperties props = mock(EmbeddedIdProperties.class);
+        CompoundPKProperties props = mock(CompoundPKProperties.class);
 
-        PropertyMeta built = PropertyMetaBuilder.factory().type(EMBEDDED_ID).propertyName("prop").accessors(accessors)
-                .objectMapper(objectMapper).consistencyLevels(Pair.create(ONE, ALL)).embeddedIdProperties(props)
-                .build(Void.class, EmbeddedKey.class);
+        PropertyMeta built = PropertyMetaBuilder.factory().type(COMPOUND_PRIMARY_KEY).propertyName("prop").accessors(accessors)
+                .objectMapper(objectMapper).consistencyLevels(Pair.create(ONE, ALL)).compoundPKProperties(props)
+                .build(Void.class, CompoundPK.class);
 
-        assertThat(built.type()).isEqualTo(EMBEDDED_ID);
+        assertThat(built.type()).isEqualTo(COMPOUND_PRIMARY_KEY);
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
-        assertThat(built.<EmbeddedKey>getValueClass()).isEqualTo(EmbeddedKey.class);
+        assertThat(built.<CompoundPK>getValueClass()).isEqualTo(CompoundPK.class);
 
         assertThat(built.structure().isEmbeddedId()).isTrue();
         assertThat(built.config().getReadConsistencyLevel()).isEqualTo(ONE);

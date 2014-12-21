@@ -91,11 +91,11 @@ public class PersistenceContextFactory {
 				"Build new PersistenceContext for slice query on entity class '{}' with partition key components '{}' and Consistency Level '{}'",
 				entityClass, partitionComponents, cl);
 		EntityMeta meta = entityMetaMap.get(entityClass);
-        Object embeddedId = meta.getIdMeta().forSliceQueryContext().instantiateEmbeddedIdWithPartitionComponents(partitionComponents);
+        Object compoundPK = meta.getIdMeta().forSliceQueryContext().instantiateEmbeddedIdWithPartitionComponents(partitionComponents);
 
 		ImmediateFlushContext flushContext = buildImmediateFlushContext(OptionsBuilder.withConsistency(cl));
 
-		return new PersistenceContext(meta, configContext, daoContext, flushContext, entityClass, embeddedId,
+		return new PersistenceContext(meta, configContext, daoContext, flushContext, entityClass, compoundPK,
 				OptionsBuilder.withConsistency(cl));
 	}
 

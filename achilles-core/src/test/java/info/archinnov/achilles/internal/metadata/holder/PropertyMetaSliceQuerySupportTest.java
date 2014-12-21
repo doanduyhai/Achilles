@@ -22,21 +22,21 @@ public class PropertyMetaSliceQuerySupportTest {
     private PropertyMeta meta;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private EmbeddedIdProperties embeddedIdProperties;
+    private CompoundPKProperties compoundPKProperties;
 
     private PropertyMetaSliceQuerySupport view;
 
     @Before
     public void setUp() {
         view = new PropertyMetaSliceQuerySupport(meta);
-        when(meta.getEmbeddedIdProperties()).thenReturn(embeddedIdProperties);
+        when(meta.getCompoundPKProperties()).thenReturn(compoundPKProperties);
         when(meta.getEntityClassName()).thenReturn("entity");
     }
 
     @Test
     public void should_get_partition_key_names() throws Exception {
         //Given
-        when(embeddedIdProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
+        when(compoundPKProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
 
         //When
         final List<String> partitionKeysName = view.getPartitionKeysName(2);
@@ -48,7 +48,7 @@ public class PropertyMetaSliceQuerySupportTest {
     @Test
     public void should_get_last_partition_key_name() throws Exception {
         //Given
-        when(embeddedIdProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
+        when(compoundPKProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
 
         //When
         final String lastPartitionKeyName = view.getLastPartitionKeyName();
@@ -60,7 +60,7 @@ public class PropertyMetaSliceQuerySupportTest {
     @Test
     public void should_get_clustering_key_names() throws Exception {
         //Given
-        when(embeddedIdProperties.getClusteringComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
+        when(compoundPKProperties.getClusteringComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
 
         //When
         final List<String> clusteringKeysName = view.getClusteringKeysName(2);
@@ -72,7 +72,7 @@ public class PropertyMetaSliceQuerySupportTest {
     @Test
     public void should_get_last_clustering_key_name() throws Exception {
         //Given
-        when(embeddedIdProperties.getClusteringComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
+        when(compoundPKProperties.getClusteringComponents().getCQLComponentNames()).thenReturn(Arrays.asList("id","date", "type"));
 
         //When
         final String lastClusteringKeyName = view.getLastClusteringKeyName();
@@ -90,7 +90,7 @@ public class PropertyMetaSliceQuerySupportTest {
         view.validatePartitionComponents(partitionComponents);
 
         //Then
-        verify(meta.getEmbeddedIdProperties().getPartitionComponents()).validatePartitionComponents("entity", partitionComponents);
+        verify(meta.getCompoundPKProperties().getPartitionComponents()).validatePartitionComponents("entity", partitionComponents);
     }
 
     @Test
@@ -102,7 +102,7 @@ public class PropertyMetaSliceQuerySupportTest {
         view.validatePartitionComponentsIn(partitionComponentsIN);
 
         //Then
-        verify(meta.getEmbeddedIdProperties().getPartitionComponents()).validatePartitionComponentsIn("entity", partitionComponentsIN);
+        verify(meta.getCompoundPKProperties().getPartitionComponents()).validatePartitionComponentsIn("entity", partitionComponentsIN);
     }
 
     @Test
@@ -114,7 +114,7 @@ public class PropertyMetaSliceQuerySupportTest {
         view.validateClusteringComponents(clusteringComponents);
 
         //Then
-        verify(meta.getEmbeddedIdProperties().getClusteringComponents()).validateClusteringComponents("entity", clusteringComponents);
+        verify(meta.getCompoundPKProperties().getClusteringComponents()).validateClusteringComponents("entity", clusteringComponents);
     }
 
     @Test
@@ -126,7 +126,7 @@ public class PropertyMetaSliceQuerySupportTest {
         view.validateClusteringComponentsIn(clusteringComponentsIN);
 
         //Then
-        verify(meta.getEmbeddedIdProperties().getClusteringComponents()).validateClusteringComponentsIn("entity", clusteringComponentsIN);
+        verify(meta.getCompoundPKProperties().getClusteringComponents()).validateClusteringComponentsIn("entity", clusteringComponentsIN);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class PropertyMetaSliceQuerySupportTest {
         //Given
         ClusteringOrder clusteringOrder = new ClusteringOrder("column", Sorting.DESC);
         when(meta.structure().isClustered()).thenReturn(true);
-        when(meta.getEmbeddedIdProperties().getClusteringComponents().getClusteringOrders()).thenReturn(Arrays.asList(clusteringOrder));
+        when(meta.getCompoundPKProperties().getClusteringComponents().getClusteringOrders()).thenReturn(Arrays.asList(clusteringOrder));
 
         //When
         final ClusteringOrder actual = view.getClusteringOrder();

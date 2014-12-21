@@ -26,7 +26,7 @@ public class ClusteredEntityWithTypeTransformer {
 
     public static final String TABLE_NAME = "clustered_type_transformer";
 
-    @EmbeddedId
+    @CompoundPrimaryKey
     private ClusteredKey id;
 
     @Column

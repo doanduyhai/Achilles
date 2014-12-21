@@ -37,7 +37,7 @@ public class PropertyMetaRowExtractorTest {
     private PropertyMeta meta;
 
     @Mock
-    private EmbeddedIdProperties embeddedIdProperties;
+    private CompoundPKProperties compoundPKProperties;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private Row row;
@@ -47,15 +47,15 @@ public class PropertyMetaRowExtractorTest {
     @Before
     public void setUp() {
         extractor = new PropertyMetaRowExtractor(meta);
-        when(meta.getEmbeddedIdProperties()).thenReturn(embeddedIdProperties);
+        when(meta.getCompoundPKProperties()).thenReturn(compoundPKProperties);
         when(meta.getEntityClassName()).thenReturn("entity");
     }
 
     @Test
     public void should_extract_raw_compound_pk_components_from_row() throws Exception {
         //Given
-        when(embeddedIdProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
-        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
         Definition columnDef2 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "name", DataType.text());
@@ -74,7 +74,7 @@ public class PropertyMetaRowExtractorTest {
     @Test
          public void should_validate_extracted_pk_components() throws Exception {
         //Given
-        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         //When
         extractor.validateExtractedCompoundPrimaryComponents(Arrays.<Object>asList(10L, "DuyHai"));
@@ -85,11 +85,11 @@ public class PropertyMetaRowExtractorTest {
     @Test
     public void should_exception_while_validating_extracted_pk_components() throws Exception {
         //Given
-        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         when(meta.<CompleteBean>getValueClass()).thenReturn(CompleteBean.class);
 
         exception.expect(AchillesException.class);
-        exception.expectMessage(String.format("Error, the component '%s' from @EmbeddedId class 'class %s' is null in Cassandra", "name", CompleteBean.class.getCanonicalName()));
+        exception.expectMessage(String.format("Error, the component '%s' from @CompoundPrimaryKey class 'class %s' is null in Cassandra", "name", CompleteBean.class.getCanonicalName()));
 
         //When
         extractor.validateExtractedCompoundPrimaryComponents(Arrays.<Object>asList(10L, null));
@@ -211,8 +211,8 @@ public class PropertyMetaRowExtractorTest {
         EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         CompleteBean pk = new CompleteBean();
 
-        when(embeddedIdProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
-        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
         Definition columnDef2 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "name", DataType.text());
@@ -229,7 +229,7 @@ public class PropertyMetaRowExtractorTest {
 
         //Then
         assertThat(actual).isSameAs(pk);
-        verify(meta.getEmbeddedIdProperties()).getCQLComponentNames();
+        verify(meta.getCompoundPKProperties()).getCQLComponentNames();
     }
 
     @Test
@@ -238,8 +238,8 @@ public class PropertyMetaRowExtractorTest {
         EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         CompleteBean pk = new CompleteBean();
 
-        when(embeddedIdProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
-        when(embeddedIdProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
         Definition columnDef2 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "name", DataType.text());
@@ -256,6 +256,6 @@ public class PropertyMetaRowExtractorTest {
 
         //Then
         assertThat(actual).isSameAs(pk);
-        verify(meta.getEmbeddedIdProperties(),times(2)).getCQLComponentNames();
+        verify(meta.getCompoundPKProperties(),times(2)).getCQLComponentNames();
     }
 }

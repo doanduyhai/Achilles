@@ -52,7 +52,6 @@ import info.archinnov.achilles.query.typed.TypedQuery;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUUID;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.Tweet;
@@ -618,12 +617,12 @@ public class QueryIT {
         assertThat(actual).isNotNull();
         assertThat(actual).isInstanceOf(Factory.class);
 
-        ClusteredKey clusteredKey = actual.getId();
+        ClusteredEntity.CompoundPK compoundPK = actual.getId();
 
-        assertThat(clusteredKey).isNotNull();
-        assertThat(clusteredKey.getId()).isEqualTo(id);
-        assertThat(clusteredKey.getCount()).isEqualTo(10);
-        assertThat(clusteredKey.getName()).isEqualTo("name");
+        assertThat(compoundPK).isNotNull();
+        assertThat(compoundPK.getId()).isEqualTo(id);
+        assertThat(compoundPK.getCount()).isEqualTo(10);
+        assertThat(compoundPK.getName()).isEqualTo("name");
     }
 
     @Test
@@ -663,12 +662,12 @@ public class QueryIT {
 
         assertThat(actual).isNotNull();
 
-        ClusteredKey clusteredKey = actual.getId();
+        ClusteredEntity.CompoundPK compoundPK = actual.getId();
 
-        assertThat(clusteredKey).isNotNull();
-        assertThat(clusteredKey.getId()).isEqualTo(id);
-        assertThat(clusteredKey.getCount()).isEqualTo(10);
-        assertThat(clusteredKey.getName()).isEqualTo("name");
+        assertThat(compoundPK).isNotNull();
+        assertThat(compoundPK.getId()).isEqualTo(id);
+        assertThat(compoundPK.getCount()).isEqualTo(10);
+        assertThat(compoundPK.getName()).isEqualTo("name");
     }
 
     @Test

@@ -38,7 +38,7 @@ public class EntityParsingValidatorTest {
 	public void should_exception_when_no_id_meta() throws Exception {
 		exception.expect(AchillesBeanMappingException.class);
 		exception.expectMessage("The entity '" + CompleteBean.class.getCanonicalName()
-				+ "' should have at least one field with info.archinnov.achilles.annotations.Id/info.archinnov.achilles.annotations.EmbeddedId annotation");
+				+ "' should have at least one field with info.archinnov.achilles.annotations.PartitionKey/info.archinnov.achilles.annotations.CompoundPrimaryKey annotation");
 		validator.validateHasIdMeta(CompleteBean.class, null);
 	}
 

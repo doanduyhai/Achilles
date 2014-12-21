@@ -26,14 +26,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
+import info.archinnov.achilles.annotations.CompoundPrimaryKey;
+import info.archinnov.achilles.annotations.PartitionKey;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -208,7 +208,7 @@ public class PropertyParsingValidatorTest {
     @Test
     public void should_exception_when_index_not_allowed_on_primary_key() throws Exception {
         class Test {
-            @Id
+            @PartitionKey
             @Index
             public String firstName;
         }
@@ -231,9 +231,9 @@ public class PropertyParsingValidatorTest {
     }
 
     @Test
-    public void should_exception_when_index_not_allowed_on_embedded_id() throws Exception {
+    public void should_exception_when_index_not_allowed_on_compound_pk() throws Exception {
         class Test {
-            @EmbeddedId
+            @CompoundPrimaryKey
             @Index
             public String firstName;
         }
@@ -246,12 +246,11 @@ public class PropertyParsingValidatorTest {
         when(context.getCurrentPropertyName()).thenReturn("firstName");
         when(context.getPropertyMetas()).thenReturn(propertyMetas);
         when(context.isPrimaryKey()).thenReturn(true);
-        when(context.isEmbeddedId()).thenReturn(true);
+        when(context.isCompoundPrimaryKey()).thenReturn(true);
         when(context.<Test>getCurrentEntityClass()).thenReturn(Test.class);
 
         exception.expect(AchillesBeanMappingException.class);
-        exception
-                .expectMessage("Property 'firstName' of entity 'null' is part of a compound primary key and therefore cannot be indexed");
+        exception.expectMessage("Property 'firstName' of entity 'null' is part of a compound primary key and therefore cannot be indexed");
 
         validator.validateIndexIfSet(context);
     }

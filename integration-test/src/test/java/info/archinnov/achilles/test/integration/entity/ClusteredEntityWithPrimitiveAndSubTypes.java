@@ -27,7 +27,7 @@ public class ClusteredEntityWithPrimitiveAndSubTypes {
 
 	public static final String TABLE_NAME = "clustered_with_primitive__and_sub_types";
 
-	@EmbeddedId
+	@CompoundPrimaryKey
 	private ClusteredKey id;
 
 

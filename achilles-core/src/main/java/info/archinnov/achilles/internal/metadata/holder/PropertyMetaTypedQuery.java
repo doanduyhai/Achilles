@@ -15,9 +15,9 @@ public class PropertyMetaTypedQuery extends PropertyMetaView {
     public void validateTypedQuery(String queryString) {
         log.trace("Validate typed query string {} for entity class {}", queryString, meta.getEntityClassName());
         if (meta.structure().isEmbeddedId()) {
-            for (String component : meta.getEmbeddedIdProperties().getCQLComponentNames()) {
+            for (String component : meta.getCompoundPKProperties().getCQLComponentNames()) {
                 Validator.validateTrue(queryString.contains(component),
-                        "The typed query [%s] should contain the component column '%s' for embedded id type '%s'",
+                        "The typed query [%s] should contain the component column '%s' for compound primary key type '%s'",
                         queryString, component, meta.getCqlValueClass().getCanonicalName());
             }
         } else {

@@ -19,13 +19,13 @@ import java.util.List;
 
 import com.google.common.base.Objects;
 
-public class EmbeddedIdProperties extends AbstractComponentProperties {
+public class CompoundPKProperties extends AbstractComponentProperties {
 
     private final PartitionComponents partitionComponents;
     private final ClusteringComponents clusteringComponents;
     final String entityClassName;
 
-    public EmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents, List<PropertyMeta> keyMetas, String entityClassName) {
+    public CompoundPKProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents, List<PropertyMeta> keyMetas, String entityClassName) {
 		super(keyMetas);
 		this.partitionComponents = partitionComponents;
 		this.clusteringComponents = clusteringComponents;

@@ -16,12 +16,11 @@
 package info.archinnov.achilles.internal.metadata.parsing;
 
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
-import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
-import static org.reflections.ReflectionUtils.getAllFields;
 
 import java.lang.reflect.Field;
 import java.util.*;
 
+import info.archinnov.achilles.internal.metadata.holder.CompoundPKProperties;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import org.slf4j.Logger;
@@ -29,48 +28,47 @@ import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
 import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdPropertiesBuilder;
 import info.archinnov.achilles.internal.validation.Validator;
 
-public class EmbeddedIdParser {
+public class CompoundPKParser {
 
-    private static final Logger log = LoggerFactory.getLogger(EmbeddedIdParser.class);
+    private static final Logger log = LoggerFactory.getLogger(CompoundPKParser.class);
     private PropertyFilter filter = PropertyFilter.Singleton.INSTANCE.get();
 
     private final PropertyParsingContext context;
 
-    public EmbeddedIdParser(PropertyParsingContext context) {
+    public CompoundPKParser(PropertyParsingContext context) {
         this.context = context;
     }
 
-    public EmbeddedIdProperties parseEmbeddedId(Class<?> embeddedIdClass, PropertyParser propertyParser) {
-        log.debug("Parse embedded id class {} ", embeddedIdClass.getCanonicalName());
+    public CompoundPKProperties parseCompoundPK(Class<?> compoundPKClass, PropertyParser propertyParser) {
+        log.debug("Parse compound primary key class {} ", compoundPKClass.getCanonicalName());
 
-        final ComponentOrderingParser parser = ComponentOrderingParser.determineAppropriateParser(embeddedIdClass, context);
-        final Map<Integer, Field> components = parser.extractComponentsOrdering(embeddedIdClass);
-        final List<ClusteringOrder> clusteringOrders = parser.extractClusteringOrder(embeddedIdClass);
-        EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(propertyParser,embeddedIdClass, components, clusteringOrders);
+        final ComponentOrderingParser parser = ComponentOrderingParser.determineAppropriateParser(compoundPKClass, context);
+        final Map<Integer, Field> components = parser.extractComponentsOrdering(compoundPKClass);
+        final List<ClusteringOrder> clusteringOrders = parser.extractClusteringOrder(compoundPKClass);
+        CompoundPKProperties compoundPKProperties = buildComponentMetas(propertyParser,compoundPKClass, components, clusteringOrders);
 
-        log.trace("Built embeddedId properties : {}", embeddedIdProperties);
-        return embeddedIdProperties;
+        log.trace("Built compound primary key properties : {}", compoundPKProperties);
+        return compoundPKProperties;
     }
 
-    private EmbeddedIdProperties buildComponentMetas(PropertyParser propertyParser, Class<?> embeddedIdClass, Map<Integer, Field> components, List<ClusteringOrder> clusteringOrders) {
+    private CompoundPKProperties buildComponentMetas(PropertyParser propertyParser, Class<?> compoundPKClass, Map<Integer, Field> components, List<ClusteringOrder> clusteringOrders) {
 
-        log.debug("Build components meta data for embedded id class {}", embeddedIdClass.getCanonicalName());
+        log.debug("Build components meta data for compound primary key class {}", compoundPKClass.getCanonicalName());
         EmbeddedIdPropertiesBuilder partitionKeysBuilder = new EmbeddedIdPropertiesBuilder();
         EmbeddedIdPropertiesBuilder clusteringKeysBuilder = new EmbeddedIdPropertiesBuilder();
         clusteringKeysBuilder.setClusteringOrders(clusteringOrders);
 
-        buildPartitionAndClusteringKeys(propertyParser, embeddedIdClass, components,partitionKeysBuilder, clusteringKeysBuilder);
+        buildPartitionAndClusteringKeys(propertyParser, compoundPKClass, components,partitionKeysBuilder, clusteringKeysBuilder);
 
         return EmbeddedIdPropertiesBuilder.buildEmbeddedIdProperties(partitionKeysBuilder.buildPartitionKeys(), clusteringKeysBuilder.buildClusteringKeys(), context.getCurrentEntityClass().getCanonicalName());
     }
 
-    private void buildPartitionAndClusteringKeys(PropertyParser propertyParser, Class<?> embeddedIdClass, Map<Integer, Field> components,
+    private void buildPartitionAndClusteringKeys(PropertyParser propertyParser, Class<?> compoundPKClass, Map<Integer, Field> components,
             EmbeddedIdPropertiesBuilder partitionKeysBuilder,EmbeddedIdPropertiesBuilder clusteringKeysBuilder) {
-        log.debug("Build components meta data for embedded id class {}", embeddedIdClass.getCanonicalName());
+        log.debug("Build components meta data for compound primary key class {}", compoundPKClass.getCanonicalName());
 
         for (Integer order : components.keySet()) {
             Field compositeKeyField = components.get(order);
@@ -95,13 +93,6 @@ public class EmbeddedIdParser {
         if (partitionKeysBuilder.getPropertyMetas().isEmpty()) {
             final PropertyMeta partitionMeta = clusteringKeysBuilder.getPropertyMetas().remove(0);
             partitionKeysBuilder.addPropertyMeta(partitionMeta);
-        }
-    }
-
-    private void validateNotStaticColumn(Field compositeKeyField) {
-        Column column = compositeKeyField.getAnnotation(Column.class);
-        if (column != null && column.staticColumn()) {
-            throw new AchillesBeanMappingException(String.format("The property '%s' of class '%s' cannot be a static column because it belongs to the primary key",compositeKeyField.getName(),compositeKeyField.getDeclaringClass().getCanonicalName()));
         }
     }
 }

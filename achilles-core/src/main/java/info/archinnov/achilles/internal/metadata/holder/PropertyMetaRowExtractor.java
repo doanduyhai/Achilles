@@ -27,9 +27,9 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
 
     public List<Object> extractRawCompoundPrimaryComponentsFromRow(Row row) {
         log.trace("Extract raw compound primary components from CQL row {} for id meta {}", row, meta);
-        Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot extract raw compound primary keys from CQL row because entity '%s' does not have a compound primary key", meta.getEntityClassName());
-        final List<Class<?>> componentClasses = meta.getEmbeddedIdProperties().getCQLComponentClasses();
-        final List<String> cqlComponentNames = meta.getEmbeddedIdProperties().getCQLComponentNames();
+        Validator.validateNotNull(meta.getCompoundPKProperties(), "Cannot extract raw compound primary keys from CQL row because entity '%s' does not have a compound primary key", meta.getEntityClassName());
+        final List<Class<?>> componentClasses = meta.getCompoundPKProperties().getCQLComponentClasses();
+        final List<String> cqlComponentNames = meta.getCompoundPKProperties().getCQLComponentNames();
         List<Object> rawValues = new ArrayList<>(Collections.nCopies(cqlComponentNames.size(), null));
         try {
             for (int index=0; index<cqlComponentNames.size(); index++) {
@@ -61,7 +61,7 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
                 case MAP:
                     value = invokeOnRowForMap(row);
                     break;
-                case ID:
+                case PARTITION_KEY:
                 case SIMPLE:
                     value = invokeOnRowForProperty(row);
                     break;
@@ -95,10 +95,10 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
     public void validateExtractedCompoundPrimaryComponents(List<Object> rawComponents) {
         log.trace("Validate raw compound primary components {} for id meta {}", rawComponents, meta);
 
-        Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot validate raw compound primary keys from CQL row because entity '%s' does not have a compound primary key",meta.getEntityClassName());
-        final List<String> cqlComponentNames = meta.getEmbeddedIdProperties().getCQLComponentNames();
+        Validator.validateNotNull(meta.getCompoundPKProperties(), "Cannot validate raw compound primary keys from CQL row because entity '%s' does not have a compound primary key",meta.getEntityClassName());
+        final List<String> cqlComponentNames = meta.getCompoundPKProperties().getCQLComponentNames();
         for (int i = 0; i < cqlComponentNames.size(); i++) {
-            Validator.validateNotNull(rawComponents.get(i), "Error, the component '%s' from @EmbeddedId class '%s' is null in Cassandra", cqlComponentNames.get(i), meta.getValueClass());
+            Validator.validateNotNull(rawComponents.get(i), "Error, the component '%s' from @CompoundPrimaryKey class '%s' is null in Cassandra", cqlComponentNames.get(i), meta.getValueClass());
         }
     }
 

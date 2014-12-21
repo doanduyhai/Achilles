@@ -1,14 +1,12 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.PARTITION_KEY;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.MAP;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SET;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.datastax.driver.core.TableMetadata;
-import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import org.junit.Before;
@@ -34,7 +32,7 @@ public class PropertyMetaValuesTest {
     private PropertyMeta meta;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private EmbeddedIdProperties embeddedIdProperties;
+    private CompoundPKProperties compoundPKProperties;
 
     @Mock
     private ReflectionInvoker invoker;
@@ -52,7 +50,7 @@ public class PropertyMetaValuesTest {
         //Given
         Object entity = new Object();
         Long id = 10L;
-        when(meta.type()).thenReturn(ID);
+        when(meta.type()).thenReturn(PARTITION_KEY);
         when(invoker.getPrimaryKey(entity, meta)).thenReturn(id);
 
         //When

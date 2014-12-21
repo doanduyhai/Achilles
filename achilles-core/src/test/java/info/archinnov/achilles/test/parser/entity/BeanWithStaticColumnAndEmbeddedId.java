@@ -15,15 +15,12 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.*;
 
 @Entity
 public class BeanWithStaticColumnAndEmbeddedId {
 
-    @EmbeddedId
+    @CompoundPrimaryKey
     private Embedded id;
 
     @Column(staticColumn = true)

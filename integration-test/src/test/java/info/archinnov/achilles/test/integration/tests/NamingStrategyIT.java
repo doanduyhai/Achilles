@@ -123,12 +123,12 @@ public class NamingStrategyIT {
         //Then
         assertThat(entities).hasSize(2);
 
-        assertThat(entities.get(0).getEmbeddedKey().getClusteringKey()).isEqualTo("2");
+        assertThat(entities.get(0).getCompoundPK().getClusteringKey()).isEqualTo("2");
         assertThat(entities.get(0).getFirstName()).isEqualTo("fn2");
         assertThat(entities.get(0).getLastName()).isEqualTo("ln2");
 
 
-        assertThat(entities.get(1).getEmbeddedKey().getClusteringKey()).isEqualTo("3");
+        assertThat(entities.get(1).getCompoundPK().getClusteringKey()).isEqualTo("3");
         assertThat(entities.get(1).getFirstName()).isEqualTo("fn3");
         assertThat(entities.get(1).getLastName()).isEqualTo("ln3");
     }

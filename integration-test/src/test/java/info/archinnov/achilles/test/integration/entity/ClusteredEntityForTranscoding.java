@@ -29,7 +29,7 @@ public class ClusteredEntityForTranscoding {
 
 	public static final String TABLE_NAME = "clustered_for_transcoding";
 
-	@EmbeddedId
+	@CompoundPrimaryKey
 	private EmbeddedKey id;
 
 	public ClusteredEntityForTranscoding() {

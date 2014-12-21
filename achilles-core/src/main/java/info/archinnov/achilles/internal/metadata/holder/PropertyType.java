@@ -20,8 +20,8 @@ import info.archinnov.achilles.internal.metadata.util.PropertyTypeFilter;
 
 public enum PropertyType {
 
-    ID, //
-    EMBEDDED_ID, //
+    PARTITION_KEY, //
+    COMPOUND_PRIMARY_KEY, //
     SIMPLE, //
     LIST, //
     SET, //
@@ -33,12 +33,12 @@ public enum PropertyType {
         return (this == COUNTER);
     }
 
-    public boolean isId() {
-        return this == ID || this == EMBEDDED_ID;
+    public boolean isPrimaryKey() {
+        return this == PARTITION_KEY || this == COMPOUND_PRIMARY_KEY;
     }
 
-    public boolean isEmbeddedId() {
-        return this == EMBEDDED_ID;
+    public boolean isCompoundPK() {
+        return this == COMPOUND_PRIMARY_KEY;
     }
 
     public boolean isValidClusteredValueType() {
@@ -50,12 +50,12 @@ public enum PropertyType {
     }
 
     public static final PropertyTypeFilter COUNTER_TYPE = new PropertyTypeFilter(COUNTER);
-    public static final PropertyTypeFilter EMBEDDED_ID_TYPE = new PropertyTypeFilter(EMBEDDED_ID);
+    public static final PropertyTypeFilter COMPOUND_PK_TYPE = new PropertyTypeFilter(COMPOUND_PRIMARY_KEY);
 
-    public static final PropertyTypeExclude EXCLUDE_ID_TYPES = new PropertyTypeExclude(ID, EMBEDDED_ID);
-    public static final PropertyTypeExclude EXCLUDE_EMBEDDED_ID_TYPE = new PropertyTypeExclude(EMBEDDED_ID);
+    public static final PropertyTypeExclude EXCLUDE_ID_TYPES = new PropertyTypeExclude(PARTITION_KEY, COMPOUND_PRIMARY_KEY);
+    public static final PropertyTypeExclude EXCLUDE_COMPOUND_PK_TYPE = new PropertyTypeExclude(COMPOUND_PRIMARY_KEY);
 
     public static final PropertyTypeExclude EXCLUDE_COUNTER_TYPE = new PropertyTypeExclude(COUNTER);
 
-    public static final PropertyTypeExclude EXCLUDE_ID_AND_COUNTER_TYPE = new PropertyTypeExclude(ID, EMBEDDED_ID, COUNTER);
+    public static final PropertyTypeExclude EXCLUDE_PK_AND_COUNTER_TYPE = new PropertyTypeExclude(PARTITION_KEY, COMPOUND_PRIMARY_KEY, COUNTER);
 }

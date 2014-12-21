@@ -15,11 +15,8 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Enumerated;
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.annotations.Enumerated.Encoding;
-import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.lang.annotation.ElementType;
@@ -33,7 +30,7 @@ import static info.archinnov.achilles.test.integration.entity.EntityWithEnumerat
 public class EntityWithEnumeratedConfig {
     public static final String TABLE_NAME = "entity_with_enumerated_config";
 
-    @Id
+    @PartitionKey
     private Long id;
 
     @Column(name = "consistency_level")

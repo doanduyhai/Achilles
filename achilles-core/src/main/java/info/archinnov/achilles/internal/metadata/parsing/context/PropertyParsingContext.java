@@ -36,7 +36,7 @@ public class PropertyParsingContext {
     private String currentCQLColumnName;
     private boolean isCustomConsistencyLevels;
     private boolean primaryKey = false;
-    private boolean embeddedId = false;
+    private boolean compoundPrimaryKey = false;
 
     public PropertyParsingContext(EntityParsingContext context, Field currentField) {
         this.context = context;
@@ -98,15 +98,15 @@ public class PropertyParsingContext {
         this.primaryKey = primaryKey;
     }
 
-    public boolean isEmbeddedId() {
-        return embeddedId;
+    public boolean isCompoundPrimaryKey() {
+        return compoundPrimaryKey;
     }
 
-    public void setEmbeddedId(boolean embeddedId) {
-        if (embeddedId) {
+    public void setCompoundPrimaryKey(boolean compoundPrimaryKey) {
+        if (compoundPrimaryKey) {
             this.primaryKey = true;
         }
-        this.embeddedId = embeddedId;
+        this.compoundPrimaryKey = compoundPrimaryKey;
     }
 
     public NamingStrategy getClassNamingStrategy() {

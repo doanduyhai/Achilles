@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.CompoundPK;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.TABLE_NAME;
 import static info.archinnov.achilles.type.CounterBuilder.incr;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -29,7 +30,6 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.ClusteredKey;
 
 public class ClusteredEntityWithCounterIT {
 
@@ -42,13 +42,13 @@ public class ClusteredEntityWithCounterIT {
 
 	private ClusteredEntityWithCounter entity;
 
-	private ClusteredKey compoundKey;
+	private CompoundPK compoundKey;
 
 	@Test
 	public void should_persist_and_find() throws Exception {
 		long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		long versionValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
+		compoundKey = new CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue), incr(versionValue));
 
@@ -61,12 +61,13 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(found.getVersion().get()).isEqualTo(versionValue);
 	}
 
+
 	@Test
 	public void should_update_modifications() throws Exception {
 		long initialValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		long increment = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
+		compoundKey = new CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(initialValue),incr(initialValue));
 
@@ -88,7 +89,7 @@ public class ClusteredEntityWithCounterIT {
 	@Test
 	public void should_delete() throws Exception {
 		long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
+		compoundKey = new CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
 
@@ -109,7 +110,7 @@ public class ClusteredEntityWithCounterIT {
 
 		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		String name = "name";
-		compoundKey = new ClusteredKey(partitionKey, name);
+		compoundKey = new CompoundPK(partitionKey, name);
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
 
@@ -239,8 +240,8 @@ public class ClusteredEntityWithCounterIT {
 	}
 
 	private void insertClusteredEntity(Long partitionKey, String name, Long counterValue) {
-		ClusteredKey embeddedId = new ClusteredKey(partitionKey, name);
-		ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter(embeddedId,
+		CompoundPK compoundPK = new CompoundPK(partitionKey, name);
+		ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter(compoundPK,
 				incr(counterValue),incr(counterValue));
 		manager.insert(entity);
 	}

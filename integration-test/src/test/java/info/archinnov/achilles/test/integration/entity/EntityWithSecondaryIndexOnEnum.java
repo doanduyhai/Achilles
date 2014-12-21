@@ -16,17 +16,15 @@
 package info.archinnov.achilles.test.integration.entity;
 
 import static info.archinnov.achilles.test.integration.entity.EntityWithSecondaryIndexOnEnum.TABLE_NAME;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Index;
+
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 @Entity(table = TABLE_NAME)
 public class EntityWithSecondaryIndexOnEnum {
     public static final String TABLE_NAME = "enum_secondary_index";
 
-    @Id
+    @PartitionKey
     private Long id;
 
     @Index

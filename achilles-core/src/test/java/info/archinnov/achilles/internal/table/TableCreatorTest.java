@@ -21,8 +21,8 @@ import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_P
 import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_TABLE;
 import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COMPOUND_PRIMARY_KEY;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.PARTITION_KEY;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.MAP;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SET;
@@ -42,6 +42,7 @@ import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.metadata.holder.*;
 import info.archinnov.achilles.json.DefaultJacksonMapperFactory;
+import info.archinnov.achilles.test.parser.entity.CompoundPK;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,7 +57,6 @@ import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.Counter;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -111,7 +111,7 @@ public class TableCreatorTest {
 
     @Test
     public void should_create_complete_table() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).cqlColumnName("id").build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(PARTITION_KEY).cqlColumnName("id").build();
 
         PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).cqlColumnName("longcol").indexed("simple_idx").build();
 
@@ -152,8 +152,8 @@ public class TableCreatorTest {
         PropertyMeta namePM = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).cqlColumnName("name").build();
         PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).cqlColumnName("longcol").build();
 
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
-                .type(EMBEDDED_ID).propertyName("compound")
+        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(CompoundPK.class)
+                .type(COMPOUND_PRIMARY_KEY).propertyName("compound")
                 .partitionKeyMetas(idPM).clusteringKeyMetas(namePM)
                 .clusteringOrders(new ClusteringOrder("name", Sorting.DESC))
                 .build();
@@ -182,8 +182,8 @@ public class TableCreatorTest {
         PropertyMeta idPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).cqlColumnName("id").build();
         PropertyMeta namePM = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).cqlColumnName("name").build();
 
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
-                .type(EMBEDDED_ID).propertyName("compound")
+        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(CompoundPK.class)
+                .type(COMPOUND_PRIMARY_KEY).propertyName("compound")
                 .partitionKeyMetas(idPM).clusteringKeyMetas(namePM)
                 .clusteringOrders(new ClusteringOrder("name", Sorting.DESC))
                 .build();

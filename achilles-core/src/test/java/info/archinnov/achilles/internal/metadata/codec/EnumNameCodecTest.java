@@ -3,7 +3,6 @@ package info.archinnov.achilles.internal.metadata.codec;
 import static org.fest.assertions.api.Assertions.*;
 
 import info.archinnov.achilles.exception.AchillesTranscodingException;
-import info.archinnov.achilles.internal.metadata.codec.EnumNameCodec;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,11 +22,11 @@ public class EnumNameCodecTest {
 
         //When
         String encoded = codec.encode(PropertyType.COUNTER);
-        PropertyType decoded = codec.decode("ID");
+        PropertyType decoded = codec.decode("PARTITION_KEY");
 
         //Then
         assertThat(encoded).isEqualTo("COUNTER");
-        assertThat(decoded).isSameAs(PropertyType.ID);
+        assertThat(decoded).isSameAs(PropertyType.PARTITION_KEY);
     }
 
     @Test(expected = AchillesTranscodingException.class)

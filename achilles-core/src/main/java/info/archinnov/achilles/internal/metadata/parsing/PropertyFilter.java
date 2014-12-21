@@ -19,25 +19,26 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
+import info.archinnov.achilles.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Id;
 
 public class PropertyFilter {
 	private static final Logger log = LoggerFactory.getLogger(PropertyFilter.class);
 
-	static final List<Class<?>> acceptedAnnotations = new ArrayList<Class<?>>();
+	static final List<Class<?>> acceptedAnnotations = new ArrayList<>();
 
 	static {
 		acceptedAnnotations.add(Id.class);
+		acceptedAnnotations.add(PartitionKey.class);
 		acceptedAnnotations.add(EmbeddedId.class);
+		acceptedAnnotations.add(CompoundPrimaryKey.class);
 		acceptedAnnotations.add(Column.class);
 	}
 
 	public boolean matches(Field field) {
-		log.trace("Does the field {} of class {} has the annotations @Id/@EmbeddedId/@Column ?", field.getName(), field
+		log.trace("Does the field {} of class {} has the annotations @PartitionKey/@CompoundPrimaryKey/@Column ?", field.getName(), field
 				.getDeclaringClass().getCanonicalName());
 
 		for (Class<?> clazz : acceptedAnnotations) {

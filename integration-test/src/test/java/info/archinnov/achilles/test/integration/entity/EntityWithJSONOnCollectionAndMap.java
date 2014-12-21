@@ -15,10 +15,7 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.JSON;
+import info.archinnov.achilles.annotations.*;
 
 import java.util.List;
 import java.util.Map;
@@ -30,7 +27,7 @@ import static info.archinnov.achilles.test.integration.entity.EntityWithJSONOnCo
 public class EntityWithJSONOnCollectionAndMap {
     public static final String TABLE_NAME = "entity_with_JSON_collection_map";
 
-    @Id
+    @PartitionKey
     private Long id;
 
     @Column

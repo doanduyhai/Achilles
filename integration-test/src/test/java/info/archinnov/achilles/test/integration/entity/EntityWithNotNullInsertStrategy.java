@@ -15,11 +15,7 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Index;
-import info.archinnov.achilles.annotations.Strategy;
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.InsertStrategy;
 
 @Strategy(insert = InsertStrategy.NOT_NULL_FIELDS)
@@ -27,7 +23,7 @@ import info.archinnov.achilles.type.InsertStrategy;
 public class EntityWithNotNullInsertStrategy {
 
     public static final String TABLE_NAME = "entity_not_null_insert";
-    @Id
+    @PartitionKey
     private Long id;
 
     @Column

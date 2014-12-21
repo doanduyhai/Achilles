@@ -191,8 +191,8 @@ public class SliceQueryDeleteIT {
     }
 
     private void insertClusteredEntity(Long partitionKey, int count, String name, String clusteredValue) {
-        ClusteredEntity.ClusteredKey embeddedId = new ClusteredEntity.ClusteredKey(partitionKey, count, name);
-        ClusteredEntity entity = new ClusteredEntity(embeddedId, clusteredValue);
+        ClusteredEntity.CompoundPK compoundPK = new ClusteredEntity.CompoundPK(partitionKey, count, name);
+        ClusteredEntity entity = new ClusteredEntity(compoundPK, clusteredValue);
         manager.insert(entity);
     }
 
@@ -204,8 +204,8 @@ public class SliceQueryDeleteIT {
     }
 
     private void insertCompositeClusteredEntity(long id, String bucket, int count, String name, String clusteredValue) {
-        CompositeClusteredEntity.ClusteredKey embeddedId = new CompositeClusteredEntity.ClusteredKey(id, bucket, count, name);
-        CompositeClusteredEntity entity = new CompositeClusteredEntity(embeddedId, clusteredValue);
+        CompositeClusteredEntity.CompoundPK compoundPK = new CompositeClusteredEntity.CompoundPK(id, bucket, count, name);
+        CompositeClusteredEntity entity = new CompositeClusteredEntity(compoundPK, clusteredValue);
         manager.insert(entity);
     }
 }

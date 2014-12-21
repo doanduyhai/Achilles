@@ -148,7 +148,7 @@ public class PropertyParserTest {
 
 
     @Test
-    public void should_parse_primary_key() throws Exception {
+    public void should_parse_legacy_partition_key() throws Exception {
         @SuppressWarnings("unused")
         @Entity(keyspace = "ks", table="test")
         class Test {
@@ -170,11 +170,114 @@ public class PropertyParserTest {
         PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.getPropertyName()).isEqualTo("id");
+        assertThat(meta.getCQLColumnName()).isEqualTo("id");
         assertThat(meta.<Long>getValueClass()).isEqualTo(Long.class);
         assertThat(context.getPropertyMetas()).hasSize(1);
 
     }
 
+
+    @Test
+    public void should_parse_legacy_partition_key_and_override_name() throws Exception {
+        @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
+        class Test {
+            @Id(name = "my_custom_id")
+            private Long customId;
+
+            public Long getCustomId() {
+                return customId;
+            }
+
+            public void setCustomId(Long customId) {
+                this.customId = customId;
+            }
+        }
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("customId"));
+        context.setPrimaryKey(true);
+
+        PropertyMeta meta = parser.parse(context);
+
+        assertThat(meta.getPropertyName()).isEqualTo("customId");
+        assertThat(meta.getCQLColumnName()).isEqualTo("my_custom_id");
+    }
+
+    @Test
+    public void should_parse_partition_key() throws Exception {
+        @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
+        class Test {
+            @PartitionKey
+            private Long id;
+
+            public Long getId() {
+                return id;
+            }
+
+            public void setId(Long id) {
+                this.id = id;
+            }
+        }
+
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
+        context.setPrimaryKey(true);
+
+        PropertyMeta meta = parser.parse(context);
+
+        assertThat(meta.getPropertyName()).isEqualTo("id");
+        assertThat(meta.getCQLColumnName()).isEqualTo("id");
+        assertThat(meta.<Long>getValueClass()).isEqualTo(Long.class);
+        assertThat(context.getPropertyMetas()).hasSize(1);
+    }
+
+    @Test(expected = AchillesBeanMappingException.class)
+    public void should_exception_when_wrong_order_for_simple_partition_key() throws Exception {
+        @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
+        class Test {
+            @PartitionKey(2)
+            private Long id;
+
+            public Long getId() {
+                return id;
+            }
+
+            public void setId(Long id) {
+                this.id = id;
+            }
+        }
+
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
+        context.setPrimaryKey(true);
+
+        parser.parse(context);
+    }
+
+    @Test
+    public void should_parse_partition_key_and_override_name() throws Exception {
+        @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
+        class Test {
+            @PartitionKey
+            @Column(name = "my_custom_id")
+            private Long customId;
+
+            public Long getCustomId() {
+                return customId;
+            }
+
+            public void setCustomId(Long customId) {
+                this.customId = customId;
+            }
+        }
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("customId"));
+        context.setPrimaryKey(true);
+
+        PropertyMeta meta = parser.parse(context);
+
+        assertThat(meta.getPropertyName()).isEqualTo("customId");
+        assertThat(meta.getCQLColumnName()).isEqualTo("my_custom_id");
+    }
 
     @SuppressWarnings("unchecked")
     @Test
@@ -211,29 +314,6 @@ public class PropertyParserTest {
 
         assertThat(context.getPropertyMetas().get("name")).isSameAs(meta);
 
-    }
-
-    @Test
-    public void should_parse_id_property_and_override_name() throws Exception {
-        @SuppressWarnings("unused")
-        @Entity(keyspace = "ks", table="test")
-        class Test {
-            @Id(name = "my_custom_id")
-            private Long customId;
-
-            public Long getCustomId() {
-                return customId;
-            }
-
-            public void setCustomId(Long customId) {
-                this.customId = customId;
-            }
-        }
-        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("customId"));
-
-        PropertyMeta meta = parser.parse(context);
-
-        assertThat(meta.getCQLColumnName()).isEqualTo("my_custom_id");
     }
 
     @Test
@@ -803,13 +883,12 @@ public class PropertyParserTest {
     }
 
     @Test
-    public void should_exception_when_no_default_constructor_for_embeddedid() throws Exception {
+    public void should_exception_when_no_default_constructor_for_legacy_compound_pk() throws Exception {
         //Given
         @Entity(keyspace = "ks", table="test")
          class TestWithEmbeddedId {
             @EmbeddedId
             private Embedded id;
-
 
              public Embedded getId() {
                  return id;
@@ -828,7 +907,42 @@ public class PropertyParserTest {
 
         }
         PropertyParsingContext context = newContext(TestWithEmbeddedId.class, TestWithEmbeddedId.class.getDeclaredField("id"));
-        context.setEmbeddedId(true);
+        context.setCompoundPrimaryKey(true);
+
+        expectedEx.expect(AchillesException.class);
+        expectedEx.expectMessage("Cannot instantiate class of type null, did you forget to declare a default constructor ?");
+
+
+        //When
+        parser.parse(context);
+    }
+
+    @Test
+    public void should_exception_when_no_default_constructor_for_compound_pk() throws Exception {
+        //Given
+        @Entity(keyspace = "ks", table="test")
+        class TestWithEmbeddedId {
+            @CompoundPrimaryKey
+            private Embedded id;
+
+            public Embedded getId() {
+                return id;
+            }
+
+            public void setId(Embedded id) {
+                this.id = id;
+            }
+
+            class Embedded {
+
+                public Embedded(String text) {
+
+                }
+            }
+
+        }
+        PropertyParsingContext context = newContext(TestWithEmbeddedId.class, TestWithEmbeddedId.class.getDeclaredField("id"));
+        context.setCompoundPrimaryKey(true);
 
         expectedEx.expect(AchillesException.class);
         expectedEx.expectMessage("Cannot instantiate class of type null, did you forget to declare a default constructor ?");
