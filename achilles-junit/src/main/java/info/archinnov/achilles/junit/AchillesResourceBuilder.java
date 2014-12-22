@@ -23,6 +23,7 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.NamingStrategy;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class AchillesResourceBuilder {
 		configMap.put(ENTITY_PACKAGES, entityPackages);
 	}
 
-    public AchillesResourceBuilder(List<Class<?>> entityClasses) {
+    private AchillesResourceBuilder(List<Class<?>> entityClasses) {
         configMap.put(ENTITIES_LIST, entityClasses);
     }
 
@@ -69,6 +70,16 @@ public class AchillesResourceBuilder {
      */
     public static AchillesResourceBuilder withEntityClasses(List<Class<?>> entityClasses) {
         return new AchillesResourceBuilder(entityClasses);
+    }
+
+    /**
+     * Start building an AchillesResource with list of entity classes
+     *
+     * @param entityClasses
+     *            list of entity classes to manage
+     */
+    public static AchillesResourceBuilder withEntityClasses(Class<?> ... entityClasses) {
+        return new AchillesResourceBuilder(Arrays.asList(entityClasses));
     }
 
 	/**

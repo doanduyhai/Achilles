@@ -25,8 +25,6 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
