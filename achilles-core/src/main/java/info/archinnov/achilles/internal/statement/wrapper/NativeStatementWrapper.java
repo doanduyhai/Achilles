@@ -16,6 +16,8 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import com.datastax.driver.core.*;
@@ -25,10 +27,15 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import static org.apache.commons.lang3.ArrayUtils.isEmpty;
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
+
 public class NativeStatementWrapper extends AbstractStatementWrapper {
 
 
     private Statement statement;
+
+    private static final List<ProtocolVersion> SUPPORTED_NATIVE_PROTOCOLS = Arrays.asList(ProtocolVersion.V1, ProtocolVersion.V2);
 
     public NativeStatementWrapper(Class<?> entityClass, Statement statement, Object[] values, Optional<LWTResultListener> LWTResultListener) {
         super(entityClass, values);
@@ -51,10 +58,10 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
     @Override
     public Statement getStatement() {
         if (statement instanceof RegularStatement) {
-            return buildParameterizedStatement();
-        } else {
-            return statement;
+            this.statement = buildParameterizedStatement();
         }
+
+        return statement;
     }
 
     @Override
@@ -71,8 +78,24 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
     public Statement buildParameterizedStatement() {
         if (statement instanceof RegularStatement) {
             final RegularStatement regularStatement = (RegularStatement) statement;
-            if (ArrayUtils.isEmpty(regularStatement.getValues(ProtocolVersion.V2)) && ArrayUtils.isNotEmpty(values)) {
+            boolean statementHasNoBoundValue = true;
+
+            for (ProtocolVersion protocolVersion : SUPPORTED_NATIVE_PROTOCOLS) {
+                statementHasNoBoundValue &= isEmpty(regularStatement.getValues(protocolVersion));
+            }
+
+            if (statementHasNoBoundValue && isNotEmpty(values)) {
                 final SimpleStatement statement = new SimpleStatement(getQueryString(), values);
+
+                statement.setFetchSize(this.statement.getFetchSize());
+                statement.setKeyspace(this.statement.getKeyspace());
+                statement.setConsistencyLevel(this.statement.getConsistencyLevel());
+                statement.setDefaultTimestamp(this.statement.getDefaultTimestamp());
+                statement.setRetryPolicy(this.statement.getRetryPolicy());
+
+                if (this.statement.getRoutingKey() != null) {
+                    statement.setRoutingKey(this.statement.getRoutingKey());
+                }
 
                 if (this.statement.getConsistencyLevel() != null) {
                     statement.setConsistencyLevel(this.statement.getConsistencyLevel());

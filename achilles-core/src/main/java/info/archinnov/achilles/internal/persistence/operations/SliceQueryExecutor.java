@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import info.archinnov.achilles.iterator.AchillesIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ResultSet;
@@ -38,7 +39,6 @@ import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
-import info.archinnov.achilles.iterator.SliceQueryIterator;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -130,7 +130,7 @@ public class SliceQueryExecutor {
             @Override
             public Iterator<T> apply(Iterator<Row> rowIterator) {
                 PersistenceContext context = buildContextForQuery(sliceQueryProperties);
-                return new SliceQueryIterator<>(sliceQueryProperties, context, rowIterator);
+                return new AchillesIterator<>(sliceQueryProperties.getEntityMeta(), context, rowIterator);
             }
         };
         final ListenableFuture<Iterator<T>> listenableFuture = asyncUtils.transformFuture(futureIterator, rowToIterator);

@@ -74,7 +74,6 @@ public class PersistenceContextFactoryTest {
         when(meta.getIdMeta()).thenReturn(idMeta);
         when(meta.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         pmf = new PersistenceContextFactory(daoContext, configContext, entityMetaMap);
-        Whitebox.setInternalState(pmf, ReflectionInvoker.class, invoker);
     }
 
     @Test
@@ -142,5 +141,17 @@ public class PersistenceContextFactoryTest {
         assertThat(actual.stateHolderFacade.getEntityMeta()).isSameAs(meta);
         assertThat(actual.stateHolderFacade.getIdMeta()).isSameAs(idMeta);
         assertThat(actual.stateHolderFacade.getTtl().isPresent()).isFalse();
+    }
+
+    @Test
+    public void should_create_new_context_for_typed_query() throws Exception {
+        PersistenceContext actual = pmf.newContextForTypedQuery(CompleteBean.class);
+
+        assertThat(actual.stateHolderFacade.getEntity()).isNull();
+        assertThat(actual.stateHolderFacade.getPrimaryKey()).isNull();
+        assertThat(actual.stateHolderFacade.<CompleteBean>getEntityClass()).isSameAs(CompleteBean.class);
+        assertThat(actual.stateHolderFacade.getEntityMeta()).isSameAs(meta);
+        assertThat(actual.stateHolderFacade.getIdMeta()).isSameAs(idMeta);
+        assertThat(actual.stateHolderFacade.getOptions()).isSameAs(OptionsBuilder.noOptions());
     }
 }

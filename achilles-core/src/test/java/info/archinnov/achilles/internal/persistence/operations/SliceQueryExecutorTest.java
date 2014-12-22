@@ -30,6 +30,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+
+import info.archinnov.achilles.iterator.AchillesIterator;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,10 +59,8 @@ import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
-import info.archinnov.achilles.iterator.SliceQueryIterator;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SliceQueryExecutorTest {
@@ -228,7 +228,7 @@ public class SliceQueryExecutorTest {
         final Function<Iterator<Row>, Iterator<ClusteredEntity>> iteratorFunction = rowToEntityIteratorCaptor.getValue();
         final Iterator<ClusteredEntity> entitiesIterator = iteratorFunction.apply(iterator);
 
-        assertThat(entitiesIterator).isNotNull().isInstanceOf(SliceQueryIterator.class);
+        assertThat(entitiesIterator).isNotNull().isInstanceOf(AchillesIterator.class);
 
         verify(asyncUtils).maybeAddAsyncListeners(futureIteratorEntities, asyncListeners);
     }
