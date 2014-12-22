@@ -45,6 +45,8 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
 import org.springframework.scheduling.annotation.Async;
 
+import javax.annotation.PreDestroy;
+
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 
 /**
@@ -677,6 +679,7 @@ public class PersistenceManagerFactory {
     /**
      * Call shutdown on Achilles, especially shutdown the internal thread pool handling asynchronous tasks
      */
+    @PreDestroy
     public void shutDown() {
         configContext.getExecutorService().shutdown();
     }
