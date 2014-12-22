@@ -16,6 +16,7 @@
 package info.archinnov.achilles.query.typed;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ITERATOR;
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROW;
@@ -28,12 +29,12 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
+import info.archinnov.achilles.iterator.AchillesIterator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -116,10 +117,20 @@ public class TypedQueryTest {
     private ListenableFuture<CompleteBean> futureEntity;
 
     @Mock
+    private ListenableFuture<Iterator<Row>> futureIteratorRow;
+
+    @Mock
+    private ListenableFuture<Iterator<CompleteBean>> futureIteratorEntity;
+
+    @Mock
     private AchillesFuture<List<CompleteBean>> achillesFuturesEntities;
 
     @Mock
     private AchillesFuture<CompleteBean> achillesFuturesEntity;
+
+    @Mock
+    private AchillesFuture<Iterator<CompleteBean>> achillesFuturesIteratorEntity;
+
 
 
     private FutureCallback<Object>[] asyncListeners = new FutureCallback[] { };
@@ -139,6 +150,8 @@ public class TypedQueryTest {
     @Captor
     private ArgumentCaptor<Function<CompleteBean, CompleteBean>> isoEntityCaptor;
 
+    @Captor
+    private ArgumentCaptor<Function<Iterator<Row>, Iterator<CompleteBean>>> iteratorCaptor;
 
     private Class<CompleteBean> entityClass = CompleteBean.class;
 
@@ -160,7 +173,7 @@ public class TypedQueryTest {
 
         RegularStatement statement = select().from("test");
 
-        initBuilder(statement, meta, meta.getPropertyMetas(), MANAGED);
+        initTypedQuery(statement, meta, meta.getPropertyMetas(), MANAGED);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
         when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS)).thenReturn(futureRows);
@@ -206,7 +219,7 @@ public class TypedQueryTest {
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
         RegularStatement statement = select("id").from("test");
-        initBuilder(statement, meta, meta.getPropertyMetas(), MANAGED);
+        initTypedQuery(statement, meta, meta.getPropertyMetas(), MANAGED);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
         when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROW, executorService)).thenReturn(futureRow);
@@ -237,6 +250,54 @@ public class TypedQueryTest {
         assertThat(proxifiedEntity).isSameAs(entity);
     }
 
+    @Test
+    public void should_get_iterator_without_fetch_size() throws Exception {
+        //Given
+        RegularStatement statement = select("id").from("test");
+        initTypedQuery(statement, meta, meta.getPropertyMetas(), MANAGED);
+
+        when(contextFactory.newContextForTypedQuery(entityClass)).thenReturn(context);
+        when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ITERATOR, executorService)).thenReturn(futureIteratorRow);
+        when(asyncUtils.transformFuture(eq(futureIteratorRow), iteratorCaptor.capture())).thenReturn(futureIteratorEntity);
+
+        when(asyncUtils.buildInterruptible(futureIteratorEntity)).thenReturn(achillesFuturesIteratorEntity);
+        when(achillesFuturesIteratorEntity.getImmediately()).thenReturn(Arrays.asList(entity).iterator());
+
+        //When
+        final Iterator<CompleteBean> iterator = typedQuery.iterator();
+
+        //Then
+        assertThat(iterator.next()).isSameAs(entity);
+        assertThat(iterator.hasNext()).isFalse();
+        assertThat(iteratorCaptor.getValue().apply(Arrays.asList(row).iterator())).isInstanceOf(AchillesIterator.class);
+        verify(asyncUtils).maybeAddAsyncListeners(futureIteratorEntity, asyncListeners);
+    }
+
+    @Test
+    public void should_get_iterator_with_fetch_size() throws Exception {
+        //Given
+        RegularStatement statement = select("id").from("test");
+        initTypedQuery(statement, meta, meta.getPropertyMetas(), MANAGED);
+
+        when(contextFactory.newContextForTypedQuery(entityClass)).thenReturn(context);
+        when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ITERATOR, executorService)).thenReturn(futureIteratorRow);
+        when(asyncUtils.transformFuture(eq(futureIteratorRow), iteratorCaptor.capture())).thenReturn(futureIteratorEntity);
+
+        when(asyncUtils.buildInterruptible(futureIteratorEntity)).thenReturn(achillesFuturesIteratorEntity);
+        when(achillesFuturesIteratorEntity.getImmediately()).thenReturn(Arrays.asList(entity).iterator());
+
+        //When
+        final Iterator<CompleteBean> iterator = typedQuery.iterator(123);
+
+        //Then
+        assertThat(typedQuery.nativeStatementWrapper.getStatement().getFetchSize()).isEqualTo(123);
+        assertThat(iterator.next()).isSameAs(entity);
+        assertThat(iterator.hasNext()).isFalse();
+        assertThat(iteratorCaptor.getValue().apply(Arrays.asList(row).iterator())).isInstanceOf(AchillesIterator.class);
+        verify(asyncUtils).maybeAddAsyncListeners(futureIteratorEntity, asyncListeners);
+    }
 
     private EntityMeta buildEntityMeta(PropertyMeta... pms) {
         Map<String, PropertyMeta> propertyMetas = new HashMap<>();
@@ -247,8 +308,7 @@ public class TypedQueryTest {
         return meta;
     }
 
-    private void initBuilder(RegularStatement regularStatement, EntityMeta meta, Map<String, PropertyMeta> propertyMetas,
-            EntityState entityState) {
+    private void initTypedQuery(RegularStatement regularStatement, EntityMeta meta, Map<String, PropertyMeta> propertyMetas, EntityState entityState) {
         typedQuery = new TypedQuery<>(entityClass, daoContext, configContext, regularStatement, meta, contextFactory, entityState, new Object[] { "a" });
 
         Whitebox.setInternalState(typedQuery, Map.class, propertyMetas);

@@ -103,19 +103,14 @@ public class PersistenceContext {
         }
     };
 
-    public PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, DaoContext daoContext,
-            AbstractFlushContext flushContext, Class<?> entityClass, Object primaryKey, Options options) {
-        Validator.validateNotNull(entityClass, "The entity class should not be null for persistence context creation");
-        Validator.validateNotNull(primaryKey,
-                "The primary key for the entity class '{}' should not be null for persistence context creation",
-                entityClass.getCanonicalName());
+
+    public PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, DaoContext daoContext, AbstractFlushContext flushContext) {
+
+        this.entityClass = entityMeta.getEntityClass();
         this.entityMeta = entityMeta;
         this.configContext = configContext;
         this.daoContext = daoContext;
         this.flushContext = flushContext;
-        this.entityClass = entityClass;
-        this.primaryKey = primaryKey;
-        this.options = overrider.overrideRuntimeValueByBatchSetting(options, flushContext);
     }
 
     public PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, DaoContext daoContext,
@@ -134,6 +129,21 @@ public class PersistenceContext {
         this.daoContext = daoContext;
         this.flushContext = flushContext;
         this.entity = entity;
+        this.options = overrider.overrideRuntimeValueByBatchSetting(options, flushContext);
+    }
+
+    public PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, DaoContext daoContext,
+                              AbstractFlushContext flushContext, Class<?> entityClass, Object primaryKey, Options options) {
+        Validator.validateNotNull(entityClass, "The entity class should not be null for persistence context creation");
+        Validator.validateNotNull(primaryKey,
+                "The primary key for the entity class '{}' should not be null for persistence context creation",
+                entityClass.getCanonicalName());
+        this.entityMeta = entityMeta;
+        this.configContext = configContext;
+        this.daoContext = daoContext;
+        this.flushContext = flushContext;
+        this.entityClass = entityClass;
+        this.primaryKey = primaryKey;
         this.options = overrider.overrideRuntimeValueByBatchSetting(options, flushContext);
     }
 

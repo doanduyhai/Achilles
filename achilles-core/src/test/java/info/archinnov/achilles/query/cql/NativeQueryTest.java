@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import com.datastax.driver.core.SimpleStatement;
+import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.persistence.operations.TypedMapIterator;
 import org.junit.Before;
 import org.junit.Test;
@@ -254,7 +255,7 @@ public class NativeQueryTest {
     }
 
     @Test
-    public void should_get_async_iterator() throws Exception {
+    public void should_get_async_iterator_without_fetch_size() throws Exception {
         //Given
         ListenableFuture<Iterator<TypedMap>> futureTypedMapIterator = mock(ListenableFuture.class);
         AchillesFuture<Iterator<TypedMap>> achillesFuture = mock(AchillesFuture.class);
@@ -268,7 +269,7 @@ public class NativeQueryTest {
 
 
         //When
-        final AchillesFuture<Iterator<TypedMap>> actual = query.asyncIterator();
+        final AchillesFuture<Iterator<TypedMap>> actual = query.asyncIterator(Optional.<Integer>absent());
 
         //Then
         assertThat(actual.get()).isSameAs(typedMapIterator);

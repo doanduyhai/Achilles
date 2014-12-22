@@ -16,6 +16,7 @@
 package info.archinnov.achilles.query.typed;
 
 import com.datastax.driver.core.Statement;
+import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -25,6 +26,7 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.List;
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
 
@@ -78,4 +80,36 @@ public class AsyncTypedQuery<T> extends AbstractTypedQuery<T> {
     public AchillesFuture<T> getFirst(FutureCallback<Object>... asyncListeners) {
         return super.asyncGetFirstInternal(asyncListeners);
     }
+
+    /**
+     * Executes the query and returns an iterator
+     *
+     * Matching CQL row is mapped to entity by reflection. All un-mapped columns
+     * are ignored.
+     *
+     * @return an AchillesFuture of an iterator of entities
+     *
+     */
+    public AchillesFuture<Iterator<T>> iterator() {
+        log.debug("Get iterator for typed query '{}'", nativeStatementWrapper.getStatement());
+        return asyncIteratorInternal(Optional.<Integer>absent(),NO_CALLBACKS);
+    }
+
+    /**
+     * Executes the query and returns an iterator
+     *
+     * Matching CQL row is mapped to entity by reflection. All un-mapped columns
+     * are ignored.
+     *
+     * @param fetchSize the fetch size for the iterator
+     * @return an AchillesFuture of an iterator of entities
+     *
+     */
+    public AchillesFuture<Iterator<T>> iterator(int fetchSize) {
+        log.debug("Get iterator for typed query '{}'", nativeStatementWrapper.getStatement());
+        return asyncIteratorInternal(Optional.fromNullable(fetchSize),NO_CALLBACKS);
+    }
+
+
+
 }

@@ -16,6 +16,7 @@
 package info.archinnov.achilles.query.cql;
 
 import com.datastax.driver.core.Statement;
+import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -85,7 +86,16 @@ public class AsyncNativeQuery extends AbstractNativeQuery {
      * @return Iterator&lt;TypedMap&gt;
      */
     public AchillesFuture<Iterator<TypedMap>> iterator(FutureCallback<Object>... asyncListeners) {
-       return super.asyncIterator(asyncListeners);
+       return super.asyncIterator(Optional.<Integer>absent(), asyncListeners);
     }
 
+    /**
+     * Return an asynchronous iterator of {@link info.archinnov.achilles.type.TypedMap} instance. Each instance represents a CQL row
+     *
+     * @param fetchSize the fetch size to set for paging
+     * @return Iterator&lt;TypedMap&gt;
+     */
+    public AchillesFuture<Iterator<TypedMap>> iterator(int fetchSize, FutureCallback<Object>... asyncListeners) {
+        return super.asyncIterator(Optional.fromNullable(fetchSize), asyncListeners);
+    }
 }

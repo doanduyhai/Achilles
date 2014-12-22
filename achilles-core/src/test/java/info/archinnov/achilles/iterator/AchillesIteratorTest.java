@@ -38,9 +38,9 @@ import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SliceQueryIteratorTest {
+public class AchillesIteratorTest {
 
-    private SliceQueryIterator<ClusteredEntity> sliceIterator;
+    private AchillesIterator<ClusteredEntity> sliceIterator;
 
     @Mock
     private EntityMapper mapper;
@@ -65,15 +65,13 @@ public class SliceQueryIteratorTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
-    private int batchSize = 99;
 
     @Before
     public void setUp() {
         when(sliceQuery.getEntityClass()).thenReturn(ClusteredEntity.class);
-        when(sliceQuery.getEntityMeta()).thenReturn(meta);
         when(context.getEntityFacade()).thenReturn(entityFacade);
 
-        sliceIterator = new SliceQueryIterator<>(sliceQuery, context, iterator);
+        sliceIterator = new AchillesIterator<>(meta, context, iterator);
 
         Whitebox.setInternalState(sliceIterator, "mapper", mapper);
         Whitebox.setInternalState(sliceIterator, "proxifier", proxifier);

@@ -33,9 +33,9 @@ import info.archinnov.achilles.query.slice.SliceQueryProperties;
  *
  * @param <T>: type of entity to iterate on
  */
-public class SliceQueryIterator<T> implements Iterator<T> {
+public class AchillesIterator<T> implements Iterator<T> {
 
-    private static final Logger log = LoggerFactory.getLogger(SliceQueryIterator.class);
+    private static final Logger log = LoggerFactory.getLogger(AchillesIterator.class);
 
     private PersistenceContext context;
     private Iterator<Row> iterator;
@@ -44,10 +44,10 @@ public class SliceQueryIterator<T> implements Iterator<T> {
     private EntityMapper mapper = EntityMapper.Singleton.INSTANCE.get();
     private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
 
-    public SliceQueryIterator(SliceQueryProperties<T> sliceQueryProperties, PersistenceContext context, Iterator<Row> iterator) {
+    public AchillesIterator(EntityMeta meta, PersistenceContext context, Iterator<Row> iterator) {
         this.context = context;
         this.iterator = iterator;
-        this.meta = sliceQueryProperties.getEntityMeta();
+        this.meta = meta;
     }
 
     @Override

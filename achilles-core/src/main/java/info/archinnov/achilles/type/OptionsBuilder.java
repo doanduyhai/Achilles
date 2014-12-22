@@ -466,6 +466,11 @@ public class OptionsBuilder {
             }
             return this;
         }
+
+        BuiltOptions withAsyncListeners(List<FutureCallback<Object>> listeners) {
+            super.asyncListeners = listeners;
+            return this;
+        }
     }
 
 }

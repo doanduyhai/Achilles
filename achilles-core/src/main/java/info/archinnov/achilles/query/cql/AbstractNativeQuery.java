@@ -4,6 +4,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.async.AchillesFuture;
@@ -97,8 +98,14 @@ public abstract class AbstractNativeQuery {
         return asyncUtils.buildInterruptible(futureEmpty);
     }
 
-    protected AchillesFuture<Iterator<TypedMap>> asyncIterator(FutureCallback<Object>... asyncListeners) {
-        log.debug("Execute native query {} and return iterator", nativeStatementWrapper.getStatement());
+    protected AchillesFuture<Iterator<TypedMap>> asyncIterator(Optional<Integer> fetchSizeO, FutureCallback<Object>... asyncListeners) {
+        final Statement statement = nativeStatementWrapper.getStatement();
+        log.debug("Execute native query {} and return iterator", statement);
+
+        if (fetchSizeO.isPresent()) {
+            statement.setFetchSize(fetchSizeO.get());
+        }
+
         final ListenableFuture<ResultSet> futureResultSet = daoContext.execute(nativeStatementWrapper);
 
         final Function<ResultSet, Iterator<TypedMap>> toTypedMap = new Function<ResultSet, Iterator<TypedMap>>() {

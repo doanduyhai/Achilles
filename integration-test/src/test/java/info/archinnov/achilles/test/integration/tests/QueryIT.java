@@ -36,8 +36,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.datastax.driver.core.*;
+import com.datastax.driver.core.ConsistencyLevel;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import info.archinnov.achilles.listener.LWTResultListener;
+import info.archinnov.achilles.test.integration.entity.*;
+import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
+import info.archinnov.achilles.type.*;
 import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -51,14 +55,6 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.query.typed.TypedQuery;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUUID;
-import info.archinnov.achilles.test.integration.entity.CompleteBean;
-import info.archinnov.achilles.test.integration.entity.Tweet;
-import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.CounterBuilder;
-import info.archinnov.achilles.type.OptionsBuilder;
-import info.archinnov.achilles.type.TypedMap;
 import net.sf.cglib.proxy.Factory;
 
 public class QueryIT {
@@ -69,6 +65,8 @@ public class QueryIT {
             AchillesCounter.ACHILLES_COUNTER_TABLE);
 
     private PersistenceManager manager = resource.getPersistenceManager();
+
+    private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
     @Test
     public void should_return_rows_for_native_query() throws Exception {
@@ -749,5 +747,27 @@ public class QueryIT {
         assertThat(foundRaw).isNotNull();
         assertThat(foundRaw.getLabel()).isEqualTo("label");
         assertThat(foundRaw.getAge()).isEqualTo(32L);
+    }
+
+    @Test
+    public void should_allow_regular_statement_with_consistency_level() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        final CompleteBean entity = builder().id(id).label("label123").buid();
+
+        manager.insert(entity);
+
+        final Select.Where regularStatement = select().column("id").column("label").from(CompleteBean.TABLE_NAME)
+                .where(eq("id",bindMarker("id")));
+        regularStatement.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
+        logAsserter.prepareLogLevel();
+
+        //When
+        final CompleteBean found = manager.typedQuery(CompleteBean.class, regularStatement, id).getFirst();
+
+        //Then
+        assertThat(found).isNotNull();
+        assertThat(found.getLabel()).isEqualTo("label123");
+        logAsserter.assertConsistencyLevels(info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM);
     }
 }
