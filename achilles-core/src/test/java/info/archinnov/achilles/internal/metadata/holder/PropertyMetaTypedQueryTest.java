@@ -27,7 +27,7 @@ public class PropertyMetaTypedQueryTest {
     @Test
     public void should_validate_typed_query_for_compound_pk() throws Exception {
         //Given
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(meta.getCompoundPKProperties().getCQLComponentNames()).thenReturn(asList("id", "name"));
         when(meta.<CompleteBean>getCqlValueClass()).thenReturn(CompleteBean.class);
 
@@ -40,7 +40,7 @@ public class PropertyMetaTypedQueryTest {
     @Test
     public void should_validate_typed_query_for_simple_id() throws Exception {
         //Given
-        when(meta.structure().isEmbeddedId()).thenReturn(false);
+        when(meta.structure().isCompoundPK()).thenReturn(false);
         when(meta.getCQLColumnName()).thenReturn("id");
         when(meta.<CompleteBean>getValueClass()).thenReturn(CompleteBean.class);
 

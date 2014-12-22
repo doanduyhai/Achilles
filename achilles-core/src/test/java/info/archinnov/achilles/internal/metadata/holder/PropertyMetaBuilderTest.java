@@ -68,7 +68,7 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.getField()).isEqualTo(field);
-		assertThat(built.structure().isEmbeddedId()).isFalse();
+		assertThat(built.structure().isCompoundPK()).isFalse();
 		assertThat(built.config().getReadConsistencyLevel()).isEqualTo(ONE);
 		assertThat(built.config().getWriteConsistencyLevel()).isEqualTo(ALL);
 		assertThat(built.getSimpleCodec()).isSameAs(simpleCodec);
@@ -88,7 +88,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.<CompoundPK>getValueClass()).isEqualTo(CompoundPK.class);
 
-        assertThat(built.structure().isEmbeddedId()).isTrue();
+        assertThat(built.structure().isCompoundPK()).isTrue();
         assertThat(built.config().getReadConsistencyLevel()).isEqualTo(ONE);
         assertThat(built.config().getWriteConsistencyLevel()).isEqualTo(ALL);
         assertThat(built.getSimpleCodec()).isNull();
@@ -112,7 +112,7 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.<Bean> getValueClass()).isEqualTo(Bean.class);
 
-		assertThat(built.structure().isEmbeddedId()).isFalse();
+		assertThat(built.structure().isCompoundPK()).isFalse();
         assertThat(built.getSimpleCodec()).isSameAs(simpleCodec);
     }
 
@@ -135,7 +135,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.<String>getValueClass()).isEqualTo(String.class);
 
-        assertThat(built.structure().isEmbeddedId()).isFalse();
+        assertThat(built.structure().isCompoundPK()).isFalse();
         assertThat(built.forValues().nullValueForCollectionAndMap()).isNotNull().isInstanceOf(List.class);
         assertThat(built.getListCodec()).isSameAs(listCodec);
     }
@@ -158,7 +158,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.<String>getValueClass()).isEqualTo(String.class);
 
-        assertThat(built.structure().isEmbeddedId()).isFalse();
+        assertThat(built.structure().isCompoundPK()).isFalse();
         assertThat(built.getSetCodec()).isSameAs(setCodec);
     }
 
@@ -182,7 +182,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.<String>getValueClass()).isEqualTo(String.class);
 
-        assertThat(built.structure().isEmbeddedId()).isFalse();
+        assertThat(built.structure().isCompoundPK()).isFalse();
         assertThat(built.getMapCodec()).isSameAs(mapCodec);
     }
 

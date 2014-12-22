@@ -6,11 +6,11 @@ public class EntityMetaStructure extends EntityMetaView {
     }
 
     public boolean hasEmbeddedId() {
-        return meta.idMeta.structure().isEmbeddedId();
+        return meta.idMeta.structure().isCompoundPK();
     }
 
     public boolean isEmbeddedId() {
-        return meta.idMeta.structure().isEmbeddedId();
+        return meta.idMeta.structure().isCompoundPK();
     }
 
     public boolean isClusteredEntity() {

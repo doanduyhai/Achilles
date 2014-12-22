@@ -55,6 +55,7 @@ public class StatementGenerator {
         List<Object> LWTEncodedValues = addAndEncodeLWTConditions(meta, LWTConditions, conditions);
 
         Object[] boundValues = new Object[] { };
+
         if (ttlO.isPresent()) {
             conditions.using(ttl(ttlO.get()));
             boundValues = addAll(boundValues, new Object[] { ttlO.get() });

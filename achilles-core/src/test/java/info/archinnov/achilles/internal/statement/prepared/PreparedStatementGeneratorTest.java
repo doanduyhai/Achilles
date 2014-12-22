@@ -143,7 +143,7 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(actual).isSameAs(ps);
         verify(idMeta.forStatementGeneration()).generateInsertPrimaryKey(isA(Insert.class), Mockito.eq(false));
-        assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO ks.table(name) VALUES (:name) USING TTL :ttl;");
+        assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO ks.table(name) VALUES (:name);");
     }
 
     @Test
@@ -195,7 +195,7 @@ public class PreparedStatementGeneratorTest {
         assertThat(actual).isSameAs(ps);
 
         assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table IF name=:name;");
-        assertThat(queryCaptor.getValue()).isEqualTo("UPDATE ks.table USING TTL :ttl AND TIMESTAMP :timestamp WHERE id=:id;");
+        assertThat(queryCaptor.getValue()).isEqualTo("UPDATE ks.table USING TIMESTAMP :timestamp WHERE id=:id;");
     }
 
     @Test
@@ -349,7 +349,7 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl AND TIMESTAMP :timestamp;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TIMESTAMP :timestamp;");
         assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table IF name=:name;");
 
     }
@@ -371,7 +371,7 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
         assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
@@ -392,7 +392,7 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
         assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
@@ -413,7 +413,7 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
         assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
@@ -434,7 +434,7 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
         assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
@@ -455,7 +455,7 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
         assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
@@ -494,7 +494,7 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
         assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
@@ -515,7 +515,7 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
         assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 

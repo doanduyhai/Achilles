@@ -32,8 +32,8 @@ public class OptionsTest {
         Options newOptions = options.duplicateWithoutTtlAndTimestamp();
 
         assertThat(newOptions.getConsistencyLevel().get()).isSameAs(EACH_QUORUM);
-        assertThat(newOptions.getTimestamp().isPresent()).isFalse();
-        assertThat(newOptions.getTtl().isPresent()).isFalse();
+        assertThat(newOptions.hasTimestamp()).isFalse();
+        assertThat(newOptions.hasTTL()).isFalse();
         assertThat(newOptions.isIfNotExists()).isFalse();
         assertThat(newOptions.isIfExists()).isFalse();
         assertThat(newOptions.hasLWTConditions()).isTrue();

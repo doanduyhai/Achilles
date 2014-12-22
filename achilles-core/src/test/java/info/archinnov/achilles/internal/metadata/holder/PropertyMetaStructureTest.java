@@ -34,7 +34,7 @@ public class PropertyMetaStructureTest {
         //When
 
         //Then
-        assertThat(view.isEmbeddedId()).isTrue();
+        assertThat(view.isCompoundPK()).isTrue();
     }
 
     @Test

@@ -48,7 +48,7 @@ public class PropertyMetaStatementGeneratorTest {
     @Test
     public void should_prepare_insert_primary_key_for_compound_pk() throws Exception {
         //Given
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         Insert insert = QueryBuilder.insertInto("table");
 
@@ -66,7 +66,7 @@ public class PropertyMetaStatementGeneratorTest {
         when(meta1.getCQLColumnName()).thenReturn("id");
 
         PartitionComponents partitionComponents = new PartitionComponents(asList(meta1));
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(meta.getCompoundPKProperties().getPartitionComponents()).thenReturn(partitionComponents);
         Insert insert = QueryBuilder.insertInto("table");
 
@@ -80,7 +80,7 @@ public class PropertyMetaStatementGeneratorTest {
     @Test
     public void should_prepare_insert_primary_key_for_simple_id() throws Exception {
         //Given
-        when(meta.structure().isEmbeddedId()).thenReturn(false);
+        when(meta.structure().isCompoundPK()).thenReturn(false);
         when(meta.getCQLColumnName()).thenReturn("id");
         Insert insert = QueryBuilder.insertInto("table");
 
@@ -95,7 +95,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_where_clause_for_select_with_compound_pk() throws Exception {
         //Given
         Optional<PropertyMeta> pmO = Optional.absent();
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         Select select = QueryBuilder.select().from("table");
 
@@ -114,7 +114,7 @@ public class PropertyMetaStatementGeneratorTest {
 
         Optional<PropertyMeta> pmO = Optional.fromNullable(staticMeta);
 
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(compoundPKProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
         Select select = QueryBuilder.select().from("table");
 
@@ -129,7 +129,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_where_clause_for_select_with_simple_id() throws Exception {
         //Given
         Optional<PropertyMeta> pmO = Optional.absent();
-        when(meta.structure().isEmbeddedId()).thenReturn(false);
+        when(meta.structure().isCompoundPK()).thenReturn(false);
         when(meta.getCQLColumnName()).thenReturn("id");
         Select select = QueryBuilder.select().from("table");
 
@@ -144,7 +144,7 @@ public class PropertyMetaStatementGeneratorTest {
     @Test
     public void should_prepare_where_clause_for_delete_with_compound_pk() throws Exception {
         //Given
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         Delete delete = QueryBuilder.delete().from("table");
 
@@ -158,7 +158,7 @@ public class PropertyMetaStatementGeneratorTest {
     @Test
     public void should_prepare_where_clause_for_delete_with_compound_pk_and_static_column() throws Exception {
         //Given
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(compoundPKProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
         Delete delete = QueryBuilder.delete().from("table");
 
@@ -172,7 +172,7 @@ public class PropertyMetaStatementGeneratorTest {
     @Test
     public void should_prepare_where_clause_for_delete_with_simple_id() throws Exception {
         //Given
-        when(meta.structure().isEmbeddedId()).thenReturn(false);
+        when(meta.structure().isCompoundPK()).thenReturn(false);
         when(meta.getCQLColumnName()).thenReturn("id");
         Delete delete = QueryBuilder.delete().from("table");
 
@@ -213,7 +213,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_common_where_clause_for_update_with_compound_pk() throws Exception {
         //Given
         final Assignments assignments = update("table").with();
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         //When
@@ -227,7 +227,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_common_where_clause_for_update_with_compound_pk_and_static_column() throws Exception {
         //Given
         final Assignments assignments = update("table").with();
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(compoundPKProperties.getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
 
         //When
@@ -241,7 +241,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_common_where_clause_for_update_with_simple_id() throws Exception {
         //Given
         final Assignments assignments = update("table").with();
-        when(meta.structure().isEmbeddedId()).thenReturn(false);
+        when(meta.structure().isCompoundPK()).thenReturn(false);
         when(meta.getCQLColumnName()).thenReturn("id");
 
         //When
@@ -261,7 +261,7 @@ public class PropertyMetaStatementGeneratorTest {
         when(meta.forValues().getPrimaryKey(entity)).thenReturn(pk);
 
         final Assignments assignments = update("table").with();
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
         when(pm.structure().isStaticColumn()).thenReturn(false);
         when(meta.forTranscoding().encodeToComponents(pk, false)).thenReturn(Arrays.<Object>asList(10L, "DuyHai"));
@@ -283,7 +283,7 @@ public class PropertyMetaStatementGeneratorTest {
         when(meta.forValues().getPrimaryKey(entity)).thenReturn(10L);
 
         final Assignments assignments = update("table").with();
-        when(meta.structure().isEmbeddedId()).thenReturn(false);
+        when(meta.structure().isCompoundPK()).thenReturn(false);
         when(meta.forTranscoding().encodeToCassandra(10L)).thenReturn(10L);
         when(meta.getCQLColumnName()).thenReturn("id");
 
@@ -299,7 +299,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_select_fields_for_compound_pk() throws Exception {
         //Given
         final Selection select = select();
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
 
         //When
@@ -313,7 +313,7 @@ public class PropertyMetaStatementGeneratorTest {
     public void should_prepare_select_fields_for_id() throws Exception {
         //Given
         final Selection select = select();
-        when(meta.structure().isEmbeddedId()).thenReturn(false);
+        when(meta.structure().isCompoundPK()).thenReturn(false);
         when(meta.getCQLColumnName()).thenReturn("id");
 
         //When
