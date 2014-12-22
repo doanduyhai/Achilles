@@ -126,7 +126,8 @@ public class Options {
         return OptionsBuilder.withConsistencyO(consistency)
                 .lwtPredicates(lwtPredicates)
                 .lwtResultListener(lwtResultListenerO.orNull())
-                .lwtLocalSerial(serialConsistencyO.isPresent());
+                .lwtLocalSerial(serialConsistencyO.isPresent())
+                .withAsyncListeners(asyncListeners);
     }
 
     public Options duplicateWithNewConsistencyLevel(ConsistencyLevel consistencyLevel) {
@@ -134,7 +135,8 @@ public class Options {
                 .withTtlO(ttl).withTimestampO(timestamp)
                 .lwtPredicates(lwtPredicates)
                 .lwtResultListener(lwtResultListenerO.orNull())
-                .lwtLocalSerial(serialConsistencyO.isPresent());
+                .lwtLocalSerial(serialConsistencyO.isPresent())
+                .withAsyncListeners(asyncListeners);
     }
 
     public Options duplicateWithNewTimestamp(Long timestamp) {
@@ -142,7 +144,8 @@ public class Options {
                 .withTtlO(ttl).withTimestamp(timestamp)
                 .lwtPredicates(lwtPredicates)
                 .lwtResultListener(lwtResultListenerO.orNull())
-                .lwtLocalSerial(serialConsistencyO.isPresent());
+                .lwtLocalSerial(serialConsistencyO.isPresent())
+                .withAsyncListeners(asyncListeners);
     }
 
     public static abstract class LWTPredicate {

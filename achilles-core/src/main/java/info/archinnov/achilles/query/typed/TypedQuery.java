@@ -20,13 +20,12 @@ import static com.google.common.base.Predicates.notNull;
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROW;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 import com.datastax.driver.core.Statement;
+import info.archinnov.achilles.iterator.AchillesIterator;
 import info.archinnov.achilles.listener.LWTResultListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,4 +101,32 @@ public class TypedQuery<T> extends AbstractTypedQuery<T> {
         return asyncGetFirstInternal().getImmediately();
     }
 
+    /**
+     * Executes the query and returns an iterator
+     *
+     * Matching CQL row is mapped to entity by reflection. All un-mapped columns
+     * are ignored.
+     *
+     * @return an iterator of entities
+     *
+     */
+    public Iterator<T> iterator() {
+        log.debug("Get iterator for typed query '{}'", nativeStatementWrapper.getStatement());
+        return asyncIteratorInternal(Optional.<Integer>absent(),NO_CALLBACKS).getImmediately();
+    }
+
+    /**
+     * Executes the query and returns an iterator
+     *
+     * Matching CQL row is mapped to entity by reflection. All un-mapped columns
+     * are ignored.
+     *
+     * @param fetchSize the fetch size for the iterator
+     * @return an iterator of entities
+     *
+     */
+    public Iterator<T> iterator(int fetchSize) {
+        log.debug("Get iterator for typed query '{}'", nativeStatementWrapper.getStatement());
+        return asyncIteratorInternal(Optional.fromNullable(fetchSize),NO_CALLBACKS).getImmediately();
+    }
 }

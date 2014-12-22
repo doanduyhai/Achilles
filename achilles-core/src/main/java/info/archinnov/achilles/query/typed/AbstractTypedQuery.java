@@ -19,24 +19,26 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
+import info.archinnov.achilles.iterator.AchillesIterator;
 import info.archinnov.achilles.listener.LWTResultListener;
+import info.archinnov.achilles.query.slice.SliceQueryProperties;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 import static com.google.common.base.Predicates.notNull;
 import static com.google.common.collect.FluentIterable.from;
+import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ITERATOR;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROW;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS;
 
 public abstract class AbstractTypedQuery<T> {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractTypedQuery.class);
+    protected static final FutureCallback<Object>[] NO_CALLBACKS = new FutureCallback[]{};
 
     protected final NativeStatementWrapper nativeStatementWrapper;
 
@@ -102,6 +104,29 @@ public abstract class AbstractTypedQuery<T> {
         final ListenableFuture<T> maybeProxyCreated = asyncUtils.transformFuture(entityWithTriggers, maybeCreateProxy);
 
         return asyncUtils.buildInterruptible(maybeProxyCreated);
+    }
+
+    protected AchillesFuture<Iterator<T>> asyncIteratorInternal(Optional<Integer> fetchSizeO, FutureCallback<Object>... asyncListeners) {
+        final Statement statement = nativeStatementWrapper.getStatement();
+        log.debug("Get iterator asynchronously for typed query '{}'", statement.toString());
+
+        if (fetchSizeO.isPresent()) {
+            statement.setFetchSize(fetchSizeO.get());
+        }
+        final PersistenceContext persistenceContext = contextFactory.newContextForTypedQuery(meta.getEntityClass());
+
+        final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(nativeStatementWrapper);
+        final ListenableFuture<Iterator<Row>> futureIterator = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ITERATOR, executorService);
+
+        Function<Iterator<Row>, Iterator<T>> rowToIterator = new Function<Iterator<Row>, Iterator<T>>() {
+            @Override
+            public Iterator<T> apply(Iterator<Row> rowIterator) {
+                return new AchillesIterator<>(meta, persistenceContext, rowIterator);
+            }
+        };
+        final ListenableFuture<Iterator<T>> listenableFuture = asyncUtils.transformFuture(futureIterator, rowToIterator);
+        asyncUtils.maybeAddAsyncListeners(listenableFuture, asyncListeners);
+        return asyncUtils.buildInterruptible(listenableFuture);
     }
 
     protected Function<Row, T> rowToEntity() {
@@ -195,3 +220,4 @@ public abstract class AbstractTypedQuery<T> {
         return entity;
     }
 }
+

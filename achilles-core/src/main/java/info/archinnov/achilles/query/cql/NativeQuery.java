@@ -86,10 +86,24 @@ public class NativeQuery extends AbstractNativeQuery {
 
     /**
      * Return an iterator of {@link info.archinnov.achilles.type.TypedMap} instance. Each instance represents a CQL row
-     * @return Iterator<TypedMap>
+     * @return Iterator&lt;TypedMap&gt;
      */
     public Iterator<TypedMap> iterator() {
         log.debug("Execute native query {} and return iterator", nativeStatementWrapper.getStatement());
+        final ListenableFuture<ResultSet> future = daoContext.execute(nativeStatementWrapper);
+        return new TypedMapIterator(asyncUtils.buildInterruptible(future).getImmediately().iterator());
+    }
+
+    /**
+     * Return an iterator of {@link info.archinnov.achilles.type.TypedMap} instance. Each instance represents a CQL row
+     *
+     * @param fetchSize the fetch size to set for paging
+     * @return Iterator&lt;TypedMap&gt;
+     */
+    public Iterator<TypedMap> iterator(int fetchSize) {
+        final Statement statement = nativeStatementWrapper.getStatement();
+        log.debug("Execute native query {} and return iterator", statement);
+        statement.setFetchSize(fetchSize);
         final ListenableFuture<ResultSet> future = daoContext.execute(nativeStatementWrapper);
         return new TypedMapIterator(asyncUtils.buildInterruptible(future).getImmediately().iterator());
     }

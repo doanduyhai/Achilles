@@ -36,12 +36,12 @@ public class PersistenceContextFactory {
 	private static final Logger log = LoggerFactory.getLogger(PersistenceContextFactory.class);
 
 	public static final Optional<Integer> NO_TTL = Optional.absent();
+	public static final Options NO_OPTIONS = OptionsBuilder.noOptions();
 
 	private DaoContext daoContext;
 	private ConfigurationContext configContext;
 	private Map<Class<?>, EntityMeta> entityMetaMap;
     private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
-    private ReflectionInvoker invoker = ReflectionInvoker.Singleton.INSTANCE.get();
 
 	public PersistenceContextFactory(DaoContext daoContext, ConfigurationContext configContext,
 			Map<Class<?>, EntityMeta> entityMetaMap) {
@@ -98,6 +98,14 @@ public class PersistenceContextFactory {
 		return new PersistenceContext(meta, configContext, daoContext, flushContext, entityClass, compoundPK,
 				OptionsBuilder.withConsistency(cl));
 	}
+
+    public PersistenceContext newContextForTypedQuery(Class<?> entityClass) {
+        log.trace("Build new PersistenceContext for typed query on entity class '{}'", entityClass);
+        EntityMeta meta = entityMetaMap.get(entityClass);
+        ImmediateFlushContext flushContext = buildImmediateFlushContext(NO_OPTIONS);
+//        return new PersistenceContext(meta, configContext, daoContext, flushContext, entityClass, null, NO_OPTIONS);
+        return new PersistenceContext(meta, configContext, daoContext, flushContext);
+    }
 
 	private ImmediateFlushContext buildImmediateFlushContext(Options options) {
 		return new ImmediateFlushContext(daoContext, options.getConsistencyLevel().orNull(), options.getSerialConsistency());
