@@ -96,17 +96,18 @@ public class StatementCacheKey {
     }
 
     private static class OptionsCacheKey {
+        private boolean hasTTL;
         private boolean hasTimestamp;
         private List<LWTPredicate> lwtPredicates;
 
-        private OptionsCacheKey(boolean hasTimestamp, List<LWTPredicate> lwtPredicates) {
+        private OptionsCacheKey(boolean hasTTL, boolean hasTimestamp, List<LWTPredicate> lwtPredicates) {
+            this.hasTTL = hasTTL;
             this.hasTimestamp = hasTimestamp;
             this.lwtPredicates = lwtPredicates;
         }
 
         private static OptionsCacheKey fromOptions(Options options) {
-            boolean hasTimestamp = options.getTimestamp().isPresent();
-            return new OptionsCacheKey(hasTimestamp, options.getLwtPredicates());
+            return new OptionsCacheKey(options.hasTTL(), options.hasTimestamp(), options.getLwtPredicates());
         }
 
         @Override
@@ -119,19 +120,21 @@ public class StatementCacheKey {
             }
 
             final OptionsCacheKey other = (OptionsCacheKey) o;
-            return Objects.equals(this.hasTimestamp, other.hasTimestamp) &&
+            return  Objects.equals(this.hasTTL, other.hasTTL) &&
+                    Objects.equals(this.hasTimestamp, other.hasTimestamp) &&
                     Objects.equals(this.lwtPredicates, other.lwtPredicates);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.hasTimestamp, this.lwtPredicates);
+            return Objects.hash(this.hasTTL, this.hasTimestamp, this.lwtPredicates);
         }
 
         @Override
         public String toString() {
             return "OptionsCacheKey{" +
-                    "hasTimestamp=" + Objects.toString(hasTimestamp) +
+                    "hasTTL=" + Objects.toString(hasTTL) +
+                    ", hasTimestamp=" + Objects.toString(hasTimestamp) +
                     ", LWTPredicates=" + Objects.toString(lwtPredicates) +
                     '}';
         }

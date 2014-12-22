@@ -210,6 +210,21 @@ public class PersistenceContext {
             return options;
         }
 
+        @Override
+        public boolean hasConsistencyLevel() {
+            return options.hasConsistencyLevel();
+        }
+
+        @Override
+        public boolean hasTTL() {
+            return options.hasTTL();
+        }
+
+        @Override
+        public boolean hasTimestamp() {
+            return options.hasTimestamp();
+        }
+
         public Optional<Integer> getTtl() {
             return options.getTtl();
         }

@@ -157,7 +157,7 @@ public class TableCreator {
     private List<ClusteringOrder> buildPrimaryKey(PropertyMeta pm, Create createTable) {
         List<ClusteringOrder> clusteringOrders = new LinkedList<>();
 
-        if (pm.structure().isEmbeddedId()) {
+        if (pm.structure().isCompoundPK()) {
             pm.forTableCreation().addPartitionKeys(createTable);
             pm.forTableCreation().addClusteringKeys(createTable);
         } else {

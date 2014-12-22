@@ -31,8 +31,8 @@ public class OptionsValidator {
     }
 
     public void validateNoLWTConditionsAndTimestamp(Options options) {
-        Validator.validateFalse(options.isIfNotExists() && options.getTimestamp().isPresent(), "Cannot provide custom timestamp for insert operations using Light Weight Transaction");
-        Validator.validateFalse(options.hasLWTConditions() && options.getTimestamp().isPresent(), "Cannot provide custom timestamp for update operations using Light Weight Transaction");
+        Validator.validateFalse(options.isIfNotExists() && options.hasTimestamp(), "Cannot provide custom timestamp for insert operations using Light Weight Transaction");
+        Validator.validateFalse(options.hasLWTConditions() && options.hasTimestamp(), "Cannot provide custom timestamp for update operations using Light Weight Transaction");
     }
 
     public boolean isOptionsValidForBatch(Options options) {

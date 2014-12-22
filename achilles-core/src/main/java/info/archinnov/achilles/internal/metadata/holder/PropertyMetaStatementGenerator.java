@@ -25,7 +25,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
 
     public Insert generateInsertPrimaryKey(Insert insert, boolean onlyStaticColumns) {
         log.debug("Generate INSERT primary key for id meta {}", meta);
-        if (meta.structure().isEmbeddedId()) {
+        if (meta.structure().isCompoundPK()) {
             if (onlyStaticColumns) {
                 for (PropertyMeta partitionComponents : meta.getCompoundPKProperties().getPartitionComponents().propertyMetas) {
                     final String cqlColumnName = partitionComponents.getCQLColumnName();
@@ -45,7 +45,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
     public RegularStatement generateWhereClauseForSelect(Optional<PropertyMeta> pmO, Select from) {
         log.debug("Generate SELECT WHERE clause for property meta {} with static column ? {}", meta, pmO.isPresent());
 
-        if (meta.structure().isEmbeddedId()) {
+        if (meta.structure().isCompoundPK()) {
             return generateWhereClauseForSelectWithCompound(pmO, from);
         } else {
             return from.where(eq(meta.getCQLColumnName(), bindMarker(meta.getCQLColumnName())));
@@ -75,7 +75,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
 
     public RegularStatement generateWhereClauseForDelete(boolean onlyStaticColumns, Delete mainFrom) {
         log.debug("Generate DELETE WHERE clause for property meta {} with static column ? {}", meta, onlyStaticColumns);
-        if (meta.structure().isEmbeddedId()) {
+        if (meta.structure().isCompoundPK()) {
             return generateWhereClauseForDeleteWithCompound(onlyStaticColumns, mainFrom);
         } else {
             return mainFrom.where(eq(meta.getCQLColumnName(), bindMarker(meta.getCQLColumnName())));
@@ -117,7 +117,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
 
     public Update.Where prepareCommonWhereClauseForUpdate(Update.Assignments assignments, boolean onlyStaticColumns) {
         log.debug("Prepare common UPDATE WHERE clause for property meta {} with static column ? {}", meta, onlyStaticColumns);
-        if (meta.structure().isEmbeddedId()) {
+        if (meta.structure().isCompoundPK()) {
             return prepareCommonWhereClauseForUpdateWithCompound(assignments, onlyStaticColumns);
         } else {
             String cqlColumnName = meta.getCQLColumnName();
@@ -152,7 +152,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
     public Pair<Update.Where, Object[]> generateWhereClauseForUpdate(Object entity, PropertyMeta pm, Update.Assignments update) {
         log.debug("Generate plain UPDATE WHERE clause for property meta {}", pm);
         Object primaryKey = meta.forValues().getPrimaryKey(entity);
-        if (meta.structure().isEmbeddedId()) {
+        if (meta.structure().isCompoundPK()) {
             return generateWhereClauseForUpdateWithCompound(primaryKey, pm, update);
         } else {
             Object id = meta.forTranscoding().encodeToCassandra(primaryKey);
@@ -183,7 +183,7 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
 
     public Select.Selection prepareSelectField(Select.Selection select) {
         log.debug("Prepare SELECT clause for property meta {}", meta);
-        if (meta.structure().isEmbeddedId()) {
+        if (meta.structure().isCompoundPK()) {
             for (String component : meta.getCompoundPKProperties().getCQLComponentNames()) {
                 select = select.column(component);
             }

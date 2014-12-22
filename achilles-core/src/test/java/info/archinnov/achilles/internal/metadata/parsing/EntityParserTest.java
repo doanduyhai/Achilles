@@ -181,7 +181,7 @@ public class EntityParserTest {
         assertThat(meta.<CompoundPK>getIdClass()).isEqualTo(CompoundPK.class);
         PropertyMeta idMeta = meta.getIdMeta();
 
-        assertThat(idMeta.structure().isEmbeddedId()).isTrue();
+        assertThat(idMeta.structure().isCompoundPK()).isTrue();
 
         assertThat(meta.getPropertyMetas().get("firstName").structure().isStaticColumn()).isTrue();
     }

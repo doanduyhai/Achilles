@@ -21,7 +21,7 @@ public class PropertyMetaCacheSupportTest {
     @Test
     public void should_extract_clustered_fields_from_compound_pk() throws Exception {
         //Given
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(meta.getCompoundPKProperties().getCQLComponentNames()).thenReturn(Arrays.asList("a", "b"));
         final PropertyMetaCacheSupport view = new PropertyMetaCacheSupport(meta);
 
@@ -35,7 +35,7 @@ public class PropertyMetaCacheSupportTest {
     @Test
     public void should_extract_clustered_fields_from_normal_id() throws Exception {
         //Given
-        when(meta.structure().isEmbeddedId()).thenReturn(false);
+        when(meta.structure().isCompoundPK()).thenReturn(false);
         when(meta.getCQLColumnName()).thenReturn("a");
         final PropertyMetaCacheSupport view = new PropertyMetaCacheSupport(meta);
 

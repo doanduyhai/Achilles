@@ -104,7 +104,7 @@ public class EntityValidatorTest {
 
 		when(entityMeta.forOperations().getPrimaryKey(bean)).thenReturn(clusteredId);
         when(proxifier.getRealObject(bean)).thenReturn(bean);
-		when(idMeta.structure().isEmbeddedId()).thenReturn(true);
+		when(idMeta.structure().isCompoundPK()).thenReturn(true);
 		when(idMeta.forTranscoding().encodeToComponents(clusteredId,true)).thenReturn(Arrays.<Object> asList(11L, "name"));
 
 		entityValidator.validateEntity(bean, entityMeta);
@@ -123,7 +123,7 @@ public class EntityValidatorTest {
         when(staticColumnMeta.forValues().getValueFromField(clusteredId)).thenReturn("static");
 
         when(proxifier.getRealObject(bean)).thenReturn(bean);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(true);
+        when(idMeta.structure().isCompoundPK()).thenReturn(true);
         when(idMeta.forTranscoding().encodeToComponents(clusteredId,true)).thenReturn(Arrays.<Object> asList(11L, "static"));
 
         entityValidator.validateEntity(bean, entityMeta);
@@ -135,7 +135,7 @@ public class EntityValidatorTest {
 
         when(proxifier.getRealObject(bean)).thenReturn(bean);
 		when(entityMeta.forOperations().getPrimaryKey(bean)).thenReturn(12L);
-		when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+		when(idMeta.structure().isCompoundPK()).thenReturn(false);
 
 		entityValidator.validateEntity(bean, entityMeta);
 	}

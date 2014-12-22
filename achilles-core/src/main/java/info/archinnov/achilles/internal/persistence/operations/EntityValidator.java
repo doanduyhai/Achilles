@@ -56,7 +56,7 @@ public class EntityValidator {
 
     public void validatePrimaryKey(PropertyMeta idMeta, Object primaryKey) {
         log.trace("Validate primary key {} for entity class {}", primaryKey, idMeta.getEntityClassName());
-        if (idMeta.structure().isEmbeddedId()) {
+        if (idMeta.structure().isCompoundPK()) {
             List<Object> components = idMeta.forTranscoding().encodeToComponents(primaryKey, false);
             for (Object component : components) {
                 Validator.validateNotNull(component, "The compound primary key '%s' component should not be null", idMeta.getPropertyName());
@@ -83,7 +83,7 @@ public class EntityValidator {
         }
 
 
-        if (idMeta.structure().isEmbeddedId()) {
+        if (idMeta.structure().isCompoundPK()) {
             boolean encodeOnlyPartitionKey = nonNullCount == nonNullStaticCount;
             List<Object> components = idMeta.forTranscoding().encodeToComponents(primaryKey, encodeOnlyPartitionKey);
             for (Object component : components) {
