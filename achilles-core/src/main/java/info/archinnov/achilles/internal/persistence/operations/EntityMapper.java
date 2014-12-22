@@ -47,7 +47,7 @@ public class EntityMapper {
         log.debug("Set property {} value from fetched CQL row", pm.getPropertyName());
         if (row != null) {
             final PropertyMetaRowExtractor rowExtractor = pm.forRowExtraction();
-            if (pm.structure().isEmbeddedId()) {
+            if (pm.structure().isCompoundPK()) {
                 Object compoundKey = rowExtractor.extractCompoundPrimaryKeyFromRow(row, meta, MANAGED);
                 pm.forValues().setValueToField(entity, compoundKey);
             } else {
@@ -72,7 +72,7 @@ public class EntityMapper {
                 }
             }
             PropertyMeta idMeta = meta.getIdMeta();
-            if (idMeta.structure().isEmbeddedId()) {
+            if (idMeta.structure().isCompoundPK()) {
                 Object compoundKey = idMeta.forRowExtraction().extractCompoundPrimaryKeyFromRow(row, meta, entityState);
                 idMeta.forValues().setValueToField(entity, compoundKey);
             }

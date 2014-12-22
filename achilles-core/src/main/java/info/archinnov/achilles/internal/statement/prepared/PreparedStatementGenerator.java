@@ -84,11 +84,17 @@ public class PreparedStatementGenerator {
             insert.value(cqlColumnName, bindMarker(cqlColumnName));
         }
 
-        final Insert.Options insertOptions = insert.using(ttl(bindMarker("ttl")));
-        if (options.getTimestamp().isPresent()) {
-            insertOptions.and(timestamp(bindMarker("timestamp")));
+        BuiltStatement insertOptions = insert;
+
+        if (options.hasTTL() && options.hasTimestamp()) {
+            insertOptions = insert.using(ttl(bindMarker("ttl"))).and(timestamp(bindMarker("timestamp")));
+        } else if (options.hasTTL()) {
+            insertOptions = insert.using(ttl(bindMarker("ttl")));
+        } else if (options.hasTimestamp()) {
+            insertOptions = insert.using(timestamp(bindMarker("timestamp")));
         }
-        return session.prepare(insert.getQueryString());
+
+        return session.prepare(insertOptions.getQueryString());
     }
 
     public PreparedStatement prepareSelectField(Session session, EntityMeta entityMeta, PropertyMeta pm) {
@@ -235,16 +241,23 @@ public class PreparedStatementGenerator {
 
     private RegularStatement prepareWhereClauseWithTTLForUpdate(PropertyMeta idMeta, Assignments assignments, boolean onlyStaticColumns, Options options) {
         Update.Where where = idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, onlyStaticColumns);
-        final Update.Options updateOptions = where.using(ttl(bindMarker("ttl")));
-        if (options.getTimestamp().isPresent()) {
-            updateOptions.and(timestamp(bindMarker("timestamp")));
+
+        BuiltStatement whereOptions = where;
+
+        if (options.hasTTL() && options.hasTimestamp()) {
+            whereOptions = where.using(ttl(bindMarker("ttl"))).and(timestamp(bindMarker("timestamp")));
+        } else if (options.hasTTL()) {
+            whereOptions = where.using(ttl(bindMarker("ttl")));
+        } else if (options.hasTimestamp()) {
+            whereOptions = where.using(timestamp(bindMarker("timestamp")));
         }
-        return updateOptions;
+
+        return whereOptions;
     }
 
     private RegularStatement prepareWhereClauseForCounterUpdate(PropertyMetaStatementGenerator statementGenerator, Assignments assignments, boolean onlyStaticColumns, Options options) {
         Update.Where where = statementGenerator.prepareCommonWhereClauseForUpdate(assignments, onlyStaticColumns);
-        if (options.getTimestamp().isPresent()) {
+        if (options.hasTimestamp()) {
             return where.using(timestamp(bindMarker("timestamp")));
         } else {
             return where;

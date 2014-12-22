@@ -133,7 +133,7 @@ public class PreparedStatementBinderTest {
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
         when(nameMeta.forTranscoding().getAndEncodeValueForCassandra(entity)).thenReturn(name);
         when(ageMeta.forTranscoding().getAndEncodeValueForCassandra(entity)).thenReturn(age);
@@ -146,7 +146,7 @@ public class PreparedStatementBinderTest {
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
-        assertThat(asList(actual.getValues())).containsExactly(primaryKey, name, age, 0);
+        assertThat(asList(actual.getValues())).containsExactly(primaryKey, name, age);
     }
 
     @Test
@@ -159,7 +159,7 @@ public class PreparedStatementBinderTest {
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
         when(nameMeta.forTranscoding().getAndEncodeValueForCassandra(entity)).thenReturn(name);
         when(ageMeta.forTranscoding().getAndEncodeValueForCassandra(entity)).thenReturn(null);
@@ -169,7 +169,7 @@ public class PreparedStatementBinderTest {
         BoundStatementWrapper actual = binder.bindForInsert(context, ps, asList(nameMeta, ageMeta));
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(primaryKey, name, null, 0);
+        assertThat(asList(actual.getValues())).containsExactly(primaryKey, name, null);
     }
 
     @Test
@@ -185,7 +185,7 @@ public class PreparedStatementBinderTest {
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(true);
+        when(idMeta.structure().isCompoundPK()).thenReturn(true);
         when(idMeta.forTranscoding().encodeToComponents(primaryKey, false)).thenReturn(Arrays.<Object>asList(userId, name));
         when(addressMeta.forTranscoding().getAndEncodeValueForCassandra(entity)).thenReturn(address);
         when(ageMeta.forTranscoding().getAndEncodeValueForCassandra(entity)).thenReturn(age);
@@ -195,7 +195,7 @@ public class PreparedStatementBinderTest {
         BoundStatementWrapper actual = binder.bindForInsert(context, ps, asList(addressMeta, ageMeta));
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(userId, name, address, age, 0);
+        assertThat(asList(actual.getValues())).containsExactly(userId, name, address, age);
     }
 
     @Test
@@ -206,7 +206,7 @@ public class PreparedStatementBinderTest {
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(context.getPrimaryKey()).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(true);
+        when(idMeta.structure().isCompoundPK()).thenReturn(true);
         when(idMeta.forTranscoding().encodeToComponents(primaryKey, true)).thenReturn(Arrays.<Object>asList(userId, name));
 
         when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
@@ -229,7 +229,7 @@ public class PreparedStatementBinderTest {
         when(context.getSerialConsistencyLevel()).thenReturn(fromNullable(ConsistencyLevel.LOCAL_SERIAL));
 
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
         when(nameMeta.structure().isStaticColumn()).thenReturn(false);
         when(ageMeta.structure().isStaticColumn()).thenReturn(false);
@@ -242,7 +242,7 @@ public class PreparedStatementBinderTest {
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
-        assertThat(asList(actual.getValues())).containsExactly(0, name, age, primaryKey);
+        assertThat(asList(actual.getValues())).containsExactly(name, age, primaryKey);
     }
 
     @Test
@@ -314,7 +314,7 @@ public class PreparedStatementBinderTest {
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
 
         when(counterMeta.structure().isStaticColumn()).thenReturn(false);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
 
@@ -335,7 +335,7 @@ public class PreparedStatementBinderTest {
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
 
         when(counterMeta.structure().isStaticColumn()).thenReturn(false);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
         when(ps.bind(primaryKey)).thenReturn(bs);
@@ -354,7 +354,7 @@ public class PreparedStatementBinderTest {
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(counterMeta.structure().isStaticColumn()).thenReturn(false);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
         when(ps.bind(primaryKey)).thenReturn(bs);
@@ -378,17 +378,17 @@ public class PreparedStatementBinderTest {
         when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(false);
 
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(0, null, primaryKey)).thenReturn(bs);
+        when(ps.bind(null, primaryKey)).thenReturn(bs);
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(0, null, primaryKey);
+        assertThat(asList(actual.getValues())).containsExactly(null, primaryKey);
     }
 
     @Test
@@ -405,17 +405,17 @@ public class PreparedStatementBinderTest {
         when(changeSet.getEncodedSetChanges()).thenReturn(values);
 
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(0, values, primaryKey)).thenReturn(bs);
+        when(ps.bind(values, primaryKey)).thenReturn(bs);
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(0, values, primaryKey);
+        assertThat(asList(actual.getValues())).containsExactly(values, primaryKey);
     }
 
     @Test
@@ -432,17 +432,17 @@ public class PreparedStatementBinderTest {
         when(changeSet.getEncodedMapChanges()).thenReturn(values);
 
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(0, values, primaryKey)).thenReturn(bs);
+        when(ps.bind(values, primaryKey)).thenReturn(bs);
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(0, values, primaryKey);
+        assertThat(asList(actual.getValues())).containsExactly(values, primaryKey);
     }
 
     @Test
@@ -459,17 +459,17 @@ public class PreparedStatementBinderTest {
         when(changeSet.getEncodedListChanges()).thenReturn(values);
 
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(0, values, primaryKey)).thenReturn(bs);
+        when(ps.bind(values, primaryKey)).thenReturn(bs);
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(0, values, primaryKey);
+        assertThat(asList(actual.getValues())).containsExactly(values, primaryKey);
     }
 
     @Test
@@ -487,10 +487,10 @@ public class PreparedStatementBinderTest {
         when(changeSet.getEncodedSetChanges()).thenReturn(values);
 
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(0, values, primaryKey)).thenReturn(bs);
+        when(ps.bind(values, primaryKey)).thenReturn(bs);
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
@@ -498,7 +498,7 @@ public class PreparedStatementBinderTest {
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
-        assertThat(asList(actual.getValues())).containsExactly(0, values, primaryKey);
+        assertThat(asList(actual.getValues())).containsExactly(values, primaryKey);
     }
 
     @Test
@@ -515,17 +515,17 @@ public class PreparedStatementBinderTest {
         when(changeSet.getEncodedSetChanges()).thenReturn(values);
 
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(0, values, primaryKey)).thenReturn(bs);
+        when(ps.bind(values, primaryKey)).thenReturn(bs);
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(0, values, primaryKey);
+        assertThat(asList(actual.getValues())).containsExactly(values, primaryKey);
     }
 
     @Test
@@ -542,17 +542,17 @@ public class PreparedStatementBinderTest {
         when(changeSet.getEncodedListChanges()).thenReturn(values);
 
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(0, values, primaryKey)).thenReturn(bs);
+        when(ps.bind(values, primaryKey)).thenReturn(bs);
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(0, values, primaryKey);
+        assertThat(asList(actual.getValues())).containsExactly(values, primaryKey);
     }
 
     @Test
@@ -569,17 +569,17 @@ public class PreparedStatementBinderTest {
         when(changeSet.getEncodedListChanges()).thenReturn(values);
 
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(0, values, primaryKey)).thenReturn(bs);
+        when(ps.bind(values, primaryKey)).thenReturn(bs);
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(0, values, primaryKey);
+        assertThat(asList(actual.getValues())).containsExactly(values, primaryKey);
     }
 
     @Test
@@ -596,17 +596,17 @@ public class PreparedStatementBinderTest {
         when(changeSet.getEncodedListChanges()).thenReturn(values);
 
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(0, values, primaryKey)).thenReturn(bs);
+        when(ps.bind(values, primaryKey)).thenReturn(bs);
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(0, values, primaryKey);
+        assertThat(asList(actual.getValues())).containsExactly(values, primaryKey);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -627,6 +627,7 @@ public class PreparedStatementBinderTest {
         Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
+        when(context.hasTimestamp()).thenReturn(true);
         when(context.getTimestamp()).thenReturn(fromNullable(100L));
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
 
@@ -636,17 +637,17 @@ public class PreparedStatementBinderTest {
         when(changeSet.getEncodedMapChanges()).thenReturn(values);
 
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(0, 100L, values, primaryKey)).thenReturn(bs);
+        when(ps.bind(100L, values, primaryKey)).thenReturn(bs);
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(0, 100L, values, primaryKey);
+        assertThat(asList(actual.getValues())).containsExactly(100L, values, primaryKey);
     }
 
     @Test
@@ -671,17 +672,17 @@ public class PreparedStatementBinderTest {
         when(entityMeta.getIdMeta()).thenReturn(idMeta);
         when(entityMeta.forTranscoding().encodeCasConditionValue(LWTCondition)).thenReturn("John");
         when(entityMeta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(0, 1, null, primaryKey, "John")).thenReturn(bs);
+        when(ps.bind(1, null, primaryKey, "John")).thenReturn(bs);
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(0, 1, null, primaryKey, "John");
+        assertThat(asList(actual.getValues())).containsExactly(1, null, primaryKey, "John");
     }
 
     @Test
@@ -697,7 +698,7 @@ public class PreparedStatementBinderTest {
         when(context.getOptions()).thenReturn(options);
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getPrimaryKey()).thenReturn(primaryKey);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
         when(idMeta.forTranscoding().encodeToCassandra(primaryKey)).thenReturn(primaryKey);
 
         when(context.hasLWTConditions()).thenReturn(true);

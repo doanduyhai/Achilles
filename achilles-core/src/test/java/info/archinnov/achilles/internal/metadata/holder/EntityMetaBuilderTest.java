@@ -135,7 +135,7 @@ public class EntityMetaBuilderTest {
 
         when(idMeta.type()).thenReturn(COMPOUND_PRIMARY_KEY);
         when(idMeta.<Long>getValueClass()).thenReturn(Long.class);
-        when(idMeta.structure().isEmbeddedId()).thenReturn(true);
+        when(idMeta.structure().isCompoundPK()).thenReturn(true);
         when(idMeta.structure().isClustered()).thenReturn(true);
         when(idMeta.getCompoundPKProperties().getClusteringComponents().getComponentClasses()).thenReturn(Arrays.<Class<?>>asList(String.class));
         List<PropertyMeta> eagerMetas = new ArrayList<>();

@@ -46,11 +46,17 @@ public interface PersistentStateHolder {
 
     public Options getOptions();
 
+    public boolean hasConsistencyLevel();
+
+    public boolean hasTTL();
+
+    public boolean hasTimestamp();
+
+    public Optional<ConsistencyLevel> getConsistencyLevel();
+
     public Optional<Integer> getTtl();
 
     public Optional<Long> getTimestamp();
-
-    public Optional<ConsistencyLevel> getConsistencyLevel();
 
     public Optional<com.datastax.driver.core.ConsistencyLevel> getSerialConsistencyLevel();
 

@@ -290,11 +290,15 @@ public class PreparedStatementBinder {
     private List<Object> fetchTTLAndTimestampValues(PersistentStateHolder context) {
         List<Object> values = new ArrayList<>();
 
-        // TTL or default value 0
-        values.add(context.getTtl().or(0));
-        if (context.getTimestamp().isPresent()) {
+        if (context.hasTTL() && context.hasTimestamp()) {
+            values.add(context.getTtl().get());
+            values.add(context.getTimestamp().get());
+        } else if (context.hasTTL()) {
+            values.add(context.getTtl().get());
+        } else if (context.hasTimestamp()) {
             values.add(context.getTimestamp().get());
         }
+
         return values;
     }
 
@@ -321,7 +325,7 @@ public class PreparedStatementBinder {
 
     private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta idMeta, boolean onlyStaticColumns) {
         List<Object> values = new ArrayList<>();
-        if (idMeta.structure().isEmbeddedId()) {
+        if (idMeta.structure().isCompoundPK()) {
             values.addAll(idMeta.forTranscoding().encodeToComponents(primaryKey, onlyStaticColumns));
         } else {
             values.add(idMeta.forTranscoding().encodeToCassandra(primaryKey));

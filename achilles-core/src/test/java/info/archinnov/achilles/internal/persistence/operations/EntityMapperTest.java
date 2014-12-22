@@ -90,7 +90,7 @@ public class EntityMapperTest {
     @Test
     public void should_set_non_counter_properties_to_entity() throws Exception {
 
-        when(pm.structure().isEmbeddedId()).thenReturn(false);
+        when(pm.structure().isCompoundPK()).thenReturn(false);
         when(pm.getPropertyName()).thenReturn("name");
         when(entityMeta.getAllMetasExceptCounters()).thenReturn(asList(pm));
 
@@ -122,7 +122,7 @@ public class EntityMapperTest {
 
     @Test
     public void should_set_null_to_entity_when_no_value_from_row() throws Exception {
-        when(pm.structure().isEmbeddedId()).thenReturn(false);
+        when(pm.structure().isCompoundPK()).thenReturn(false);
         when(pm.getPropertyName()).thenReturn("name");
 
         when(row.isNull("name")).thenReturn(true);
@@ -146,7 +146,7 @@ public class EntityMapperTest {
         CompoundPK compoundPK = new CompoundPK();
         PropertyMetaRowExtractor rowExtractor = mock(PropertyMetaRowExtractor.class);
         when(pm.forRowExtraction()).thenReturn(rowExtractor);
-        when(pm.structure().isEmbeddedId()).thenReturn(true);
+        when(pm.structure().isCompoundPK()).thenReturn(true);
         when(rowExtractor.extractCompoundPrimaryKeyFromRow(row, entityMeta, MANAGED)).thenReturn(compoundPK);
 
         //When
@@ -162,7 +162,7 @@ public class EntityMapperTest {
         PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta valueMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
-        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isCompoundPK()).thenReturn(false);
 
         Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta, "value", valueMeta);
 
@@ -191,7 +191,7 @@ public class EntityMapperTest {
         CompoundPK compoundPK = new CompoundPK();
         PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
-        when(idMeta.structure().isEmbeddedId()).thenReturn(true);
+        when(idMeta.structure().isCompoundPK()).thenReturn(true);
 
         Map<String, PropertyMeta> propertiesMap = new HashMap<>();
 

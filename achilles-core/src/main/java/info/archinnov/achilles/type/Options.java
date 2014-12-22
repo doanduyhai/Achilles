@@ -70,6 +70,18 @@ public class Options {
         return timestamp;
     }
 
+    public boolean hasConsistencyLevel() {
+        return consistency.isPresent();
+    }
+
+    public boolean hasTTL() {
+        return ttl.isPresent();
+    }
+
+    public boolean hasTimestamp() {
+        return timestamp.isPresent();
+    }
+
     public boolean isIfNotExists() {
         return lwtPredicates.size() == 1 && lwtPredicates.get(0).type() == LWTPredicate.LWTType.IF_NOT_EXISTS;
     }

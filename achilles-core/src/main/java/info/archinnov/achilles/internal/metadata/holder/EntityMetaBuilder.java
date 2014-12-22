@@ -91,7 +91,7 @@ public class EntityMetaBuilder {
                 EXCLUDE_COUNTER_TYPE).toList());
         meta.setAllMetasExceptCounters(allMetasExceptCounters);
 
-        boolean clusteredEntity = idMeta.structure().isEmbeddedId() && idMeta.structure().isClustered();
+        boolean clusteredEntity = idMeta.structure().isCompoundPK() && idMeta.structure().isClustered();
         meta.setClusteredEntity(clusteredEntity);
 
         boolean clusteredCounter = allMetasExceptId.size() > 0;
