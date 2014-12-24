@@ -13,11 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.internal.persistence.operations;
+package info.archinnov.achilles.query.typed;
 
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.internal.statement.StatementHelper;
+import info.archinnov.achilles.query.cql.NativeQueryValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

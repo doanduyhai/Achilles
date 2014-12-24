@@ -55,7 +55,7 @@ public class PropertyMeta {
         }
     };
 
-    public static final Function<PropertyMeta, List<String>> GET_CQL_COLUMN_NAMES_FROM_EMBEDDED_ID = new Function<PropertyMeta, List<String>>() {
+    public static final Function<PropertyMeta, List<String>> GET_CQL_COLUMN_NAMES_FROM_COMPOUND_PK = new Function<PropertyMeta, List<String>>() {
         @Override
         public List<String> apply(PropertyMeta compoundPKMeta) {
             return compoundPKMeta.getCompoundPKProperties().getCQLComponentNames();

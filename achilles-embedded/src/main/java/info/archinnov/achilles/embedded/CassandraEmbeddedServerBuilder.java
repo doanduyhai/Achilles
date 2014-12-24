@@ -21,13 +21,10 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTI
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.datastax.driver.core.Cluster;
+import info.archinnov.achilles.internal.validation.Validator;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import com.datastax.driver.core.Session;
@@ -57,6 +54,7 @@ import info.archinnov.achilles.type.TypedMap;
  *   .withStoragePort(7990)
  *   .withStorageSSLPort(7999)
  *   .withDurableWrite(true)
+ *   .withScript("init_script.cql")
  *   .buildPersistenceManager();
  *
  * </code></pre>
@@ -98,6 +96,8 @@ public class CassandraEmbeddedServerBuilder {
     private boolean buildNativeSessionOnly = false;
 
     private boolean buildNativeClusterOnly = false;
+
+    private List<String> scriptLocations = new ArrayList<>();
 
     private Map<ConfigurationParameters, Object> achillesConfigParams = new HashMap<>();
 
@@ -248,6 +248,9 @@ public class CassandraEmbeddedServerBuilder {
      * Specify the keyspace name for the embedded Cassandra server. Default
      * value is 'achilles_embedded'
      *
+     * <br/>
+     * <strong>If the keyspace does not exist, it will be created by Achilles</strong>
+     *
      * @param keyspaceName
      *            keyspace name
      *
@@ -346,6 +349,32 @@ public class CassandraEmbeddedServerBuilder {
     }
 
     /**
+     * Load an CQL script in the class path and execute it upon initialization
+     * of the embedded Cassandra server
+     *
+     * <br/>
+     *
+     * Call this method as many times as there are CQL scripts to be executed.
+     * <br/>
+     * Example:
+     * <br/>
+     *  <pre class="code"><code class="java">
+     *      CassandraEmbeddedServerBuilder
+     *          .withScript("script1.cql")
+     *          .withScript("script2.cql")
+     *          ...
+     *  </code></pre>
+     *
+     * @param scriptLocation location of the CQL script in the <strong>class path</strong>
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withScript(String scriptLocation) {
+        Validator.validateNotBlank(scriptLocation,"The script location should not be blank while executing CassandraEmbeddedServerBuilder.withScript()");
+        scriptLocations.add(scriptLocation.trim());
+        return this;
+    }
+
+    /**
      * Build CQL Persistence Manager Factory
      *
      * @return PersistenceManagerFactory
@@ -398,7 +427,6 @@ public class CassandraEmbeddedServerBuilder {
         return embeddedServer.getNativeCluster();
     }
 
-
     private ConfigMap buildAchillesConfigMap() {
         ConfigMap config = new ConfigMap();
         if (StringUtils.isNotBlank(entityPackages))
@@ -408,6 +436,8 @@ public class CassandraEmbeddedServerBuilder {
         }
         if (StringUtils.isNotBlank(keyspaceName)) {
             config.put(KEYSPACE_NAME, keyspaceName);
+        } else {
+            config.put(KEYSPACE_NAME, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);
         }
 
         config.putAll(achillesConfigParams);
@@ -451,6 +481,8 @@ public class CassandraEmbeddedServerBuilder {
         config.put(BUILD_NATIVE_SESSION_ONLY, buildNativeSessionOnly);
 
         config.put(BUILD_NATIVE_CLUSTER_ONLY, buildNativeClusterOnly);
+
+        config.put(SCRIPT_LOCATIONS, scriptLocations);
 
         TypedMap parameters = CassandraEmbeddedConfigParameters.mergeWithDefaultParameters(config);
         return parameters;

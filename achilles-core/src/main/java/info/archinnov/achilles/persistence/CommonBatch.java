@@ -30,7 +30,7 @@ import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper
 import info.archinnov.achilles.internal.utils.UUIDGen;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.listener.LWTResultListener;
-import info.archinnov.achilles.internal.persistence.operations.NativeQueryValidator;
+import info.archinnov.achilles.query.cql.NativeQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 import org.slf4j.Logger;

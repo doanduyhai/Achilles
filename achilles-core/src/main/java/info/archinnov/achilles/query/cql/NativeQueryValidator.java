@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package info.archinnov.achilles.internal.persistence.operations;
+package info.archinnov.achilles.query.cql;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.RegularStatement;
@@ -122,6 +122,12 @@ public class NativeQueryValidator {
 
     public boolean isSimpleStatement(RegularStatement regularStatement) {
         return regularStatement instanceof SimpleStatement;
+    }
+
+    public boolean isDMLStatement(RegularStatement regularStatement) {
+        return isSelectStatement(regularStatement)
+                || isUpsertStatement(regularStatement)
+                || isDeleteStatement(regularStatement);
     }
 
     public static enum Singleton {

@@ -20,6 +20,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static java.lang.String.format;
 import static org.mockito.Mockito.when;
 
+import info.archinnov.achilles.query.typed.TypedQueryValidator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

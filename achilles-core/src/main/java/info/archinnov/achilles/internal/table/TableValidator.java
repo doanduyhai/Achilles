@@ -49,7 +49,7 @@ public class TableValidator {
         // Primary key Validation
         PropertyMeta idMeta = entityMeta.getIdMeta();
         final PropertyMetaTableValidator primaryKeyValidator = idMeta.forTableValidation();
-        if (entityMeta.structure().isEmbeddedId()) {
+        if (entityMeta.structure().isCompoundPK()) {
             primaryKeyValidator.validatePrimaryKeyComponents(tableMetadata, true);
             primaryKeyValidator.validatePrimaryKeyComponents(tableMetadata, false);
         } else {

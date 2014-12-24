@@ -13,33 +13,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package info.archinnov.achilles.test.parser.entity;
 
-import java.util.List;
-
-import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.PartitionKey;
 
-public class EmbeddedKeyIncorrectType {
-	@PartitionKey
-	private List<String> name;
+public class CompoundPKChild2 extends CompoundPKParent {
 
-    @ClusteringColumn
-	private int rank;
+    @PartitionKey(2)
+    @Column(name = "partition_key2")
+    protected Long partitionKey2;
 
-	public List<String> getName() {
-		return name;
-	}
+    public Long getPartitionKey2() {
+        return partitionKey2;
+    }
 
-	public void setName(List<String> name) {
-		this.name = name;
-	}
-
-	public int getRank() {
-		return rank;
-	}
-
-	public void setRank(int rank) {
-		this.rank = rank;
-	}
+    public void setPartitionKey2(Long partitionKey2) {
+        this.partitionKey2 = partitionKey2;
+    }
 }

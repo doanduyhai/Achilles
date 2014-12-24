@@ -13,31 +13,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.Column;
 
-public class EmbeddedKeyAsCompoundPartitionKey {
+public class CompoundPKChild1 extends CompoundPKParent {
 
-	@PartitionKey(1)
-	private Long id;
+    @ClusteringColumn
+    @Column(name = "clustering_key")
+    protected Long clustering;
 
-	@PartitionKey(2)
-	private String type;
+    public Long getClustering() {
+        return clustering;
+    }
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
+    public void setClustering(Long clustering) {
+        this.clustering = clustering;
+    }
 }

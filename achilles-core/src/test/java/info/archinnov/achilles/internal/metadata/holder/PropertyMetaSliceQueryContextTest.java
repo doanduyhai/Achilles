@@ -37,7 +37,7 @@ public class PropertyMetaSliceQueryContextTest {
         PropertyMetaSliceQueryContext view = new PropertyMetaSliceQueryContext(meta);
 
         //When
-        final Object actual = view.instantiateEmbeddedIdWithPartitionComponents(components);
+        final Object actual = view.instantiateCompoundPKWithPartitionComponents(components);
 
         //Then
         assertThat(actual).isSameAs(pk);

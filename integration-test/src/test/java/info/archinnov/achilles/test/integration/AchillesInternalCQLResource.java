@@ -20,9 +20,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTI
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 
 import info.archinnov.achilles.persistence.AsyncManager;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +32,8 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.TypedMap;
+
+import java.util.ArrayList;
 
 public class AchillesInternalCQLResource extends AchillesTestResource {
 
@@ -174,6 +174,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
     private TypedMap buildConfigMap() {
         setCleanDataFiles();
         final TypedMap config = new TypedMap();
+        config.put(SCRIPT_LOCATIONS, new ArrayList<String>());
         config.put(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles);
         config.put(KEYSPACE_DURABLE_WRITE, false);
         return config;
