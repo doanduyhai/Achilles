@@ -26,12 +26,16 @@ import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,7 +89,7 @@ public class PersistenceManagerFacadeTest {
     @Mock
     private EntityUpdater updater;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityProxifier proxifier;
 
     @Mock
@@ -192,7 +196,7 @@ public class PersistenceManagerFacadeTest {
         when(asyncUtils.buildInterruptible(immediateValueCaptor.capture())).thenReturn(achillesFutureEntity);
 
         //When
-        final AchillesFuture<CompleteBean> actual = facade.batchPersist(entity);
+        final AchillesFuture<CompleteBean> actual = facade.batchInsert(entity);
 
         //Then
         assertThat(actual).isSameAs(achillesFutureEntity);
@@ -212,6 +216,8 @@ public class PersistenceManagerFacadeTest {
         //Given
         when(asyncUtils.transformFuture(eq(futureResultSets), resultSetsToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
+        Map<Method, DirtyChecker> dirtyMap = mock(Map.class);
+        when(proxifier.getInterceptor(entity).getDirtyMap()).thenReturn(dirtyMap);
 
         //When
         final AchillesFuture<CompleteBean> actual = facade.update(entity);
@@ -220,13 +226,14 @@ public class PersistenceManagerFacadeTest {
         assertThat(actual).isSameAs(achillesFutureEntity);
         assertThat(resultSetsToEntityCaptor.getValue().apply(null)).isSameAs(entity);
 
-        InOrder inOrder = inOrder(flushContext, updater, asyncUtils);
+        InOrder inOrder = inOrder(flushContext, updater, dirtyMap, asyncUtils);
 
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_UPDATE);
         inOrder.verify(updater).update(context.entityFacade, entity);
         inOrder.verify(flushContext).flush();
         inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options);
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_UPDATE);
+        inOrder.verify(dirtyMap).clear();
     }
 
     @Test

@@ -25,12 +25,11 @@ import static info.archinnov.achilles.interceptor.Event.PRE_DELETE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static info.archinnov.achilles.type.Options.LWTCondition;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
+import info.archinnov.achilles.internal.proxy.AchillesProxyInterceptor;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.Empty;
 import org.slf4j.Logger;
@@ -304,7 +303,7 @@ public class PersistenceContext {
             return asyncUtils.buildInterruptible(proxyCreated);
         }
 
-        public <T> AchillesFuture<T> batchPersist(final T rawEntity) {
+        public <T> AchillesFuture<T> batchInsert(final T rawEntity) {
             flushContext.triggerInterceptor(entityMeta, rawEntity, PRE_INSERT);
             persister.persist(entityFacade);
             flush();
@@ -321,6 +320,7 @@ public class PersistenceContext {
                 @Override
                 public T apply(List<ResultSet> input) {
                     flushContext.triggerInterceptor(entityMeta, proxy, POST_UPDATE);
+                    proxifier.getInterceptor(proxy).getDirtyMap().clear();
                     return proxy;
                 }
             };
