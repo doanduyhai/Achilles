@@ -46,7 +46,7 @@ public class EntityUpdater {
     private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
 
     public void update(EntityOperations context, Object entity) {
-        log.debug("Merging entity of class {} with primary key {}", context.getEntityClass().getCanonicalName(),
+        log.debug("Updating entity of class {} with primary key {}", context.getEntityClass().getCanonicalName(),
                 context.getPrimaryKey());
 
         EntityMeta entityMeta = context.getEntityMeta();
@@ -54,7 +54,7 @@ public class EntityUpdater {
         Validator.validateNotNull(entity, "Proxy object should not be null for update");
         Validator.validateNotNull(entityMeta, "entityMeta should not be null for update");
 
-        log.debug("Checking for dirty fields before merging");
+        log.debug("Checking for dirty fields before updating");
 
         Object realObject = proxifier.getRealObject(entity);
         context.setEntity(realObject);
@@ -66,7 +66,7 @@ public class EntityUpdater {
         if (dirtyCheckers.size() > 0) {
             pushDirtySimpleFields(context, dirtyCheckers);
             pushCollectionAndMapUpdates(context, dirtyCheckers);
-            dirtyMap.clear();
+//            dirtyMap.clear();
         }
 
         if (context.isClusteredCounter()) {

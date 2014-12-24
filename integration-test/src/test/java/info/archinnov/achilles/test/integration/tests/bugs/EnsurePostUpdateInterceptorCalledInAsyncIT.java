@@ -4,8 +4,15 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.EVEN
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
-import java.util.List;
+
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
+import info.archinnov.achilles.persistence.PersistenceManager;
 import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -21,6 +28,8 @@ import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 
 public class EnsurePostUpdateInterceptorCalledInAsyncIT {
+
+    private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
 
     @Test
     public void should_call_interceptor_after_async_update() throws Exception {
@@ -61,21 +70,22 @@ public class EnsurePostUpdateInterceptorCalledInAsyncIT {
                 .withAchillesConfigParams(ImmutableMap.of(EVENT_INTERCEPTORS, asList(storeEntity), FORCE_TABLE_CREATION, true))
                 .buildPersistenceManagerFactory();
 
-        AsyncManager manager = pmf.createAsyncManager();
+        PersistenceManager manager = pmf.createPersistenceManager();
 
         CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-        EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
-
-        AchillesFuture<CompleteBean> insert = manager.insert(bean);
-        insert.get();
+        manager.insert(bean);
 
         // When
-        final CompleteBean found = manager.forUpdate(CompleteBean.class, bean.getId());
-        manager.update(found);
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, bean.getId());
+        proxy.setName("another name");
+        proxy.setAge(33L);
+        proxy.setLabel("label");
+        manager.update(proxy);
 
         // Then
-        Thread.sleep(5000);
-        assertThat(proxifier.isProxy(storeEntity.getEntity())).isTrue();
+        final Set<String> dirtyFields = storeEntity.getDirtyFields();
+        assertThat(dirtyFields).containsOnly("name", "age", "label");
+        assertThat(proxifier.getInterceptor(proxy).getDirtyMap()).isEmpty();
     }
 
     private class UpdateAtomicBoolean implements Interceptor<CompleteBean> {
@@ -99,11 +109,17 @@ public class EnsurePostUpdateInterceptorCalledInAsyncIT {
 
     private class StoreEntity implements AchillesInternalInterceptor<CompleteBean> {
 
-        private CompleteBean entity;
+        private Set<String> dirtyFields = new HashSet<>();
 
         @Override
         public void onEvent(CompleteBean entity) {
-            this.entity = entity;
+            final Map<Method, DirtyChecker> dirtyMap = proxifier.getInterceptor(entity).getDirtyMap();
+            this.dirtyFields.addAll(FluentIterable.from(dirtyMap.values()).transform(new Function<DirtyChecker, String>() {
+                @Override
+                public String apply(DirtyChecker dirtyChecker) {
+                    return dirtyChecker.getPropertyMeta().getPropertyName();
+                }
+            }).toList());
         }
 
         @Override
@@ -111,8 +127,8 @@ public class EnsurePostUpdateInterceptorCalledInAsyncIT {
             return ImmutableList.of(Event.POST_UPDATE);
         }
 
-        private CompleteBean getEntity() {
-            return entity;
+        public Set<String> getDirtyFields() {
+            return dirtyFields;
         }
     }
 
