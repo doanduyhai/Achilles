@@ -21,14 +21,12 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 import info.archinnov.achilles.internal.metadata.holder.CompoundPKProperties;
+import info.archinnov.achilles.internal.metadata.holder.CompoundPKPropertiesBuilder;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.PartitionKey;
-import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdPropertiesBuilder;
 import info.archinnov.achilles.internal.validation.Validator;
 
 public class CompoundPKParser {
@@ -57,17 +55,17 @@ public class CompoundPKParser {
     private CompoundPKProperties buildComponentMetas(PropertyParser propertyParser, Class<?> compoundPKClass, Map<Integer, Field> components, List<ClusteringOrder> clusteringOrders) {
 
         log.debug("Build components meta data for compound primary key class {}", compoundPKClass.getCanonicalName());
-        EmbeddedIdPropertiesBuilder partitionKeysBuilder = new EmbeddedIdPropertiesBuilder();
-        EmbeddedIdPropertiesBuilder clusteringKeysBuilder = new EmbeddedIdPropertiesBuilder();
+        CompoundPKPropertiesBuilder partitionKeysBuilder = new CompoundPKPropertiesBuilder();
+        CompoundPKPropertiesBuilder clusteringKeysBuilder = new CompoundPKPropertiesBuilder();
         clusteringKeysBuilder.setClusteringOrders(clusteringOrders);
 
         buildPartitionAndClusteringKeys(propertyParser, compoundPKClass, components,partitionKeysBuilder, clusteringKeysBuilder);
 
-        return EmbeddedIdPropertiesBuilder.buildEmbeddedIdProperties(partitionKeysBuilder.buildPartitionKeys(), clusteringKeysBuilder.buildClusteringKeys(), context.getCurrentEntityClass().getCanonicalName());
+        return CompoundPKPropertiesBuilder.buildCompoundPKProperties(partitionKeysBuilder.buildPartitionKeys(), clusteringKeysBuilder.buildClusteringKeys(), context.getCurrentEntityClass().getCanonicalName());
     }
 
     private void buildPartitionAndClusteringKeys(PropertyParser propertyParser, Class<?> compoundPKClass, Map<Integer, Field> components,
-            EmbeddedIdPropertiesBuilder partitionKeysBuilder,EmbeddedIdPropertiesBuilder clusteringKeysBuilder) {
+            CompoundPKPropertiesBuilder partitionKeysBuilder,CompoundPKPropertiesBuilder clusteringKeysBuilder) {
         log.debug("Build components meta data for compound primary key class {}", compoundPKClass.getCanonicalName());
 
         for (Integer order : components.keySet()) {

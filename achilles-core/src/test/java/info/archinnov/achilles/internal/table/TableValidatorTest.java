@@ -101,7 +101,7 @@ public class TableValidatorTest {
         PropertyMeta nameMeta = completeBean(Void.class, String.class).cqlColumnName("name").type(SIMPLE).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
-        when(meta.structure().isEmbeddedId()).thenReturn(false);
+        when(meta.structure().isCompoundPK()).thenReturn(false);
         when(meta.getAllMetasExceptIdAndCounters()).thenReturn(asList(nameMeta));
         when(meta.structure().isClusteredCounter()).thenReturn(false);
 
@@ -128,7 +128,7 @@ public class TableValidatorTest {
         PropertyMeta stringMeta = valueClass(String.class).propertyName("string").cqlColumnName("string").type(SIMPLE).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(meta.getAllMetasExceptIdAndCounters()).thenReturn(asList(stringMeta));
         when(meta.structure().isClusteredCounter()).thenReturn(false);
 
@@ -154,7 +154,7 @@ public class TableValidatorTest {
                 .build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
-        when(meta.structure().isEmbeddedId()).thenReturn(false);
+        when(meta.structure().isCompoundPK()).thenReturn(false);
         when(meta.getAllMetasExceptIdAndCounters()).thenReturn(asList(simpleMeta));
         when(meta.structure().isClusteredCounter()).thenReturn(false);
 
@@ -176,7 +176,7 @@ public class TableValidatorTest {
         PropertyMeta mapMeta = completeBean(Integer.class, String.class).cqlColumnName("preferences").type(MAP).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
-        when(meta.structure().isEmbeddedId()).thenReturn(false);
+        when(meta.structure().isCompoundPK()).thenReturn(false);
         when(meta.getAllMetasExceptIdAndCounters()).thenReturn(asList(listMeta, setMeta, mapMeta));
         when(meta.structure().isClusteredCounter()).thenReturn(false);
 
@@ -212,7 +212,7 @@ public class TableValidatorTest {
                 .type(COUNTER).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
-        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.structure().isCompoundPK()).thenReturn(true);
         when(meta.getAllMetasExceptIdAndCounters()).thenReturn(new ArrayList<PropertyMeta>());
         when(meta.getAllCounterMetas()).thenReturn(asList(counter));
         when(meta.structure().isClusteredCounter()).thenReturn(true);

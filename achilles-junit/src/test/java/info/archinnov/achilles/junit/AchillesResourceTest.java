@@ -16,12 +16,16 @@
 package info.archinnov.achilles.junit;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SCRIPT_LOCATIONS;
 import static info.archinnov.achilles.internal.utils.ConfigMap.fromMap;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
+import info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters;
 import info.archinnov.achilles.internal.utils.ConfigMap;
+import info.archinnov.achilles.script.ScriptExecutor;
+import info.archinnov.achilles.type.TypedMap;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,18 +35,25 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.test.integration.entity.User;
+import sun.font.Script;
+
+import java.util.ArrayList;
 
 public class AchillesResourceTest {
 
     private static final String CUSTOM_KEYSPACE_NAME = "my_keyspace";
 
+    private TypedMap parameters = TypedMap.fromMap(ImmutableMap.<String, Object>of(SCRIPT_LOCATIONS, new ArrayList<String>()));
+
     @Rule
-    public AchillesResource resource = new AchillesResource(fromMap(ImmutableMap.<ConfigurationParameters, Object>of(KEYSPACE_NAME, CUSTOM_KEYSPACE_NAME, ENTITY_PACKAGES, "info.archinnov.achilles.test.integration.entity")),
+    public AchillesResource resource = new AchillesResource(parameters, fromMap(ImmutableMap.<ConfigurationParameters, Object>of(KEYSPACE_NAME, CUSTOM_KEYSPACE_NAME, ENTITY_PACKAGES, "info.archinnov.achilles.test.integration.entity")),
             Steps.AFTER_TEST, "User");
 
     private PersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
     private PersistenceManager manager = resource.getPersistenceManager();
     private Session session = resource.getNativeSession();
+    private ScriptExecutor scriptExecutor = resource.getScriptExecutor();
+
 
     @Test
     public void should_bootstrap_embedded_server_and_entity_manager() throws Exception {
@@ -60,10 +71,23 @@ public class AchillesResourceTest {
 
     @Test
     public void should_create_resources_once() throws Exception {
-        AchillesResource resource = new AchillesResource(fromMap(ImmutableMap.<ConfigurationParameters, Object>of(KEYSPACE_NAME, CUSTOM_KEYSPACE_NAME, ENTITY_PACKAGES, "info.archinnov.achilles.junit.test.entity")));
+        AchillesResource resource = new AchillesResource(new TypedMap(), fromMap(ImmutableMap.<ConfigurationParameters, Object>of(KEYSPACE_NAME, CUSTOM_KEYSPACE_NAME, ENTITY_PACKAGES, "info.archinnov.achilles.junit.test.entity")));
 
         assertThat(resource.getPersistenceManagerFactory()).isSameAs(pmf);
         assertThat(resource.getPersistenceManager()).isSameAs(manager);
         assertThat(resource.getNativeSession()).isSameAs(session);
+    }
+
+    @Test
+    public void should_execute_script_using_the_executor() throws Exception {
+        //Given
+        scriptExecutor.executeScript("script_on_the_fly.cql");
+
+        //When
+        final Row row = session.execute("SELECT * FROM user WHERE id=123").one();
+
+        //Then
+        assertThat(row.getString("firstname")).isEqualTo("Albert");
+        assertThat(row.getString("lastname")).isEqualTo("EINSTEIN");
     }
 }

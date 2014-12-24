@@ -21,7 +21,7 @@ import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrd
 import java.util.ArrayList;
 import java.util.List;
 
-public class EmbeddedIdPropertiesBuilder {
+public class CompoundPKPropertiesBuilder {
 
 	private final List<PropertyMeta> propertyMetas = new ArrayList<>();
 	private List<ClusteringOrder> clusteringOrders;
@@ -46,7 +46,7 @@ public class EmbeddedIdPropertiesBuilder {
 		return new ClusteringComponents(propertyMetas, clusteringOrders);
 	}
 
-    public static CompoundPKProperties buildEmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents, String entityName) {
+    public static CompoundPKProperties buildCompoundPKProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents, String entityName) {
         final List<PropertyMeta> propertyMetas = new ArrayList<>(partitionComponents.propertyMetas);
         propertyMetas.addAll(clusteringComponents.propertyMetas);
         return new CompoundPKProperties(partitionComponents, clusteringComponents, propertyMetas, entityName);

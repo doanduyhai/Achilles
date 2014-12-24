@@ -17,12 +17,15 @@
 package info.archinnov.achilles.junit;
 
 import info.archinnov.achilles.configuration.ConfigurationParameters;
+import info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.NamingStrategy;
+import info.archinnov.achilles.type.TypedMap;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +37,15 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.EVEN
 import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SCRIPT_LOCATIONS;
 
 public class AchillesResourceBuilder {
 
 	private Steps cleanupSteps = Steps.BOTH;
 	private String[] tablesToCleanUp;
     private ConfigMap configMap = new ConfigMap();
+    private TypedMap cassandraParams = new TypedMap();
+    private List<String> scriptLocations = new ArrayList<>();
 
 	private AchillesResourceBuilder() {
 	}
@@ -85,17 +91,17 @@ public class AchillesResourceBuilder {
 	/**
 	 * Start building an AchillesResource with no entity packages and default 'achilles_test' keyspace
 	 */
-	public static AchillesResource noEntityPackages() {
-		return new AchillesResource(new ConfigMap(),(String[])null);
+	public static AchillesResourceBuilder noEntityPackages() {
+		return new AchillesResourceBuilder();
 	}
 
     /**
 	 * Start building an AchillesResource with no entity packages and the provided keyspace name
 	 */
-	public static AchillesResource noEntityPackages(String keyspaceName) {
-        final ConfigMap configMap = new ConfigMap();
-        configMap.put(KEYSPACE_NAME, keyspaceName);
-        return new AchillesResource(configMap,(String[])null);
+	public static AchillesResourceBuilder noEntityPackages(String keyspaceName) {
+        final AchillesResourceBuilder builder = new AchillesResourceBuilder();
+        builder.configMap.put(KEYSPACE_NAME, keyspaceName);
+        return builder;
 	}
 
     /**
@@ -105,6 +111,31 @@ public class AchillesResourceBuilder {
      */
     public AchillesResourceBuilder withKeyspaceName(String keyspaceName) {
         configMap.put(KEYSPACE_NAME, keyspaceName);
+        return this;
+    }
+
+    /**
+     /**
+     * Load an CQL script in the class path and execute it upon initialization
+     * of the embedded Cassandra server
+     *
+     * <br/>
+     *
+     * Call this method as many times as there are CQL scripts to be executed.
+     * <br/>
+     * Example:
+     * <br/>
+     *  <pre class="code"><code class="java">
+     *      AchillesResourceBuilder
+     *          .withScript("script1.cql")
+     *          .withScript("script2.cql")
+     *          ...
+     *  </code></pre>
+     *
+     * @param scriptLocation location of the CQL script in the <strong>class path</strong>
+     */
+    public AchillesResourceBuilder withScript(String scriptLocation) {
+        scriptLocations.add(scriptLocation);
         return this;
     }
 
@@ -175,6 +206,12 @@ public class AchillesResourceBuilder {
 	}
 
 	public AchillesResource build() {
-		return new AchillesResource(configMap, cleanupSteps, tablesToCleanUp);
+        final TypedMap cassandraParams = buildCassandraParams();
+        return new AchillesResource(cassandraParams, configMap, cleanupSteps, tablesToCleanUp);
 	}
+
+    private TypedMap buildCassandraParams() {
+        cassandraParams.put(SCRIPT_LOCATIONS, scriptLocations);
+        return cassandraParams;
+    }
 }

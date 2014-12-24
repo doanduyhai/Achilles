@@ -21,6 +21,8 @@ import static info.archinnov.achilles.listener.LWTResultListener.LWTResult;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.INSERT;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.UPDATE;
+import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DML_STATEMENT;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import info.archinnov.achilles.exception.AchillesLightWeightTransactionException
 import java.util.concurrent.ExecutorService;
 
 import info.archinnov.achilles.listener.LWTResultListener;
+import info.archinnov.achilles.logger.AchillesLoggers;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +57,7 @@ import info.archinnov.achilles.type.TypedMap;
 
 public abstract class AbstractStatementWrapper {
     public static final EventComparator EVENT_TRACE_COMPARATOR = new EventComparator();
-    public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
+
     protected static final String IF_NOT_EXIST_CLAUSE = " IF NOT EXISTS";
     protected static final String IF_CLAUSE = " IF ";
     protected static final String LWT_RESULT_COLUMN = "[applied]";

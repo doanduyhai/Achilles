@@ -32,8 +32,8 @@ import info.archinnov.achilles.type.Pair;
 public class PropertyMetaTestBuilder<T, K, V> {
     private EntityIntrospector achillesEntityIntrospector = new EntityIntrospector();
 
-    private EmbeddedIdPropertiesBuilder partitionBuilder = new EmbeddedIdPropertiesBuilder();
-    private EmbeddedIdPropertiesBuilder clusteringBuilder = new EmbeddedIdPropertiesBuilder();
+    private CompoundPKPropertiesBuilder partitionBuilder = new CompoundPKPropertiesBuilder();
+    private CompoundPKPropertiesBuilder clusteringBuilder = new CompoundPKPropertiesBuilder();
 
     private Class<T> clazz;
     private String propertyName;
@@ -102,7 +102,7 @@ public class PropertyMetaTestBuilder<T, K, V> {
         }
 
         if (!partitionBuilder.getPropertyMetas().isEmpty()) {
-            pm.setCompoundPKProperties(EmbeddedIdPropertiesBuilder.buildEmbeddedIdProperties(partitionBuilder.buildPartitionKeys(), clusteringBuilder.buildClusteringKeys(), entityClassName));
+            pm.setCompoundPKProperties(CompoundPKPropertiesBuilder.buildCompoundPKProperties(partitionBuilder.buildPartitionKeys(), clusteringBuilder.buildClusteringKeys(), entityClassName));
         }
 
         if (counterIdMeta != null || fqcn != null) {

@@ -15,19 +15,15 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import java.lang.annotation.ElementType;
-
-import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.PartitionKey;
 
-public class EmbeddedKeyWithEnum {
+public class CompoundPKAsCompoundPartitionKey {
 
-	@PartitionKey
+	@PartitionKey(1)
 	private Long id;
 
-    @ClusteringColumn
-
-	private ElementType type;
+	@PartitionKey(2)
+	private String type;
 
 	public Long getId() {
 		return id;
@@ -37,11 +33,11 @@ public class EmbeddedKeyWithEnum {
 		this.id = id;
 	}
 
-	public ElementType getType() {
+	public String getType() {
 		return type;
 	}
 
-	public void setType(ElementType type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 }

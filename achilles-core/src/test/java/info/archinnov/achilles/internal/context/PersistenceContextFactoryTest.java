@@ -30,7 +30,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
@@ -131,7 +130,7 @@ public class PersistenceContextFactoryTest {
     public void should_create_new_context_for_slice_query() throws Exception {
         Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         List<Object> partitionComponents = Arrays.<Object>asList(primaryKey);
-        when(idMeta.forSliceQueryContext().instantiateEmbeddedIdWithPartitionComponents(partitionComponents)).thenReturn(primaryKey);
+        when(idMeta.forSliceQueryContext().instantiateCompoundPKWithPartitionComponents(partitionComponents)).thenReturn(primaryKey);
 
         PersistenceContext actual = pmf.newContextForSliceQuery(CompleteBean.class, partitionComponents, EACH_QUORUM);
 

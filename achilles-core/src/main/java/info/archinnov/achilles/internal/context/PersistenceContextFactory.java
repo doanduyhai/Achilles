@@ -17,7 +17,6 @@ package info.archinnov.achilles.internal.context;
 
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
@@ -91,7 +90,7 @@ public class PersistenceContextFactory {
 				"Build new PersistenceContext for slice query on entity class '{}' with partition key components '{}' and Consistency Level '{}'",
 				entityClass, partitionComponents, cl);
 		EntityMeta meta = entityMetaMap.get(entityClass);
-        Object compoundPK = meta.getIdMeta().forSliceQueryContext().instantiateEmbeddedIdWithPartitionComponents(partitionComponents);
+        Object compoundPK = meta.getIdMeta().forSliceQueryContext().instantiateCompoundPKWithPartitionComponents(partitionComponents);
 
 		ImmediateFlushContext flushContext = buildImmediateFlushContext(OptionsBuilder.withConsistency(cl));
 

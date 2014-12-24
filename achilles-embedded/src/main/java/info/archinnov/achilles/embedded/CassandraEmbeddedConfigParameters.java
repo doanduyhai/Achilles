@@ -64,7 +64,7 @@ public class CassandraEmbeddedConfigParameters {
 
     public static final String BUILD_NATIVE_CLUSTER_ONLY = "buildNativeClusterOnly";
 
-    public static final String KEYSPACE_NAME = "keyspaceName";
+    public static final String SCRIPT_LOCATIONS = "scriptLocations";
 
     /*
      * Default values
@@ -105,7 +105,6 @@ public class CassandraEmbeddedConfigParameters {
         defaultParams.put(SAVED_CACHES_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
         defaultParams.put(CONFIG_YAML_FILE, DEFAULT_ACHILLES_TEST_CONFIG_YAML_FILE);
         defaultParams.put(CLUSTER_NAME, DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME);
-        defaultParams.put(KEYSPACE_NAME, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);
         defaultParams.put(KEYSPACE_DURABLE_WRITE, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE);
         defaultParams.put(COMPRESSION_TYPE, Compression.NONE);
         defaultParams.put(LOAD_BALANCING_POLICY, Policies.defaultLoadBalancingPolicy());

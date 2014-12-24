@@ -13,23 +13,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package info.archinnov.achilles.test.parser.entity;
 
+import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.PartitionKey;
 
-public class EmbeddedKeyParent {
+public class CompoundPKWithStaticColumn {
+	@PartitionKey
+	private String name;
 
-    @PartitionKey
-    @Column(name = "partition_key")
-    protected String partitionKey;
+    @ClusteringColumn
+    @Column(name = "rank", staticColumn = true)
+	private int rank;
 
-    public String getPartitionKey() {
-        return partitionKey;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setPartitionKey(String partitionKey) {
-        this.partitionKey = partitionKey;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getRank() {
+		return rank;
+	}
+
+	public void setRank(int rank) {
+		this.rank = rank;
+	}
+
 }

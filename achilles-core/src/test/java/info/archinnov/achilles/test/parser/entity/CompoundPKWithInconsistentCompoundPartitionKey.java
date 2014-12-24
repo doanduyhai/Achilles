@@ -13,23 +13,45 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.ClusteringColumn;
-import info.archinnov.achilles.annotations.Column;
+import java.util.UUID;
 
-public class EmbeddedKeyChild1 extends EmbeddedKeyParent {
+import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.PartitionKey;
+
+public class CompoundPKWithInconsistentCompoundPartitionKey {
+
+	@PartitionKey(1)
+	private Long id;
 
     @ClusteringColumn
-    @Column(name = "clustering_key")
-    protected Long clustering;
+	private String type;
 
-    public Long getClustering() {
-        return clustering;
-    }
+	@PartitionKey(3)
+	private UUID date;
 
-    public void setClustering(Long clustering) {
-        this.clustering = clustering;
-    }
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public UUID getDate() {
+		return date;
+	}
+
+	public void setDate(UUID date) {
+		this.date = date;
+	}
 }

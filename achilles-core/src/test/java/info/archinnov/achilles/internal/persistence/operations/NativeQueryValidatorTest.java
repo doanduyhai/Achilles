@@ -20,12 +20,11 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.querybuilder.*;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.internal.persistence.operations.NativeQueryValidator;
+import info.archinnov.achilles.query.cql.NativeQueryValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
