@@ -19,7 +19,7 @@
     <parent>
         <groupId>info.archinnov</groupId>
         <artifactId>achilles</artifactId>
-        <version>3.1.3-SNAPSHOT</version>
+        <version>3.1.3</version>
     </parent>
     <artifactId>achilles-junit</artifactId>
     <name>Achilles JUnit</name>
