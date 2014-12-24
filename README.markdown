@@ -26,27 +26,7 @@
 
 ## Installation #
 
- To use **Achilles**, just add the following dependency in your **pom.xml**:
-
-```xml
-	<dependency>
-		<groupId>info.archinnov</groupId>
-		<artifactId>achilles-core</artifactId>
-		<version>3.0.15</version>
-	</dependency>
-```
-
- For unit-testing with embedded Cassandra, add this dependency with **test** scope:
-
-```xml
- 	<dependency>
- 		<groupId>info.archinnov</groupId>
- 		<artifactId>achilles-junit</artifactId>
- 		<version>3.0.15</version>
- 		<scope>test</scope>
- 	</dependency>
-```
- Below is the compatibility matrix between **Achilles**, **Java Driver** and **Cassandra** versions
+Below is the compatibility matrix between **Achilles**, **Java Driver** and **Cassandra** versions
 
 <br/>
 <table border="1">
@@ -59,18 +39,38 @@
 	</thead>
 	<tbody>
 		<tr>
-			<td>3.1.2</td>
+			<td>3.1.3</td>
 			<td>2.1.3</td>
 			<td>2.1.1</td>
 		</tr>		
 		<tr>
-			<td>3.0.15</td>
+			<td>3.0.16</td>
 			<td>2.1.3</td>
 			<td>2.0.11</td>
 		</tr>
     </tbody>
 </table>    
 
+ To use **Achilles**, just add the following dependency in your **pom.xml**:
+
+```xml
+	<dependency>
+		<groupId>info.archinnov</groupId>
+		<artifactId>achilles-core</artifactId>
+		<version>${achilles.version}</version>
+	</dependency>
+```
+
+ For unit-testing with embedded Cassandra, add this dependency with **test** scope:
+
+```xml
+ 	<dependency>
+ 		<groupId>info.archinnov</groupId>
+ 		<artifactId>achilles-junit</artifactId>
+ 		<version>${achilles.version}</version>
+ 		<scope>test</scope>
+ 	</dependency>
+```
  
  
  For now, **Achilles** depends on the following libraries:
