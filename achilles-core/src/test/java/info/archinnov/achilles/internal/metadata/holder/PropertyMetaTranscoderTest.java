@@ -1,6 +1,6 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
-import static info.archinnov.achilles.internal.metadata.holder.EmbeddedIdPropertiesBuilder.buildEmbeddedIdProperties;
+import static info.archinnov.achilles.internal.metadata.holder.CompoundPKPropertiesBuilder.buildCompoundPKProperties;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COMPOUND_PRIMARY_KEY;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.MAP;
@@ -64,7 +64,7 @@ public class PropertyMetaTranscoderTest {
 
         final PartitionComponents partitionComponents = new PartitionComponents(asList(idMeta));
         final ClusteringComponents clusteringComponents = new ClusteringComponents(asList(dateMeta), Arrays.<ClusteringOrder>asList());
-        when(meta.getCompoundPKProperties()).thenReturn(buildEmbeddedIdProperties(partitionComponents, clusteringComponents, "entity"));
+        when(meta.getCompoundPKProperties()).thenReturn(buildCompoundPKProperties(partitionComponents, clusteringComponents, "entity"));
 
         when(idMeta.forTranscoding().decodeFromCassandra(id)).thenReturn(id);
         when(dateMeta.forTranscoding().decodeFromCassandra(date)).thenReturn(date);
@@ -208,7 +208,7 @@ public class PropertyMetaTranscoderTest {
 
         final PartitionComponents partitionComponents = new PartitionComponents(asList(idMeta));
         final ClusteringComponents clusteringComponents = new ClusteringComponents(asList(dateMeta), Arrays.<ClusteringOrder>asList());
-        when(meta.getCompoundPKProperties()).thenReturn(buildEmbeddedIdProperties(partitionComponents, clusteringComponents, "entity"));
+        when(meta.getCompoundPKProperties()).thenReturn(buildCompoundPKProperties(partitionComponents, clusteringComponents, "entity"));
 
         when(idMeta.forTranscoding().getAndEncodeValueForCassandra(pk)).thenReturn(id);
         when(dateMeta.forTranscoding().getAndEncodeValueForCassandra(pk)).thenReturn(date);

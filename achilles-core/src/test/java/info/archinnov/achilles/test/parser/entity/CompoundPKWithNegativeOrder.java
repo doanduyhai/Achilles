@@ -13,20 +13,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.ClusteringColumn;
-import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.PartitionKey;
 
-public class EmbeddedKeyWithBadReversedPosition {
-
-    @ClusteringColumn(value=1, reversed=true)
+public class CompoundPKWithNegativeOrder {
+	@PartitionKey(-1)
 	private String name;
 
-    @ClusteringColumn(2)
-	@Column(name = "ranking")
+    @ClusteringColumn(0)
 	private int rank;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public int getRank() {
 		return rank;
@@ -36,11 +41,4 @@ public class EmbeddedKeyWithBadReversedPosition {
 		this.rank = rank;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 }

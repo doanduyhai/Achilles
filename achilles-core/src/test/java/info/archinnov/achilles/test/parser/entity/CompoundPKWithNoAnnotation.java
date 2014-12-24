@@ -13,25 +13,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package info.archinnov.achilles.test.parser.entity;
 
-import java.util.UUID;
+public class CompoundPKWithNoAnnotation {
+	private String name;
 
-import info.archinnov.achilles.annotations.ClusteringColumn;
-import info.archinnov.achilles.annotations.Column;
+	private int rank;
 
-public class EmbeddedKeyChild3 extends EmbeddedKeyChild2 {
+	public String getName() {
+		return name;
+	}
 
-    @ClusteringColumn
-    @Column(name = "clustering_key")
-    private UUID clustering;
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public UUID getClustering() {
-        return clustering;
-    }
+	public int getRank() {
+		return rank;
+	}
 
-    public void setClustering(UUID clustering) {
-        this.clustering = clustering;
-    }
+	public void setRank(int rank) {
+		this.rank = rank;
+	}
+
 }

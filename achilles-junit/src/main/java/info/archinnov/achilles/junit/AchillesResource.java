@@ -17,17 +17,20 @@ package info.archinnov.achilles.junit;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 
 import com.datastax.driver.core.Session;
+import info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
 import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
+import info.archinnov.achilles.script.ScriptExecutor;
 import info.archinnov.achilles.type.TypedMap;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AchillesResource extends AchillesTestResource {
 
@@ -40,14 +43,17 @@ public class AchillesResource extends AchillesTestResource {
     private Session session;
 
     private String keyspaceToUse;
+    private TypedMap cassandraParams;
 
-    AchillesResource(ConfigMap configMap, String... tables) {
+    AchillesResource(TypedMap cassandraParams, ConfigMap configMap, String... tables) {
         super(tables);
+        this.cassandraParams = cassandraParams;
         initResource(configMap);
     }
 
-    AchillesResource(ConfigMap configMap, Steps cleanUpSteps, String... tables) {
+    AchillesResource(TypedMap cassandraParams, ConfigMap configMap, Steps cleanUpSteps, String... tables) {
         super(cleanUpSteps, tables);
+        this.cassandraParams = cassandraParams;
         initResource(configMap);
     }
 
@@ -62,10 +68,9 @@ public class AchillesResource extends AchillesTestResource {
     }
 
     private TypedMap buildConfigMap() {
-        TypedMap config = new TypedMap();
-        config.put(CLEAN_CASSANDRA_DATA_FILES, true);
-        config.put(KEYSPACE_DURABLE_WRITE, false);
-        return config;
+        cassandraParams.put(CLEAN_CASSANDRA_DATA_FILES, true);
+        cassandraParams.put(KEYSPACE_DURABLE_WRITE, false);
+        return cassandraParams;
     }
 
     private void buildAchillesConfigMap(ConfigMap configMap) {
@@ -100,6 +105,15 @@ public class AchillesResource extends AchillesTestResource {
      */
     public Session getNativeSession() {
         return session;
+    }
+
+    /**
+     * Return a ScriptExecutor to execute a CQL script file located in the class path or a plain CQL statement
+     *
+     * @return ScriptExecutor
+     */
+    public ScriptExecutor getScriptExecutor() {
+        return new ScriptExecutor(session);
     }
 
     @Override

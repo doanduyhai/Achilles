@@ -263,10 +263,10 @@ public class EntityParserTest {
 
     @Test
     public void should_exception_when_entity_with_compound_pk_and_static_column_and_not_clustered() throws Exception {
-        initEntityParsingContext(BeanWithStaticColumnAndEmbeddedId.class);
+        initEntityParsingContext(BeanWithStaticColumnAndCompoundPK.class);
 
         expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("The entity class '" + BeanWithStaticColumnAndEmbeddedId.class.getCanonicalName() + "' cannot have a static column because it does not declare any clustering column");
+        expectedEx.expectMessage("The entity class '" + BeanWithStaticColumnAndCompoundPK.class.getCanonicalName() + "' cannot have a static column because it does not declare any clustering column");
         parser.parseEntity(entityContext);
     }
 

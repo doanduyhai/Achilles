@@ -886,27 +886,27 @@ public class PropertyParserTest {
     public void should_exception_when_no_default_constructor_for_legacy_compound_pk() throws Exception {
         //Given
         @Entity(keyspace = "ks", table="test")
-         class TestWithEmbeddedId {
+         class TestWithCompoundPK {
             @EmbeddedId
-            private Embedded id;
+            private CompoundPK id;
 
-             public Embedded getId() {
+             public CompoundPK getId() {
                  return id;
              }
 
-             public void setId(Embedded id) {
+             public void setId(CompoundPK id) {
                  this.id = id;
              }
 
-             class Embedded {
+             class CompoundPK {
 
-                public Embedded(String text) {
+                public CompoundPK(String text) {
 
                 }
             }
 
         }
-        PropertyParsingContext context = newContext(TestWithEmbeddedId.class, TestWithEmbeddedId.class.getDeclaredField("id"));
+        PropertyParsingContext context = newContext(TestWithCompoundPK.class, TestWithCompoundPK.class.getDeclaredField("id"));
         context.setCompoundPrimaryKey(true);
 
         expectedEx.expect(AchillesException.class);
@@ -921,27 +921,27 @@ public class PropertyParserTest {
     public void should_exception_when_no_default_constructor_for_compound_pk() throws Exception {
         //Given
         @Entity(keyspace = "ks", table="test")
-        class TestWithEmbeddedId {
+        class TestWithCompoundPK {
             @CompoundPrimaryKey
-            private Embedded id;
+            private CompoundPK id;
 
-            public Embedded getId() {
+            public CompoundPK getId() {
                 return id;
             }
 
-            public void setId(Embedded id) {
+            public void setId(CompoundPK id) {
                 this.id = id;
             }
 
-            class Embedded {
+            class CompoundPK {
 
-                public Embedded(String text) {
+                public CompoundPK(String text) {
 
                 }
             }
 
         }
-        PropertyParsingContext context = newContext(TestWithEmbeddedId.class, TestWithEmbeddedId.class.getDeclaredField("id"));
+        PropertyParsingContext context = newContext(TestWithCompoundPK.class, TestWithCompoundPK.class.getDeclaredField("id"));
         context.setCompoundPrimaryKey(true);
 
         expectedEx.expect(AchillesException.class);

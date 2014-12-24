@@ -16,7 +16,7 @@ public class PropertyMetaSliceQueryContext extends PropertyMetaView {
         super(meta);
     }
 
-    public Object instantiateEmbeddedIdWithPartitionComponents(List<Object> partitionComponents) {
+    public Object instantiateCompoundPKWithPartitionComponents(List<Object> partitionComponents) {
         log.trace("Instantiate @CompoundPrimaryKey class {} with partition key components {}", meta.getValueClass().getCanonicalName(), partitionComponents);
         Object newPrimaryKey = meta.forValues().instantiate();
         List<Field> fields = meta.getCompoundPKProperties().getPartitionComponents().getComponentFields();

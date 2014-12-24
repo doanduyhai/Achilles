@@ -16,33 +16,20 @@
 
 package info.archinnov.achilles.test.parser.entity;
 
-import java.util.UUID;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.PartitionKey;
 
-import info.archinnov.achilles.annotations.*;
+public class CompoundPKParent {
 
-public class EmbeddedKeyWithTimeUUID {
+    @PartitionKey
+    @Column(name = "partition_key")
+    protected String partitionKey;
 
-	@TimeUUID
-	@PartitionKey
-	private UUID date;
+    public String getPartitionKey() {
+        return partitionKey;
+    }
 
-    @ClusteringColumn
-	@Column(name = "ranking")
-	private int rank;
-
-	public UUID getDate() {
-		return date;
-	}
-
-	public void setDate(UUID date) {
-		this.date = date;
-	}
-
-	public int getRank() {
-		return rank;
-	}
-
-	public void setRank(int rank) {
-		this.rank = rank;
-	}
+    public void setPartitionKey(String partitionKey) {
+        this.partitionKey = partitionKey;
+    }
 }

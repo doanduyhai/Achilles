@@ -60,7 +60,7 @@ public class PropertyParsingValidator {
         final List<String> cqlPrimaryKeyColumnNames = FluentIterable.from(context.getPropertyMetas().values())
                 .filter(PropertyType.COMPOUND_PK_TYPE)
                 .first()
-                .transform(PropertyMeta.GET_CQL_COLUMN_NAMES_FROM_EMBEDDED_ID)
+                .transform(PropertyMeta.GET_CQL_COLUMN_NAMES_FROM_COMPOUND_PK)
                 .or(new ArrayList<String>());
 
         cqlColumnNames.addAll(cqlPrimaryKeyColumnNames);

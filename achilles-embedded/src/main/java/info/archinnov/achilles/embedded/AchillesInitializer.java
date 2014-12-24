@@ -19,9 +19,15 @@ package info.archinnov.achilles.embedded;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Optional;
 import info.archinnov.achilles.persistence.AsyncManager;
+import info.archinnov.achilles.script.ScriptExecutor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +77,7 @@ public class AchillesInitializer {
         String hostname;
         int cqlPort;
 
-        if (StringUtils.isNotBlank(cassandraHost) && cassandraHost.contains(":")) {
+        if (isNotBlank(cassandraHost) && cassandraHost.contains(":")) {
             String[] split = cassandraHost.split(":");
             hostname = split[0];
             cqlPort = Integer.parseInt(split[1]);
@@ -82,37 +88,56 @@ public class AchillesInitializer {
 
         final Cluster cluster = createCluster(hostname, cqlPort, parameters);
 
-
         if (nativeClusterOnly) {
+            buildClusterOnly(parameters, achillesParameters, keyspaceDurableWrite, cluster);
             //Break here, nothing more to do
             return;
         }
 
         String keyspaceName = extractAndValidateKeyspaceName(achillesParameters);
         createKeyspaceIfNeeded(cluster, keyspaceName, keyspaceDurableWrite);
+        final Session session = cluster.connect(keyspaceName);
+        executeStartupScripts(session, parameters);
 
         if (nativeSessionOnly) {
-            REPOSITORY.addNewSessionToKeyspace(keyspaceName, cluster.connect(keyspaceName));
+            REPOSITORY.addNewSessionToKeyspace(keyspaceName, session);
         } else {
-            Session nativeSession = cluster.connect(keyspaceName);
-            achillesParameters.put(ConfigurationParameters.NATIVE_SESSION, nativeSession);
-            achillesParameters.put(ConfigurationParameters.KEYSPACE_NAME, keyspaceName);
-            if (!achillesParameters.containsKey(ConfigurationParameters.FORCE_TABLE_CREATION)) {
-                achillesParameters.put(ConfigurationParameters.FORCE_TABLE_CREATION, true);
-            }
-
-            PersistenceManagerFactory factory = PersistenceManagerFactoryBuilder.build(cluster, achillesParameters);
-
-            ServerStarter.CASSANDRA_EMBEDDED.getShutdownHook().addManagerFactory(factory);
-
-            PersistenceManager manager = factory.createPersistenceManager();
-            AsyncManager asyncManager = factory.createAsyncManager();
-
-            REPOSITORY.addNewManagerFactoryToKeyspace(keyspaceName, factory);
-            REPOSITORY.addNewManagerToKeyspace(keyspaceName, manager);
-            REPOSITORY.addNewAsyncManagerToKeyspace(keyspaceName, asyncManager);
-            REPOSITORY.addNewSessionToKeyspace(keyspaceName, manager.getNativeSession());
+            bootstrapAchilles(achillesParameters, cluster, keyspaceName, session);
         }
+
+    }
+
+    private void bootstrapAchilles(ConfigMap achillesParameters, Cluster cluster, String keyspaceName, Session session) {
+        achillesParameters.put(ConfigurationParameters.NATIVE_SESSION, session);
+        achillesParameters.put(ConfigurationParameters.KEYSPACE_NAME, keyspaceName);
+        if (!achillesParameters.containsKey(ConfigurationParameters.FORCE_TABLE_CREATION)) {
+            achillesParameters.put(ConfigurationParameters.FORCE_TABLE_CREATION, true);
+        }
+
+        PersistenceManagerFactory factory = PersistenceManagerFactoryBuilder.build(cluster, achillesParameters);
+
+        ServerStarter.CASSANDRA_EMBEDDED.getShutdownHook().addManagerFactory(factory);
+
+        PersistenceManager manager = factory.createPersistenceManager();
+        AsyncManager asyncManager = factory.createAsyncManager();
+
+        REPOSITORY.addNewManagerFactoryToKeyspace(keyspaceName, factory);
+        REPOSITORY.addNewManagerToKeyspace(keyspaceName, manager);
+        REPOSITORY.addNewAsyncManagerToKeyspace(keyspaceName, asyncManager);
+        REPOSITORY.addNewSessionToKeyspace(keyspaceName, manager.getNativeSession());
+    }
+
+    private void buildClusterOnly(TypedMap parameters, ConfigMap achillesParameters, Boolean keyspaceDurableWrite, Cluster cluster) {
+        final Session temporarySession;
+        String keyspaceName = achillesParameters.getTyped(KEYSPACE_NAME);
+        if (isNotBlank(keyspaceName)) {
+            createKeyspaceIfNeeded(cluster, keyspaceName, keyspaceDurableWrite);
+            temporarySession = cluster.connect(keyspaceName);
+        } else {
+            temporarySession = cluster.connect();
+        }
+        executeStartupScripts(temporarySession,parameters);
+        temporarySession.close();
     }
 
     private String extractAndValidateKeyspaceName(ConfigMap parameters) {
@@ -149,21 +174,28 @@ public class AchillesInitializer {
     }
 
     private void createKeyspaceIfNeeded(Cluster cluster, String keyspaceName, Boolean keyspaceDurableWrite) {
-        LOGGER.debug("Creating keyspace {} if neeeded", keyspaceName);
-
         final Session session = cluster.connect("system");
-        final Row row = session.execute(
-                "SELECT count(1) FROM schema_keyspaces WHERE keyspace_name='" + keyspaceName + "'").one();
-        if (row.getLong(0) != 1) {
-            StringBuilder createKeyspaceStatement = new StringBuilder("CREATE keyspace IF NOT EXISTS ");
-            createKeyspaceStatement.append(keyspaceName);
-            createKeyspaceStatement.append(" WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1}");
-            if (!keyspaceDurableWrite) {
-                createKeyspaceStatement.append(" AND DURABLE_WRITES=false");
-            }
-            session.execute(createKeyspaceStatement.toString());
+
+        StringBuilder createKeyspaceStatement = new StringBuilder("CREATE keyspace IF NOT EXISTS ");
+        createKeyspaceStatement.append(keyspaceName);
+        createKeyspaceStatement.append(" WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1}");
+        if (!keyspaceDurableWrite) {
+            createKeyspaceStatement.append(" AND DURABLE_WRITES=false");
         }
+        final String query = createKeyspaceStatement.toString();
+
+        LOGGER.info("Creating keyspace : "+query);
+
+        session.execute(query);
         session.close();
+    }
+
+    private void executeStartupScripts(Session session, TypedMap parameters) {
+        List<String> scriptLocations = parameters.getTypedOr(SCRIPT_LOCATIONS, new ArrayList<String>());
+        final ScriptExecutor scriptExecutor = new ScriptExecutor(session);
+        for (String scriptLocation : scriptLocations) {
+            scriptExecutor.executeScript(scriptLocation);
+        }
     }
 
     public Cluster getSingletonCluster() {

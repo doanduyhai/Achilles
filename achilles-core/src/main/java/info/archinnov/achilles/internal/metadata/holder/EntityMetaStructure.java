@@ -5,11 +5,7 @@ public class EntityMetaStructure extends EntityMetaView {
         super(meta);
     }
 
-    public boolean hasEmbeddedId() {
-        return meta.idMeta.structure().isCompoundPK();
-    }
-
-    public boolean isEmbeddedId() {
+    public boolean isCompoundPK() {
         return meta.idMeta.structure().isCompoundPK();
     }
 

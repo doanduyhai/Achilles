@@ -18,11 +18,9 @@ package info.archinnov.achilles.embedded;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.embedded.ServerStarter.CASSANDRA_EMBEDDED;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
-import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.ACHILLES_DML_STATEMENT;
+import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DML_STATEMENT;
 
 import com.datastax.driver.core.Cluster;
-import com.google.common.base.Optional;
-import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.persistence.AsyncManager;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

@@ -18,15 +18,15 @@ package info.archinnov.achilles.test.parser.entity;
 import info.archinnov.achilles.annotations.*;
 
 @Entity
-public class BeanWithStaticColumnAndEmbeddedId {
+public class BeanWithStaticColumnAndCompoundPK {
 
     @CompoundPrimaryKey
-    private Embedded id;
+    private CompoundPK id;
 
     @Column(staticColumn = true)
     private String name;
 
-    public static class Embedded {
+    public static class CompoundPK {
 
         @PartitionKey(1)
         private Long id;
@@ -51,11 +51,11 @@ public class BeanWithStaticColumnAndEmbeddedId {
         }
     }
 
-    public Embedded getId() {
+    public CompoundPK getId() {
         return id;
     }
 
-    public void setId(Embedded id) {
+    public void setId(CompoundPK id) {
         this.id = id;
     }
 

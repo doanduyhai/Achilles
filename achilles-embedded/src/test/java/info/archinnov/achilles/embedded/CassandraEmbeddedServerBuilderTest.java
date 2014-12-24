@@ -56,4 +56,34 @@ public class CassandraEmbeddedServerBuilderTest {
         assertThat(factory2.createPersistenceManager().getNativeSession().getCluster()).isSameAs(cluster);
         assertThat(factory3.createPersistenceManager().getNativeSession().getCluster()).isSameAs(cluster);
     }
+
+    @Test
+    public void should_bootstrap_with_keyspace_and_execute_script1() throws Exception {
+        CassandraEmbeddedServerBuilder
+                .noEntityPackages()
+                .cleanDataFilesAtStartup(true)
+                .withKeyspaceName("script_without_keyspace1")
+                .withScript("script_without_keyspace.cql")
+                .buildNativeClusterOnly();
+    }
+
+
+    @Test
+    public void should_bootstrap_with_keyspace_and_execute_script2() throws Exception {
+        CassandraEmbeddedServerBuilder
+                .noEntityPackages()
+                .cleanDataFilesAtStartup(true)
+                .withKeyspaceName("script_without_keyspace2")
+                .withScript("script_without_keyspace.cql")
+                .buildNativeSessionOnly();
+    }
+
+    @Test
+    public void should_bootstrap_without_keyspace_and_execute_script() throws Exception {
+        CassandraEmbeddedServerBuilder
+                .noEntityPackages()
+                .cleanDataFilesAtStartup(true)
+                .withScript("script_with_keyspace.cql")
+                .buildNativeClusterOnly();
+    }
 }

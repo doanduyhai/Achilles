@@ -15,24 +15,23 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
+import java.util.List;
+
 import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.PartitionKey;
 
-public class CorrectEmbeddedReversedKey {
+public class CompoundPKIncorrectType {
 	@PartitionKey
-	private String name;
+	private List<String> name;
 
-    @ClusteringColumn(value=1, reversed=true)
+    @ClusteringColumn
 	private int rank;
 
-    @ClusteringColumn(value=2, reversed=true)
-    private int count;
-
-	public String getName() {
+	public List<String> getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	public void setName(List<String> name) {
 		this.name = name;
 	}
 
@@ -43,12 +42,4 @@ public class CorrectEmbeddedReversedKey {
 	public void setRank(int rank) {
 		this.rank = rank;
 	}
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
 }

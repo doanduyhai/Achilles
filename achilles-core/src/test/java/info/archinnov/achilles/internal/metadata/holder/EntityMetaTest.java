@@ -164,7 +164,7 @@ public class EntityMetaTest {
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
 
-        assertThat(meta.structure().hasEmbeddedId()).isTrue();
+        assertThat(meta.structure().isCompoundPK()).isTrue();
     }
 
     @Test

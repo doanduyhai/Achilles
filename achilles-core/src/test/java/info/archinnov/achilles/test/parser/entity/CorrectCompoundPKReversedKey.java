@@ -15,43 +15,40 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import java.util.UUID;
-
 import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.PartitionKey;
 
-public class EmbeddedKeyWithInconsistentCompoundPartitionKey {
+public class CorrectCompoundPKReversedKey {
+	@PartitionKey
+	private String name;
 
-	@PartitionKey(1)
-	private Long id;
+    @ClusteringColumn(value=1, reversed=true)
+	private int rank;
 
-    @ClusteringColumn
-	private String type;
+    @ClusteringColumn(value=2, reversed=true)
+    private int count;
 
-	@PartitionKey(3)
-	private UUID date;
-
-	public Long getId() {
-		return id;
+	public String getName() {
+		return name;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public String getType() {
-		return type;
+	public int getRank() {
+		return rank;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setRank(int rank) {
+		this.rank = rank;
 	}
 
-	public UUID getDate() {
-		return date;
-	}
+    public int getCount() {
+        return count;
+    }
 
-	public void setDate(UUID date) {
-		this.date = date;
-	}
+    public void setCount(int count) {
+        this.count = count;
+    }
 }
