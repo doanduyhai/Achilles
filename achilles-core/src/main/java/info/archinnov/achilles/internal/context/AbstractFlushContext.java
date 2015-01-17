@@ -55,21 +55,18 @@ public abstract class AbstractFlushContext {
     }
 
     protected ListenableFuture<ResultSet> executeBatch(BatchStatement.Type batchType, List<AbstractStatementWrapper> statementWrappers) {
-        ListenableFuture<ResultSet> resultSetFuture = null;
-        final int size = statementWrappers.size();
-        if (size > 1) {
-            final BatchStatementWrapper batchStatementWrapper = new BatchStatementWrapper(batchType, statementWrappers, fromNullable(consistencyLevel),serialConsistencyLevel);
-            resultSetFuture = daoContext.execute(batchStatementWrapper);
-        } else if (size == 1) {
-            AbstractStatementWrapper wrapper;
-            if (batchType == BatchStatement.Type.LOGGED) {
-                wrapper = new BatchStatementWrapper(batchType, statementWrappers, fromNullable(consistencyLevel),serialConsistencyLevel);
-            } else {
-                wrapper = statementWrappers.get(0);
-            }
-            resultSetFuture = daoContext.execute(wrapper);
+        if (statementWrappers.isEmpty()) {
+            return null;
         }
-        return resultSetFuture;
+
+        final AbstractStatementWrapper batchStatement;
+        if (statementWrappers.size() == 1 && batchType != BatchStatement.Type.LOGGED) {
+            batchStatement = statementWrappers.get(0);
+        } else {
+            batchStatement = new BatchStatementWrapper(batchType, statementWrappers, fromNullable(consistencyLevel), serialConsistencyLevel);
+        }
+
+        return daoContext.execute(batchStatement);
     }
 
     public void pushStatement(AbstractStatementWrapper statementWrapper) {
