@@ -26,6 +26,8 @@ import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.type.Options;
 
+import javax.annotation.PreDestroy;
+
 public class CommonPersistenceManager extends AbstractPersistenceManager {
 
     private static final Logger log = LoggerFactory.getLogger(CommonPersistenceManager.class);
@@ -217,6 +219,7 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
     /**
      * Call shutdown on Achilles, especially shutdown the internal thread pool handling asynchronous tasks
      */
+    @PreDestroy
     public void shutDown() {
         configContext.getExecutorService().shutdown();
     }
