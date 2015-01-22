@@ -36,20 +36,52 @@ import org.junit.ComparisonFailure;
 
 public class CassandraLogAsserter {
     private static final String DRIVER_CONNECTION_LOGGER = "com.datastax.driver.core.Connection";
-    private Logger storageProxyLogger = Logger.getLogger(DRIVER_CONNECTION_LOGGER);
+    private Logger logger = Logger.getLogger(DRIVER_CONNECTION_LOGGER);
     private WriterAppender writerAppender;
     protected ByteArrayOutputStream logStream;
     private Pattern pattern = Pattern.compile("writing request [A-Z]+");
 
-    public void prepareLogLevel() {
+    public void prepareLogLevelForDriverConnection() {
+        prepareLogLevel(DRIVER_CONNECTION_LOGGER);
+    }
+
+    public void prepareLogLevel(String loggerName) {
         logStream = new ByteArrayOutputStream();
         writerAppender = new WriterAppender();
         writerAppender.setWriter(new OutputStreamWriter(logStream));
         writerAppender.setLayout(new PatternLayout("%m %n"));
-        storageProxyLogger.removeAllAppenders();
-        storageProxyLogger.addAppender(writerAppender);
-        storageProxyLogger.setLevel(Level.TRACE);
+        logger = Logger.getLogger(loggerName);
+        logger.removeAllAppenders();
+        logger.addAppender(writerAppender);
+        logger.setLevel(Level.TRACE);
+    }
 
+    public void assertContains(String text) {
+        asssertPatternToBe(text,true);
+    }
+
+    public void assertNotContains(String text) {
+        asssertPatternToBe(text,false);
+    }
+
+    private void asssertPatternToBe(String text, boolean present) {
+        final Iterator<String> standardOutputs = asList(split(logStream.toString(), "\n")).iterator();
+        try {
+            boolean textFound = false;
+            while (standardOutputs.hasNext()) {
+                final String logLine = standardOutputs.next();
+                if (logLine.contains(text)) {
+                    textFound = true;
+                    break;
+                }
+            }
+            assertThat(textFound).describedAs("Expected '" + text + "' to be found in the logs").isEqualTo(present);
+
+        } finally {
+            logStream = null;
+            logger.setLevel(Level.WARN);
+            logger.removeAppender(writerAppender);
+        }
     }
 
     public void assertConsistencyLevels(ConsistencyLevel... consistencyLevels) {
@@ -83,8 +115,8 @@ public class CassandraLogAsserter {
 
         } finally {
             logStream = null;
-            storageProxyLogger.setLevel(Level.WARN);
-            storageProxyLogger.removeAppender(writerAppender);
+            logger.setLevel(Level.WARN);
+            logger.removeAppender(writerAppender);
         }
     }
 
@@ -144,8 +176,8 @@ public class CassandraLogAsserter {
 
         } finally {
             logStream = null;
-            storageProxyLogger.setLevel(Level.WARN);
-            storageProxyLogger.removeAppender(writerAppender);
+            logger.setLevel(Level.WARN);
+            logger.removeAppender(writerAppender);
         }
     }
 }

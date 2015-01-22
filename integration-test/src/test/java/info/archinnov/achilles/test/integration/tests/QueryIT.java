@@ -760,7 +760,7 @@ public class QueryIT {
         final Select.Where regularStatement = select().column("id").column("label").from(CompleteBean.TABLE_NAME)
                 .where(eq("id",bindMarker("id")));
         regularStatement.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
 
         //When
         final CompleteBean found = manager.typedQuery(CompleteBean.class, regularStatement, id).getFirst();

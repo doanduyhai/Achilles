@@ -57,7 +57,7 @@ public class WrongConsistencyForSliceQueryIT {
         manager.insert(entity3);
 
         //When
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
 
         final ClusteredEntityWithConsistencyLevel found = manager.sliceQuery(ClusteredEntityWithConsistencyLevel.class)
                 .forSelect()
@@ -81,7 +81,7 @@ public class WrongConsistencyForSliceQueryIT {
         manager.insert(entity1);
 
         //When
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
 
         final ClusteredEntityWithConsistencyLevel found = manager.sliceQuery(ClusteredEntityWithConsistencyLevel.class)
                 .forSelect()
@@ -113,7 +113,7 @@ public class WrongConsistencyForSliceQueryIT {
         manager.insert(entity3);
 
         //When
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
 
         manager.sliceQuery(ClusteredEntityWithConsistencyLevel.class)
                 .forDelete()
