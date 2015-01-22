@@ -65,7 +65,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         Batch batch = pmf.createBatch();
         batch.startBatch(ONE);
         managed.setName("changed_name");
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
 
         batch.update(managed);
 
@@ -90,7 +90,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity.setCount(CounterBuilder.incr());
         entity = manager.insert(entity);
 
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
         Counter counter = entity.getCount();
         counter.incr(10L);
         assertThat(counter.get()).isEqualTo(11L);

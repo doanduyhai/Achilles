@@ -15,17 +15,29 @@
  */
 package info.archinnov.achilles.internal.statement.cache;
 
+import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.type.Options.LWTPredicate;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.type.Options;
 
 public class StatementCacheKey {
+
+    private static final Function<LWTPredicate,LWTPredicate> DUPLICATE_LWT_PREDICATES = new Function<LWTPredicate, LWTPredicate>() {
+        @Override
+        public LWTPredicate apply(LWTPredicate predicate) {
+            return predicate.duplicate();
+        }
+    };
+
     private CacheType type;
 
     private Set<String> fields = new LinkedHashSet<>();
@@ -107,7 +119,7 @@ public class StatementCacheKey {
         }
 
         private static OptionsCacheKey fromOptions(Options options) {
-            return new OptionsCacheKey(options.hasTTL(), options.hasTimestamp(), options.getLwtPredicates());
+            return new OptionsCacheKey(options.hasTTL(), options.hasTimestamp(), from(options.getLwtPredicates()).transform(DUPLICATE_LWT_PREDICATES).toList());
         }
 
         @Override

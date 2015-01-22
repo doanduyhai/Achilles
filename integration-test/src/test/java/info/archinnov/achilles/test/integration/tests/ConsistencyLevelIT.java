@@ -111,7 +111,7 @@ public class ConsistencyLevelIT {
     public void should_persist_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
         CompleteBean entity = builder().randomId().name("name zerferg").buid();
 
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
         manager.insert(entity, withConsistency(EACH_QUORUM));
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("name zerferg");
@@ -124,7 +124,7 @@ public class ConsistencyLevelIT {
         entity = manager.insert(entity);
         entity.setName("zeruioze");
 
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
         manager.update(entity, withConsistency(EACH_QUORUM));
 
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
@@ -147,7 +147,7 @@ public class ConsistencyLevelIT {
 
         assertThat(exceptionCaught).isTrue();
 
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
         CompleteBean found = manager.find(CompleteBean.class, entity.getId(), ALL);
         assertThat(found.getName()).isEqualTo("name rtprt");
         logAsserter.assertConsistencyLevels(ALL);
@@ -168,7 +168,7 @@ public class ConsistencyLevelIT {
 
         assertThat(exceptionCaught).isTrue();
 
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
         manager.refresh(entity, ALL);
         logAsserter.assertConsistencyLevels(ALL);
     }
@@ -178,7 +178,7 @@ public class ConsistencyLevelIT {
         CompleteBean entity = builder().randomId().name("name").buid();
         entity = manager.insert(entity);
 
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
         manager.delete(entity, withConsistency(EACH_QUORUM));
         assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
         logAsserter.assertConsistencyLevels(EACH_QUORUM,ONE);
@@ -187,7 +187,7 @@ public class ConsistencyLevelIT {
     @Test
     public void should_reinit_consistency_level_after_exception() throws Exception {
         CompleteBean entity = builder().randomId().name("name qzerferf").buid();
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
         manager.insert(entity, withConsistency(EACH_QUORUM));
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("name qzerferf");
@@ -209,7 +209,7 @@ public class ConsistencyLevelIT {
 
         try {
             //When
-            logAsserter.prepareLogLevel();
+            logAsserter.prepareLogLevelForDriverConnection();
             final EntityWithTwoConsistency entity = new EntityWithTwoConsistency();
             entity.setId(RandomUtils.nextLong(0,Long.MAX_VALUE));
 

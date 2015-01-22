@@ -222,7 +222,7 @@ public class BatchModeIT {
         batch.insert(tweet2);
         batch.insert(tweet3);
 
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
 
         batch.endBatch();
 
@@ -255,7 +255,7 @@ public class BatchModeIT {
         assertThat(exceptionCaught).isTrue();
 
         Thread.sleep(1000);
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
         batch.insert(tweet2);
         batch.endBatch();
         logAsserter.assertConsistencyLevels(ONE);

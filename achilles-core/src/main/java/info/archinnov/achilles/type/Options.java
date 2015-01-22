@@ -165,6 +165,8 @@ public class Options {
         public static enum LWTType {
             IF_NOT_EXISTS, IF_EXISTS, EQUAL_CONDITION;
         }
+
+        public abstract LWTPredicate duplicate();
     }
 
     public static class LWTIfNotExists extends LWTPredicate {
@@ -173,7 +175,12 @@ public class Options {
             return LWTType.IF_NOT_EXISTS;
         }
 
-        private LWTIfNotExists(){};
+        @Override
+        public LWTPredicate duplicate() {
+            return Singleton.INSTANCE.instance;
+        }
+
+        private LWTIfNotExists(){}
 
         public static enum Singleton {
             INSTANCE;
@@ -193,7 +200,12 @@ public class Options {
             return LWTType.IF_EXISTS;
         }
 
-        private LWTIfExists(){};
+        private LWTIfExists(){}
+
+        @Override
+        public LWTPredicate duplicate() {
+            return Singleton.INSTANCE.instance;
+        }
 
         public static enum Singleton {
             INSTANCE;
@@ -214,6 +226,15 @@ public class Options {
         @Override
         public LWTType type() {
           return LWTType.EQUAL_CONDITION;
+        }
+
+        @Override
+        public LWTPredicate duplicate() {
+            return new LWTCondition(columnName);
+        }
+
+        private LWTCondition(String columnName) {
+            this.columnName = columnName;
         }
 
         public LWTCondition(String columnName, Object value) {

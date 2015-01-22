@@ -65,7 +65,7 @@ public class LWTOperationsIT {
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
 
         //When
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
         manager.insert(entityWithEnum, OptionsBuilder.ifNotExists().lwtLocalSerial());
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);
 

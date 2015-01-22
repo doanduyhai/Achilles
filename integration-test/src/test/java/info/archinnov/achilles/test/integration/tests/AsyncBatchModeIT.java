@@ -258,7 +258,7 @@ public class AsyncBatchModeIT {
 
         batch.startBatch(QUORUM);
 
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
 
         Tweet foundTweet1 = asyncManager.find(Tweet.class, tweet1.getId()).getImmediately();
 
@@ -311,7 +311,7 @@ public class AsyncBatchModeIT {
 
         assertThatBatchContextHasBeenReset(batch);
 
-        logAsserter.prepareLogLevel();
+        logAsserter.prepareLogLevelForDriverConnection();
         batch.startBatch();
         batch.insert(tweet2);
         batch.asyncEndBatch();

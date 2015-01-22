@@ -19,6 +19,7 @@ import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.split;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -28,6 +29,7 @@ import java.util.regex.Pattern;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.OutputStreamAppender;
@@ -38,13 +40,18 @@ import org.slf4j.LoggerFactory;
 
 public class CassandraLogAsserter {
     private static final String DRIVER_CONNECTION_LOGGER = "com.datastax.driver.core.Connection";
-    private Logger driverConnectionLogger = (Logger)LoggerFactory.getLogger(DRIVER_CONNECTION_LOGGER);
+    private Logger logger = (Logger)LoggerFactory.getLogger(DRIVER_CONNECTION_LOGGER);
     private OutputStreamAppender<ILoggingEvent> writerAppender;
     protected ByteArrayOutputStream logStream;
     private Pattern pattern = Pattern.compile("writing request [A-Z]+");
 
-    public void prepareLogLevel() {
-        final LoggerContext loggerContext = driverConnectionLogger.getLoggerContext();
+    public void prepareLogLevelForDriverConnection() {
+       prepareLogLevel(DRIVER_CONNECTION_LOGGER);
+    }
+
+    public void prepareLogLevel(String loggerName) {
+        logger = (Logger)LoggerFactory.getLogger(loggerName);
+        final LoggerContext loggerContext = logger.getLoggerContext();
         PatternLayoutEncoder ple = createPatternLayoutEncoder(loggerContext);
         writerAppender = new OutputStreamAppender();
         writerAppender.setContext(loggerContext);
@@ -53,9 +60,37 @@ public class CassandraLogAsserter {
         writerAppender.setOutputStream(logStream);
         writerAppender.start();
 
-        driverConnectionLogger.addAppender(writerAppender);
-        driverConnectionLogger.setLevel(Level.TRACE);
-        driverConnectionLogger.setAdditive(false);
+        logger.addAppender(writerAppender);
+        logger.setLevel(Level.TRACE);
+        logger.setAdditive(false);
+    }
+
+    public void assertContains(String text) {
+        asssertPatternToBe(text,true);
+    }
+
+    public void assertNotContains(String text) {
+        asssertPatternToBe(text,false);
+    }
+
+    private void asssertPatternToBe(String text, boolean present) {
+        final Iterator<String> standardOutputs = asList(split(logStream.toString(), "\n")).iterator();
+        try {
+            boolean textFound = false;
+            while (standardOutputs.hasNext()) {
+                final String logLine = standardOutputs.next();
+                if (logLine.contains(text)) {
+                    textFound = true;
+                    break;
+                }
+            }
+            assertThat(textFound).describedAs("Expected '" + text + "' to be found in the logs").isEqualTo(present);
+
+        } finally {
+            logStream = null;
+            logger.setLevel(Level.WARN);
+            logger.detachAppender(writerAppender);
+        }
     }
 
     public void assertConsistencyLevels(ConsistencyLevel... consistencyLevels) {
@@ -89,8 +124,8 @@ public class CassandraLogAsserter {
 
         } finally {
             logStream = null;
-            driverConnectionLogger.setLevel(Level.WARN);
-            driverConnectionLogger.detachAppender(writerAppender);
+            logger.setLevel(Level.WARN);
+            logger.detachAppender(writerAppender);
         }
     }
 
@@ -146,8 +181,8 @@ public class CassandraLogAsserter {
 
         } finally {
             logStream = null;
-            driverConnectionLogger.setLevel(Level.WARN);
-            driverConnectionLogger.detachAppender(writerAppender);
+            logger.setLevel(Level.WARN);
+            logger.detachAppender(writerAppender);
         }
     }
 
