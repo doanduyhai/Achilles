@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
+import com.google.common.base.Joiner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -62,6 +63,25 @@ public class ScriptExecutorTest {
         assertThat(statements.get(0).getQueryString()).isEqualTo("CREATE TABLE IF NOT EXISTS test( id int PRIMARY KEY, value text );");
         assertThat(statements.get(1).getQueryString()).isEqualTo("INSERT INTO test(id,value) VALUES(1,';^');");
         assertThat(statements.get(2).getQueryString()).isEqualTo("DELETE FROM test WHERE id=1;");
+    }
+
+    @Test
+    public void should_build_batch_statements_from_lines() throws Exception {
+        //Given
+        List<String> lines = new ArrayList<>();
+        lines.add("BEGIN UNLOGGED BATCH USING TIMESTAMP 123456789");
+        lines.add(" INSERT INTO test(id,value) VALUES(1,'test');");
+        lines.add(" DELETE FROM test WHERE id=1;");
+        lines.add("APPLY BATCH;");
+        lines.add("INSERT INTO test(id,value) VALUES(2,'test2');");
+
+        //When
+        final List<SimpleStatement> statements = scriptExecutor.buildStatements(lines);
+
+        //Then
+        assertThat(statements).hasSize(2);
+        assertThat(statements.get(0).getQueryString()).isEqualTo("BEGIN UNLOGGED BATCH USING TIMESTAMP 123456789 INSERT INTO test(id,value) VALUES(1,'test'); DELETE FROM test WHERE id=1;APPLY BATCH;");
+        assertThat(statements.get(1).getQueryString()).isEqualTo("INSERT INTO test(id,value) VALUES(2,'test2');");
     }
 
     @Test
