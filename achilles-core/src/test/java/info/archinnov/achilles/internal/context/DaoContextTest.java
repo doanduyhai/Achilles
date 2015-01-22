@@ -508,10 +508,11 @@ public class DaoContextTest {
         // Given
         PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         when(counterMeta.getCQLColumnName()).thenReturn("counter");
+        when(counterMeta.getPropertyName()).thenReturn("counterProp");
         when(counterMeta.structure().isStaticColumn()).thenReturn(true);
         Row row = mock(Row.class);
 
-        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(SELECT, of("counter", ps)));
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(SELECT, of("counterProp", ps)));
         when(overrider.getReadLevel(context, counterMeta)).thenReturn(EACH_QUORUM);
         when(binder.bindForClusteredCounterSelect(context, ps, true, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(futureResultSet);

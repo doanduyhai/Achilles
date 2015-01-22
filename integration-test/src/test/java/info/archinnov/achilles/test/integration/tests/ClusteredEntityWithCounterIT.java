@@ -179,6 +179,7 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(next.getId().getName()).isEqualTo("name1");
 		assertThat(next.getCounter().get()).isEqualTo(1L);
 		assertThat(next.getVersion().get()).isEqualTo(1L);
+		assertThat(next.getAnotherCounter().get()).isEqualTo(1L);
 		assertThat(iter.hasNext()).isTrue();
 
 		assertThat(iter.hasNext()).isTrue();
@@ -187,6 +188,7 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(next.getId().getName()).isEqualTo("name2");
 		assertThat(next.getCounter().get()).isEqualTo(2L);
         assertThat(next.getVersion().get()).isEqualTo(2L);
+        assertThat(next.getAnotherCounter().get()).isEqualTo(2L);
 
 		assertThat(iter.hasNext()).isTrue();
 		next = iter.next();
@@ -194,6 +196,7 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(next.getId().getName()).isEqualTo("name3");
 		assertThat(next.getCounter().get()).isEqualTo(3L);
         assertThat(next.getVersion().get()).isEqualTo(3L);
+        assertThat(next.getAnotherCounter().get()).isEqualTo(3L);
 
 		assertThat(iter.hasNext()).isTrue();
 		next = iter.next();
@@ -201,6 +204,7 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(next.getId().getName()).isEqualTo("name4");
 		assertThat(next.getCounter().get()).isEqualTo(4L);
         assertThat(next.getVersion().get()).isEqualTo(4L);
+        assertThat(next.getAnotherCounter().get()).isEqualTo(4L);
 
 		assertThat(iter.hasNext()).isTrue();
 		next = iter.next();
@@ -208,6 +212,7 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(next.getId().getName()).isEqualTo("name5");
 		assertThat(next.getCounter().get()).isEqualTo(5L);
         assertThat(next.getVersion().get()).isEqualTo(5L);
+        assertThat(next.getAnotherCounter().get()).isEqualTo(5L);
 
 		assertThat(iter.hasNext()).isFalse();
 	}
@@ -242,7 +247,7 @@ public class ClusteredEntityWithCounterIT {
 	private void insertClusteredEntity(Long partitionKey, String name, Long counterValue) {
 		CompoundPK compoundPK = new CompoundPK(partitionKey, name);
 		ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter(compoundPK,
-				incr(counterValue),incr(counterValue));
+				incr(counterValue),incr(counterValue), incr(counterValue));
 		manager.insert(entity);
 	}
 

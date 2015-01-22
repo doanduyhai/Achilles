@@ -34,6 +34,9 @@ public class ClusteredEntityWithCounter {
     @Column
     private Counter version;
 
+	@Column
+	private Counter anotherCounter;
+
 
     public ClusteredEntityWithCounter() {
     }
@@ -49,6 +52,13 @@ public class ClusteredEntityWithCounter {
 		this.counter = counter;
         this.version = version;
     }
+
+	public ClusteredEntityWithCounter(CompoundPK id, Counter counter, Counter version, Counter anotherCounter) {
+		this.id = id;
+		this.counter = counter;
+		this.version = version;
+		this.anotherCounter = anotherCounter;
+	}
 
 	public CompoundPK getId() {
 		return id;
@@ -74,7 +84,15 @@ public class ClusteredEntityWithCounter {
         this.version = version;
     }
 
-    @Override
+	public Counter getAnotherCounter() {
+		return anotherCounter;
+	}
+
+	public void setAnotherCounter(Counter anotherCounter) {
+		this.anotherCounter = anotherCounter;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

@@ -224,8 +224,9 @@ public class DaoContext {
     public Long getClusteredCounterColumn(DaoOperations context, PropertyMeta counterMeta) {
         log.debug("Get clustered counter for PersistenceContext '{}'", context);
 
+        final String propertyName = counterMeta.getPropertyName();
         final String cqlColumnName = counterMeta.getCQLColumnName();
-        PreparedStatement ps = clusteredCounterQueryMap.get(context.getEntityClass()).get(SELECT).get(cqlColumnName);
+        PreparedStatement ps = clusteredCounterQueryMap.get(context.getEntityClass()).get(SELECT).get(propertyName);
         ConsistencyLevel readLevel = overrider.getReadLevel(context, counterMeta);
         BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(context, ps, counterMeta.structure().isStaticColumn(), readLevel);
 
