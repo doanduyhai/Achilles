@@ -29,6 +29,8 @@ public class ScriptExecutor {
     private static final Logger DDL_LOGGER = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
 
     private static final String COMMA = ";";
+    private static final String BATCH_BEGIN = "BEGIN";
+    private static final String BATCH_APPLY = "APPLY";
 
     private final Session session;
 
@@ -123,14 +125,29 @@ public class ScriptExecutor {
     protected List<SimpleStatement> buildStatements(List<String> lines) {
         List<SimpleStatement> statements = new ArrayList<>();
         StringBuilder statement = new StringBuilder();
+        boolean batch = false;
+        StringBuilder batchStatement = new StringBuilder();
         for (String line : lines) {
-            statement.append(line);
-            if (line.endsWith(COMMA)) {
-                statements.add(new SimpleStatement(statement.toString()));
-                statement = new StringBuilder();
-            } else {
-                statement.append(" ");
+            if (line.trim().startsWith(BATCH_BEGIN)) {
+                batch = true;
             }
+            if (batch) {
+                batchStatement.append(line);
+                if (line.startsWith(BATCH_APPLY)) {
+                    batch = false;
+                    statements.add(new SimpleStatement(batchStatement.toString()));
+                    batchStatement = new StringBuilder();
+                }
+            } else {
+                statement.append(line);
+                if (line.endsWith(COMMA)) {
+                    statements.add(new SimpleStatement(statement.toString()));
+                    statement = new StringBuilder();
+                } else {
+                    statement.append(" ");
+                }
+            }
+
         }
         return statements;
     }
