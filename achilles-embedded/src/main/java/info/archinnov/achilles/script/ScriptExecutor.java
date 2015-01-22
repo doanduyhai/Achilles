@@ -61,18 +61,24 @@ public class ScriptExecutor {
      * Execute a plain CQL string statement
      * @param statement
      *      plain CQL string statement
+     *
+     * @return the resultSet
+     *
      */
-    public void execute(String statement) {
-        session.execute(statement);
+    public ResultSet execute(String statement) {
+        return session.execute(statement);
     }
 
     /**
      * Execute a CQL statement
      * @param statement
      *      CQL statement
+     *
+     * @return the resultSet
+     *
      */
-    public void execute(Statement statement) {
-        session.execute(statement);
+    public ResultSet execute(Statement statement) {
+        return session.execute(statement);
     }
 
     /**
