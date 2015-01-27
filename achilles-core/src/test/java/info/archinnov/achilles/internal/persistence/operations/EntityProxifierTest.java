@@ -22,6 +22,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,6 +38,8 @@ import java.util.Set;
 
 import info.archinnov.achilles.internal.proxy.AchillesProxyInterceptor;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
+import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.CounterBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -109,7 +112,7 @@ public class EntityProxifierTest {
     }
 
     @Test
-    public void should_build_proxy_with_all_fields_loaded() throws Exception {
+    public void should_build_proxy_with_all_fields_loaded_except_counter() throws Exception {
 
         long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         PropertyMeta pm = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
@@ -141,6 +144,44 @@ public class EntityProxifierTest {
         verify(pm.forValues()).getValueFromField(entity);
         verify(pm.forValues()).setValueToField(realProxy, value);
         verify(counterMeta.forValues()).setValueToField(entity,null);
+    }
+
+    @Test
+    public void should_build_proxy_with_all_fields_loaded() throws Exception {
+
+        long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        PropertyMeta pm = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        final Counter counter = CounterBuilder.incr(10);
+        Object value = new Object();
+
+        CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).name("name").buid();
+        proxifier = spy(proxifier);
+
+        doReturn(interceptor).when(proxifier).buildInterceptor(eq(context), eq(entity), anySetOf(Method.class));
+        when(context.getEntityMeta()).thenReturn(entityMeta);
+        when(entityMeta.getIdMeta()).thenReturn(idMeta);
+        when(entityMeta.getAllMetas()).thenReturn(Arrays.asList(pm,counterMeta));
+        when(entityMeta.getAllCounterMetas()).thenReturn(Arrays.asList(counterMeta));
+        when(pm.forValues().getValueFromField(entity)).thenReturn(value);
+        when(counterMeta.forValues().getValueFromField(entity)).thenReturn(counter);
+        when(context.getConfigContext()).thenReturn(configContext);
+        when(factory.createProxyClass(entity.getClass(), configContext)).thenReturn((Class) entity.getClass());
+        when(instantiator.instantiate(Mockito.<Class<Factory>>any())).thenReturn(realProxy);
+
+        Object proxy = proxifier.buildProxyWithAllFieldsLoaded(entity, context);
+
+        assertThat(proxy).isNotNull();
+        assertThat(proxy).isInstanceOf(Factory.class);
+        Factory factory = (Factory) proxy;
+
+        assertThat(factory.getCallbacks()).hasSize(1);
+        assertThat(factory.getCallback(0)).isInstanceOf(ProxyInterceptor.class);
+
+        verify(pm.forValues(),never()).getValueFromField(entity);
+        verify(pm.forValues(),never()).setValueToField(realProxy, value);
+        verify(counterMeta.forValues(),never()).getValueFromField(entity);
+        verify(counterMeta.forValues(),never()).setValueToField(realProxy,counter);
     }
 
     @Test
