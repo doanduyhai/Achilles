@@ -28,8 +28,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 
-import info.archinnov.achilles.internal.proxy.AchillesProxyInterceptor;
-import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.Empty;
 import org.slf4j.Logger;
@@ -210,11 +208,6 @@ public class PersistenceContext {
         }
 
         @Override
-        public boolean hasConsistencyLevel() {
-            return options.hasConsistencyLevel();
-        }
-
-        @Override
         public boolean hasTTL() {
             return options.hasTTL();
         }
@@ -255,6 +248,10 @@ public class PersistenceContext {
 
         public Set<Method> getAllGettersExceptCounters() {
             return new HashSet<>(from(entityMeta.getAllMetasExceptCounters()).transform(metaToGetter).toList());
+        }
+
+        public Set<Method> getAllGetters() {
+            return new HashSet<>(from(entityMeta.getAllMetas()).transform(metaToGetter).toList());
         }
 
         public List<PropertyMeta> getAllCountersMeta() {
@@ -379,7 +376,11 @@ public class PersistenceContext {
             Function<T, T> createProxy = new Function<T, T>() {
                 @Override
                 public T apply(T rawEntity) {
-                    return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, entityFacade);
+                    if (entityMeta.structure().isClusteredCounter()) {
+                        return proxifier.buildProxyWithAllFieldsLoaded(rawEntity, entityFacade);
+                    } else {
+                        return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, entityFacade);
+                    }
                 }
             };
 

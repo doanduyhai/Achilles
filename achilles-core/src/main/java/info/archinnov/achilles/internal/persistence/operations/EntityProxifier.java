@@ -62,6 +62,10 @@ public class EntityProxifier {
         return buildProxy(entity, context, context.getAllGettersExceptCounters());
     }
 
+    public <T> T buildProxyWithAllFieldsLoaded(T entity, EntityOperations context) {
+        return buildProxy(entity, context, context.getAllGetters());
+    }
+
     public <T> T buildProxyWithNoFieldLoaded(T entity, EntityOperations context) {
         return buildProxy(entity, context, new HashSet<Method>());
     }
@@ -86,8 +90,12 @@ public class EntityProxifier {
             metaValues.setValueToField(instance, value);
         }
 
-        for (PropertyMeta pm : meta.getAllCounterMetas()) {
-            pm.forValues().setValueToField(entity,null);
+        for (PropertyMeta counterMeta : meta.getAllCounterMetas()) {
+            Object counterValue = null;
+            if (alreadyLoaded.contains(counterMeta.getGetter())) {
+                counterValue = counterMeta.forValues().getValueFromField(entity);
+            }
+            counterMeta.forValues().setValueToField(entity, counterValue);
         }
 
         ((Factory) instance).setCallbacks(new Callback[] {

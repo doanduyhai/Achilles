@@ -46,8 +46,6 @@ public interface PersistentStateHolder {
 
     public Options getOptions();
 
-    public boolean hasConsistencyLevel();
-
     public boolean hasTTL();
 
     public boolean hasTimestamp();
@@ -65,6 +63,8 @@ public interface PersistentStateHolder {
     public boolean hasLWTConditions();
 
     public Optional<LWTResultListener> getLWTResultListener();
+
+    public Set<Method> getAllGetters();
 
     public Set<Method> getAllGettersExceptCounters();
 
