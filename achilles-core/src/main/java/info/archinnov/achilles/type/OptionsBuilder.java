@@ -16,6 +16,13 @@
 package info.archinnov.achilles.type;
 
 import static info.archinnov.achilles.type.Options.LWTCondition;
+import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
+import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.GTE_CONDITION;
+import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.GT_CONDITION;
+import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.LTE_CONDITION;
+import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.LT_CONDITION;
+import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.NOT_EQUAL_CONDITION;
+
 import java.util.Arrays;
 import java.util.List;
 import com.google.common.base.Optional;
@@ -146,7 +153,92 @@ public class OptionsBuilder {
      * @return BuiltOptions
      */
     public static BuiltOptions ifEqualCondition(String columnName, Object value) {
-        return new BuiltOptions(new LWTCondition(columnName, value));
+        return new BuiltOptions(new LWTCondition(EQUAL_CONDITION, columnName, value));
+    }
+
+    /**
+     * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE
+     *
+     * <pre class="code"><code class="java">
+     *
+     * Options options = OptionsBuilder.ifNotEqualCondition("name","John");
+     * </code></pre>
+     *
+     * @param columnName name of the column to be checked for LWT
+     * @param value expected value of the column to be checked for LWT
+     *
+     * @return BuiltOptions
+     */
+    public static BuiltOptions ifNotEqualCondition(String columnName, Object value) {
+        return new BuiltOptions(new LWTCondition(NOT_EQUAL_CONDITION, columnName, value));
+    }
+
+    /**
+     * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE
+     *
+     * <pre class="code"><code class="java">
+     *
+     * Options options = OptionsBuilder.ifGreaterCondition("name","John");
+     * </code></pre>
+     *
+     * @param columnName name of the column to be checked for LWT
+     * @param value expected value of the column to be checked for LWT
+     *
+     * @return BuiltOptions
+     */
+    public static BuiltOptions ifGreaterCondition(String columnName, Object value) {
+        return new BuiltOptions(new LWTCondition(GT_CONDITION, columnName, value));
+    }
+
+    /**
+     * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE
+     *
+     * <pre class="code"><code class="java">
+     *
+     * Options options = OptionsBuilder.ifGreaterOrEqualCondition("name","John");
+     * </code></pre>
+     *
+     * @param columnName name of the column to be checked for LWT
+     * @param value expected value of the column to be checked for LWT
+     *
+     * @return BuiltOptions
+     */
+    public static BuiltOptions ifGreaterOrEqualCondition(String columnName, Object value) {
+        return new BuiltOptions(new LWTCondition(GTE_CONDITION, columnName, value));
+    }
+
+    /**
+     * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE
+     *
+     * <pre class="code"><code class="java">
+     *
+     * Options options = OptionsBuilder.ifLesserCondition("name","John");
+     * </code></pre>
+     *
+     * @param columnName name of the column to be checked for LWT
+     * @param value expected value of the column to be checked for LWT
+     *
+     * @return BuiltOptions
+     */
+    public static BuiltOptions ifLesserCondition(String columnName, Object value) {
+        return new BuiltOptions(new LWTCondition(LT_CONDITION, columnName, value));
+    }
+
+    /**
+     * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE
+     *
+     * <pre class="code"><code class="java">
+     *
+     * Options options = OptionsBuilder.ifLesserOrEqualCondition("name","John");
+     * </code></pre>
+     *
+     * @param columnName name of the column to be checked for LWT
+     * @param value expected value of the column to be checked for LWT
+     *
+     * @return BuiltOptions
+     */
+    public static BuiltOptions ifLesserOrEqualCondition(String columnName, Object value) {
+        return new BuiltOptions(new LWTCondition(LTE_CONDITION, columnName, value));
     }
 
     /**
@@ -418,7 +510,112 @@ public class OptionsBuilder {
         public BuiltOptions ifEqualCondition(String columnName, Object value) {
             Validator.validateFalse(lwtPredicates.contains(IF_EXISTS), "Cannot add IF = XXX with IF EXISTS");
             Validator.validateFalse(lwtPredicates.contains(IF_NOT_EXISTS), "Cannot add IF = XXX with IF NOT EXISTS");
-            super.lwtPredicates.add(new LWTCondition(columnName, value));
+            super.lwtPredicates.add(new LWTCondition(EQUAL_CONDITION, columnName, value));
+            return this;
+        }
+
+        /**
+         * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE. For multiple equal conditions, just call this method again
+         *
+         * <pre class="code"><code class="java">
+         *
+         * Options options = OptionsBuilder
+         *              .ifEqualCondition("name","John")
+         *              .ifNotEqualCondition("age_in_years",33L);
+         * </code></pre>
+         *
+         * @param columnName name of the column to be checked for LWT
+         * @param value expected value of the column to be checked for LWT
+         * @return BuiltOptions
+         */
+        public BuiltOptions ifNotEqualCondition(String columnName, Object value) {
+            Validator.validateFalse(lwtPredicates.contains(IF_EXISTS), "Cannot add IF = XXX with IF EXISTS");
+            Validator.validateFalse(lwtPredicates.contains(IF_NOT_EXISTS), "Cannot add IF = XXX with IF NOT EXISTS");
+            super.lwtPredicates.add(new LWTCondition(NOT_EQUAL_CONDITION, columnName, value));
+            return this;
+        }
+
+        /**
+         * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE. For multiple equal conditions, just call this method again
+         *
+         * <pre class="code"><code class="java">
+         *
+         * Options options = OptionsBuilder
+         *              .ifEqualCondition("name","John")
+         *              .ifGreaterCondition("age_in_years",33L);
+         * </code></pre>
+         *
+         * @param columnName name of the column to be checked for LWT
+         * @param value expected value of the column to be checked for LWT
+         * @return BuiltOptions
+         */
+        public BuiltOptions ifGreaterCondition(String columnName, Object value) {
+            Validator.validateFalse(lwtPredicates.contains(IF_EXISTS), "Cannot add IF = XXX with IF EXISTS");
+            Validator.validateFalse(lwtPredicates.contains(IF_NOT_EXISTS), "Cannot add IF = XXX with IF NOT EXISTS");
+            super.lwtPredicates.add(new LWTCondition(GT_CONDITION, columnName, value));
+            return this;
+        }
+
+        /**
+         * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE. For multiple equal conditions, just call this method again
+         *
+         * <pre class="code"><code class="java">
+         *
+         * Options options = OptionsBuilder
+         *              .ifEqualCondition("name","John")
+         *              .ifGreaterOrEqualCondition("age_in_years",33L);
+         * </code></pre>
+         *
+         * @param columnName name of the column to be checked for LWT
+         * @param value expected value of the column to be checked for LWT
+         * @return BuiltOptions
+         */
+        public BuiltOptions ifGreaterOrEqualCondition(String columnName, Object value) {
+            Validator.validateFalse(lwtPredicates.contains(IF_EXISTS), "Cannot add IF = XXX with IF EXISTS");
+            Validator.validateFalse(lwtPredicates.contains(IF_NOT_EXISTS), "Cannot add IF = XXX with IF NOT EXISTS");
+            super.lwtPredicates.add(new LWTCondition(GTE_CONDITION, columnName, value));
+            return this;
+        }
+
+        /**
+         * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE. For multiple equal conditions, just call this method again
+         *
+         * <pre class="code"><code class="java">
+         *
+         * Options options = OptionsBuilder
+         *              .ifEqualCondition("name","John")
+         *              .ifLesserCondition("age_in_years",33L);
+         * </code></pre>
+         *
+         * @param columnName name of the column to be checked for LWT
+         * @param value expected value of the column to be checked for LWT
+         * @return BuiltOptions
+         */
+        public BuiltOptions ifLesserCondition(String columnName, Object value) {
+            Validator.validateFalse(lwtPredicates.contains(IF_EXISTS), "Cannot add IF = XXX with IF EXISTS");
+            Validator.validateFalse(lwtPredicates.contains(IF_NOT_EXISTS), "Cannot add IF = XXX with IF NOT EXISTS");
+            super.lwtPredicates.add(new LWTCondition(LT_CONDITION, columnName, value));
+            return this;
+        }
+
+        /**
+         * Use LWT conditions for UPDATE operations. This has no effect on statements other than UPDATE. For multiple equal conditions, just call this method again
+         *
+         * <pre class="code"><code class="java">
+         *
+         * Options options = OptionsBuilder
+         *              .ifEqualCondition("name","John")
+         *              .ifLesserOrEqualCondition("age_in_years",33L);
+         * </code></pre>
+         *
+         * @param columnName name of the column to be checked for LWT
+         * @param value expected value of the column to be checked for LWT
+         * @return BuiltOptions
+         */
+        public BuiltOptions ifLesserOrEqualCondition(String columnName, Object value) {
+            Validator.validateFalse(lwtPredicates.contains(IF_EXISTS), "Cannot add IF = XXX with IF EXISTS");
+            Validator.validateFalse(lwtPredicates.contains(IF_NOT_EXISTS), "Cannot add IF = XXX with IF NOT EXISTS");
+            super.lwtPredicates.add(new LWTCondition(LTE_CONDITION, columnName, value));
             return this;
         }
 

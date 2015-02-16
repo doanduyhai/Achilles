@@ -31,8 +31,8 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.Options.LWTCondition;
+import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
 import static java.util.Arrays.asList;
-import static java.util.Arrays.fill;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -654,7 +654,7 @@ public class PreparedStatementBinderTest {
     public void should_bind_for_remove_entry_from_map_with_cas_condition() throws Exception {
         //Given
         Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        final LWTCondition LWTCondition = new LWTCondition("name", "John");
+        final LWTCondition LWTCondition = new LWTCondition(EQUAL_CONDITION,"name", "John");
 
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
@@ -688,8 +688,8 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_deletion_with_simple_id_and_timestamp_and_lwt_conditions() throws Exception {
         long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        final LWTCondition nameLWTCondition = new LWTCondition("name", "John");
-        final LWTCondition ageLWTCondition = new LWTCondition("age", 33);
+        final LWTCondition nameLWTCondition = new LWTCondition(EQUAL_CONDITION,"name", "John");
+        final LWTCondition ageLWTCondition = new LWTCondition(EQUAL_CONDITION,"age", 33);
         final OptionsBuilder.BuiltOptions options = OptionsBuilder.withTimestamp(10L)
                 .ifEqualCondition("name", "John")
                 .ifEqualCondition("age", 33);

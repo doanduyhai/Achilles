@@ -17,6 +17,7 @@
 package info.archinnov.achilles.internal.context;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_ONE;
+import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -89,7 +90,7 @@ public class StateHolderFacadeTest {
         when(meta.getAllCounterMetas()).thenReturn(asList(counterMeta));
         when(meta.getAllMetasExceptCounters()).thenReturn(asList(nameMeta));
 
-        Options.LWTCondition LWTCondition = new Options.LWTCondition("test", "test");
+        Options.LWTCondition LWTCondition = new Options.LWTCondition(EQUAL_CONDITION,"test", "test");
         LWTResultListener listener = mock(LWTResultListener.class);
         final Options options = OptionsBuilder
                 .withConsistency(LOCAL_ONE)

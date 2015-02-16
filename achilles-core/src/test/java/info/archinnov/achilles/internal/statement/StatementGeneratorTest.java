@@ -21,12 +21,11 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.test.builders.CompleteBeanTestBuilder.builder;
 import static info.archinnov.achilles.type.Options.LWTCondition;
+import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.datastax.driver.core.querybuilder.Update.Assignments;
@@ -91,7 +90,7 @@ public class StatementGeneratorTest {
         Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         Object[] boundValues = new Object[] { "whatever" };
         CompleteBean entity = builder().id(id).buid();
-        final LWTCondition LWTCondition = new LWTCondition("name", "DuyHai");
+        final LWTCondition LWTCondition = new LWTCondition(EQUAL_CONDITION,"name", "DuyHai");
         final Pair<Assignments, Object[]> updateClauseAndBoundValues = Pair.create(update(), boundValues);
         final Pair<Where, Object[]> whereClauseAndBoundValues = Pair.create(QueryBuilder.update("table").with(set("name", "DuyHai")).where(QueryBuilder.eq("id",11L)), boundValues);
 

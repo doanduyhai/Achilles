@@ -436,4 +436,83 @@ public class LWTOperationsIT {
         assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
     }
 
+    @Test
+    public void should_update_with_neq_condition() throws Exception {
+        //Given
+        CompleteBean entity = builder().randomId().name("John").age(33L).buid();
+        manager.insert(entity);
+
+        //When
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+        proxy.setName("John33");
+        manager.update(proxy, OptionsBuilder.ifNotEqualCondition("age_in_years", 32L));
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+        assertThat(found.getName()).isEqualTo("John33");
+    }
+
+    @Test
+    public void should_update_with_gt_condition() throws Exception {
+        //Given
+        CompleteBean entity = builder().randomId().name("John").age(33L).buid();
+        manager.insert(entity);
+
+        //When
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+        proxy.setName("John33");
+        manager.update(proxy, OptionsBuilder.ifGreaterCondition("age_in_years", 32L));
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+        assertThat(found.getName()).isEqualTo("John33");
+    }
+
+    @Test
+    public void should_update_with_gte_condition() throws Exception {
+        //Given
+        CompleteBean entity = builder().randomId().name("John").age(33L).buid();
+        manager.insert(entity);
+
+        //When
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+        proxy.setName("John33");
+        manager.update(proxy,OptionsBuilder.ifGreaterOrEqualCondition("age_in_years", 33L));
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+        assertThat(found.getName()).isEqualTo("John33");
+    }
+
+    @Test
+    public void should_update_with_lt_condition() throws Exception {
+        //Given
+        CompleteBean entity = builder().randomId().name("John").age(33L).buid();
+        manager.insert(entity);
+
+        //When
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+        proxy.setName("John33");
+        manager.update(proxy,OptionsBuilder.ifLesserCondition("age_in_years",34L));
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+        assertThat(found.getName()).isEqualTo("John33");
+    }
+
+    @Test
+    public void should_update_with_lte_condition() throws Exception {
+        //Given
+        CompleteBean entity = builder().randomId().name("John").age(33L).buid();
+        manager.insert(entity);
+
+        //When
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+        proxy.setName("John33");
+        manager.update(proxy,OptionsBuilder.ifLesserOrEqualCondition("age_in_years",33L));
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+        assertThat(found.getName()).isEqualTo("John33");
+    }
 }

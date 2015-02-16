@@ -1,5 +1,6 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
+import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -30,7 +31,7 @@ public class EntityMetaTranscoderTest {
     public void should_encode_LWT_condition_value() throws Exception {
         //Given
         PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        LWTCondition LWTCondition = spy(new LWTCondition("name", "DuyHai"));
+        LWTCondition LWTCondition = spy(new LWTCondition(EQUAL_CONDITION,"name", "DuyHai"));
 
         when(meta.getAllMetasExceptCounters()).thenReturn(asList(nameMeta));
         when(nameMeta.getCQLColumnName()).thenReturn("name");

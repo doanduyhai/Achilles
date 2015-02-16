@@ -18,6 +18,7 @@ package info.archinnov.achilles.type;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.Options.LWTCondition;
+import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
 import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ public class OptionsTest {
 
     @Test
     public void should_duplicate_without_ttl_and_timestamp() throws Exception {
-        final LWTCondition LWTCondition = new LWTCondition("name", "John");
+        final LWTCondition LWTCondition = new LWTCondition(EQUAL_CONDITION,"name", "John");
         Options options = OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(10)
                 .withTimestamp(100L).ifEqualCondition("name","John");
 

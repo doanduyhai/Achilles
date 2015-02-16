@@ -17,12 +17,17 @@ package info.archinnov.achilles.type;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.gt;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.lt;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.lte;
 
 import java.util.ArrayList;
-import java.util.Collections;
-
 import java.util.List;
 
+import com.datastax.driver.core.querybuilder.NotEqualCQLClause;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.listener.LWTResultListener;
@@ -38,7 +43,7 @@ public class Options {
     private static final Predicate<LWTPredicate> FILTER_LWT_CONDITION = new Predicate<LWTPredicate>() {
         @Override
         public boolean apply(LWTPredicate predicate) {
-            return predicate.type() == LWTPredicate.LWTType.EQUAL_CONDITION;
+            return !predicate.type().existentialCondition();
         }
     };
 
@@ -163,7 +168,141 @@ public class Options {
     public static abstract class LWTPredicate {
         public abstract LWTType type();
         public static enum LWTType {
-            IF_NOT_EXISTS, IF_EXISTS, EQUAL_CONDITION;
+            IF_NOT_EXISTS() {
+                @Override
+                public boolean existentialCondition() {
+                    return true;
+                }
+
+                @Override
+                public Clause buildCQLClauseForPreparedStatement(String columnName) {
+                    return null;
+                }
+
+                @Override
+                public Clause buildCQLClause(String columnName, Object value) {
+                    return null;
+                }
+            },
+            IF_EXISTS() {
+                @Override
+                public boolean existentialCondition() {
+                    return true;
+                }
+
+                @Override
+                public Clause buildCQLClauseForPreparedStatement(String columnName) {
+                    return null;
+                }
+
+                @Override
+                public Clause buildCQLClause(String columnName, Object value) {
+                    return null;
+                }
+            },
+            EQUAL_CONDITION() {
+                @Override
+                public boolean existentialCondition() {
+                    return false;
+                }
+
+                @Override
+                public Clause buildCQLClauseForPreparedStatement(String columnName) {
+                    return eq(columnName, bindMarker(columnName));
+                }
+
+                @Override
+                public Clause buildCQLClause(String columnName, Object value) {
+                    return eq(columnName,value);
+                }
+            },
+            GT_CONDITION() {
+                @Override
+                public boolean existentialCondition() {
+                    return false;
+                }
+
+                @Override
+                public Clause buildCQLClauseForPreparedStatement(String columnName) {
+                    return gt(columnName, bindMarker(columnName));
+                }
+
+                @Override
+                public Clause buildCQLClause(String columnName, Object value) {
+                    return gt(columnName, value);
+                }
+            },
+            GTE_CONDITION() {
+                @Override
+                public boolean existentialCondition() {
+                    return false;
+                }
+
+                @Override
+                public Clause buildCQLClauseForPreparedStatement(String columnName) {
+                    return gte(columnName, bindMarker(columnName));
+                }
+
+                @Override
+                public Clause buildCQLClause(String columnName, Object value) {
+                    return gte(columnName, value);
+                }
+            },
+            LT_CONDITION() {
+                @Override
+                public boolean existentialCondition() {
+                    return false;
+                }
+
+                @Override
+                public Clause buildCQLClauseForPreparedStatement(String columnName) {
+                    return lt(columnName, bindMarker(columnName));
+                }
+
+                @Override
+                public Clause buildCQLClause(String columnName, Object value) {
+                    return lt(columnName, value);
+                }
+            },
+            LTE_CONDITION() {
+                @Override
+                public boolean existentialCondition() {
+                    return false;
+                }
+
+                @Override
+                public Clause buildCQLClauseForPreparedStatement(String columnName) {
+                    return lte(columnName, bindMarker(columnName));
+                }
+
+                @Override
+                public Clause buildCQLClause(String columnName, Object value) {
+                    return lte(columnName, value);
+                }
+            },
+            NOT_EQUAL_CONDITION() {
+                @Override
+                public boolean existentialCondition() {
+                    return false;
+                }
+
+                @Override
+                public Clause buildCQLClauseForPreparedStatement(String columnName) {
+                    return NotEqualCQLClause.build(columnName);
+                }
+
+                @Override
+                public Clause buildCQLClause(String columnName, Object value) {
+                    return NotEqualCQLClause.build(columnName, value);
+                }
+            };
+
+            public abstract boolean existentialCondition();
+
+            public abstract Clause buildCQLClauseForPreparedStatement(String columnName);
+
+            public abstract Clause buildCQLClause(String columnName, Object value);
+
         }
 
         public abstract LWTPredicate duplicate();
@@ -222,23 +361,27 @@ public class Options {
 
         private String columnName;
         private Object value;
+        private LWTType type;
 
         @Override
         public LWTType type() {
-          return LWTType.EQUAL_CONDITION;
+          return type;
         }
 
         @Override
         public LWTPredicate duplicate() {
-            return new LWTCondition(columnName);
+            return new LWTCondition(type,columnName);
         }
 
-        private LWTCondition(String columnName) {
+        private LWTCondition(LWTType type,String columnName) {
+            this.type = type;
             this.columnName = columnName;
         }
 
-        public LWTCondition(String columnName, Object value) {
+        public LWTCondition(LWTType type, String columnName, Object value) {
+            Validator.validateNotNull(type, "Lightweight Transaction condition type cannot be null");
             Validator.validateNotBlank(columnName, "Lightweight Transaction condition column cannot be blank");
+            this.type = type;
             this.columnName = columnName;
             this.value = value;
         }
@@ -256,11 +399,11 @@ public class Options {
         }
 
         public Clause toClause() {
-            return eq(columnName, value);
+            return type().buildCQLClause(columnName,value);
         }
 
         public Clause toClauseForPreparedStatement() {
-            return eq(columnName, bindMarker(columnName));
+            return type().buildCQLClauseForPreparedStatement(columnName);
         }
 
         @Override
@@ -274,7 +417,7 @@ public class Options {
 
             LWTCondition that = (LWTCondition) o;
 
-            return Objects.equal(this.type(), that.type())
+            return Objects.equal(this.type, that.type)
                 && Objects.equal(this.columnName, that.columnName)
                 && Objects.equal(this.value, that.value);
         }
