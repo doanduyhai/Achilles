@@ -202,8 +202,8 @@ public class DirtyCheckIT {
         List<String> friends = row.getList("friends", String.class);
 
         assertThat(friends).hasSize(5);
-        assertThat(friends.get(0)).isEqualTo("three");
-        assertThat(friends.get(1)).isEqualTo("two");
+        assertThat(friends.get(0)).isEqualTo("two");
+        assertThat(friends.get(1)).isEqualTo("three");
         assertThat(friends.get(2)).isEqualTo("one");
     }
 
@@ -230,7 +230,7 @@ public class DirtyCheckIT {
     @Ignore
     @Test
     public void should_dirty_check_list_element_remove_at_same_index_twice() throws Exception {
-        bean.getFriends().add("qux");
+        bean.getFriends().addAll(asList("foo","bar","qux"));
         bean.getFriends().remove(0);
         bean.getFriends().remove(0);
 
