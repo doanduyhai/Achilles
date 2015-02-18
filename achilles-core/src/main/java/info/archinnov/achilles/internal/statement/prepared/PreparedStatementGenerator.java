@@ -127,6 +127,9 @@ public class PreparedStatementGenerator {
             }
         }
 
+        if (options.isIfExists()) {
+            updateConditions.and(IfExistsClause.build());
+        }
         Assignments assignments = null;
         boolean onlyStaticColumns = true;
         for (int i = 0; i < pms.size(); i++) {

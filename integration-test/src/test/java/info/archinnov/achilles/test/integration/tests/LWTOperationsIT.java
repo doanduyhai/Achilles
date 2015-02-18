@@ -515,4 +515,16 @@ public class LWTOperationsIT {
         final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("John33");
     }
+
+    @Test(expected = AchillesLightWeightTransactionException.class)
+    public void should_exception_after_update_if_exists() throws Exception {
+        //Given
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, RandomUtils.nextLong(0,Long.MAX_VALUE));
+        proxy.setName("test");
+
+        //When
+        manager.update(proxy,ifExists());
+        //Then
+
+    }
 }
