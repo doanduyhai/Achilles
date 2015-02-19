@@ -47,6 +47,7 @@ import com.datastax.driver.core.querybuilder.*;
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaStatementGenerator;
 import info.archinnov.achilles.internal.statement.StatementHelper;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
@@ -127,9 +128,6 @@ public class PreparedStatementGenerator {
             }
         }
 
-        if (options.isIfExists()) {
-            updateConditions.and(IfExistsClause.build());
-        }
         Assignments assignments = null;
         boolean onlyStaticColumns = true;
         for (int i = 0; i < pms.size(); i++) {
@@ -253,6 +251,8 @@ public class PreparedStatementGenerator {
             whereOptions = where.using(ttl(bindMarker("ttl")));
         } else if (options.hasTimestamp()) {
             whereOptions = where.using(timestamp(bindMarker("timestamp")));
+        } else if (options.isIfExists()) {
+            where.onlyIf(IfExistsClause.build());
         }
 
         return whereOptions;

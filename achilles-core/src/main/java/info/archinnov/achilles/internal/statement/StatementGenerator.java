@@ -23,6 +23,7 @@ import static org.apache.commons.lang3.ArrayUtils.addAll;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.datastax.driver.core.querybuilder.IfExistsClause;
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

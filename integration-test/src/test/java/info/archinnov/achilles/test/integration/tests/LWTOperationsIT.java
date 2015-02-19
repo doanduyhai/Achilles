@@ -525,6 +525,27 @@ public class LWTOperationsIT {
         //When
         manager.update(proxy,ifExists());
         //Then
+    }
 
+    @Test(expected = AchillesLightWeightTransactionException.class)
+    public void should_exception_after_update_if_exists_for_set() throws Exception {
+        //Given
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, RandomUtils.nextLong(0,Long.MAX_VALUE));
+        proxy.getFollowers().add("John");
+
+        //When
+        manager.update(proxy,ifExists());
+        //Then
+    }
+
+    @Test(expected = AchillesLightWeightTransactionException.class)
+    public void should_exception_after_update_if_exists_for_list() throws Exception {
+        //Given
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, RandomUtils.nextLong(0,Long.MAX_VALUE));
+        proxy.getFriends().add(0,"John");
+
+        //When
+        manager.update(proxy,ifExists());
+        //Then
     }
 }

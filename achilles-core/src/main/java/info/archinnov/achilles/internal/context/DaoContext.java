@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import com.datastax.driver.core.querybuilder.IfExistsClause;
 import info.archinnov.achilles.listener.LWTResultListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,6 +133,10 @@ public class DaoContext {
         if (changeType == SET_TO_LIST_AT_INDEX || changeType == REMOVE_FROM_LIST_AT_INDEX) {
             ConsistencyLevel writeLevel = overrider.getWriteLevel(context);
             final Pair<Update.Where, Object[]> pair = statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet);
+            if (context.getOptions().isIfExists()) {
+                pair.left.onlyIf(IfExistsClause.build());
+            }
+
             context.pushStatement(new RegularStatementWrapper(context.getEntityClass(), pair.left, pair.right, getCQLLevel(writeLevel),
 				 context.getLWTResultListener(), context.getSerialConsistencyLevel()));
         } else {
