@@ -34,6 +34,8 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_FOLDERS;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CONCURRENT_READS;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CONCURRENT_WRITES;
 import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_THRIFT_PORT;
 import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT;
 import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT;
@@ -132,6 +134,10 @@ public enum ServerStarter {
 
         System.setProperty("cassandra.triggers_dir", triggersDir);
         System.setProperty("cassandra-foreground", "true");
+        System.setProperty("cassandra.embedded.concurrent.reads", parameters.getTypedOr(CASSANDRA_CONCURRENT_READS, 32).toString());
+        System.setProperty("cassandra.embedded.concurrent.writes", parameters.getTypedOr(CASSANDRA_CONCURRENT_WRITES, 32).toString());
+        System.setProperty("cassandra-foreground", "true");
+
         System.setProperty("cassandra.config.loader","info.archinnov.achilles.embedded.AchillesCassandraConfig");
 
         final CountDownLatch startupLatch = new CountDownLatch(1);

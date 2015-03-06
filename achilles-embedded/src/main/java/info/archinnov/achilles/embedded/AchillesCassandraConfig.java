@@ -45,8 +45,8 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.commitlog_sync = Config.CommitLogSync.periodic;
         config.commitlog_sync_period_in_ms = 10000;
         config.commitlog_segment_size_in_mb = 32;
-        config.concurrent_reads = 32;
-        config.concurrent_writes = 32;
+        config.concurrent_reads = Integer.parseInt(System.getProperty("cassandra.embedded.concurrent.reads"));
+        config.concurrent_writes = Integer.parseInt(System.getProperty("cassandra.embedded.concurrent.writes"));
         config.memtable_allocation_type = Config.MemtableAllocationType.heap_buffers;
         config.trickle_fsync = false;
         config.trickle_fsync_interval_in_kb = 10240;

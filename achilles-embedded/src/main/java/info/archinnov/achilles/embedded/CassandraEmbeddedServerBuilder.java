@@ -76,6 +76,10 @@ public class CassandraEmbeddedServerBuilder {
 
     private boolean cleanConfigFile = true;
 
+    private int concurrentReads;
+  
+    private int concurrentWrites;
+  
     private int cqlPort;
 
     private int thriftPort;
@@ -298,6 +302,34 @@ public class CassandraEmbeddedServerBuilder {
     }
 
     /**
+     * Specify the number threads for concurrent reads for the embedded Cassandra 
+     * server. If not set, 32
+     *
+     * @param concurrentReads
+     *            the number threads for concurrent reads
+     *
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withConcurrentReads(int concurrentReads) {
+      this.concurrentReads = concurrentReads;
+      return this;
+    }
+
+    /**
+     * Specify the number threads for concurrent writes for the embedded Cassandra
+     * server. If not set, 32
+     *
+     * @param concurrentWrites
+     *            the number threads for concurrent writes
+     *
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withConcurrentWrites(int concurrentWrites) {
+      this.concurrentWrites = concurrentWrites;
+      return this;
+    }
+
+    /**
      * Specify the 'durable write' property for the embedded Cassandra server.
      * Default value is 'false'. If not set, Cassandra will not write to commit
      * log.
@@ -452,6 +484,12 @@ public class CassandraEmbeddedServerBuilder {
 
         if (storageSSLPort > 0)
             config.put(CASSANDRA_STORAGE_SSL_PORT, storageSSLPort);
+
+        if (concurrentReads > 0)
+          config.put(CASSANDRA_CONCURRENT_READS, concurrentReads);
+
+        if (concurrentWrites > 0)
+          config.put(CASSANDRA_CONCURRENT_READS, concurrentWrites);
 
         config.put(KEYSPACE_DURABLE_WRITE, durableWrite);
 
