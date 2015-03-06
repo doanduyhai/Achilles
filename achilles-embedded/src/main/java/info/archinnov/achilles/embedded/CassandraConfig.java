@@ -25,6 +25,8 @@
 package info.archinnov.achilles.embedded;
 
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CONCURRENT_READS;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CONCURRENT_WRITES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_PORT;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_SSL_PORT;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_THRIFT_PORT;
@@ -80,8 +82,8 @@ public class CassandraConfig {
         config.commitlog_sync = CommitLogSync.periodic;
         config.commitlog_sync_period_in_ms = 10000;
         config.commitlog_segment_size_in_mb = 32;
-        config.concurrent_reads = 32;
-        config.concurrent_writes = 32;
+        config.concurrent_reads = parameters.getTypedOr(CASSANDRA_CONCURRENT_READS, 32);
+        config.concurrent_writes = parameters.getTypedOr(CASSANDRA_CONCURRENT_WRITES, 32);
         config.memtable_flush_queue_size = 4;
         config.trickle_fsync = false;
         config.trickle_fsync_interval_in_kb = 10240;
