@@ -43,7 +43,6 @@ import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
-import org.springframework.scheduling.annotation.Async;
 
 import javax.annotation.PreDestroy;
 
@@ -681,7 +680,9 @@ public class PersistenceManagerFactory {
      */
     @PreDestroy
     public void shutDown() {
-        configContext.getExecutorService().shutdown();
+        if(this.configurationMap.getTyped(EXECUTOR_SERVICE) == null) {
+            this.configContext.getExecutorService().shutdown();
+        }
     }
 
     @Override
