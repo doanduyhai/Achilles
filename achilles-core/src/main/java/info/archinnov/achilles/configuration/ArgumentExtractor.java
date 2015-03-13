@@ -38,6 +38,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.exception.AchillesException;
@@ -260,14 +261,19 @@ public class ArgumentExtractor {
         return configMap.getTypedOr(EXECUTOR_SERVICE, initializeDefaultExecutor(configMap));
     }
 
-    private ExecutorService initializeDefaultExecutor(ConfigMap configMap) {
+    private Supplier<ExecutorService> initializeDefaultExecutor(final ConfigMap configMap) {
+        return new Supplier<ExecutorService>() {
+            @Override
+            public ExecutorService get() {
+                int minThreads = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_MIN_THREAD, DEFAULT_THREAD_POOL_MIN_THREAD_COUNT);
+                int maxThreads = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_MAX_THREAD, DEFAULT_THREAD_POOL_MAX_THREAD_COUNT);
+                long threadKeepAlive = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE, DEFAULT_THREAD_POOL_THREAD_TTL);
+                int queueSize = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE, DEFAULT_THREAD_POOL_QUEUE_SIZE);
+                ThreadFactory threadFactory = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY, DEFAULT_THREAD_POOL_THREAD_FACTORY);
 
-        int minThreads = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_MIN_THREAD, DEFAULT_THREAD_POOL_MIN_THREAD_COUNT);
-        int maxThreads = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_MAX_THREAD, DEFAULT_THREAD_POOL_MAX_THREAD_COUNT);
-        long threadKeepAlive = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE, DEFAULT_THREAD_POOL_THREAD_TTL);
-        int queueSize = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE, DEFAULT_THREAD_POOL_QUEUE_SIZE);
-        ThreadFactory threadFactory = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY, DEFAULT_THREAD_POOL_THREAD_FACTORY);
-        return new ThreadPoolExecutor(minThreads, maxThreads, threadKeepAlive, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(queueSize),threadFactory);
+                return new ThreadPoolExecutor(minThreads, maxThreads, threadKeepAlive, TimeUnit.SECONDS,
+                        new LinkedBlockingQueue<Runnable>(queueSize), threadFactory);
+            }
+        };
     }
 }
