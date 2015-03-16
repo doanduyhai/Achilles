@@ -18,6 +18,7 @@ package info.archinnov.achilles.internal.utils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import com.google.common.base.Supplier;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
 
 public class ConfigMap extends LinkedHashMap<ConfigurationParameters, Object> {
@@ -45,6 +46,14 @@ public class ConfigMap extends LinkedHashMap<ConfigurationParameters, Object> {
             return getTyped(key);
         } else {
             return defaultValue;
+        }
+    }
+
+    public <T> T getTypedOr(ConfigurationParameters key, Supplier<T> defaultValue) {
+        if (super.containsKey(key)) {
+            return getTyped(key);
+        } else {
+            return defaultValue.get();
         }
     }
 
