@@ -27,8 +27,10 @@ import java.util.Set;
 import java.util.UUID;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Token;
 import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.UDTValue;
+import com.google.common.reflect.TypeToken;
 
 public class NullRow implements Row {
     @Override
@@ -217,12 +219,57 @@ public class NullRow implements Row {
     }
 
     @Override
+    public <T> List<T> getList(int i, TypeToken<T> elementsType) {
+        return null;
+    }
+
+    @Override
+    public <T> Set<T> getSet(int i, TypeToken<T> elementsType) {
+        return null;
+    }
+
+    @Override
+    public <K, V> Map<K, V> getMap(int i, TypeToken<K> keysType, TypeToken<V> valuesType) {
+        return null;
+    }
+
+    @Override
+    public <T> List<T> getList(String name, TypeToken<T> elementsType) {
+        return null;
+    }
+
+    @Override
+    public <T> Set<T> getSet(String name, TypeToken<T> elementsType) {
+        return null;
+    }
+
+    @Override
+    public <K, V> Map<K, V> getMap(String name, TypeToken<K> keysType, TypeToken<V> valuesType) {
+        return null;
+    }
+
+    @Override
     public UDTValue getUDTValue(String name) {
         return null;
     }
 
     @Override
     public TupleValue getTupleValue(String name) {
+        return null;
+    }
+
+    @Override
+    public Token getToken(int i) {
+        return null;
+    }
+
+    @Override
+    public Token getToken(String name) {
+        return null;
+    }
+
+    @Override
+    public Token getPartitionKeyToken() {
         return null;
     }
 }
