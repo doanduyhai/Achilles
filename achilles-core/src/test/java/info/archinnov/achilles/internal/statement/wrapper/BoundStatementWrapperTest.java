@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
-import static com.google.common.base.Optional.fromNullable;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
@@ -44,7 +43,7 @@ public class BoundStatementWrapperTest {
     @Test
     public void should_get_bound_statement() throws Exception {
         //Given
-        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ONE, NO_LISTENER, fromNullable(ConsistencyLevel.LOCAL_SERIAL));
+        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ONE, NO_LISTENER, Optional.of(ConsistencyLevel.LOCAL_SERIAL));
 
         //When
         final BoundStatement expectedBs = wrapper.getStatement();
