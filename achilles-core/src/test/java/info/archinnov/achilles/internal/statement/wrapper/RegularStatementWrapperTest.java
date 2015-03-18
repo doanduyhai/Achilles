@@ -19,7 +19,6 @@ package info.archinnov.achilles.internal.statement.wrapper;
 import static com.datastax.driver.core.ColumnDefinitionBuilder.buildColumnDef;
 import static com.datastax.driver.core.ColumnDefinitions.Definition;
 import static com.datastax.driver.core.ConsistencyLevel.ONE;
-import static com.google.common.base.Optional.fromNullable;
 import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.LWT_RESULT_COLUMN;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.INSERT;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.UPDATE;
@@ -113,7 +112,7 @@ public class RegularStatementWrapperTest {
     @Test
     public void should_execute() throws Exception {
         //Given
-        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, NO_LISTENER, fromNullable(ConsistencyLevel.LOCAL_SERIAL));
+        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, NO_LISTENER, Optional.of(ConsistencyLevel.LOCAL_SERIAL));
         wrapper.traceQueryForEntity = true;
         wrapper.asyncUtils = asyncUtils;
         when(session.executeAsync(statementCaptor.capture())).thenReturn(resultSetFuture);
@@ -144,7 +143,7 @@ public class RegularStatementWrapperTest {
         };
 
         when(rs.getQueryString()).thenReturn("INSERT INTO table IF NOT EXISTS");
-        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, fromNullable(listener), NO_SERIAL_CONSISTENCY);
+        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, Optional.of(listener), NO_SERIAL_CONSISTENCY);
         when(resultSet.one().getBool(LWT_RESULT_COLUMN)).thenReturn(true);
 
         //When
@@ -168,7 +167,7 @@ public class RegularStatementWrapperTest {
                 atomicLWTResult.compareAndSet(null, lwtResult);
             }
         };
-        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, fromNullable(listener), NO_SERIAL_CONSISTENCY);
+        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, Optional.of(listener), NO_SERIAL_CONSISTENCY);
         wrapper.invoker = invoker;
         when(rs.getQueryString()).thenReturn("UPDATE table IF name='John' SET");
         when(resultSet.one()).thenReturn(row);
