@@ -22,8 +22,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.concurrent.ExecutorService;
-
-import info.archinnov.achilles.listener.LWTResultListener;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -35,6 +33,7 @@ import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.async.AsyncUtils;
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 

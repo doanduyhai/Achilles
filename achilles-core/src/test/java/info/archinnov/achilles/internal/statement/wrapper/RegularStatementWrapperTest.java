@@ -19,6 +19,7 @@ package info.archinnov.achilles.internal.statement.wrapper;
 import static com.datastax.driver.core.ColumnDefinitionBuilder.buildColumnDef;
 import static com.datastax.driver.core.ColumnDefinitions.Definition;
 import static com.datastax.driver.core.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.LogInterceptionRule.interceptDMLStatementViaMockedAppender;
 import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.LWT_RESULT_COLUMN;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.INSERT;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.UPDATE;
@@ -26,17 +27,17 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.net.InetAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
-import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
-import info.archinnov.achilles.listener.LWTResultListener;
+import org.apache.log4j.spi.LoggingEvent;
 import org.fest.assertions.data.MapEntry;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -57,8 +58,11 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
+import info.archinnov.achilles.LogInterceptionRule.DMLStatementInterceptor;
+import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
 import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.sample.entity.Entity1;
 
@@ -103,6 +107,13 @@ public class RegularStatementWrapperTest {
 
     private Optional<LWTResultListener> NO_LISTENER = Optional.absent();
     private static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
+
+    @Rule
+    public DMLStatementInterceptor dmlStmntInterceptor = interceptDMLStatementViaMockedAppender();
+
+    @Captor
+    private ArgumentCaptor<LoggingEvent> loggingEvent;
+
 
     @Before
     public void setUp() {
@@ -269,6 +280,23 @@ public class RegularStatementWrapperTest {
         wrapper.tracing(resultSet);
 
         //Then
+    }
 
+    @Test
+    public void should_log_dml_of_a_regular_statement() throws Exception {
+        //Given
+        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 73L, "bob" }, ONE, NO_LISTENER, Optional.<ConsistencyLevel>absent());
+        when(rs.getQueryString()).thenReturn("SELECT * FROM table WHERE ...");
+        when(rs.getConsistencyLevel()).thenReturn(ConsistencyLevel.LOCAL_QUORUM);
+
+        // When
+        wrapper.logDMLStatement("");
+
+        // Then
+        verify(dmlStmntInterceptor.appender(), times(2)).doAppend(loggingEvent.capture());
+        assertThat(loggingEvent.getAllValues().get(0).getMessage().toString())
+                .contains("[SELECT * FROM table WHERE ...] with CONSISTENCY LEVEL [LOCAL_QUORUM]");
+        assertThat(loggingEvent.getAllValues().get(1).getMessage().toString())
+                .contains("bound values : [73, bob]");
     }
 }
