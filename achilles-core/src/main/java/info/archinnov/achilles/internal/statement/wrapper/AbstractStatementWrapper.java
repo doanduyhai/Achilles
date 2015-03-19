@@ -17,24 +17,18 @@
 package info.archinnov.achilles.internal.statement.wrapper;
 
 import static com.datastax.driver.core.ColumnDefinitions.Definition;
+import static info.archinnov.achilles.internal.helper.LoggerHelper.replaceByteBuffersByHexString;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.INSERT;
 import static info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation.UPDATE;
 import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DML_STATEMENT;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
-
-import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
 import java.util.concurrent.ExecutorService;
-
-import info.archinnov.achilles.listener.LWTResultListener;
-import info.archinnov.achilles.logger.AchillesLoggers;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +44,10 @@ import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.TraceRetrievalException;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
+import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
 import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.TypedMap;
 
@@ -158,7 +154,7 @@ public abstract class AbstractStatementWrapper {
         }
 
         if (ArrayUtils.isNotEmpty(values)) {
-            actualLogger.debug("\t bound values : {}", Arrays.asList(values));
+            actualLogger.debug("\t bound values : {}", replaceByteBuffersByHexString(values));
         }
     }
 

@@ -15,11 +15,18 @@
  */
 package info.archinnov.achilles.internal.helper;
 
+import static java.lang.Math.min;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import com.datastax.driver.core.utils.Bytes;
 import com.google.common.base.Function;
 
-public class LoggerHelper {
-	public static Function<Class<?>, String> fqcnToStringFn = new Function<Class<?>, String>() {
+public abstract class LoggerHelper {
+    public static final int HEX_STRING_LOG_LIMIT = 16;
+    public static Function<Class<?>, String> fqcnToStringFn = new Function<Class<?>, String>() {
 		@Override
 		public String apply(Class<?> clazz) {
 			return clazz.getCanonicalName();
@@ -31,4 +38,31 @@ public class LoggerHelper {
 			return field.getName();
 		}
 	};
+
+    public static List<Object> replaceByteBuffersByHexString(Object... values) {
+        ArrayList<Object> boundValues = new ArrayList<>(Arrays.asList(values));
+
+        for (int valuePos = 0; valuePos < boundValues.size(); valuePos++) {
+            Object boundValue = boundValues.get(valuePos);
+            if (boundValue instanceof ByteBuffer) {
+                ByteBuffer bbBoundedValue = (ByteBuffer) boundValue;
+                byte[] firstBytes = new byte[min(bbBoundedValue.remaining(), HEX_STRING_LOG_LIMIT)];
+                bbBoundedValue.get(firstBytes).rewind();
+                boundValues.set(valuePos, toHexString(firstBytes, bbBoundedValue.remaining()));
+            } else if (boundValue instanceof byte[]) {
+                byte[] baBoundedValue = (byte[]) boundValue;
+                byte[] firstBytes = baBoundedValue.length > HEX_STRING_LOG_LIMIT ? Arrays.copyOfRange(baBoundedValue, 0, HEX_STRING_LOG_LIMIT) : baBoundedValue;
+                boundValues.set(valuePos, toHexString(firstBytes, baBoundedValue.length));
+            }
+        }
+        return boundValues;
+    }
+
+    private static String toHexString(byte[] firstBytes, int originalLength) {
+        return Bytes.toHexString(firstBytes) + more(originalLength);
+    }
+
+    private static String more(int length) {
+        return ((length > HEX_STRING_LOG_LIMIT) ? String.format("... (%d)", length) : "");
+    }
 }

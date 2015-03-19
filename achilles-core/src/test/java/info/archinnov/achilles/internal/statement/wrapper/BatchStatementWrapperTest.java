@@ -17,14 +17,11 @@
 package info.archinnov.achilles.internal.statement.wrapper;
 
 import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
-import static com.google.common.base.Optional.fromNullable;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.concurrent.ExecutorService;
-
-import info.archinnov.achilles.listener.LWTResultListener;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -36,6 +33,7 @@ import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.async.AsyncUtils;
+import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 
@@ -70,11 +68,11 @@ public class BatchStatementWrapperTest {
     public void should_get_query_string() throws Exception {
         //Given
         when(statementWrapper.getQueryString()).thenReturn("SELECT * FROM");
-        statementWrapper.lwtResultListener = Optional.fromNullable(LWTResultListener);
+        statementWrapper.lwtResultListener = Optional.of(LWTResultListener);
 
         //When
         BatchStatementWrapper wrapper = new BatchStatementWrapper(LOGGED, asList(statementWrapper),
-                fromNullable(ConsistencyLevel.ALL),fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
+                Optional.of(ConsistencyLevel.ALL),Optional.of(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
         final String actual = wrapper.getQueryString();
 
         //Then
@@ -95,7 +93,7 @@ public class BatchStatementWrapperTest {
     public void should_log_dml_statements() throws Exception {
         //Given
         when(statementWrapper.isTracingEnabled()).thenReturn(true);
-        statementWrapper.lwtResultListener = Optional.fromNullable(LWTResultListener);
+        statementWrapper.lwtResultListener = Optional.of(LWTResultListener);
 
         //When
         BatchStatementWrapper wrapper = new BatchStatementWrapper(LOGGED, asList(statementWrapper),
