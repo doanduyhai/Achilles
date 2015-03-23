@@ -23,13 +23,18 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.UUID;
-import org.apache.log4j.spi.LoggingEvent;
+
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ProtocolVersion;
@@ -103,8 +108,15 @@ public class NativeStatementWrapperTest {
 
         // Then
         verify(dmlStmntInterceptor.appender(), times(1)).doAppend(loggingEvent.capture());
-        assertThat(loggingEvent.getValue().getMessage().toString())
-                .contains("[INSERT INTO test(id,value) VALUES (73,?);] with CONSISTENCY LEVEL [ALL]");
+
+        final List<LoggingEvent> allValues = loggingEvent.getAllValues();
+        final Object[] argumentArray1 = allValues.get(0).getArgumentArray();
+        assertThat(argumentArray1[1]).isEqualTo("INSERT INTO test(id,value) VALUES (73,?);");
+        assertThat(argumentArray1[2]).isEqualTo("ALL");
+
+
+//        assertThat(loggingEvent.getValue().getMessage().toString())
+//                .contains("[INSERT INTO test(id,value) VALUES (73,?);] with CONSISTENCY LEVEL [ALL]");
     }
 
 }

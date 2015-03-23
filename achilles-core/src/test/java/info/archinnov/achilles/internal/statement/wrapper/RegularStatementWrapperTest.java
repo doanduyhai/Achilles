@@ -31,10 +31,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.net.InetAddress;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.log4j.spi.LoggingEvent;
+
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
 import org.fest.assertions.data.MapEntry;
 import org.junit.Before;
 import org.junit.Rule;
@@ -294,9 +298,14 @@ public class RegularStatementWrapperTest {
 
         // Then
         verify(dmlStmntInterceptor.appender(), times(2)).doAppend(loggingEvent.capture());
-        assertThat(loggingEvent.getAllValues().get(0).getMessage().toString())
-                .contains("[SELECT * FROM table WHERE ...] with CONSISTENCY LEVEL [LOCAL_QUORUM]");
-        assertThat(loggingEvent.getAllValues().get(1).getMessage().toString())
-                .contains("bound values : [73, bob]");
+        final List<LoggingEvent> allValues = loggingEvent.getAllValues();
+        final Object[] argumentArray1 = allValues.get(0).getArgumentArray();
+        assertThat(argumentArray1[1]).isEqualTo("SELECT * FROM table WHERE ...");
+        assertThat(argumentArray1[2]).isEqualTo("LOCAL_QUORUM");
+
+        final Object[] argumentArray2 = allValues.get(1).getArgumentArray();
+        final List<Object> boundValues = (List<Object>) argumentArray2[0];
+        assertThat(boundValues.get(0)).isEqualTo(73L);
+        assertThat(boundValues.get(1)).isEqualTo("bob");
     }
 }

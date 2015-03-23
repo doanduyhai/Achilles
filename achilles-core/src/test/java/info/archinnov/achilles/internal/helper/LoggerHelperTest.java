@@ -30,8 +30,10 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 public class LoggerHelperTest {
 
+    public static final int _0x_LENGTH = 2;
     private final byte[] long_blob = byteArrayOf("abcdefghijklmnoprstuvwxyz1234567890");
     private final byte[] short_blob = byteArrayOf("12345678");
+    private final byte[] _1byte_blob = byteArrayOf("z");
     private final byte[] uuid_blob = byteArrayOf(UUIDGen.getTimeUUID());
 
     private byte[] byteArrayOf(UUID timeUUID) {
@@ -63,14 +65,14 @@ public class LoggerHelperTest {
     public void should_transform_long_byte_array_to_truncated_hex_string() throws Exception {
         List<Object> objects = LoggerHelper.replaceByteBuffersByHexString(new Object[] { long_blob });
 
-        assertThat(objects.get(0)).isEqualTo(Bytes.toHexString(long_blob).substring(0, 32 + 2) + "...");
+        assertThat(objects.get(0)).isEqualTo(Bytes.toHexString(long_blob).substring(0, byteAsStringLength(16) + _0x_LENGTH) + "... (35)");
     }
 
     @Test
     public void should_transform_long_ByteBuffer_to_truncated_hex_string() throws Exception {
         List<Object> objects = LoggerHelper.replaceByteBuffersByHexString(ByteBuffer.wrap(long_blob));
 
-        assertThat(objects.get(0)).isEqualTo(Bytes.toHexString(long_blob).substring(0, 32 + 2) + "...");
+        assertThat(objects.get(0)).isEqualTo(Bytes.toHexString(long_blob).substring(0, byteAsStringLength(16) + _0x_LENGTH) + "... (35)");
     }
 
     @Test
@@ -99,6 +101,11 @@ public class LoggerHelperTest {
         List<Object> objects = LoggerHelper.replaceByteBuffersByHexString(ByteBuffer.wrap(uuid_blob));
 
         assertThat(objects.get(0)).isEqualTo(Bytes.toHexString(uuid_blob));
+    }
+
+    private int byteAsStringLength(int byteCount) {
+        // a single byte is represented by two char
+        return byteCount * 2;
     }
 
     private byte[] byteArrayOf(String string) {

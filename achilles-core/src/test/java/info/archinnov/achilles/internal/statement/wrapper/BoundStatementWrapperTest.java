@@ -16,12 +16,18 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
+import static com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL;
+import static com.datastax.driver.core.ConsistencyLevel.ONE;
+import static com.google.common.base.Optional.of;
 import static info.archinnov.achilles.LogInterceptionRule.interceptDMLStatementViaMockedAppender;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import org.apache.log4j.spi.LoggingEvent;
+
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,11 +37,12 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ConsistencyLevel;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.LogInterceptionRule.DMLStatementInterceptor;
 import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+
+import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BoundStatementWrapperTest {
@@ -45,31 +52,32 @@ public class BoundStatementWrapperTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private BoundStatement bs;
 
+    @Captor
+    private ArgumentCaptor<LoggingEvent> loggingEvent;
+
     @Rule
     public DMLStatementInterceptor dmlStmntInterceptor = interceptDMLStatementViaMockedAppender();
 
-    @Captor
-    private ArgumentCaptor<LoggingEvent> loggingEvent;
 
     private static final Optional<LWTResultListener> NO_LISTENER = Optional.absent();
 
     @Test
     public void should_get_bound_statement() throws Exception {
         //Given
-        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ONE, NO_LISTENER, Optional.of(ConsistencyLevel.LOCAL_SERIAL));
+        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ONE, NO_LISTENER, of(LOCAL_SERIAL));
 
         //When
         final BoundStatement expectedBs = wrapper.getStatement();
 
         //Then
         assertThat(expectedBs).isSameAs(bs);
-        verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
+        verify(bs).setSerialConsistencyLevel(LOCAL_SERIAL);
     }
 
     @Test
     public void should_log_dml_statement_with_bound_values() throws Exception {
         //Given
-        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 73L, "bob" }, ConsistencyLevel.ONE, NO_LISTENER, Optional.of(ConsistencyLevel.LOCAL_SERIAL));
+        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 73L, "bob" }, ONE, NO_LISTENER, of(LOCAL_SERIAL));
         given(bs.preparedStatement().getQueryString()).willReturn("insert ...");
 
         // When
@@ -77,9 +85,14 @@ public class BoundStatementWrapperTest {
 
         // Then
         verify(dmlStmntInterceptor.appender(), times(2)).doAppend(loggingEvent.capture());
-        assertThat(loggingEvent.getAllValues().get(0).getMessage().toString())
-                .contains("[insert ...] with CONSISTENCY LEVEL [DEFAULT]");
-        assertThat(loggingEvent.getAllValues().get(1).getMessage().toString())
-                .contains("bound values : [73, bob]");
+        final List<LoggingEvent> allValues = loggingEvent.getAllValues();
+        final Object[] argumentArray1 = allValues.get(0).getArgumentArray();
+        assertThat(argumentArray1[1]).isEqualTo("insert ...");
+        assertThat(argumentArray1[2]).isEqualTo("DEFAULT");
+
+        final Object[] argumentArray2 = allValues.get(1).getArgumentArray();
+        final List<Object> boundValues = (List<Object>) argumentArray2[0];
+        assertThat(boundValues.get(0)).isEqualTo(73L);
+        assertThat(boundValues.get(1)).isEqualTo("bob");
     }
 }

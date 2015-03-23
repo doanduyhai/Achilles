@@ -63,6 +63,6 @@ public abstract class LoggerHelper {
     }
 
     private static String more(int length) {
-        return ((length > HEX_STRING_LOG_LIMIT) ? "..." : "");
+        return ((length > HEX_STRING_LOG_LIMIT) ? String.format("... (%d)", length) : "");
     }
 }
