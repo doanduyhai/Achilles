@@ -19,7 +19,7 @@
     <parent>
         <groupId>info.archinnov</groupId>
         <artifactId>achilles</artifactId>
-        <version>3.1.7-SNAPSHOT</version>
+        <version>3.1.7</version>
     </parent>
     <name>Achilles Perf</name>
     <artifactId>achilles-perf</artifactId>
