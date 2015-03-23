@@ -209,8 +209,10 @@ public abstract class AbstractTypedQuery<T> {
     private Map<String, PropertyMeta> transformPropertiesMap(EntityMeta meta) {
         Map<String, PropertyMeta> propertiesMap = new HashMap<>();
         for (PropertyMeta pm : meta.getPropertyMetas().values()) {
-            String cqlColumnName = pm.getCQLColumnName();
-            propertiesMap.put(cqlColumnName, pm);
+            if (!pm.type().isCompoundPK()) {
+                String cqlColumnName = pm.getCQLColumnName().replaceAll("\"", "");
+                propertiesMap.put(cqlColumnName, pm);
+            }
         }
         return propertiesMap;
     }

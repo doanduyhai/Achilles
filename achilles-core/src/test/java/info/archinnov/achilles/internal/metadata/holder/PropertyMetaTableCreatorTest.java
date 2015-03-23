@@ -105,7 +105,6 @@ public class PropertyMetaTableCreatorTest {
     @Test
     public void should_create_new_index_with_default_name() throws Exception {
         //Given
-
         IndexProperties indexProperties = mock(IndexProperties.class, RETURNS_DEEP_STUBS);
         when(meta.getIndexProperties()).thenReturn(indexProperties);
         when(indexProperties.getIndexName()).thenReturn(null);
@@ -116,6 +115,36 @@ public class PropertyMetaTableCreatorTest {
 
         //Then
         assertThat(indexScript.trim()).isEqualTo("CREATE INDEX my_table_name_idx ON my_table(name)");
+    }
+
+    @Test
+    public void should_create_new_index_with_case_sensitive_table_name() throws Exception {
+        //Given
+        IndexProperties indexProperties = mock(IndexProperties.class, RETURNS_DEEP_STUBS);
+        when(meta.getIndexProperties()).thenReturn(indexProperties);
+        when(indexProperties.getIndexName()).thenReturn(null);
+        when(meta.getCQLColumnName()).thenReturn("name");
+
+        //When
+        final String indexScript = view.createNewIndexScript("\"myTable\"");
+
+        //Then
+        assertThat(indexScript.trim()).isEqualTo("CREATE INDEX myTable_name_idx ON \"myTable\"(name)");
+    }
+
+    @Test
+    public void should_create_new_index_with_case_sensitive_column_name() throws Exception {
+        //Given
+        IndexProperties indexProperties = mock(IndexProperties.class, RETURNS_DEEP_STUBS);
+        when(meta.getIndexProperties()).thenReturn(indexProperties);
+        when(indexProperties.getIndexName()).thenReturn(null);
+        when(meta.getCQLColumnName()).thenReturn("\"camelCase\"");
+
+        //When
+        final String indexScript = view.createNewIndexScript("my_table");
+
+        //Then
+        assertThat(indexScript.trim()).isEqualTo("CREATE INDEX my_table_camelCase_idx ON my_table(\"camelCase\")");
     }
 
     @Test

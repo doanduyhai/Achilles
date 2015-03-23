@@ -45,4 +45,8 @@ public class SchemaNameNormalizer {
 					+ "' is invalid. It should respect the pattern [a-zA-Z0-9][a-zA-Z0-9_]{1,47} optionally enclosed in double quotes (\")");
 		}
 	}
+
+    public static boolean isCaseSensitive(String name) {
+        return name != null && !name.equals(name.toLowerCase());
+    }
 }

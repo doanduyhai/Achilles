@@ -60,4 +60,14 @@ public class SchemaNameNormalizerTest {
 
 		assertThat(normalized).isEqualTo("ClassName");
 	}
+
+    @Test
+    public void should_find_case_sensitive_name() throws Exception {
+        assertThat(SchemaNameNormalizer.isCaseSensitive("camelCase")).isTrue();
+    }
+
+    @Test
+    public void should_find_case_insensitive_name() throws Exception {
+        assertThat(SchemaNameNormalizer.isCaseSensitive("snake_case")).isFalse();
+    }
 }
