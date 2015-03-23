@@ -165,9 +165,17 @@ public class TypedQueryTest {
     @Test
     public void should_get_all_managed_with_select_star_async() throws Exception {
         // Given
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(PARTITION_KEY).accessors().build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
+                .propertyName("id")
+                .type(PARTITION_KEY)
+                .cqlColumnName("id")
+                .accessors().build();
 
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class)
+                .propertyName("name")
+                .type(SIMPLE)
+                .cqlColumnName("name")
+                .accessors().build();
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
@@ -211,10 +219,10 @@ public class TypedQueryTest {
     public void should_get_first_entity_async() throws Exception {
         // When
         PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
-                .type(PropertyType.PARTITION_KEY).accessors().build();
+                .type(PropertyType.PARTITION_KEY).cqlColumnName("id").accessors().build();
 
         PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name")
-                .type(PropertyType.SIMPLE).accessors().build();
+                .type(PropertyType.SIMPLE).cqlColumnName("name").accessors().build();
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 

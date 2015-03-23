@@ -1,5 +1,6 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
+import info.archinnov.achilles.internal.table.SchemaNameNormalizer;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.schemabuilder.Create;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLDataType;
+import static info.archinnov.achilles.internal.table.SchemaNameNormalizer.isCaseSensitive;
 import static info.archinnov.achilles.schemabuilder.SchemaBuilder.createIndex;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -43,7 +45,7 @@ public class PropertyMetaTableCreator extends PropertyMetaView {
         log.debug("Creating new index {} for table {}", meta.getIndexProperties().getIndexName(), tableName);
         final String optionalIndexName = meta.getIndexProperties().getIndexName();
         final String cqlColumnName = meta.getCQLColumnName();
-        final String indexName = isBlank(optionalIndexName) ? tableName + "_" + cqlColumnName + "_idx" : optionalIndexName;
+        final String indexName = isBlank(optionalIndexName) ? buildValidIndexNameWithRegardToCase(tableName,cqlColumnName) : optionalIndexName.replaceAll("\"","");
         return createIndex(indexName).onTable(tableName).andColumn(cqlColumnName);
     }
 
@@ -54,5 +56,13 @@ public class PropertyMetaTableCreator extends PropertyMetaView {
             return tableOptions.clusteringOrder(clusteringOrders.toArray(new Create.Options.ClusteringOrder[clusteringOrders.size()]));
         }
         return tableOptions;
+    }
+
+    private String buildValidIndexNameWithRegardToCase(String tableName, String cqlColumnName) {
+        if (isCaseSensitive(tableName) || isCaseSensitive(cqlColumnName)) {
+            return tableName.replaceAll("\"", "") + "_" + cqlColumnName.replaceAll("\"", "")+"_idx";
+        } else {
+            return tableName + "_" + cqlColumnName + "_idx";
+        }
     }
 }

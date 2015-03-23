@@ -28,7 +28,7 @@ public class EntityWithSecondaryIndexOnEnum {
     private Long id;
 
     @Index
-    @Column
+    @Column(name = "\"consistencyLevel\"")
     private ConsistencyLevel consistencyLevel;
 
     public EntityWithSecondaryIndexOnEnum() {

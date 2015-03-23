@@ -24,7 +24,7 @@ public class EntityWithSecondaryIndex {
 	@CompoundPrimaryKey
 	private EmbeddedKey id;
 
-	@Column
+	@Column(name = "\"myLabel\"")
 	@Index
 	private String label;
 

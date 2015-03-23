@@ -20,6 +20,9 @@ import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
+
+import info.archinnov.achilles.type.ConsistencyLevel;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -37,7 +40,8 @@ import info.archinnov.achilles.type.IndexCondition;
 public class SecondaryIndexIT {
 
     @Rule
-    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, CompleteBean.class.getSimpleName(), EntityWithSecondaryIndex.class.getSimpleName());
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, CompleteBean.class.getSimpleName(),
+            EntityWithSecondaryIndexOnEnum.TABLE_NAME);
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -59,7 +63,27 @@ public class SecondaryIndexIT {
 
         CompleteBean found1 = actual.get(0);
         assertThat(found1).isNotNull();
+    }
 
+    @Test
+    public void should_return_entities_for_indexed_query_with_case_sensitive_column() throws Exception {
+        Long id1 = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        Long id2 = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        EntityWithSecondaryIndexOnEnum entity1 = new EntityWithSecondaryIndexOnEnum(id1, ConsistencyLevel.ONE);
+        EntityWithSecondaryIndexOnEnum entity2 = new EntityWithSecondaryIndexOnEnum(id2, ConsistencyLevel.ONE);
+
+        manager.insert(entity1);
+        manager.insert(entity2);
+
+        IndexCondition condition = new IndexCondition("\"consistencyLevel\"", ConsistencyLevel.ONE);
+        List<EntityWithSecondaryIndexOnEnum> actual = manager.indexedQuery(EntityWithSecondaryIndexOnEnum.class, condition).get();
+
+        assertThat(actual).hasSize(2);
+
+        EntityWithSecondaryIndexOnEnum found1 = actual.get(0);
+        EntityWithSecondaryIndexOnEnum found2 = actual.get(1);
+        assertThat(found1.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(found2.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
     }
 
     @Test
@@ -74,7 +98,7 @@ public class SecondaryIndexIT {
         manager.insert(entity3);
 
         //When
-        IndexCondition condition = new IndexCondition("consistencylevel", EACH_QUORUM);
+        IndexCondition condition = new IndexCondition("\"consistencyLevel\"", EACH_QUORUM);
         final List<EntityWithSecondaryIndexOnEnum> actual = manager.indexedQuery(EntityWithSecondaryIndexOnEnum.class, condition).get();
 
         //Then
@@ -84,8 +108,6 @@ public class SecondaryIndexIT {
 
         assertThat(found1.getId()).isEqualTo(10L);
         assertThat(found2.getId()).isEqualTo(11L);
-
-
     }
 
     @Test

@@ -17,6 +17,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -131,5 +132,25 @@ public class NamingStrategyIT {
         assertThat(entities.get(1).getCompoundPK().getClusteringKey()).isEqualTo("3");
         assertThat(entities.get(1).getFirstName()).isEqualTo("fn3");
         assertThat(entities.get(1).getLastName()).isEqualTo("ln3");
+    }
+
+    @Test
+    public void should_use_typed_query_with_snake_case_strategy() throws Exception {
+        //Given
+        Long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        EntityWithNamingStrategy entity = new EntityWithNamingStrategy(id, "fn", "ln", "nick");
+
+        manager.insert(entity);
+
+        //When
+        final SimpleStatement query = new SimpleStatement("SELECT * FROM snake_case_naming WHERE my_id = ?");
+
+        final EntityWithNamingStrategy found = manager.typedQuery(EntityWithNamingStrategy.class, query, id).getFirst();
+
+        //Then
+        assertThat(found).isNotNull();
+        assertThat(found.getFirstName()).isEqualTo("fn");
+        assertThat(found.getLastName()).isEqualTo("ln");
+        assertThat(found.getNickName()).isEqualTo("nick");
     }
 }
