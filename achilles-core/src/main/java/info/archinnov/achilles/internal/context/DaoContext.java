@@ -42,6 +42,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Update;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 import com.google.common.cache.Cache;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
@@ -270,12 +271,18 @@ public class DaoContext {
         return buildBSForSliceQuery(sliceQueryProperties, sliceQueryProperties.getWriteConsistencyLevel(), ps);
     }
 
-    private BoundStatementWrapper buildBSForSliceQuery(SliceQueryProperties<?> sliceQueryProperties, ConsistencyLevel consistencyLevel, PreparedStatement ps) {
+    private BoundStatementWrapper buildBSForSliceQuery(final SliceQueryProperties<?> sliceQueryProperties, ConsistencyLevel consistencyLevel, final PreparedStatement ps) {
         final Object[] boundValues = sliceQueryProperties.getBoundValues();
-        final BoundStatement bs = ps.bind(boundValues);
-        sliceQueryProperties.setFetchSizeToStatement(bs);
+        Supplier<BoundStatement> bs = new Supplier<BoundStatement>() {
+            @Override
+            public BoundStatement get() {
+                BoundStatement bs = ps.bind(boundValues);
+                sliceQueryProperties.setFetchSizeToStatement(bs);
+                return bs;
+            }
+        };
 
-        return new BoundStatementWrapper(sliceQueryProperties.getEntityClass(),bs,boundValues, getCQLLevel(consistencyLevel),
+        return new BoundStatementWrapper(sliceQueryProperties.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel),
                 Optional.<LWTResultListener>absent(), Optional.<com.datastax.driver.core.ConsistencyLevel>absent());
     }
 

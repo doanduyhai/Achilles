@@ -143,6 +143,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindForInsert(context, ps, asList(nameMeta, ageMeta));
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
@@ -167,6 +168,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindForInsert(context, ps, asList(nameMeta, ageMeta));
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         assertThat(asList(actual.getValues())).containsExactly(primaryKey, name, null);
@@ -193,6 +195,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindForInsert(context, ps, asList(addressMeta, ageMeta));
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         assertThat(asList(actual.getValues())).containsExactly(userId, name, address, age);
@@ -212,6 +215,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindStatementWithOnlyPKInWhereClause(context, ps, true, info.archinnov.achilles.type.ConsistencyLevel.ALL);
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         assertThat(asList(actual.getValues())).containsExactly(userId, name);
@@ -239,6 +243,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindForUpdate(context, ps, asList(nameMeta, ageMeta));
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
@@ -260,6 +265,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind(increment, "CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindForSimpleCounterIncrementDecrement(context, ps, counterMeta, increment, ALL);
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         assertThat(asList(actual.getValues())).containsExactly(increment, "CompleteBean", primaryKey.toString(), "count");
@@ -280,6 +286,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind("CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindForSimpleCounterSelect(context, ps, counterMeta, ALL);
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         assertThat(asList(actual.getValues())).containsExactly("CompleteBean", primaryKey.toString(), "count");
@@ -299,6 +306,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind("CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindForSimpleCounterDelete(context, ps, counterMeta);
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         assertThat(asList(actual.getValues())).containsExactly("CompleteBean", primaryKey.toString(), "count");
@@ -321,6 +329,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind(increment, primaryKey)).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindForClusteredCounterIncrementDecrement(context, ps, counterMeta, increment);
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         assertThat(asList(actual.getValues())).containsExactly(increment, primaryKey);
@@ -341,6 +350,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind(primaryKey)).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindForClusteredCounterSelect(context, ps, true,ALL);
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         assertThat(asList(actual.getValues())).containsExactly(primaryKey);
@@ -360,6 +370,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind(primaryKey)).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindForClusteredCounterDelete(context, ps);
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 
@@ -385,6 +396,7 @@ public class PreparedStatementBinderTest {
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
+        actual.getStatement();
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
@@ -412,6 +424,7 @@ public class PreparedStatementBinderTest {
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
+        actual.getStatement();
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
@@ -439,6 +452,7 @@ public class PreparedStatementBinderTest {
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
+        actual.getStatement();
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
@@ -466,6 +480,7 @@ public class PreparedStatementBinderTest {
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
+        actual.getStatement();
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
@@ -494,6 +509,7 @@ public class PreparedStatementBinderTest {
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
+        actual.getStatement();
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
@@ -522,6 +538,7 @@ public class PreparedStatementBinderTest {
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
+        actual.getStatement();
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
@@ -549,6 +566,7 @@ public class PreparedStatementBinderTest {
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
+        actual.getStatement();
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
@@ -576,6 +594,7 @@ public class PreparedStatementBinderTest {
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
+        actual.getStatement();
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
@@ -603,6 +622,7 @@ public class PreparedStatementBinderTest {
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
+        actual.getStatement();
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
@@ -644,6 +664,7 @@ public class PreparedStatementBinderTest {
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
+        actual.getStatement();
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
@@ -679,6 +700,7 @@ public class PreparedStatementBinderTest {
 
         //When
         final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
+        actual.getStatement();
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
@@ -713,6 +735,7 @@ public class PreparedStatementBinderTest {
         when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
         BoundStatementWrapper actual = binder.bindForDeletion(context, ps, false, info.archinnov.achilles.type.ConsistencyLevel.ALL);
+        actual.getStatement();
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);

@@ -101,8 +101,8 @@ public abstract class AbstractFlushContext {
 
     public abstract void triggerInterceptor(EntityMeta meta, Object entity, Event event);
 
-    public static enum FlushType {
-        BATCH, IMMEDIATE;
+    public enum FlushType {
+        BATCH, IMMEDIATE
     }
 
     @Override
