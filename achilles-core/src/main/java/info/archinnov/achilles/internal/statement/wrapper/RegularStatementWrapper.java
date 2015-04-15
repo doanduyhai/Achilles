@@ -66,4 +66,9 @@ public class RegularStatementWrapper extends AbstractStatementWrapper {
             writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
         }
     }
+
+    @Override
+    public void releaseResources() {
+        // no op
+    }
 }

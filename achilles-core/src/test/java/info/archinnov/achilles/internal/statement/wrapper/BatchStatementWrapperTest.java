@@ -74,6 +74,7 @@ public class BatchStatementWrapperTest {
         BatchStatementWrapper wrapper = new BatchStatementWrapper(LOGGED, asList(statementWrapper),
                 Optional.of(ConsistencyLevel.ALL),Optional.of(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
         final String actual = wrapper.getQueryString();
+        wrapper.getStatement();
 
         //Then
         assertThat(actual).isEqualTo("SELECT * FROM");

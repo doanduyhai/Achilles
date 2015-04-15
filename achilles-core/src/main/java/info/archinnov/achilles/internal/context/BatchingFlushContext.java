@@ -89,7 +89,6 @@ public class BatchingFlushContext extends AbstractFlushContext {
         return asyncUtils.buildInterruptible(triggersApplied);
     }
 
-
     @Override
     public FlushType type() {
         return FlushType.BATCH;

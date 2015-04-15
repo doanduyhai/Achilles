@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
+import static com.google.common.base.Suppliers.memoize;
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,6 +29,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -38,10 +40,10 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
     private List<AbstractStatementWrapper> statementWrappers;
     private Optional<ConsistencyLevel> consistencyLevelO;
     private Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevelO;
-    private BatchStatement batchStatement;
+    private Supplier<BatchStatement> batchStatement;
     private CompositeLWTResultListener compositeCASResultListener;
 
-    public BatchStatementWrapper(BatchStatement.Type batchType, List<AbstractStatementWrapper> statementWrappers,
+    public BatchStatementWrapper(final BatchStatement.Type batchType, final List<AbstractStatementWrapper> statementWrappers,
             Optional<ConsistencyLevel> consistencyLevelO, Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel) {
         super(null, null);
         this.batchType = batchType;
@@ -50,7 +52,12 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
         this.serialConsistencyLevelO = serialConsistencyLevel;
         this.compositeCASResultListener = new CompositeLWTResultListener();
         super.lwtResultListener = Optional.<LWTResultListener>fromNullable(this.compositeCASResultListener);
-        this.batchStatement = createBatchStatement(batchType, statementWrappers);
+        this.batchStatement = memoize(new Supplier<BatchStatement>() {
+            @Override
+            public BatchStatement get() {
+                return createBatchStatement(batchType, statementWrappers);
+            }
+        });
     }
 
     private BatchStatement createBatchStatement(BatchStatement.Type batchType, List<AbstractStatementWrapper> statementWrappers) {
@@ -66,8 +73,10 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
 
             if (statementWrapper instanceof NativeStatementWrapper) {
                 batch.add(((NativeStatementWrapper) statementWrapper).buildParameterizedStatement());
+                statementWrapper.releaseResources();
             } else {
                 batch.add(statementWrapper.getStatement());
+                statementWrapper.releaseResources();
             }
         }
         if (tracingEnabled) {
@@ -99,11 +108,12 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
 
     @Override
     public Statement getStatement() {
-        return this.batchStatement;
+        return this.batchStatement.get();
     }
 
     @Override
     public void logDMLStatement(String indentation) {
+        BatchStatement batchStatement = this.batchStatement.get();
         if (dmlLogger.isDebugEnabled() || batchStatement.isTracing()) {
             AbstractStatementWrapper.writeDMLStartBatch(batchType);
         }
@@ -115,6 +125,11 @@ public class BatchStatementWrapper extends AbstractStatementWrapper {
             ConsistencyLevel consistencyLevel = consistencyLevelO.isPresent() ? consistencyLevelO.get() : null;
             AbstractStatementWrapper.writeDMLEndBatch(batchType, consistencyLevel);
         }
+    }
+
+    @Override
+    public void releaseResources() {
+        // no op
     }
 
     public ConsistencyLevel getConsistencyLevel() {
