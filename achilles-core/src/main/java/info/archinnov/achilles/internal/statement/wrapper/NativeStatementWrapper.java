@@ -16,19 +16,21 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
+import static org.apache.commons.lang3.ArrayUtils.isEmpty;
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-
-import com.datastax.driver.core.*;
-import info.archinnov.achilles.internal.statement.StatementHelper;
-import info.archinnov.achilles.listener.LWTResultListener;
-import org.apache.commons.lang3.ArrayUtils;
+import com.datastax.driver.core.ProtocolVersion;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
-
-import static org.apache.commons.lang3.ArrayUtils.isEmpty;
-import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
+import info.archinnov.achilles.internal.statement.StatementHelper;
+import info.archinnov.achilles.listener.LWTResultListener;
 
 public class NativeStatementWrapper extends AbstractStatementWrapper {
 
@@ -73,6 +75,11 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
                     .getConsistencyLevel().name();
             writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
         }
+    }
+
+    @Override
+    public void releaseResources() {
+        // no op
     }
 
     public Statement buildParameterizedStatement() {

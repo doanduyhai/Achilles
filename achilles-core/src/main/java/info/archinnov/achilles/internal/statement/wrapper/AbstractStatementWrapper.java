@@ -59,12 +59,14 @@ public abstract class AbstractStatementWrapper {
     protected static final String LWT_RESULT_COLUMN = "[applied]";
 
     protected static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
+    protected static final Object[] EMPTY = new Object[]{};
+
     protected RowMethodInvoker invoker = RowMethodInvoker.Singleton.INSTANCE.get();
     protected AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
 
     protected Optional<LWTResultListener> lwtResultListener = Optional.absent();
 
-    protected Object[] values = new Object[] { };
+    protected Object[] values = EMPTY;
     protected boolean traceQueryForEntity = false;
     protected boolean displayDMLForEntity = false;
     protected Logger entityLogger;
@@ -258,6 +260,8 @@ public abstract class AbstractStatementWrapper {
             }
         }
     }
+
+    public abstract void releaseResources();
 
     private static class EventComparator implements Comparator<QueryTrace.Event> {
         @Override

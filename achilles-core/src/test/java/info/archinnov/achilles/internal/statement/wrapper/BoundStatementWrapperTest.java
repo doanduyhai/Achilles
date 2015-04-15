@@ -22,12 +22,10 @@ import static com.google.common.base.Optional.of;
 import static info.archinnov.achilles.LogInterceptionRule.interceptDMLStatementViaMockedAppender;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.classic.spi.LoggingEvent;
-import ch.qos.logback.core.Appender;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,12 +35,14 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.ConsistencyLevel;
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import ch.qos.logback.classic.spi.LoggingEvent;
 import info.archinnov.achilles.LogInterceptionRule.DMLStatementInterceptor;
 import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-
-import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BoundStatementWrapperTest {
@@ -51,6 +51,9 @@ public class BoundStatementWrapperTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private BoundStatement bs;
+
+    @Mock
+    private Supplier<BoundStatement> supplier;
 
     @Captor
     private ArgumentCaptor<LoggingEvent> loggingEvent;
@@ -62,9 +65,18 @@ public class BoundStatementWrapperTest {
     private static final Optional<LWTResultListener> NO_LISTENER = Optional.absent();
 
     @Test
+    public void should_not_create_bound_statement_if_not_required() throws Exception {
+        //Given
+        wrapper = new BoundStatementWrapper(CompleteBean.class, supplier, new Object[] { 1 }, ConsistencyLevel.ONE, NO_LISTENER, Optional.of(ConsistencyLevel.LOCAL_SERIAL));
+
+        //Then
+        verify(supplier, never()).get();
+    }
+
+    @Test
     public void should_get_bound_statement() throws Exception {
         //Given
-        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ONE, NO_LISTENER, of(LOCAL_SERIAL));
+        wrapper = new BoundStatementWrapper(CompleteBean.class, Suppliers.ofInstance(bs), new Object[] { 1 }, ONE, NO_LISTENER, of(LOCAL_SERIAL));
 
         //When
         final BoundStatement expectedBs = wrapper.getStatement();
@@ -77,7 +89,7 @@ public class BoundStatementWrapperTest {
     @Test
     public void should_log_dml_statement_with_bound_values() throws Exception {
         //Given
-        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 73L, "bob" }, ONE, NO_LISTENER, of(LOCAL_SERIAL));
+        wrapper = new BoundStatementWrapper(CompleteBean.class, Suppliers.ofInstance(bs), new Object[] { 73L, "bob" }, ONE, NO_LISTENER, of(LOCAL_SERIAL));
         given(bs.preparedStatement().getQueryString()).willReturn("insert ...");
 
         // When
