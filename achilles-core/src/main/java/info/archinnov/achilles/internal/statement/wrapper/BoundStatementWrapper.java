@@ -15,29 +15,29 @@
  */
 package info.archinnov.achilles.internal.statement.wrapper;
 
+import static com.google.common.base.Suppliers.compose;
+import static com.google.common.base.Suppliers.memoize;
 import java.util.concurrent.ExecutorService;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.listener.LWTResultListener;
 
 public class BoundStatementWrapper extends AbstractStatementWrapper {
 
-    private BoundStatement boundStatement;
+    private Supplier<BoundStatement> boundStatement;
 
-    public BoundStatementWrapper(Class<?> entityClass, BoundStatement bs, Object[] values, ConsistencyLevel consistencyLevel,
+    public BoundStatementWrapper(Class<?> entityClass, Supplier<BoundStatement> bs, Object[] values, ConsistencyLevel consistencyLevel,
             Optional<LWTResultListener> lwtResultListener, Optional<ConsistencyLevel> serialConsistencyLevel) {
         super(entityClass, values);
         super.lwtResultListener = lwtResultListener;
-        this.boundStatement = bs;
-        this.boundStatement.setConsistencyLevel(consistencyLevel);
-        if (serialConsistencyLevel.isPresent()) {
-            boundStatement.setSerialConsistencyLevel(serialConsistencyLevel.get());
-        }
+        this.boundStatement = memoize(compose(getFunc(consistencyLevel, serialConsistencyLevel), bs));
     }
 
     @Override
@@ -48,17 +48,18 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
 
     @Override
     public BoundStatement getStatement() {
-        return boundStatement;
+        return boundStatement.get();
     }
 
     @Override
     public String getQueryString() {
-        return boundStatement.preparedStatement().getQueryString();
+        return boundStatement.get().preparedStatement().getQueryString();
     }
 
     @Override
     public void logDMLStatement(String indentation) {
         if (dmlLogger.isDebugEnabled() || displayDMLForEntity) {
+            BoundStatement boundStatement = this.boundStatement.get();
             PreparedStatement ps = boundStatement.preparedStatement();
             String queryType = "Bound statement";
             String queryString = ps.getQueryString();
@@ -66,5 +67,23 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
                     .getConsistencyLevel().name();
             writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
         }
+    }
+
+    @Override
+    public void releaseResources() {
+        values = null;
+    }
+
+    private Function<BoundStatement, BoundStatement> getFunc(final ConsistencyLevel consistencyLevel, final Optional<ConsistencyLevel> serialConsistencyLevel) {
+        return new Function<BoundStatement, BoundStatement>() {
+            @Override
+            public BoundStatement apply(BoundStatement statement) {
+                statement.setConsistencyLevel(consistencyLevel);
+                if(serialConsistencyLevel.isPresent()) {
+                    statement.setSerialConsistencyLevel(serialConsistencyLevel.get());
+                }
+                return statement;
+            }
+        };
     }
 }

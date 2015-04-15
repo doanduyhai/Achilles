@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.context.facade.PersistentStateHolder;
@@ -50,7 +51,7 @@ public class PreparedStatementBinder {
 
     private ConsistencyOverrider overrider = ConsistencyOverrider.Singleton.INSTANCE.get();
 
-    public BoundStatementWrapper bindForInsert(PersistentStateHolder context, PreparedStatement ps, List<PropertyMeta> pms) {
+    public BoundStatementWrapper bindForInsert(PersistentStateHolder context, final PreparedStatement ps, List<PropertyMeta> pms) {
 
         EntityMeta entityMeta = context.getEntityMeta();
         Object entity = context.getEntity();
@@ -64,13 +65,14 @@ public class PreparedStatementBinder {
         values.addAll(fetchPropertiesValues(pms, entity));
         values.addAll(fetchTTLAndTimestampValues(context));
 
-        BoundStatement bs = ps.bind(values.toArray());
-        return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
+        final Object[] valuesAsArray = values.toArray();
+        Supplier<BoundStatement> bs = getBoundStatementSupplier(ps, valuesAsArray);
+        return new BoundStatementWrapper(context.getEntityClass(), bs, valuesAsArray, getCQLLevel(consistencyLevel),
                 context.getLWTResultListener(), context.getSerialConsistencyLevel());
     }
 
 
-    public BoundStatementWrapper bindForUpdate(PersistentStateHolder context, PreparedStatement ps, List<PropertyMeta> pms) {
+    public BoundStatementWrapper bindForUpdate(PersistentStateHolder context, final PreparedStatement ps, List<PropertyMeta> pms) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object entity = context.getEntity();
 
@@ -89,13 +91,15 @@ public class PreparedStatementBinder {
         values.addAll(fetchPropertiesValues(pms, entity));
         values.addAll(fetchPrimaryKeyValues(entityMeta, entity, onlyStaticColumns));
         values.addAll(fetchLWTConditionsValues(context, entityMeta));
-        BoundStatement bs = ps.bind(values.toArray());
 
-        return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
+        final Object[] valuesAsArray = values.toArray();
+        Supplier<BoundStatement> bs = getBoundStatementSupplier(ps, valuesAsArray);
+
+        return new BoundStatementWrapper(context.getEntityClass(), bs, valuesAsArray, getCQLLevel(consistencyLevel),
                 context.getLWTResultListener(), context.getSerialConsistencyLevel());
     }
 
-    public BoundStatementWrapper bindForCollectionAndMapUpdate(PersistentStateHolder context, PreparedStatement ps, DirtyCheckChangeSet changeSet) {
+    public BoundStatementWrapper bindForCollectionAndMapUpdate(PersistentStateHolder context, final PreparedStatement ps, DirtyCheckChangeSet changeSet) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object entity = context.getEntity();
 
@@ -147,15 +151,17 @@ public class PreparedStatementBinder {
 
         values.addAll(fetchPrimaryKeyValues(entityMeta, entity, changeSet.getPropertyMeta().structure().isStaticColumn()));
         values.addAll(fetchLWTConditionsValues(context, entityMeta));
-        BoundStatement bs = ps.bind(values.toArray());
 
-        return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
+        final Object[] valuesAsArray = values.toArray();
+        Supplier<BoundStatement> bs = getBoundStatementSupplier(ps, valuesAsArray);
+
+        return new BoundStatementWrapper(context.getEntityClass(), bs, valuesAsArray, getCQLLevel(consistencyLevel),
                 context.getLWTResultListener(), context.getSerialConsistencyLevel());
     }
 
-    public BoundStatementWrapper bindForDeletion(PersistentStateHolder context, PreparedStatement ps, boolean onlyStaticColumns,ConsistencyLevel consistencyLevel) {
+    public BoundStatementWrapper bindForDeletion(PersistentStateHolder context, final PreparedStatement ps, boolean onlyStaticColumns,ConsistencyLevel consistencyLevel) {
 
-        List<Object> values = new ArrayList<>();
+        final List<Object> values = new ArrayList<>();
         final Options options = context.getOptions();
         final Optional<Long> timestampO = options.getTimestamp();
         final Object primaryKey = context.getPrimaryKey();
@@ -166,28 +172,32 @@ public class PreparedStatementBinder {
         values.addAll(bindPrimaryKey(primaryKey, idMeta, onlyStaticColumns));
         values.addAll(fetchLWTConditionsValues(context, context.getEntityMeta()));
 
-        log.trace("Bind prepared statement for deletion of entity class {} with primary key {}", context.getEntityClass().getCanonicalName(), primaryKey);
-        BoundStatement bs = ps.bind(values.toArray());
+        final Object[] valuesAsArray = values.toArray();
 
-        return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
+        log.trace("Bind prepared statement for deletion of entity class {} with primary key {}", context.getEntityClass().getCanonicalName(), primaryKey);
+        Supplier<BoundStatement> bs = getBoundStatementSupplier(ps, valuesAsArray);
+
+        return new BoundStatementWrapper(context.getEntityClass(), bs, valuesAsArray, getCQLLevel(consistencyLevel),
                 context.getLWTResultListener(), context.getSerialConsistencyLevel());
     }
 
-    public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PersistentStateHolder context, PreparedStatement ps, boolean onlyStaticColumns,ConsistencyLevel consistencyLevel) {
+    public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PersistentStateHolder context, final PreparedStatement ps, boolean onlyStaticColumns,ConsistencyLevel consistencyLevel) {
 
         Object primaryKey = context.getPrimaryKey();
 
         log.trace("Bind prepared statement {} with primary key {}", ps.getQueryString(), primaryKey);
 
         PropertyMeta idMeta = context.getIdMeta();
-        List<Object> values = bindPrimaryKey(primaryKey, idMeta,onlyStaticColumns);
+        List<Object> values = bindPrimaryKey(primaryKey, idMeta, onlyStaticColumns);
 
-        BoundStatement bs = ps.bind(values.toArray());
-        return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel),
+        final Object[] valuesAsArray = values.toArray();
+        Supplier<BoundStatement> bs = getBoundStatementSupplier(ps, valuesAsArray);
+
+        return new BoundStatementWrapper(context.getEntityClass(), bs, valuesAsArray, getCQLLevel(consistencyLevel),
                 context.getLWTResultListener(), context.getSerialConsistencyLevel());
     }
 
-    public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(PersistentStateHolder context, PreparedStatement ps, PropertyMeta pm, Long increment, ConsistencyLevel consistencyLevel) {
+    public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(PersistentStateHolder context, final PreparedStatement ps, PropertyMeta pm, Long increment, ConsistencyLevel consistencyLevel) {
 
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
@@ -196,13 +206,14 @@ public class PreparedStatementBinder {
             log.trace("Bind prepared statement {} for simple counter increment of {} using primary key {} and value {}", ps.getQueryString(), pm, primaryKey, increment);
         }
 
-        Object[] boundValues = ArrayUtils.add(extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey), 0, increment);
+        final Object[] boundValues = ArrayUtils.add(extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey), 0, increment);
 
-        BoundStatement bs = ps.bind(boundValues);
+        Supplier<BoundStatement> bs = getBoundStatementSupplier(ps, boundValues);
+
         return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER, NO_SERIAL_CONSISTENCY);
     }
 
-    public BoundStatementWrapper bindForSimpleCounterSelect(PersistentStateHolder context, PreparedStatement ps, PropertyMeta pm, ConsistencyLevel consistencyLevel) {
+    public BoundStatementWrapper bindForSimpleCounterSelect(PersistentStateHolder context, final PreparedStatement ps, PropertyMeta pm, ConsistencyLevel consistencyLevel) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
@@ -210,12 +221,12 @@ public class PreparedStatementBinder {
             log.trace("Bind prepared statement {} for simple counter read of {} using primary key {}", ps.getQueryString(), pm, primaryKey);
         }
 
-        Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
-        BoundStatement bs = ps.bind(boundValues);
+        final Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
+        Supplier<BoundStatement> bs = getBoundStatementSupplier(ps, boundValues);
         return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER, NO_SERIAL_CONSISTENCY);
     }
 
-    public BoundStatementWrapper bindForSimpleCounterDelete(PersistentStateHolder context, PreparedStatement ps, PropertyMeta pm) {
+    public BoundStatementWrapper bindForSimpleCounterDelete(PersistentStateHolder context, final PreparedStatement ps, PropertyMeta pm) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
@@ -225,12 +236,12 @@ public class PreparedStatementBinder {
 
         ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
 
-        Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
-        BoundStatement bs = ps.bind(boundValues);
+        final Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
+        Supplier<BoundStatement> bs = getBoundStatementSupplier(ps, boundValues);
         return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER, NO_SERIAL_CONSISTENCY);
     }
 
-    public BoundStatementWrapper bindForClusteredCounterIncrementDecrement(PersistentStateHolder context, PreparedStatement ps, PropertyMeta counterMeta,Long increment) {
+    public BoundStatementWrapper bindForClusteredCounterIncrementDecrement(PersistentStateHolder context, final PreparedStatement ps, PropertyMeta counterMeta,Long increment) {
 
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
@@ -242,14 +253,15 @@ public class PreparedStatementBinder {
         ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
 
         List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta(), counterMeta.structure().isStaticColumn());
-        Object[] keys = addAll(new Object[]{increment}, primaryKeys.toArray());
+        final Object[] keys = addAll(new Object[]{increment}, primaryKeys.toArray());
 
-        BoundStatement bs = ps.bind(keys);
+
+        Supplier<BoundStatement> bs = getBoundStatementSupplier(ps, keys);
 
         return new BoundStatementWrapper(context.getEntityClass(), bs, keys, getCQLLevel(consistencyLevel), NO_LISTENER, NO_SERIAL_CONSISTENCY);
     }
 
-    public BoundStatementWrapper bindForClusteredCounterSelect(PersistentStateHolder context, PreparedStatement ps, boolean onlyStaticColumns,ConsistencyLevel consistencyLevel) {
+    public BoundStatementWrapper bindForClusteredCounterSelect(PersistentStateHolder context, final PreparedStatement ps, boolean onlyStaticColumns,ConsistencyLevel consistencyLevel) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
@@ -258,13 +270,15 @@ public class PreparedStatementBinder {
         }
 
         List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta(), onlyStaticColumns);
-        Object[] boundValues = primaryKeys.toArray();
+        final Object[] boundValues = primaryKeys.toArray();
 
-        BoundStatement bs = ps.bind(boundValues);
+
+        Supplier<BoundStatement> bs = getBoundStatementSupplier(ps, boundValues);
+
         return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER, NO_SERIAL_CONSISTENCY);
     }
 
-    public BoundStatementWrapper bindForClusteredCounterDelete(PersistentStateHolder context, PreparedStatement ps) {
+    public BoundStatementWrapper bindForClusteredCounterDelete(PersistentStateHolder context, final PreparedStatement ps) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
@@ -274,8 +288,9 @@ public class PreparedStatementBinder {
 
         ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
         List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta(), false);
-        Object[] boundValues = primaryKeys.toArray(new Object[primaryKeys.size()]);
-        BoundStatement bs = ps.bind(boundValues);
+        final Object[] boundValues = primaryKeys.toArray(new Object[primaryKeys.size()]);
+
+        Supplier<BoundStatement> bs = getBoundStatementSupplier(ps, boundValues);
 
         return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER, NO_SERIAL_CONSISTENCY);
     }
@@ -342,7 +357,16 @@ public class PreparedStatementBinder {
         return new Object[] { fqcn, primaryKeyAsString, cqlColumnName };
     }
 
-    public static enum Singleton {
+    private Supplier<BoundStatement> getBoundStatementSupplier(final PreparedStatement ps, final Object[] valuesAsArray) {
+        return new Supplier<BoundStatement>() {
+            @Override
+            public BoundStatement get() {
+                return ps.bind(valuesAsArray);
+            }
+        };
+    }
+
+    public enum Singleton {
         INSTANCE;
 
         private final PreparedStatementBinder instance = new PreparedStatementBinder();
