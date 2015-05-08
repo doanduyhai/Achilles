@@ -26,6 +26,7 @@ import info.archinnov.achilles.type.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PreDestroy;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -132,7 +133,7 @@ public class CommonAsyncManager extends AbstractPersistenceManager {
      */
     public <T> AchillesFuture<T> insertOrUpdate(T entity) {
         log.debug("Inserting or updating asynchronously entity '{}'", proxifier.getRealObject(entity));
-        return this.asyncInsertOrUpdate(entity,noOptions());
+        return this.asyncInsertOrUpdate(entity, noOptions());
     }
 
     /**
@@ -232,5 +233,13 @@ public class CommonAsyncManager extends AbstractPersistenceManager {
     public AchillesFuture<Empty> deleteById(Class<?> entityClass, Object primaryKey, Options options) {
         log.debug("Removing asynchronously entity of type '{}' by its id '{}'", entityClass, primaryKey);
         return super.asyncDeleteById(entityClass, primaryKey, options);
+    }
+
+    /**
+     * Call shutdown on Achilles, especially shutdown the internal thread pool handling asynchronous tasks
+     */
+    @PreDestroy
+    public void shutDown() {
+        configContext.getExecutorService().shutdown();
     }
 }
