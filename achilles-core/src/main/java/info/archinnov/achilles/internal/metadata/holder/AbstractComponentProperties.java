@@ -95,6 +95,9 @@ public abstract class AbstractComponentProperties {
     @Override
 	public String toString() {
 		return Objects.toStringHelper(this.getClass()).add("propertyMetas", propertyMetas).toString();
-
 	}
+
+    public List<PropertyMeta> getPropertyMetas() {
+        return propertyMetas;
+    }
 }

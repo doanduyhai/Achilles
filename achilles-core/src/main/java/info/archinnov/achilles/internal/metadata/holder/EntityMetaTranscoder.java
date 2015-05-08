@@ -52,10 +52,23 @@ public class EntityMetaTranscoder extends EntityMetaView {
         return encodedValue;
     }
 
-    private PropertyMeta findPropertyMetaByCQLName(String cqlName) {
+    PropertyMeta findPropertyMetaByCQLName(String cqlName) {
         for (PropertyMeta propertyMeta : meta.getAllMetasExceptCounters()) {
-            if (propertyMeta.getCQLColumnName().equals(cqlName) ) {
-                return propertyMeta;
+            if (propertyMeta.type() == PropertyType.COMPOUND_PRIMARY_KEY) {
+                for (PropertyMeta partitionMeta : propertyMeta.getCompoundPKProperties().getPartitionComponents().getPropertyMetas()) {
+                    if (partitionMeta.getCQLColumnName().equals(cqlName)) {
+                        return partitionMeta;
+                    }
+                }
+                for (PropertyMeta clusteringMeta : propertyMeta.getCompoundPKProperties().getClusteringComponents().getPropertyMetas()) {
+                    if (clusteringMeta.getCQLColumnName().equals(cqlName)) {
+                        return clusteringMeta;
+                    }
+                }
+            } else {
+                if (propertyMeta.getCQLColumnName().equals(cqlName)) {
+                    return propertyMeta;
+                }
             }
         }
         throw new AchillesException(String.format("Cannot find matching property meta for the cql field %s", cqlName));
