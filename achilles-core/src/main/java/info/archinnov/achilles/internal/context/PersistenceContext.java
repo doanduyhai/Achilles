@@ -376,10 +376,14 @@ public class PersistenceContext {
             Function<T, T> createProxy = new Function<T, T>() {
                 @Override
                 public T apply(T rawEntity) {
-                    if (entityMeta.structure().isClusteredCounter()) {
-                        return proxifier.buildProxyWithAllFieldsLoaded(rawEntity, entityFacade);
+                    if (options.shouldCreateProxy()) {
+                        if (entityMeta.structure().isClusteredCounter()) {
+                            return proxifier.buildProxyWithAllFieldsLoaded(rawEntity, entityFacade);
+                        } else {
+                            return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, entityFacade);
+                        }
                     } else {
-                        return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, entityFacade);
+                        return rawEntity;
                     }
                 }
             };

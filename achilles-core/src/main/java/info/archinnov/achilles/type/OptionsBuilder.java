@@ -291,6 +291,14 @@ public class OptionsBuilder {
     }
 
     /**
+     * Force proxy creation on returned entity
+     * @return BuiltOptions
+     */
+    public static BuiltOptions withProxy() {
+        return new BuiltOptions(true);
+    }
+
+    /**
      * Empty options
      */
     public static class NoOptions extends Options {
@@ -337,6 +345,11 @@ public class OptionsBuilder {
 
         protected BuiltOptions(FutureCallback<Object>... listeners) {
             super.asyncListeners = Arrays.asList(listeners);
+        }
+
+
+        protected BuiltOptions(boolean createProxy) {
+            super.createProxy = createProxy;
         }
 
         /**
@@ -666,6 +679,24 @@ public class OptionsBuilder {
 
         BuiltOptions withAsyncListeners(List<FutureCallback<Object>> listeners) {
             super.asyncListeners = listeners;
+            return this;
+        }
+
+        /**
+         * Force proxy creation on returned entity
+         * @return BuiltOptions
+         */
+        BuiltOptions withProxy() {
+            super.createProxy = true;
+            return this;
+        }
+
+        /**
+         * Force proxy creation on returned entity
+         * @return BuiltOptions
+         */
+        BuiltOptions withProxy(boolean createProxy) {
+            super.createProxy = createProxy;
             return this;
         }
     }

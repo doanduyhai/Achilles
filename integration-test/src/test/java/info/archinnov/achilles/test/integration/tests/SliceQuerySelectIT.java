@@ -19,9 +19,12 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.CompoundPK;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.OptionsBuilder.withProxy;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Collections;
 import java.util.List;
+
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -106,13 +109,14 @@ public class SliceQuerySelectIT {
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .orderByAscending()
+                .withProxy()
                 .getOne();
 
         // Check for update
         clusteredEntity.setValue("dirty");
         manager.update(clusteredEntity);
 
-        ClusteredEntity check = manager.find(ClusteredEntity.class, clusteredEntity.getId());
+        ClusteredEntity check = manager.find(ClusteredEntity.class, clusteredEntity.getId(), withProxy());
         assertThat(check.getValue()).isEqualTo("dirty");
 
         // Check for refresh

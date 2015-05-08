@@ -61,6 +61,8 @@ public class Options {
 
     Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyO = Optional.absent();
 
+    boolean createProxy = false;
+
     Options() {}
 
     public Optional<ConsistencyLevel> getConsistencyLevel() {
@@ -124,6 +126,10 @@ public class Options {
        return serialConsistencyO;
     }
 
+    public boolean shouldCreateProxy() {
+        return createProxy;
+    }
+
     @Override
     public String toString() {
         return Objects.toStringHelper(Options.class)
@@ -136,6 +142,7 @@ public class Options {
                 .add("CAS result listener optional", this.lwtResultListenerO)
                 .add("Async listeners", this.asyncListeners)
 		        .add("Serial consistency", this.serialConsistencyO)
+		        .add("Should create proxy", this.createProxy)
                 .toString();
     }
 
@@ -144,7 +151,9 @@ public class Options {
                 .lwtPredicates(lwtPredicates)
                 .lwtResultListener(lwtResultListenerO.orNull())
                 .lwtLocalSerial(serialConsistencyO.isPresent())
-                .withAsyncListeners(asyncListeners);
+                .withAsyncListeners(asyncListeners)
+                .withProxy(createProxy);
+
     }
 
     public Options duplicateWithNewConsistencyLevel(ConsistencyLevel consistencyLevel) {
@@ -153,7 +162,8 @@ public class Options {
                 .lwtPredicates(lwtPredicates)
                 .lwtResultListener(lwtResultListenerO.orNull())
                 .lwtLocalSerial(serialConsistencyO.isPresent())
-                .withAsyncListeners(asyncListeners);
+                .withAsyncListeners(asyncListeners)
+                .withProxy(createProxy);
     }
 
     public Options duplicateWithNewTimestamp(Long timestamp) {
@@ -162,7 +172,8 @@ public class Options {
                 .lwtPredicates(lwtPredicates)
                 .lwtResultListener(lwtResultListenerO.orNull())
                 .lwtLocalSerial(serialConsistencyO.isPresent())
-                .withAsyncListeners(asyncListeners);
+                .withAsyncListeners(asyncListeners)
+                .withProxy(createProxy);
     }
 
     public static abstract class LWTPredicate {

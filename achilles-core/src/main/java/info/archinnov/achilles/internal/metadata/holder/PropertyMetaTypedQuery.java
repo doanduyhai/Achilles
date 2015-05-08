@@ -18,7 +18,7 @@ public class PropertyMetaTypedQuery extends PropertyMetaView {
             for (String component : meta.getCompoundPKProperties().getCQLComponentNames()) {
                 Validator.validateTrue(queryString.contains(component),
                         "The typed query [%s] should contain the component column '%s' for compound primary key type '%s'",
-                        queryString, component, meta.getCqlValueClass().getCanonicalName());
+                        queryString, component, meta.getValueClass().getCanonicalName());
             }
         } else {
             Validator.validateTrue(queryString.contains(meta.getCQLColumnName()), "The typed query [%s] should contain the id column '%s'", queryString, meta.getCQLColumnName());

@@ -30,6 +30,7 @@ import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.type.Empty;
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;
@@ -179,22 +180,13 @@ abstract class AbstractPersistenceManager {
         log.debug("Execute typed query for entity class {}", entityClass);
         Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
         Validator.validateNotNull(statement, "The regularStatement for typed query should not be null");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"Cannot perform typed query because the entityClass '%s' is not managed by Achilles",entityClass.getCanonicalName());
+        Validator.validateTrue(entityMetaMap.containsKey(entityClass), "Cannot perform typed query because the entityClass '%s' is not managed by Achilles", entityClass.getCanonicalName());
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateTypedQuery(entityClass, statement, meta);
         return meta;
     }
 
-    protected <T> EntityMeta rawTypedQueryInternal(Class<T> entityClass, Statement statement, Object... boundValues) {
-        Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
-        Validator.validateNotNull(statement, "The regularStatement for typed query should not be null");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"Cannot perform typed query because the entityClass '%s' is not managed by Achilles",entityClass.getCanonicalName());
-
-        EntityMeta meta = entityMetaMap.get(entityClass);
-        typedQueryValidator.validateRawTypedQuery(entityClass, statement, meta);
-        return meta;
-    }
 
     protected <T> Statement indexedQueryInternal(Class<T> entityClass, IndexCondition indexCondition) {
         EntityMeta entityMeta = entityMetaMap.get(entityClass);

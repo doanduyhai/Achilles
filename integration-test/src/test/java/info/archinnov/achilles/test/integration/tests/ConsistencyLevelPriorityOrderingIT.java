@@ -18,6 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
+import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
 import org.apache.commons.lang3.RandomUtils;
@@ -73,7 +74,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         logAsserter.assertConsistencyLevels(ONE);
         assertThatBatchContextHasBeenReset(batch);
 
-        entity = manager.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId(), ONE);
+        entity = manager.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId(), withConsistency(ONE));
         assertThat(entity.getName()).isEqualTo("changed_name");
 
         expectedEx.expect(UnavailableException.class);

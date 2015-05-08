@@ -66,7 +66,7 @@ public class EntityWithCompositePartitionKeyIT {
 				"type"));
 
 		assertThat(found).isNotNull();
-		assertThat(found).isInstanceOf(Factory.class);
+		assertThat(found).isNotInstanceOf(Factory.class);
 		assertThat(found.getId().getId()).isEqualTo(id);
 		assertThat(found.getId().getType()).isEqualTo("type");
 		assertThat(found.getValue()).isEqualTo("value");

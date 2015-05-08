@@ -418,7 +418,7 @@ public class AsyncEventInterceptorIT {
         // When
         final CountDownLatch latch = new CountDownLatch(1);
 
-        final AchillesFuture<CompleteBean> future = asyncManager.rawTypedQuery(CompleteBean.class, statement, entity.getId()).getFirst(new FutureCallback<Object>() {
+        final AchillesFuture<CompleteBean> future = asyncManager.typedQuery(CompleteBean.class, statement, entity.getId()).getFirst(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch.countDown();

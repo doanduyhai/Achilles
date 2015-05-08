@@ -34,6 +34,8 @@ import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ITERATOR;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROW;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 
 public abstract class AbstractTypedQuery<T> {
 
@@ -47,22 +49,21 @@ public abstract class AbstractTypedQuery<T> {
     protected Map<String, PropertyMeta> propertiesMap;
     protected EntityMeta meta;
     protected PersistenceContextFactory contextFactory;
-    protected EntityMeta.EntityState entityState;
     protected Object[] boundValues;
+    protected boolean createProxy = false;
 
     protected EntityMapper mapper = EntityMapper.Singleton.INSTANCE.get();
     protected EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
     protected AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
 
     public AbstractTypedQuery(Class<T> entityClass, DaoContext daoContext, ConfigurationContext configContext, Statement statement, EntityMeta meta,
-                      PersistenceContextFactory contextFactory, EntityMeta.EntityState entityState, Object[] boundValues) {
+                      PersistenceContextFactory contextFactory, Object[] boundValues) {
         this.daoContext = daoContext;
         this.executorService = configContext.getExecutorService();
         this.boundValues = boundValues;
         this.nativeStatementWrapper = new NativeStatementWrapper(entityClass, statement, this.boundValues, Optional.<LWTResultListener>absent());
         this.meta = meta;
         this.contextFactory = contextFactory;
-        this.entityState = entityState;
         this.propertiesMap = transformPropertiesMap(meta);
     }
 
@@ -121,7 +122,7 @@ public abstract class AbstractTypedQuery<T> {
         Function<Iterator<Row>, Iterator<T>> rowToIterator = new Function<Iterator<Row>, Iterator<T>>() {
             @Override
             public Iterator<T> apply(Iterator<Row> rowIterator) {
-                return new AchillesIterator<>(meta, persistenceContext, rowIterator);
+                return new AchillesIterator<>(meta, createProxy, persistenceContext, rowIterator);
             }
         };
         final ListenableFuture<Iterator<T>> listenableFuture = asyncUtils.transformFuture(futureIterator, rowToIterator);
@@ -135,7 +136,7 @@ public abstract class AbstractTypedQuery<T> {
             public T apply(Row row) {
                 T entity = null;
                 if (row != null) {
-                    entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, entityState);
+                    entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, createProxy ? MANAGED: NOT_MANAGED);
                 }
                 return entity;
             }
@@ -159,7 +160,7 @@ public abstract class AbstractTypedQuery<T> {
             @Override
             public T apply(T entity) {
                 T newEntity = entity;
-                if (entity != null && entityState.isManaged()) {
+                if (entity != null && createProxy) {
                     newEntity = buildProxy(entity);
                 }
                 return newEntity;
@@ -197,11 +198,15 @@ public abstract class AbstractTypedQuery<T> {
         return new Function<List<T>, List<T>>() {
             @Override
             public List<T> apply(List<T> entities) {
-                List<T> proxies = new ArrayList<>();
-                for (T entity : entities) {
-                    proxies.add(proxifyEntity().apply(entity));
+                if (createProxy) {
+                    List<T> proxies = new ArrayList<>();
+                    for (T entity : entities) {
+                        proxies.add(proxifyEntity().apply(entity));
+                    }
+                    return from(proxies).filter(notNull()).toList();
+                } else {
+                    return entities;
                 }
-                return from(proxies).filter(notNull()).toList();
             }
         };
     }

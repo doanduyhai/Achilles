@@ -40,14 +40,15 @@ public class AchillesIterator<T> implements Iterator<T> {
     private PersistenceContext context;
     private Iterator<Row> iterator;
     private EntityMeta meta;
-
+    private boolean createProxy;
     private EntityMapper mapper = EntityMapper.Singleton.INSTANCE.get();
     private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
 
-    public AchillesIterator(EntityMeta meta, PersistenceContext context, Iterator<Row> iterator) {
+    public AchillesIterator(EntityMeta meta, boolean createProxy, PersistenceContext context, Iterator<Row> iterator) {
         this.context = context;
         this.iterator = iterator;
         this.meta = meta;
+        this.createProxy = createProxy;
     }
 
     @Override
@@ -71,7 +72,9 @@ public class AchillesIterator<T> implements Iterator<T> {
                 mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
             }
             meta.forInterception().intercept(clusteredEntity, Event.POST_LOAD);
-            clusteredEntity = proxify(clusteredEntity);
+            if (createProxy) {
+                clusteredEntity = proxify(clusteredEntity);
+            }
         }
         return clusteredEntity;
     }

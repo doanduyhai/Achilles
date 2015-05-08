@@ -64,7 +64,7 @@ public class TypedQueryValidator {
 				entityClass.getCanonicalName());
 	}
 
-    public static enum Singleton {
+    public enum Singleton {
         INSTANCE;
 
         private final TypedQueryValidator instance = new TypedQueryValidator();

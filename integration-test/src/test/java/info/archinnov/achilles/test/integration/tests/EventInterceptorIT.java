@@ -322,7 +322,7 @@ public class EventInterceptorIT {
         RegularStatement statement = select().from("CompleteBean").where(eq("id",bindMarker()));
 
         // When
-        final CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, statement,entity.getId()).getFirst();
+        final CompleteBean actual = manager.typedQuery(CompleteBean.class, statement,entity.getId()).getFirst();
 
         // Then
         assertThat(actual.getLabel()).isEqualTo("postLoad");

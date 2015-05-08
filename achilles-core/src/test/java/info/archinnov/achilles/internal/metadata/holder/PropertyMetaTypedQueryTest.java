@@ -29,7 +29,7 @@ public class PropertyMetaTypedQueryTest {
         //Given
         when(meta.structure().isCompoundPK()).thenReturn(true);
         when(meta.getCompoundPKProperties().getCQLComponentNames()).thenReturn(asList("id", "name"));
-        when(meta.<CompleteBean>getCqlValueClass()).thenReturn(CompleteBean.class);
+        when(meta.<CompleteBean>getValueClass()).thenReturn(CompleteBean.class);
 
         //When
         view.validateTypedQuery("Select id, name From table");

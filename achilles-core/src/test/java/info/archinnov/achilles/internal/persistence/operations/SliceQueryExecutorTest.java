@@ -181,7 +181,7 @@ public class SliceQueryExecutorTest {
         List<Row> rows = asList(row);
 
         when(daoContext.bindForSliceQuerySelect(sliceQueryProperties)).thenReturn(bsWrapper);
-
+        Whitebox.setInternalState(sliceQueryProperties, "createProxy", true);
         when(daoContext.execute(bsWrapper)).thenReturn(futureResultSet);
         when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS)).thenReturn(futureRows);
         when(asyncUtils.transformFuture(eq(futureRows), rowsToEntitiesCaptor.capture())).thenReturn(futureEntities);

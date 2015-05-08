@@ -17,10 +17,13 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCompositePartitionKey.TABLE_NAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.OptionsBuilder.withProxy;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;
 import java.util.List;
+
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -179,6 +182,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
                 .forSelect()
                 .withPartitionComponents(id, "type")
                 .orderByAscending()
+				.withProxy()
 				.getOne();
 
 		// Check for update
@@ -186,8 +190,9 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		manager.update(clusteredEntity);
 
 		ClusteredEntityWithCompositePartitionKey check = manager.find(ClusteredEntityWithCompositePartitionKey.class,
-				clusteredEntity.getId());
+				clusteredEntity.getId(),withProxy());
 		assertThat(check.getValue()).isEqualTo("dirty");
+
 
 		// Check for refresh
 		check.setValue("dirty_again");
@@ -373,7 +378,9 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		Iterator<ClusteredEntityWithCompositePartitionKey> iter = manager
 				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
                 .forIteration()
-                .withPartitionComponents(id, "type").iterator();
+                .withPartitionComponents(id, "type")
+				.withProxy()
+				.iterator();
 
 		iter.hasNext();
 		ClusteredEntityWithCompositePartitionKey clusteredEntity = iter.next();
@@ -382,8 +389,9 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		clusteredEntity.setValue("dirty");
 		manager.update(clusteredEntity);
 
-		ClusteredEntityWithCompositePartitionKey check = manager.find(ClusteredEntityWithCompositePartitionKey.class,
-				clusteredEntity.getId());
+		ClusteredEntityWithCompositePartitionKey check = manager
+				.find(ClusteredEntityWithCompositePartitionKey.class,
+				clusteredEntity.getId(), withProxy());
 		assertThat(check.getValue()).isEqualTo("dirty");
 
 		// Check for refresh

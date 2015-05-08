@@ -20,6 +20,8 @@ import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TA
 import static info.archinnov.achilles.test.integration.entity.CompositeClusteredEntity.CompoundPK;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Iterator;
+
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -96,6 +98,7 @@ public class SliceQueryIterateIT {
         Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class)
                 .forIteration()
                 .withPartitionComponents(partitionKey)
+                .withProxy()
                 .iterator();
 
         iter.hasNext();
@@ -105,7 +108,7 @@ public class SliceQueryIterateIT {
         clusteredEntity.setValue("dirty");
         manager.update(clusteredEntity);
 
-        ClusteredEntity check = manager.find(ClusteredEntity.class, clusteredEntity.getId());
+        ClusteredEntity check = manager.find(ClusteredEntity.class, clusteredEntity.getId(), OptionsBuilder.withProxy());
         assertThat(check.getValue()).isEqualTo("dirty");
 
         // Check for refresh

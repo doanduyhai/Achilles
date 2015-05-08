@@ -18,6 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.type.OptionsBuilder.withTimestamp;
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -192,7 +194,7 @@ public class PersistenceManagerOperationsIT {
                 .addPreference(2, "New York").buid();
         manager.insert(entity);
 
-        CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+        CompleteBean found = manager.find(CompleteBean.class, entity.getId(),OptionsBuilder.withProxy());
 
         found.setName(null);
         found.setFriends(null);
@@ -559,7 +561,7 @@ public class PersistenceManagerOperationsIT {
 
         entity = manager.find(CompleteBean.class, entity.getId());
 
-        assertThat(entity.getFriends()).isNotNull().isInstanceOf(ListWrapper.class).isEmpty();
+        assertThat(entity.getFriends()).isNotNull().isInstanceOf(ArrayList.class).isEmpty();
         assertThat(entity.getFollowers()).isNull();
         assertThat(entity.getPreferences()).isNull();
         assertThat(entity.getLabel()).isNull();

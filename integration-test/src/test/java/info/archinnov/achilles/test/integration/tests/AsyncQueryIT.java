@@ -276,8 +276,18 @@ public class AsyncQueryIT {
         };
 
         final RegularStatement selectStar = select().from("CompleteBean").where(eq("id", bindMarker("id")));
-        final List<CompleteBean> list1 = asyncManager.typedQuery(CompleteBean.class, selectStar, paul.getId()).get(successCallBack1).get();
-        final CompleteBean foundJohn = asyncManager.typedQuery(CompleteBean.class, selectStar, john.getId()).getFirst(successCallBack2).get();
+
+        final List<CompleteBean> list1 = asyncManager
+                .typedQuery(CompleteBean.class, selectStar, paul.getId())
+                .withProxy()
+                .get(successCallBack1)
+                .get();
+
+        final CompleteBean foundJohn = asyncManager
+                .typedQuery(CompleteBean.class, selectStar, john.getId())
+                .withProxy()
+                .getFirst(successCallBack2)
+                .get();
 
         latch.await();
 
@@ -371,8 +381,8 @@ public class AsyncQueryIT {
 
         final RegularStatement selectStar = select().from("CompleteBean").where(eq("id", bindMarker("id")));
 
-        final AchillesFuture<CompleteBean> futurePaul = asyncManager.rawTypedQuery(CompleteBean.class, selectStar, paul.getId()).getFirst(successCallBack1);
-        final AchillesFuture<CompleteBean> futureJohn = asyncManager.rawTypedQuery(CompleteBean.class, selectStar, john.getId()).getFirst(successCallBack2);
+        final AchillesFuture<CompleteBean> futurePaul = asyncManager.typedQuery(CompleteBean.class, selectStar, paul.getId()).getFirst(successCallBack1);
+        final AchillesFuture<CompleteBean> futureJohn = asyncManager.typedQuery(CompleteBean.class, selectStar, john.getId()).getFirst(successCallBack2);
 
         latch.await();
 
@@ -852,7 +862,7 @@ public class AsyncQueryIT {
         //When
         final CountDownLatch latch2 = new CountDownLatch(2);
         final AchillesFuture<CompleteBean> foundWithProxy = asyncManager.typedQuery(CompleteBean.class, selectBs).getFirst(countDownLatch(latch2));
-        final AchillesFuture<CompleteBean> foundRaw = asyncManager.rawTypedQuery(CompleteBean.class, selectBs).getFirst(countDownLatch(latch2));
+        final AchillesFuture<CompleteBean> foundRaw = asyncManager.typedQuery(CompleteBean.class, selectBs).getFirst(countDownLatch(latch2));
 
         latch2.await();
 

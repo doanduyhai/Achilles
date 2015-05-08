@@ -264,7 +264,9 @@ public class QueryIT {
 
         RegularStatement statement = select().from("CompleteBean").limit(3);
 
-        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, statement).get();
+        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, statement)
+                .withProxy()
+                .get();
 
         assertThat(actual).hasSize(2);
 
@@ -350,7 +352,7 @@ public class QueryIT {
         manager.insert(entity2);
 
         RegularStatement statement = select("id","name","friends").from("CompleteBean").limit(3);
-        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, statement).get();
+        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, statement).withProxy().get();
 
         assertThat(actual).hasSize(2);
 
@@ -443,7 +445,7 @@ public class QueryIT {
         manager.insert(entity2);
 
         RegularStatement statement = select().from("CompleteBean").limit(bindMarker("lim"));
-        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, statement, 3).get();
+        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, statement, 3).get();
 
         assertThat(actual).hasSize(2);
 
@@ -517,7 +519,7 @@ public class QueryIT {
         manager.insert(entity2);
 
         RegularStatement statement = select("id","name","friends").from("CompleteBean").limit(3);
-        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, statement).get();
+        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, statement).get();
 
         assertThat(actual).hasSize(2);
 
@@ -564,8 +566,8 @@ public class QueryIT {
         CompleteBean entity = builder().randomId().name("DuyHai").buid();
         manager.insert(entity);
 
-        RegularStatement statement = select("name").from("CompleteBean").limit(bindMarker());
-        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, statement, 3).get();
+        RegularStatement statement = select("name","id").from("CompleteBean").limit(bindMarker());
+        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, statement, 3).get();
 
         assertThat(actual).hasSize(1);
         assertThat(actual.get(0).getName()).isEqualTo(entity.getName());
@@ -580,7 +582,7 @@ public class QueryIT {
         manager.insert(entity);
 
         RegularStatement statement = select("id","name","friends").from("CompleteBean").limit(3);
-        CompleteBean actual = manager.typedQuery(CompleteBean.class, statement).getFirst();
+        CompleteBean actual = manager.typedQuery(CompleteBean.class, statement).withProxy().getFirst();
 
         Factory factory1 = (Factory) actual;
         @SuppressWarnings("unchecked")
@@ -610,7 +612,9 @@ public class QueryIT {
         manager.insert(entity);
 
         RegularStatement statement = select().from(TABLE_NAME).limit(3);
-        ClusteredEntity actual = manager.typedQuery(ClusteredEntity.class, statement).getFirst();
+        ClusteredEntity actual = manager.typedQuery(ClusteredEntity.class, statement)
+                .withProxy()
+                .getFirst();
 
         assertThat(actual).isNotNull();
         assertThat(actual).isInstanceOf(Factory.class);
@@ -632,7 +636,7 @@ public class QueryIT {
         manager.insert(entity);
 
         RegularStatement statement = select("id","name","friends").from("CompleteBean").limit(3);
-        CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, statement).getFirst();
+        CompleteBean actual = manager.typedQuery(CompleteBean.class, statement).getFirst();
 
         assertThat(Factory.class.isAssignableFrom(actual.getClass())).isFalse();
 
@@ -656,7 +660,7 @@ public class QueryIT {
         manager.insert(entity);
 
         RegularStatement statement = select("id","count","name","value").from(TABLE_NAME).limit(3);
-        ClusteredEntity actual = manager.rawTypedQuery(ClusteredEntity.class, statement).getFirst();
+        ClusteredEntity actual = manager.typedQuery(ClusteredEntity.class, statement).getFirst();
 
         assertThat(actual).isNotNull();
 
@@ -737,7 +741,7 @@ public class QueryIT {
 
         //When
         final CompleteBean foundWithProxy = manager.typedQuery(CompleteBean.class, selectBs).getFirst();
-        final CompleteBean foundRaw = manager.rawTypedQuery(CompleteBean.class, selectBs).getFirst();
+        final CompleteBean foundRaw = manager.typedQuery(CompleteBean.class, selectBs).getFirst();
 
         //Then
         assertThat(foundWithProxy).isNotNull();

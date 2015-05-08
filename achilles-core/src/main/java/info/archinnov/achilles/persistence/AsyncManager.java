@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 
 /**
@@ -530,7 +528,7 @@ public class AsyncManager extends CommonAsyncManager {
      */
     public <T> AsyncTypedQuery<T> typedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
         final EntityMeta meta = super.typedQueryInternal(entityClass, statement,boundValues);
-        return new AsyncTypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, MANAGED, boundValues);
+        return new AsyncTypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, boundValues);
     }
 
     /**
@@ -550,51 +548,7 @@ public class AsyncManager extends CommonAsyncManager {
         log.debug("Execute indexed query for entity class {}", entityClass);
         final Statement statement = super.indexedQueryInternal(entityClass, indexCondition);
         final EntityMeta meta = super.typedQueryInternal(entityClass, statement, indexCondition.getColumnValue());
-        return new AsyncTypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, MANAGED, new Object[]{indexCondition.getColumnValue()});
-    }
-
-    /**
-     * Return an asynchronous CQL typed query
-     *
-     * All found entities will be returned as raw entities and not 'managed' by
-     * Achilles
-     *
-     * <br/>
-     * <br/>
-     *
-     *  <h3>Raw typed query without bound values</h3>
-     *  <pre class="code"><code class="java">
-     *      RegularStatement nativeQuery = select().from("MyEntity").where().limit(3);
-     *      AchillesFuture&lt;List&lt;MyEntity&gt;&gt; actual = asyncManager.rawTypedQuery(MyEntity.class, nativeQuery).get();
-     *  </code></pre>
-     *
-     *  <br/>
-     *  <br/>
-     *
-     *  <h3>Raw typed query with bound values</h3>
-     *  <pre class="code"><code class="java">
-     *      RegularStatement nativeQuery = select().from("MyEntity").where().limit(bindMarker());
-     *      AchillesFuture&lt;List&lt;MyEntity&gt;&gt; actual = asyncManager.rawTypedQuery(MyEntity.class, nativeQuery,3).get();
-     *  </code></pre>
-     *
-     * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#typed-query" target="_blank">Typed query API</a>
-     *
-     * @param entityClass
-     *            type of entity to be returned
-     *
-     * @param statement
-     *            native CQL regularStatement, including limit, ttl and consistency
-     *            options
-     *
-     * @param boundValues
-     *            values to be bind to the parameterized query, if any
-     *
-     * @return AsyncTypedQuery&lt;T&gt;
-     */
-    public <T> AsyncTypedQuery<T> rawTypedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
-        log.debug("Execute raw typed query for entity class {}", entityClass);
-        final EntityMeta meta = super.rawTypedQueryInternal(entityClass, statement, boundValues);
-        return new AsyncTypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, NOT_MANAGED, boundValues);
+        return new AsyncTypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, new Object[]{indexCondition.getColumnValue()});
     }
 
     /**

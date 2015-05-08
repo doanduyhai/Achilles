@@ -86,6 +86,11 @@ public class UpdateProxyInterceptor<T> implements MethodInterceptor, ProxySerial
 
         // Build proxy when necessary
         switch (propertyMeta.type()) {
+            case COUNTER:
+                final Counter counter = InternalCounterBuilder.initialValue(null);
+                propertyMeta.forValues().setValueToField(target, counter);
+                result = counter;
+                break;
             case LIST:
                 log.trace("Build update list wrapper for property {} of entity of class {} ", propertyMeta.getPropertyName(),propertyMeta.getEntityClassName());
                 result = UpdateListWrapperBuilder.builder().dirtyMap(dirtyMap).setter(propertyMeta.getSetter())

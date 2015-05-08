@@ -181,7 +181,7 @@ public class TypedQueryTest {
 
         RegularStatement statement = select().from("test");
 
-        initTypedQuery(statement, meta, meta.getPropertyMetas(), MANAGED);
+        initTypedQuery(statement, meta, meta.getPropertyMetas(), true);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
         when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS)).thenReturn(futureRows);
@@ -227,7 +227,7 @@ public class TypedQueryTest {
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
         RegularStatement statement = select("id").from("test");
-        initTypedQuery(statement, meta, meta.getPropertyMetas(), MANAGED);
+        initTypedQuery(statement, meta, meta.getPropertyMetas(), true);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
         when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROW, executorService)).thenReturn(futureRow);
@@ -262,7 +262,7 @@ public class TypedQueryTest {
     public void should_get_iterator_without_fetch_size() throws Exception {
         //Given
         RegularStatement statement = select("id").from("test");
-        initTypedQuery(statement, meta, meta.getPropertyMetas(), MANAGED);
+        initTypedQuery(statement, meta, meta.getPropertyMetas(), true);
 
         when(contextFactory.newContextForTypedQuery(entityClass)).thenReturn(context);
         when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
@@ -286,7 +286,7 @@ public class TypedQueryTest {
     public void should_get_iterator_with_fetch_size() throws Exception {
         //Given
         RegularStatement statement = select("id").from("test");
-        initTypedQuery(statement, meta, meta.getPropertyMetas(), MANAGED);
+        initTypedQuery(statement, meta, meta.getPropertyMetas(), true);
 
         when(contextFactory.newContextForTypedQuery(entityClass)).thenReturn(context);
         when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
@@ -316,8 +316,8 @@ public class TypedQueryTest {
         return meta;
     }
 
-    private void initTypedQuery(RegularStatement regularStatement, EntityMeta meta, Map<String, PropertyMeta> propertyMetas, EntityState entityState) {
-        typedQuery = new TypedQuery<>(entityClass, daoContext, configContext, regularStatement, meta, contextFactory, entityState, new Object[] { "a" });
+    private void initTypedQuery(RegularStatement regularStatement, EntityMeta meta, Map<String, PropertyMeta> propertyMetas, boolean createProxy) {
+        typedQuery = new TypedQuery<>(entityClass, daoContext, configContext, regularStatement, meta, contextFactory,  new Object[] { "a" });
 
         Whitebox.setInternalState(typedQuery, Map.class, propertyMetas);
         Whitebox.setInternalState(typedQuery, EntityMapper.class, mapper);
@@ -325,6 +325,7 @@ public class TypedQueryTest {
         Whitebox.setInternalState(typedQuery, EntityProxifier.class, proxifier);
         Whitebox.setInternalState(typedQuery, AsyncUtils.class, asyncUtils);
         Whitebox.setInternalState(typedQuery, ExecutorService.class, executorService);
+        Whitebox.setInternalState(typedQuery, boolean.class, createProxy);
     }
 
 }

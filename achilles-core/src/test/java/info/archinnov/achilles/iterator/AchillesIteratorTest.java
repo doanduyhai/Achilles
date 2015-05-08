@@ -71,7 +71,7 @@ public class AchillesIteratorTest {
         when(sliceQuery.getEntityClass()).thenReturn(ClusteredEntity.class);
         when(context.getEntityFacade()).thenReturn(entityFacade);
 
-        sliceIterator = new AchillesIterator<>(meta, context, iterator);
+        sliceIterator = new AchillesIterator<>(meta, true, context, iterator);
 
         Whitebox.setInternalState(sliceIterator, "mapper", mapper);
         Whitebox.setInternalState(sliceIterator, "proxifier", proxifier);

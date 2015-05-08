@@ -25,6 +25,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
+
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -139,7 +140,7 @@ public class ConsistencyLevelIT {
         manager.insert(entity);
 
         try {
-            manager.find(CompleteBean.class, entity.getId(), EACH_QUORUM);
+            manager.find(CompleteBean.class, entity.getId(), withConsistency(EACH_QUORUM));
         } catch (InvalidQueryException e) {
             assertThat(e).hasMessage("EACH_QUORUM ConsistencyLevel is only supported for writes");
             exceptionCaught = true;
@@ -148,7 +149,7 @@ public class ConsistencyLevelIT {
         assertThat(exceptionCaught).isTrue();
 
         logAsserter.prepareLogLevelForDriverConnection();
-        CompleteBean found = manager.find(CompleteBean.class, entity.getId(), ALL);
+        CompleteBean found = manager.find(CompleteBean.class, entity.getId(), withConsistency(ALL));
         assertThat(found.getName()).isEqualTo("name rtprt");
         logAsserter.assertConsistencyLevels(ALL);
     }

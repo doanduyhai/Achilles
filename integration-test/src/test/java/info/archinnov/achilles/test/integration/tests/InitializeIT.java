@@ -18,6 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static info.archinnov.achilles.type.OptionsBuilder.withProxy;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.apache.cassandra.utils.UUIDGen;
@@ -52,7 +53,7 @@ public class InitializeIT {
 
 		manager.insert(entity);
 
-		CompleteBean foundEntity = manager.find(CompleteBean.class, entity.getId());
+		CompleteBean foundEntity = manager.find(CompleteBean.class, entity.getId(),withProxy());
 
 		CompleteBean rawEntity = manager.initAndRemoveProxy(foundEntity);
 
@@ -77,7 +78,9 @@ public class InitializeIT {
 
         RegularStatement statement = select().from("CompleteBean").where(eq("id",bindMarker()));
 
-		CompleteBean foundEntity = manager.typedQuery(CompleteBean.class,statement,entity.getId()).getFirst();
+		CompleteBean foundEntity = manager.typedQuery(CompleteBean.class,statement,entity.getId())
+				.withProxy()
+				.getFirst();
 
 		CompleteBean rawEntity = manager.initAndRemoveProxy(foundEntity);
 

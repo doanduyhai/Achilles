@@ -65,8 +65,18 @@ public class TypedQuery<T> extends AbstractTypedQuery<T> {
     private static final Logger log = LoggerFactory.getLogger(TypedQuery.class);
 
     public TypedQuery(Class<T> entityClass, DaoContext daoContext, ConfigurationContext configContext, Statement statement, EntityMeta meta,
-            PersistenceContextFactory contextFactory, EntityState entityState, Object[] boundValues) {
-        super(entityClass, daoContext, configContext, statement, meta, contextFactory, entityState, boundValues);
+            PersistenceContextFactory contextFactory, Object[] boundValues) {
+        super(entityClass, daoContext, configContext, statement, meta, contextFactory, boundValues);
+    }
+
+    /**
+     * Return proxified entities
+     *
+     * @return current typed query
+     */
+    public TypedQuery<T> withProxy() {
+        super.createProxy = true;
+        return this;
     }
 
     /**

@@ -80,6 +80,8 @@ public class SliceQueryProperties<T> {
 
     private FutureCallback<Object>[] asyncListeners;
 
+    private boolean createProxy = false;
+
     private SliceQueryProperties(EntityMeta entityMeta, Class<T> entityClass, SliceType sliceType) {
         this.entityMeta = entityMeta;
         this.entityClass = entityClass;
@@ -96,6 +98,11 @@ public class SliceQueryProperties<T> {
     protected SliceQueryProperties<T>  limit(int limit) {
         Validator.validateTrue(limit > 0, "The limit '%s' should be strictly positive", limit);
         this.limitO = Optional.fromNullable(limit);
+        return this;
+    }
+
+    protected SliceQueryProperties<T> createProxy() {
+        this.createProxy = true;
         return this;
     }
 
@@ -344,6 +351,10 @@ public class SliceQueryProperties<T> {
 
     public FutureCallback<Object>[] getAsyncListeners() {
         return asyncListeners;
+    }
+
+    public boolean shouldCreateProxy() {
+        return createProxy;
     }
 
     @Override

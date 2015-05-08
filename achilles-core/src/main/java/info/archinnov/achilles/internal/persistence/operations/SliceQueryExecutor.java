@@ -89,7 +89,7 @@ public class SliceQueryExecutor {
         return asyncUtils.buildInterruptible(futureEntity);
     }
 
-    protected <T> ListenableFuture<List<T>> coreAsyncGet(SliceQueryProperties<T> sliceQueryProperties) {
+    protected <T> ListenableFuture<List<T>> coreAsyncGet(final SliceQueryProperties<T> sliceQueryProperties) {
         final EntityMeta meta = sliceQueryProperties.getEntityMeta();
 
         final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQuerySelect(sliceQueryProperties);
@@ -103,6 +103,9 @@ public class SliceQueryExecutor {
                 for (Row row : rows) {
                     T clusteredEntity = meta.forOperations().instanciate();
                     mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
+                    if (!sliceQueryProperties.shouldCreateProxy()) {
+                        mapper.setValuesToClusteredCounterEntity(row, meta, clusteredEntity);
+                    }
                     meta.forInterception().intercept(clusteredEntity, Event.POST_LOAD);
                     clusteredEntities.add(clusteredEntity);
                 }
@@ -112,7 +115,11 @@ public class SliceQueryExecutor {
         final ListenableFuture<List<T>> futureEntities = asyncUtils.transformFuture(futureRows, rowsToEntities);
         asyncUtils.maybeAddAsyncListeners(futureEntities, sliceQueryProperties.getAsyncListeners());
 
-        return asyncUtils.transformFuture(futureEntities, this.<T>getProxyListTransformer());
+        if (sliceQueryProperties.shouldCreateProxy()) {
+            return asyncUtils.transformFuture(futureEntities, this.<T>getProxyListTransformer());
+        } else {
+            return futureEntities;
+        }
     }
 
     public <T> Iterator<T> iterator(final SliceQueryProperties<T> sliceQueryProperties) {
@@ -130,7 +137,7 @@ public class SliceQueryExecutor {
             @Override
             public Iterator<T> apply(Iterator<Row> rowIterator) {
                 PersistenceContext context = buildContextForQuery(sliceQueryProperties);
-                return new AchillesIterator<>(sliceQueryProperties.getEntityMeta(), context, rowIterator);
+                return new AchillesIterator<>(sliceQueryProperties.getEntityMeta(), sliceQueryProperties.shouldCreateProxy(), context, rowIterator);
             }
         };
         final ListenableFuture<Iterator<T>> listenableFuture = asyncUtils.transformFuture(futureIterator, rowToIterator);

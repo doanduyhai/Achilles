@@ -15,8 +15,7 @@
  */
 package info.archinnov.achilles.persistence;
 
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
+
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import java.io.IOException;
@@ -189,16 +188,16 @@ public class PersistenceManager extends CommonPersistenceManager {
      *            Entity type
      * @param primaryKey
      *            Primary key (Cassandra row key) of the entity to load
-     * @param readLevel
-     *            Consistency Level for read
+     * @param options
+     *            Options for read
      *
      * @return T managed entity
      */
-    public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
+    public <T> T find(final Class<T> entityClass, final Object primaryKey, Options options) {
          if (log.isDebugEnabled()) {
-            log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey, readLevel);
+            log.debug("Find entity class '{}' with primary key {} and options {}", entityClass, primaryKey, options);
         }
-        return super.asyncFind(entityClass, primaryKey, withConsistency(readLevel)).getImmediately();
+        return super.asyncFind(entityClass, primaryKey, options).getImmediately();
     }
 
     /**
@@ -209,9 +208,9 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      *  <pre class="code"><code class="java">
      *      // No data read from Cassandra
-     *      User managedUser = manager.forUpdate(User.class,1L);
-     *      managedUser.setAge(33);
-     *      manager.update(managedUser);
+     *      User proxifiedUser = manager.forUpdate(User.class,1L);
+     *      proxifiedUser.setAge(33);
+     *      manager.update(proxifiedUser);
      *  </code></pre>
      *
      * @param entityClass
@@ -563,7 +562,7 @@ public class PersistenceManager extends CommonPersistenceManager {
     public <T> TypedQuery<T> typedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
         log.debug("Execute typed query {}", statement);
         final EntityMeta meta = super.typedQueryInternal(entityClass, statement, boundValues);
-        return new TypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, MANAGED, boundValues);
+        return new TypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, boundValues);
     }
 
     /**
@@ -583,51 +582,7 @@ public class PersistenceManager extends CommonPersistenceManager {
         log.debug("Execute indexed query for entity class {}", entityClass);
         final Statement statement = super.indexedQueryInternal(entityClass, indexCondition);
         final EntityMeta meta = super.typedQueryInternal(entityClass, statement, indexCondition.getColumnValue());
-        return new TypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, MANAGED, new Object[]{indexCondition.getColumnValue()});
-    }
-
-    /**
-     * Return a CQL typed query builder
-     *
-     * All found entities will be returned as raw entities and not 'managed' by
-     * Achilles
-     *
-     * <br/>
-     * <br/>
-     *
-     *  <h3>Raw typed query without bound values</h3>
-     *  <pre class="code"><code class="java">
-     *      RegularStatement nativeQuery = select().from("MyEntity").where().limit(3);
-     *      List&lt;MyEntity> actual = manager.rawTypedQuery(MyEntity.class, nativeQuery).get();
-     *  </code></pre>
-     *
-     *  <br/>
-     *  <br/>
-     *
-     *  <h3>Raw typed query with bound values</h3>
-     *  <pre class="code"><code class="java">
-     *      RegularStatement nativeQuery = select().from("MyEntity").where().limit(bindMarker());
-     *      List&lt;MyEntity&gt; actual = manager.rawTypedQuery(MyEntity.class, nativeQuery,3).get();
-     *  </code></pre>
-     *
-     * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#typed-query" target="_blank">Typed query API</a>
-     *
-     * @param entityClass
-     *            type of entity to be returned
-     *
-     * @param statement
-     *            native CQL regularStatement, including limit, ttl and consistency
-     *            options
-     *
-     * @param boundValues
-     *            values to be bind to the parameterized query, if any
-     *
-     * @return TypedQuery<T>
-     */
-    public <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
-        log.debug("Execute raw typed query for entity class {}", entityClass);
-        final EntityMeta meta = super.rawTypedQueryInternal(entityClass, statement, boundValues);
-        return new TypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, NOT_MANAGED, boundValues);
+        return new TypedQuery<>(entityClass, daoContext, configContext, statement, meta, contextFactory, new Object[]{indexCondition.getColumnValue()});
     }
 
     /**

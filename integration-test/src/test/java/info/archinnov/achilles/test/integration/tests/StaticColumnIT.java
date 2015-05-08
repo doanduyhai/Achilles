@@ -89,7 +89,10 @@ public class StaticColumnIT {
         Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithStaticColumn parisStreet = new ClusteredEntityWithStaticColumn(new ClusteredKey(partitionKey, "street1"), "Paris", "rue de la paix");
 
-        final ClusteredEntityWithStaticColumn managed = manager.insert(parisStreet);
+        manager.insert(parisStreet);
+
+        final ClusteredEntityWithStaticColumn managed = manager
+                .forUpdate(ClusteredEntityWithStaticColumn.class, parisStreet.getId());
 
         //When
         managed.setStreet("rue Lamartine");
@@ -101,8 +104,9 @@ public class StaticColumnIT {
         assertThat(updated.getStreet()).isEqualTo("rue Lamartine");
 
         //When
-        updated.setCity("Lyon");
-        manager.update(updated);
+        final ClusteredEntityWithStaticColumn proxy = manager.forUpdate(ClusteredEntityWithStaticColumn.class, updated.getId());
+        proxy.setCity("Lyon");
+        manager.update(proxy);
 
         final ClusteredEntityWithStaticColumn staticUpdated = manager.find(ClusteredEntityWithStaticColumn.class, parisStreet.getId());
         assertThat(staticUpdated.getCity()).isEqualTo("Lyon");
@@ -199,7 +203,8 @@ public class StaticColumnIT {
         manager.insert(count2);
 
         //Then
-        List<ClusteredEntityWithStaticCounter> found = manager.sliceQuery(ClusteredEntityWithStaticCounter.class)
+        List<ClusteredEntityWithStaticCounter> found = manager
+                .sliceQuery(ClusteredEntityWithStaticCounter.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
                 .get(100);
@@ -250,9 +255,10 @@ public class StaticColumnIT {
         assertThat(updated.getCount().get()).isEqualTo(13L);
         assertThat(updated.getVersion().get()).isEqualTo(1L);
 
+        final ClusteredEntityWithStaticCounter proxy = manager.forUpdate(ClusteredEntityWithStaticCounter.class, updated.getId());
         //When
-        updated.getVersion().incr(2L);
-        manager.update(updated);
+        proxy.getVersion().incr(2L);
+        manager.update(proxy);
 
         //Then
         ClusteredEntityWithStaticCounter staticUpdated = manager.find(ClusteredEntityWithStaticCounter.class, entity.getId());

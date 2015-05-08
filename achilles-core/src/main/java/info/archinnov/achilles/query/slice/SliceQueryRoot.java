@@ -126,8 +126,24 @@ public abstract class SliceQueryRoot<TYPE, T extends SliceQueryRoot<TYPE, T>> {
         return getThis();
     }
 
+    /**
+     * Provide asynchronous listeners
+     *
+     * @param asyncListeners
+     * @return
+     */
     public T withAsyncListeners(FutureCallback<Object>... asyncListeners) {
         this.properties.asyncListeners(asyncListeners);
+        return getThis();
+    }
+
+    /**
+     * Return proxified entities
+     *
+     * @return
+     */
+    public T withProxy() {
+        this.properties.createProxy();
         return getThis();
     }
 
