@@ -153,10 +153,9 @@ public abstract class AbstractStatementWrapper {
 
         if (actualLogger.isDebugEnabled()) {
             actualLogger.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
-        }
-
-        if (ArrayUtils.isNotEmpty(values)) {
-            actualLogger.debug("\t bound values : {}", replaceByteBuffersByHexString(values));
+            if (ArrayUtils.isNotEmpty(values)) {
+                actualLogger.debug("\t bound values : {}", replaceByteBuffersByHexString(values));
+            }
         }
     }
 
