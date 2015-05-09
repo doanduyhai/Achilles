@@ -44,7 +44,6 @@ import java.lang.annotation.*;
  *   }
  *
  * </code></pre>
- * </p>
  * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#clusteringcolumn" target="_blank">@ClusteringColumn</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
