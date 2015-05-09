@@ -22,6 +22,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;
 import java.util.List;
+
+import info.archinnov.achilles.test.integration.entity.EntityWithCompositePartitionKey;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,14 +73,16 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(initialValue),incr(initialValue));
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
         assertThat(entity.getCounter().get()).isEqualTo(initialValue);
 
-		entity.getCounter().incr(increment);
-		entity.getVersion().incr(increment);
+		final ClusteredEntityWithCounter proxy = manager.forUpdate(ClusteredEntityWithCounter.class, entity.getId());
 
-        manager.update(entity);
+		proxy.getCounter().incr(increment);
+		proxy.getVersion().incr(increment);
+
+        manager.update(proxy);
 
 		entity = manager.find(ClusteredEntityWithCounter.class, compoundKey);
 
@@ -93,40 +97,13 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
 		manager.delete(entity);
 
 		Thread.sleep(2000);
 
 		assertThat(manager.find(ClusteredEntityWithCounter.class, compoundKey)).isNull();
-
-	}
-
-	@Test
-	public void should_refresh() throws Exception {
-		long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		long incr = RandomUtils.nextLong(0,Long.MAX_VALUE);
-
-		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		String name = "name";
-		compoundKey = new CompoundPK(partitionKey, name);
-
-		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
-
-		entity = manager.insert(entity);
-
-		session.execute("UPDATE " + TABLE_NAME + " SET counter = counter + " + incr + " WHERE id=" + partitionKey
-				+ " AND name='name'");
-        session.execute("UPDATE " + TABLE_NAME + " SET version = version + " + incr + " WHERE id=" + partitionKey
-                                + " AND name='name'");
-		// Wait for the counter to be updated
-		Thread.sleep(100);
-
-		manager.refresh(entity);
-
-		assertThat(entity.getCounter().get()).isEqualTo(counterValue + incr);
-		assertThat(entity.getVersion().get()).isEqualTo(incr);
 
 	}
 

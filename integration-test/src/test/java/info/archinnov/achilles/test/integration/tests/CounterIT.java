@@ -16,6 +16,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
+import static info.archinnov.achilles.type.OptionsBuilder.withProxy;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.persistence.PersistenceManager;
@@ -25,6 +26,7 @@ import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.CounterBuilder;
 
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -50,7 +52,7 @@ public class CounterIT {
 	public void should_persist_counter() throws Exception {
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").version(CounterBuilder.incr(2L)).buid();
 
-		bean = manager.insert(bean);
+		manager.insert(bean);
 
 		Row row = session.execute(
 				"select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
@@ -63,11 +65,13 @@ public class CounterIT {
 	public void should_set_counter_on_managed_entity() throws Exception {
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
-		bean = manager.insert(bean);
+		manager.insert(bean);
 
-		bean.getVersion().incr(2L);
+		final CompleteBean proxy = manager.forUpdate(CompleteBean.class, bean.getId());
 
-		manager.update(bean);
+		proxy.getVersion().incr(2L);
+
+		manager.update(proxy);
 
 		Row row = session.execute(
 				"select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
@@ -81,10 +85,13 @@ public class CounterIT {
 		long version = 10L;
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
-		bean = manager.insert(bean);
-		bean.getVersion().incr(version);
+		manager.insert(bean);
 
-		manager.update(bean);
+		final CompleteBean proxy = manager.forUpdate(CompleteBean.class, bean.getId());
+
+		proxy.getVersion().incr(version);
+
+		manager.update(proxy);
 
 		Row row = session.execute(
 				"select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
@@ -98,11 +105,13 @@ public class CounterIT {
 		long version = 154321L;
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
-		bean = manager.insert(bean);
+		manager.insert(bean);
 
-		bean.getVersion().incr(version);
+		final CompleteBean proxy = manager.forUpdate(CompleteBean.class, bean.getId());
 
-		manager.update(bean);
+		proxy.getVersion().incr(version);
+
+		manager.update(proxy);
 
 		Row row = session.execute(
 				"select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
@@ -130,29 +139,33 @@ public class CounterIT {
 	}
 
 	@Test
-	public void should_get_counter_from_managed__entity_after_setting_value() throws Exception {
+	public void should_get_counter_from_proxified_entity_after_setting_value() throws Exception {
 		CompleteBean bean = builder().randomId().buid();
-		bean = manager.insert(bean);
+		manager.insert(bean);
 
-		bean.getVersion().incr(5L);
+		final CompleteBean proxy = manager.forUpdate(CompleteBean.class, bean.getId());
 
-		assertThat(bean.getVersion().get()).isEqualTo(5L);
+		proxy.getVersion().incr(5L);
+
+		assertThat(proxy.getVersion().get()).isEqualTo(5L);
 	}
 
 	@Test
 	public void should_get_counter_from_refreshed_entity() throws Exception {
 		CompleteBean bean = builder().randomId().buid();
-		bean = manager.insert(bean);
+		manager.insert(bean);
 
-		Counter version = bean.getVersion();
+		final CompleteBean proxy = manager.forUpdate(CompleteBean.class, bean.getId());
+
+		Counter version = proxy.getVersion();
 		version.incr(5L);
 
-		manager.update(bean);
+		manager.update(proxy);
 
 		assertThat(version.get()).isEqualTo(5L);
 
-		manager.refresh(bean);
+		final CompleteBean found = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-		assertThat(bean.getVersion().get()).isEqualTo(5L);
+		assertThat(found.getVersion().get()).isEqualTo(5L);
 	}
 }

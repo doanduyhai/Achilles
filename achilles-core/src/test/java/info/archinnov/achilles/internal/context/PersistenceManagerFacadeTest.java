@@ -29,7 +29,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,7 +58,6 @@ import info.archinnov.achilles.internal.persistence.operations.EntityInitializer
 import info.archinnov.achilles.internal.persistence.operations.EntityLoader;
 import info.archinnov.achilles.internal.persistence.operations.EntityPersister;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.internal.persistence.operations.EntityRefresher;
 import info.archinnov.achilles.internal.persistence.operations.EntityUpdater;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -94,9 +92,6 @@ public class PersistenceManagerFacadeTest {
 
     @Mock
     private EntityInitializer initializer;
-
-    @Mock
-    private EntityRefresher refresher;
 
     @Mock
     private ReflectionInvoker invoker;
@@ -153,7 +148,6 @@ public class PersistenceManagerFacadeTest {
         context.initializer = initializer;
         context.persister = persister;
         context.proxifier = proxifier;
-        context.refresher = refresher;
         context.loader = loader;
         context.updater = updater;
         context.asyncUtils = asyncUtils;
@@ -171,7 +165,7 @@ public class PersistenceManagerFacadeTest {
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         //When
-        final AchillesFuture<CompleteBean> actual = facade.persist(entity);
+        final AchillesFuture<CompleteBean> actual = facade.insert(entity);
 
         //Then
         assertThat(actual).isSameAs(achillesFutureEntity);
@@ -294,33 +288,6 @@ public class PersistenceManagerFacadeTest {
         // Then
         assertThat(actual).isSameAs(entity);
 
-    }
-
-    @Test
-    public void should_refresh() throws Exception {
-        // Given
-        CompleteBean proxy = new CompleteBean();
-        when(refresher.refresh(proxy, context.entityFacade)).thenReturn(achillesFutureEntity);
-        when(proxifier.removeProxy(proxy)).thenReturn(entity);
-        when(asyncUtils.transformFuture(eq(achillesFutureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
-        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
-        when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
-
-        // When
-        final AchillesFuture<CompleteBean> actual = facade.refresh(proxy);
-
-        // Then
-        assertThat(actual).isSameAs(achillesFutureEntity);
-
-        assertThat(isoEntityCaptor.getAllValues().get(0).apply(proxy)).isSameAs(entity);
-        assertThat(isoEntityCaptor.getAllValues().get(1).apply(entity)).isSameAs(entity);
-
-        InOrder inOrder = inOrder(flushContext, refresher, proxifier, asyncUtils);
-
-        inOrder.verify(refresher).refresh(proxy, context.entityFacade);
-        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options);
-        inOrder.verify(proxifier).removeProxy(proxy);
-        inOrder.verify(flushContext).triggerInterceptor(meta, context.entity, POST_LOAD);
     }
 
     @Test

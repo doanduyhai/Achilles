@@ -70,11 +70,13 @@ public class InitializeIT {
 	public void should_initialize_counter_value() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
-		entity.getVersion().incr(2L);
+		final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
 
-        manager.update(entity);
+		proxy.getVersion().incr(2L);
+
+        manager.update(proxy);
 
         RegularStatement statement = select().from("CompleteBean").where(eq("id",bindMarker()));
 

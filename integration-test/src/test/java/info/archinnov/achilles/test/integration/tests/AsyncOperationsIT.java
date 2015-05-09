@@ -17,6 +17,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static info.archinnov.achilles.type.OptionsBuilder.withAsyncListeners;
+import static info.archinnov.achilles.type.OptionsBuilder.withProxy;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.async.AchillesFuture;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -298,17 +298,21 @@ public class AsyncOperationsIT {
                 latch.countDown();
             }
         };
-        CompleteBean managedJonathan = manager.insert(jonathan).getImmediately();
+
+        manager.insert(jonathan).getImmediately();
+        CompleteBean managedJonathan = manager.find(CompleteBean.class, jonathan.getId(), withProxy()).getImmediately();
         managedJonathan.setAge(101L);
         managedJonathan.getFriends().add("eve");
         managedJonathan.getPreferences().put(1, "FR");
 
-        CompleteBean managedPaul = manager.insert(paul).getImmediately();
+        manager.insert(paul).getImmediately();
+        CompleteBean managedPaul = manager.find(CompleteBean.class, paul.getId(), withProxy()).getImmediately();
         managedPaul.setAge(102L);
         managedPaul.getFriends().add("oscar");
         managedPaul.getPreferences().put(1, "CA");
 
-        CompleteBean managedGeorge = manager.insert(george).getImmediately();
+        manager.insert(george).getImmediately();
+        CompleteBean managedGeorge = manager.find(CompleteBean.class, george.getId(), withProxy()).getImmediately();
         managedGeorge.setAge(103L);
         managedGeorge.getFriends().add("mallory");
         managedGeorge.getPreferences().put(2, "Seattle");
@@ -388,67 +392,6 @@ public class AsyncOperationsIT {
         futureJack.get();
         List<Row> rowsJack = session.execute("select * from completebean where id=" + jack.getId()).all();
         assertThat(rowsJack).isEmpty();
-
-        latch.await();
-        Thread.sleep(100);
-        assertThat(successSpy.get()).isNotNull().isInstanceOf(CompleteBean.class)
-                .isNotExactlyInstanceOf(Factory.class);
-    }
-
-    @Test
-    public void should_refresh_many() throws Exception {
-
-        CompleteBean paul = CompleteBeanTestBuilder.builder().randomId().name("Paul").addFriends("bob", "alice").age(35L).buid();
-        CompleteBean john = CompleteBeanTestBuilder.builder().randomId().name("John").addFriends("bob", "alice").age(35L).buid();
-        CompleteBean jack = CompleteBeanTestBuilder.builder().randomId().name("Jack").addFriends("bob", "alice").age(35L).buid();
-
-        paul = manager.insert(paul).getImmediately();
-        john = manager.insert(john).getImmediately();
-        jack = manager.insert(jack).getImmediately();
-
-        session.execute("UPDATE completebean SET name='Paul_modified' WHERE id=" + paul.getId());
-        session.execute("UPDATE completebean SET friends=friends + ['eve'] WHERE id=" + paul.getId());
-
-        session.execute("UPDATE completebean SET name='John_modified' WHERE id=" + john.getId());
-        session.execute("UPDATE completebean SET friends=friends + ['oscar'] WHERE id=" + john.getId());
-
-        session.execute("UPDATE completebean SET name='Jack_modified' WHERE id=" + jack.getId());
-        session.execute("UPDATE completebean SET friends=friends + ['mallory'] WHERE id=" + jack.getId());
-
-        final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicReference<Object> successSpy = new AtomicReference<>();
-
-        FutureCallback<Object> successCallBack = new FutureCallback<Object>() {
-            @Override
-            public void onSuccess(Object result) {
-                successSpy.getAndSet(result);
-                latch.countDown();
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                latch.countDown();
-            }
-        };
-
-        final AchillesFuture<CompleteBean> futurePaul = manager.refresh(paul, withAsyncListeners(successCallBack));
-        final AchillesFuture<CompleteBean> futureJohn = manager.refresh(john);
-        final AchillesFuture<CompleteBean> futureJack = manager.refresh(jack);
-
-        futurePaul.get();
-        assertThat(paul.getName()).isEqualTo("Paul_modified");
-        assertThat(paul.getFriends()).hasSize(3);
-        assertThat(paul.getFriends().get(2)).isEqualTo("eve");
-
-        futureJohn.get();
-        assertThat(john.getName()).isEqualTo("John_modified");
-        assertThat(john.getFriends()).hasSize(3);
-        assertThat(john.getFriends().get(2)).isEqualTo("oscar");
-
-        futureJack.get();
-        assertThat(jack.getName()).isEqualTo("Jack_modified");
-        assertThat(jack.getFriends()).hasSize(3);
-        assertThat(jack.getFriends().get(2)).isEqualTo("mallory");
 
         latch.await();
         Thread.sleep(100);

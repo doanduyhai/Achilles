@@ -37,7 +37,6 @@ import info.archinnov.achilles.exception.AchillesLightWeightTransactionException
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.listener.LWTResultListener;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.RegularStatement;
@@ -185,11 +184,13 @@ public class LWTOperationsIT {
     public void should_update_with_cas_conditions_using_enum() throws Exception {
         //Given
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "John", EACH_QUORUM);
-        final EntityWithEnum managed = manager.insert(entityWithEnum);
-        managed.setName("Helen");
+        manager.insert(entityWithEnum);
+
+        EntityWithEnum proxy = manager.forUpdate(EntityWithEnum.class, entityWithEnum.getId());
+        proxy.setName("Helen");
 
         //When
-        manager.insertOrUpdate(managed, ifEqualCondition("name", "John").ifEqualCondition("consistency_level", EACH_QUORUM));
+        manager.insertOrUpdate(proxy, ifEqualCondition("name", "John").ifEqualCondition("consistency_level", EACH_QUORUM));
 
         //Then
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);
@@ -211,12 +212,14 @@ public class LWTOperationsIT {
         friends.add("Paul");
         entity.setFriends(friends);
 
-        final CompleteBean managed = manager.insert(entity);
-        managed.setName("Helen");
-        managed.getFriends().add("George");
+        manager.insert(entity);
+
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, primaryKey);
+        proxy.setName("Helen");
+        proxy.getFriends().add("George");
 
         //When
-        manager.update(managed, ifEqualCondition("age_in_years", 32L));
+        manager.update(proxy, ifEqualCondition("age_in_years", 32L));
 
         //Then
         final CompleteBean found = manager.find(CompleteBean.class, primaryKey);
@@ -229,14 +232,19 @@ public class LWTOperationsIT {
     public void should_exception_when_failing_cas_update() throws Exception {
         //Given
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "John", EACH_QUORUM);
-        final EntityWithEnum managed = manager.insert(entityWithEnum);
+        manager.insert(entityWithEnum);
+
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "John");
         AchillesLightWeightTransactionException lwtException = null;
-        managed.setName("Helen");
+
+
+        final EntityWithEnum proxy = manager.forUpdate(EntityWithEnum.class, entityWithEnum.getId());
+
+        proxy.setName("Helen");
 
         //When
         try {
-            manager.update(managed, ifEqualCondition("name", "name").ifEqualCondition("consistency_level", EACH_QUORUM));
+            manager.update(proxy, ifEqualCondition("name", "name").ifEqualCondition("consistency_level", EACH_QUORUM));
         } catch (AchillesLightWeightTransactionException ace) {
             lwtException = ace;
         }
@@ -263,12 +271,15 @@ public class LWTOperationsIT {
         };
 
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "John", EACH_QUORUM);
-        final EntityWithEnum managed = manager.insert(entityWithEnum);
+        manager.insert(entityWithEnum);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "John");
-        managed.setName("Helen");
+
+        final EntityWithEnum proxy = manager.forUpdate(EntityWithEnum.class, entityWithEnum.getId());
+
+        proxy.setName("Helen");
 
         //When
-        manager.update(managed,ifEqualCondition("name", "name").ifEqualCondition("consistency_level", EACH_QUORUM).lwtResultListener(listener));
+        manager.update(proxy,ifEqualCondition("name", "name").ifEqualCondition("consistency_level", EACH_QUORUM).lwtResultListener(listener));
 
         final LWTResultListener.LWTResult LWTResult = atomicCASResult.get();
         assertThat(LWTResult).isNotNull();
@@ -293,12 +304,15 @@ public class LWTOperationsIT {
         };
 
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "John", EACH_QUORUM);
-        final EntityWithEnum managed = manager.insert(entityWithEnum);
+        manager.insert(entityWithEnum);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "John");
-        managed.setName("Helen");
+
+        final EntityWithEnum proxy = manager.forUpdate(EntityWithEnum.class, entityWithEnum.getId());
+
+        proxy.setName("Helen");
 
         //When
-        manager.update(managed,ifEqualCondition("name", "name")
+        manager.update(proxy,ifEqualCondition("name", "name")
                         .ifEqualCondition("consistency_level", EACH_QUORUM)
                         .lwtResultListener(listener)
                         .withTtl(100));
@@ -314,12 +328,15 @@ public class LWTOperationsIT {
     public void should_update_set_with_cas_condition() throws Exception {
         //Given
         CompleteBean entity = builder().randomId().name("John").addFollowers("Paul", "Andrew").buid();
-        final CompleteBean managed = manager.insert(entity);
-        managed.getFollowers().add("Helen");
-        managed.getFollowers().remove("Paul");
+        manager.insert(entity);
+
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.getFollowers().add("Helen");
+        proxy.getFollowers().remove("Paul");
 
         //When
-        manager.update(managed, ifEqualCondition("name", "John").withTtl(100));
+        manager.update(proxy, ifEqualCondition("name", "John").withTtl(100));
 
         //Then
         final CompleteBean actual = manager.find(CompleteBean.class, entity.getId());
@@ -330,12 +347,15 @@ public class LWTOperationsIT {
     public void should_update_list_at_index_with_cas_condition() throws Exception {
         //Given
         CompleteBean entity = builder().randomId().name("John").addFriends("Paul", "Andrew").buid();
-        final CompleteBean managed = manager.insert(entity);
-        managed.getFriends().set(0, "Helen");
-        managed.getFriends().set(1, null);
+        manager.insert(entity);
+
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.getFriends().set(0, "Helen");
+        proxy.getFriends().set(1, null);
 
         //When
-        manager.update(managed, ifEqualCondition("name", "John").withTtl(100));
+        manager.update(proxy, ifEqualCondition("name", "John").withTtl(100));
 
         //Then
         final CompleteBean actual = manager.find(CompleteBean.class, entity.getId());
@@ -359,11 +379,14 @@ public class LWTOperationsIT {
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "name", "John");
 
         CompleteBean entity = builder().randomId().name("John").addFollowers("Paul", "Andrew").buid();
-        final CompleteBean managed = manager.insert(entity);
-        managed.getFollowers().add("Helen");
+        manager.insert(entity);
+
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.getFollowers().add("Helen");
 
         //When
-        manager.update(managed, ifEqualCondition("name", "Helen").lwtResultListener(listener));
+        manager.update(proxy, ifEqualCondition("name", "Helen").lwtResultListener(listener));
 
         //Then
         final LWTResultListener.LWTResult LWTResult = atomicLWTResult.get();

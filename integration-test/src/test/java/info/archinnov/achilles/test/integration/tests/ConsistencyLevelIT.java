@@ -122,11 +122,14 @@ public class ConsistencyLevelIT {
     @Test
     public void should_update_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
         CompleteBean entity = builder().randomId().name("name zeruioze").buid();
-        entity = manager.insert(entity);
-        entity.setName("zeruioze");
+        manager.insert(entity);
+
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.setName("zeruioze");
 
         logAsserter.prepareLogLevelForDriverConnection();
-        manager.update(entity, withConsistency(EACH_QUORUM));
+        manager.update(proxy, withConsistency(EACH_QUORUM));
 
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("zeruioze");
@@ -154,30 +157,11 @@ public class ConsistencyLevelIT {
         logAsserter.assertConsistencyLevels(ALL);
     }
 
-    @Test
-    public void should_refresh_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
-        boolean exceptionCaught = false;
-        CompleteBean entity = builder().randomId().name("name").buid();
-        entity = manager.insert(entity);
-
-        try {
-            manager.refresh(entity, EACH_QUORUM);
-        } catch (InvalidQueryException e) {
-            assertThat(e).hasMessage("EACH_QUORUM ConsistencyLevel is only supported for writes");
-            exceptionCaught = true;
-        }
-
-        assertThat(exceptionCaught).isTrue();
-
-        logAsserter.prepareLogLevelForDriverConnection();
-        manager.refresh(entity, ALL);
-        logAsserter.assertConsistencyLevels(ALL);
-    }
 
     @Test
     public void should_delete_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
         CompleteBean entity = builder().randomId().name("name").buid();
-        entity = manager.insert(entity);
+        manager.insert(entity);
 
         logAsserter.prepareLogLevelForDriverConnection();
         manager.delete(entity, withConsistency(EACH_QUORUM));

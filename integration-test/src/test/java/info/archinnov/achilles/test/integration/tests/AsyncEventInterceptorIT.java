@@ -44,6 +44,7 @@ import static info.archinnov.achilles.interceptor.Event.*;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static info.archinnov.achilles.type.CounterBuilder.incr;
 import static info.archinnov.achilles.type.OptionsBuilder.withAsyncListeners;
+import static info.archinnov.achilles.type.OptionsBuilder.withProxy;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -228,12 +229,15 @@ public class AsyncEventInterceptorIT {
             }
         }));
 
-        entity = future.get();
-        entity.setName("DuyHai");
-        entity.setLabel("label");
+
+        future.get();
+
+        final CompleteBean proxy = asyncManager.find(CompleteBean.class, entity.getId(), withProxy()).getImmediately();
+        proxy.setName("DuyHai");
+        proxy.setLabel("label");
 
 
-        asyncManager.update(entity, withAsyncListeners(new FutureCallback<Object>() {
+        asyncManager.update(proxy, withAsyncListeners(new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 latch.countDown();
@@ -251,8 +255,8 @@ public class AsyncEventInterceptorIT {
 
         assertThat(row.getString("name")).isEqualTo("preUpdate");
         assertThat(row.getString("label")).isEqualTo("label");
-        assertThat(entity.getName()).isEqualTo("preUpdate");
-        assertThat(entity.getLabel()).isEqualTo("postUpdate");
+        assertThat(proxy.getName()).isEqualTo("preUpdate");
+        assertThat(proxy.getLabel()).isEqualTo("postUpdate");
     }
 
     @Test

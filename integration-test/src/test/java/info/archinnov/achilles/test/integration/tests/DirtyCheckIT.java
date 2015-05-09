@@ -16,6 +16,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static com.google.common.collect.Sets.newHashSet;
+import static info.archinnov.achilles.type.OptionsBuilder.withProxy;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.HashMap;
@@ -25,6 +26,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -59,7 +62,7 @@ public class DirtyCheckIT {
                 .addFollowers("George", "Paul").addPreference(1, "FR").addPreference(2, "Paris")
                 .addPreference(3, "75014").buid();
 
-        bean = manager.insert(bean);
+        manager.insert(bean);
     }
 
     /*
@@ -67,8 +70,10 @@ public class DirtyCheckIT {
      */
     @Test
     public void should_dirty_check_assign_new_value_to_set() throws Exception {
-        bean.setFollowers(newHashSet("Sylvain", "Jonathan"));
-        manager.update(bean);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.setFollowers(newHashSet("Sylvain", "Jonathan"));
+        manager.update(proxy);
 
         Row row = session.execute("select followers from CompleteBean where id=" + bean.getId()).one();
         Set<String> followers = row.getSet("followers", String.class);
@@ -77,9 +82,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_set_element_add() throws Exception {
-        bean.getFollowers().add("Jonathan");
-        bean.getFollowers().addAll(asList("Sylvain", "Mickaël", "Jonathan"));
-        manager.update(bean);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.getFollowers().add("Jonathan");
+        proxy.getFollowers().addAll(asList("Sylvain", "Mickaël", "Jonathan"));
+        manager.update(proxy);
 
         Row row = session.execute("select followers from CompleteBean where id=" + bean.getId()).one();
         Set<String> friends = row.getSet("followers", String.class);
@@ -90,9 +97,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_set_clear() throws Exception {
-        bean.getFollowers().clear();
-        bean.getFollowers().addAll(asList("Sylvain", "Jonathan"));
-        manager.update(bean);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.getFollowers().clear();
+        proxy.getFollowers().addAll(asList("Sylvain", "Jonathan"));
+        manager.update(proxy);
 
         Row row = session.execute("select followers from CompleteBean where id=" + bean.getId()).one();
         Set<String> friends = row.getSet("followers", String.class);
@@ -103,9 +112,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_set_remove() throws Exception {
-        bean.getFollowers().remove("Sylvain");
-        bean.getFollowers().removeAll(asList("George"));
-        manager.update(bean);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.getFollowers().remove("Sylvain");
+        proxy.getFollowers().removeAll(asList("George"));
+        manager.update(proxy);
 
         Row row = session.execute("select followers from CompleteBean where id=" + bean.getId()).one();
         Set<String> friends = row.getSet("followers", String.class);
@@ -115,8 +126,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_set_retain_all() throws Exception {
-        bean.getFollowers().retainAll(asList("Sylvain", "Paul"));
-        manager.update(bean);
+        
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.getFollowers().retainAll(asList("Sylvain", "Paul"));
+        manager.update(proxy);
 
         Row row = session.execute("select followers from CompleteBean where id=" + bean.getId()).one();
         Set<String> friends = row.getSet("followers", String.class);
@@ -126,10 +140,12 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_set_on_iterator_remove() throws Exception {
-        final Iterator<String> iterator = bean.getFollowers().iterator();
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        final Iterator<String> iterator = proxy.getFollowers().iterator();
         iterator.next();
         iterator.remove();
-        manager.update(bean);
+        manager.update(proxy);
 
         Row row = session.execute("select followers from CompleteBean where id=" + bean.getId()).one();
         Set<String> friends = row.getSet("followers", String.class);
@@ -142,8 +158,10 @@ public class DirtyCheckIT {
      */
     @Test
     public void should_dirty_check_assign_new_value_to_list() throws Exception {
-        bean.setFriends(asList("qux", "tux"));
-        manager.update(bean);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.setFriends(asList("qux", "tux"));
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -152,9 +170,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_list_element_add() throws Exception {
-        bean.getFriends().add("qux");
-        bean.getFriends().addAll(asList("qux", "qux"));
-        manager.update(bean);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.getFriends().add("qux");
+        proxy.getFriends().addAll(asList("qux", "qux"));
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -169,14 +189,18 @@ public class DirtyCheckIT {
     public void should_dirty_check_list_element_add_at_index() throws Exception {
         exception.expect(UnsupportedOperationException.class);
         exception.expectMessage("Append, Prepend, Remove, RemoveAll and SetValueAtIndex are the only supported operations for CQL lists");
-        bean.getFriends().add(1, "qux");
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.getFriends().add(1, "qux");
     }
 
 
     @Test
     public void should_dirty_check_list_element_clear() throws Exception {
-        bean.getFriends().clear();
-        manager.update(bean);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.getFriends().clear();
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         assertThat(row.isNull("friends")).isTrue();
@@ -184,9 +208,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_list_element_clear_then_append() throws Exception {
-        bean.getFriends().clear();
-        bean.getFriends().add("qux");
-        manager.update(bean);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.getFriends().clear();
+        proxy.getFriends().add("qux");
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         assertThat(row.getList("friends", String.class)).containsExactly("qux");
@@ -194,9 +220,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_list_element_prepend() throws Exception {
-        bean.getFriends().add(0, "one");
-        bean.getFriends().addAll(0, asList("two", "three"));
-        manager.update(bean);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.getFriends().add(0, "one");
+        proxy.getFriends().addAll(0, asList("two", "three"));
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -210,10 +238,12 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_list_element_remove_at_index() throws Exception {
-        bean.getFriends().add("qux");
-        bean.getFriends().remove(0);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getFriends().add("qux");
+        proxy.getFriends().remove(0);
+
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -230,11 +260,13 @@ public class DirtyCheckIT {
     @Ignore
     @Test
     public void should_dirty_check_list_element_remove_at_same_index_twice() throws Exception {
-        bean.getFriends().addAll(asList("foo","bar","qux"));
-        bean.getFriends().remove(0);
-        bean.getFriends().remove(0);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getFriends().addAll(asList("foo","bar","qux"));
+        proxy.getFriends().remove(0);
+        proxy.getFriends().remove(0);
+
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -245,11 +277,13 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_list_element_remove_element_only_once() throws Exception {
-        bean.getFriends().addAll(asList("qux", "tux", "foo", "bar"));
-        bean.getFriends().remove("foo");
-        bean.getFriends().removeAll(asList("bar"));
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getFriends().addAll(asList("qux", "tux", "foo", "bar"));
+        proxy.getFriends().remove("foo");
+        proxy.getFriends().removeAll(asList("bar"));
+
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -263,9 +297,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_list_element_remove_all() throws Exception {
-        bean.getFriends().removeAll(asList("foo", "qux"));
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getFriends().removeAll(asList("foo", "qux"));
+
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -276,9 +312,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_list_element_retain_all() throws Exception {
-        bean.getFriends().retainAll(asList("foo", "qux"));
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getFriends().retainAll(asList("foo", "qux"));
+
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -289,9 +327,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_list_element_sub_list_remove() throws Exception {
-        bean.getFriends().subList(0, 1).remove(0);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getFriends().subList(0, 1).remove(0);
+
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -302,9 +342,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_list_element_set() throws Exception {
-        bean.getFriends().set(1, "qux");
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getFriends().set(1, "qux");
+
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -315,12 +357,14 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_list_element_iterator_remove() throws Exception {
-        Iterator<String> iter = bean.getFriends().iterator();
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        Iterator<String> iter = proxy.getFriends().iterator();
 
         iter.next();
         iter.remove();
 
-        manager.update(bean);
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -331,12 +375,14 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_list_element_list_iterator_remove() throws Exception {
-        Iterator<String> iter = bean.getFriends().listIterator();
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        Iterator<String> iter = proxy.getFriends().listIterator();
 
         iter.next();
         iter.remove();
 
-        manager.update(bean);
+        manager.update(proxy);
 
         Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
         List<String> friends = row.getList("friends", String.class);
@@ -347,7 +393,9 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_list_element_list_iterator_set() throws Exception {
-        ListIterator<String> iter = bean.getFriends().listIterator();
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        ListIterator<String> iter = proxy.getFriends().listIterator();
 
         iter.next();
         iter.set("qux");
@@ -364,8 +412,10 @@ public class DirtyCheckIT {
      */
     @Test
     public void should_dirty_check_assign_new_value_to_map() throws Exception {
-        bean.setPreferences(ImmutableMap.of(4, "test", 5, "again"));
-        manager.update(bean);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        proxy.setPreferences(ImmutableMap.of(4, "test", 5, "again"));
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -378,9 +428,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_map_put_element() throws Exception {
-        bean.getPreferences().put(4, "test");
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getPreferences().put(4, "test");
+
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -395,9 +447,11 @@ public class DirtyCheckIT {
      */
     @Test
     public void should_dirty_check_map_remove_key() throws Exception {
-        bean.getPreferences().remove(1);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getPreferences().remove(1);
+
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -409,12 +463,14 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_map_put_all() throws Exception {
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
         Map<Integer, String> map = new HashMap<>();
         map.put(3, "75015");
         map.put(4, "test");
-        bean.getPreferences().putAll(map);
+        proxy.getPreferences().putAll(map);
 
-        manager.update(bean);
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -427,9 +483,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_map_keyset_remove() throws Exception {
-        bean.getPreferences().keySet().remove(1);
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getPreferences().keySet().remove(1);
+
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -443,9 +501,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_map_keyset_remove_all() throws Exception {
-        bean.getPreferences().keySet().removeAll(asList(1, 2, 5));
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getPreferences().keySet().removeAll(asList(1, 2, 5));
+
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -459,9 +519,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_map_keyset_retain_all() throws Exception {
-        bean.getPreferences().keySet().retainAll(asList(1, 3));
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getPreferences().keySet().retainAll(asList(1, 3));
+
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -474,12 +536,14 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_map_keyset_iterator_remove() throws Exception {
-        Iterator<Integer> iter = bean.getPreferences().keySet().iterator();
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        Iterator<Integer> iter = proxy.getPreferences().keySet().iterator();
 
         iter.next();
         iter.remove();
 
-        manager.update(bean);
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -492,9 +556,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_map_valueset_remove() throws Exception {
-        bean.getPreferences().values().remove("FR");
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getPreferences().values().remove("FR");
+
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -507,9 +573,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_map_valueset_remove_all() throws Exception {
-        bean.getPreferences().values().removeAll(asList("FR", "Paris", "test"));
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getPreferences().values().removeAll(asList("FR", "Paris", "test"));
+
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -522,9 +590,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_map_valueset_retain_all() throws Exception {
-        bean.getPreferences().values().retainAll(asList("FR", "Paris", "test"));
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.getPreferences().values().retainAll(asList("FR", "Paris", "test"));
+
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -537,12 +607,14 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_map_valueset_iterator_remove() throws Exception {
-        Iterator<String> iter = bean.getPreferences().values().iterator();
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
+
+        Iterator<String> iter = proxy.getPreferences().values().iterator();
 
         iter.next();
         iter.remove();
 
-        manager.update(bean);
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -555,15 +627,16 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_map_entrySet_remove_entry() throws Exception {
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        Set<Entry<Integer, String>> entrySet = bean.getPreferences().entrySet();
+        Set<Entry<Integer, String>> entrySet = proxy.getPreferences().entrySet();
 
         Entry<Integer, String> entry = entrySet.iterator().next();
 
         entrySet.remove(entry);
         entry.setValue("test");
 
-        manager.update(bean);
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -576,8 +649,9 @@ public class DirtyCheckIT {
 
     @Test
     public void should_not_dirty_check_map_entrySet_remove_all_entry() throws Exception {
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        Set<Entry<Integer, String>> entrySet = bean.getPreferences().entrySet();
+        Set<Entry<Integer, String>> entrySet = proxy.getPreferences().entrySet();
 
         Iterator<Entry<Integer, String>> iterator = entrySet.iterator();
 
@@ -586,7 +660,7 @@ public class DirtyCheckIT {
 
         entrySet.removeAll(asList(entry1, entry2));
 
-        manager.update(bean);
+        manager.update(proxy);
 
         Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
         Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -599,9 +673,11 @@ public class DirtyCheckIT {
 
     @Test
     public void should_dirty_check_simple_property() throws Exception {
-        bean.setName("another_name");
+        final CompleteBean proxy = manager.find(CompleteBean.class, bean.getId(), withProxy());
 
-        manager.update(bean);
+        proxy.setName("another_name");
+
+        manager.update(proxy);
 
         Row row = session.execute("select name from CompleteBean where id=" + bean.getId()).one();
         Object reloadedName = row.getString("name");

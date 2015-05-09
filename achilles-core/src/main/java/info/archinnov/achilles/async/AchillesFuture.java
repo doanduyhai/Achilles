@@ -24,12 +24,10 @@ import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.exceptions.DriverInternalError;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
-import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesBeanValidationException;
 import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 
 public class AchillesFuture<V> implements ListenableFuture<V> {
 
@@ -90,8 +88,6 @@ public class AchillesFuture<V> implements ListenableFuture<V> {
             return (AchillesBeanValidationException) cause;
         } else if (cause instanceof AchillesInvalidTableException) {
             return (AchillesInvalidTableException) cause;
-        } else if (cause instanceof AchillesStaleObjectStateException) {
-            return (AchillesStaleObjectStateException) cause;
         } else if (cause instanceof AchillesException) {
             return (AchillesException) cause;
         } else {

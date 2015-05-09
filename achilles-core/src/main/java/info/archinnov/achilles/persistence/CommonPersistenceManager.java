@@ -49,9 +49,9 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      *            Entity to be inserted
      * @return proxified entity
      */
-    public <T> T insert(T entity) {
+    public <T> void insert(T entity) {
         log.debug("Inserting entity '{}'", entity);
-        return super.asyncInsert(entity, noOptions()).getImmediately();
+        super.asyncInsert(entity, noOptions()).getImmediately();
     }
 
     /**
@@ -68,9 +68,9 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      *            options
      * @return proxified entity
      */
-    public <T> T insert(final T entity, Options options) {
+    public <T> void insert(final T entity, Options options) {
         log.debug("Inserting entity '{}' with options {} ", entity, options);
-        return super.asyncInsert(entity, options).getImmediately();
+        super.asyncInsert(entity, options).getImmediately();
     }
 
     /**

@@ -70,10 +70,11 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder newHolder = new Holder("new_content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
-		entity.setValue(newHolder);
-		manager.update(entity);
+		final ClusteredEntityWithObjectValue proxy = manager.forUpdate(ClusteredEntityWithObjectValue.class, compoundKey);
+		proxy.setValue(newHolder);
+		manager.update(proxy);
 
 		entity = manager.find(ClusteredEntityWithObjectValue.class, compoundKey);
 
@@ -86,31 +87,12 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
 		manager.delete(entity);
 
 		assertThat(manager.find(ClusteredEntityWithObjectValue.class, compoundKey)).isNull();
 
-	}
-
-	@Test
-	public void should_refresh() throws Exception {
-
-		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		compoundKey = new CompoundPK(partitionKey, "name");
-		Holder holder = new Holder("content");
-		Holder newHolder = new Holder("new_content");
-
-		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
-
-		entity = manager.insert(entity);
-
-		session.execute("UPDATE " + TABLE_NAME + " SET value='" + mapper.writeValueAsString(newHolder) + "' where id="
-				+ partitionKey + " and name='name'");
-		manager.refresh(entity);
-
-		assertThat(entity.getValue()).isEqualTo(newHolder);
 	}
 
 	@Test

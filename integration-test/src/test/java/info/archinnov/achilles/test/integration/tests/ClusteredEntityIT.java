@@ -35,8 +35,6 @@ public class ClusteredEntityIT {
 
 	private PersistenceManager manager = resource.getPersistenceManager();
 
-	private Session session = resource.getNativeSession();
-
 	private ClusteredEntity entity;
 
 	private ClusteredEntity.CompoundPK compoundKey;
@@ -75,7 +73,7 @@ public class ClusteredEntityIT {
 	public void should_update_with_ttl() throws Exception {
 		compoundKey = new ClusteredEntity.CompoundPK(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
-		entity = manager.insert(entity, OptionsBuilder.withTtl(1));
+		manager.insert(entity, OptionsBuilder.withTtl(1));
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNotNull();
 
@@ -90,8 +88,9 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
+		entity = manager.forUpdate(ClusteredEntity.class, compoundKey);
 		entity.setValue("new_clustered_value");
 		manager.update(entity);
 
@@ -106,7 +105,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
 		manager.delete(entity);
 
@@ -120,34 +119,11 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
 		manager.deleteById(ClusteredEntity.class, entity.getId());
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNull();
 
 	}
-
-	@Test
-	public void should_refresh() throws Exception {
-
-		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		int count = RandomUtils.nextInt(0,Integer.MAX_VALUE);
-		String name = "name";
-		compoundKey = new ClusteredEntity.CompoundPK(partitionKey, count, name);
-
-		entity = new ClusteredEntity(compoundKey, "clustered_value");
-
-		entity = manager.insert(entity);
-
-		session.execute("update " + TABLE_NAME + " set value='new_clustered_value' where id=" + partitionKey
-				+ " and count=" + count + " and name='" + name + "'");
-
-		manager.refresh(entity);
-
-		assertThat(entity.getValue()).isEqualTo("new_clustered_value");
-
-	}
-
-
 }

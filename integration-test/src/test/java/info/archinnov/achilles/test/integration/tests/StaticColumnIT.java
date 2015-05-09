@@ -20,6 +20,7 @@ import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWit
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithStaticCounter.ClusteredKeyForCounter;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
+
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -119,10 +120,10 @@ public class StaticColumnIT {
         Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithStaticColumn parisStreet = new ClusteredEntityWithStaticColumn(new ClusteredKey(partitionKey, "street1"), "Paris", "rue de la paix");
 
-        final ClusteredEntityWithStaticColumn managed = manager.insert(parisStreet);
+        manager.insert(parisStreet);
 
         //When
-        manager.delete(managed);
+        manager.delete(parisStreet);
 
         //Then
         final ClusteredEntityWithStaticColumn found = manager.find(ClusteredEntityWithStaticColumn.class, parisStreet.getId());
@@ -157,12 +158,14 @@ public class StaticColumnIT {
         Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithOnlyStaticColumns location = new ClusteredEntityWithOnlyStaticColumns(new ClusteredOnlyStaticColumnsKey(partitionKey, "location"), "Paris", "rue de la paix");
 
-        final ClusteredEntityWithOnlyStaticColumns managed = manager.insert(location);
+        manager.insert(location);
+
+        final ClusteredEntityWithOnlyStaticColumns proxy = manager.forUpdate(ClusteredEntityWithOnlyStaticColumns.class, location.getId());
 
         //When
-        managed.setCity("Lyon");
-        managed.setStreet("rue Lamartine");
-        manager.update(managed);
+        proxy.setCity("Lyon");
+        proxy.setStreet("rue Lamartine");
+        manager.update(proxy);
 
         //Then
         final ClusteredEntityWithOnlyStaticColumns updated = manager.find(ClusteredEntityWithOnlyStaticColumns.class, location.getId());
@@ -176,10 +179,10 @@ public class StaticColumnIT {
         Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithOnlyStaticColumns location = new ClusteredEntityWithOnlyStaticColumns(new ClusteredOnlyStaticColumnsKey(partitionKey, "location"), "Paris", "rue de la paix");
 
-        final ClusteredEntityWithOnlyStaticColumns managed = manager.insert(location);
+        manager.insert(location);
 
         //When
-        manager.delete(managed);
+        manager.delete(location);
 
         //Then
         final ClusteredEntityWithOnlyStaticColumns found = manager.find(ClusteredEntityWithOnlyStaticColumns.class, location.getId());
@@ -246,16 +249,20 @@ public class StaticColumnIT {
         ClusteredEntityWithStaticCounter entity = new ClusteredEntityWithStaticCounter(new ClusteredKeyForCounter(partitionKey, "count1"), version, count);
 
         //When
-        final ClusteredEntityWithStaticCounter managed = manager.insert(entity);
-        managed.getCount().incr(2L);
-        manager.update(managed);
+        manager.insert(entity);
+
+        ClusteredEntityWithStaticCounter proxy = manager.forUpdate(ClusteredEntityWithStaticCounter.class, entity.getId());
+
+        proxy.getCount().incr(2L);
+        manager.update(proxy);
 
         //Then
         ClusteredEntityWithStaticCounter updated = manager.find(ClusteredEntityWithStaticCounter.class, entity.getId());
         assertThat(updated.getCount().get()).isEqualTo(13L);
         assertThat(updated.getVersion().get()).isEqualTo(1L);
 
-        final ClusteredEntityWithStaticCounter proxy = manager.forUpdate(ClusteredEntityWithStaticCounter.class, updated.getId());
+        proxy = manager.forUpdate(ClusteredEntityWithStaticCounter.class, updated.getId());
+
         //When
         proxy.getVersion().incr(2L);
         manager.update(proxy);
@@ -273,10 +280,10 @@ public class StaticColumnIT {
         Counter version = CounterBuilder.incr(1L);
         final Counter count = CounterBuilder.incr(11);
         ClusteredEntityWithStaticCounter entity = new ClusteredEntityWithStaticCounter(new ClusteredKeyForCounter(partitionKey, "count1"), version, count);
-        final ClusteredEntityWithStaticCounter managed = manager.insert(entity);
+        manager.insert(entity);
 
         //When
-        manager.delete(managed);
+        manager.delete(entity);
 
         Thread.sleep(1000);
 

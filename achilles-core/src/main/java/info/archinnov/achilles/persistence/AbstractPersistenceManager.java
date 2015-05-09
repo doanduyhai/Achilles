@@ -30,13 +30,11 @@ import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.type.Empty;
-import info.archinnov.achilles.type.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Select;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
@@ -82,7 +80,7 @@ abstract class AbstractPersistenceManager {
         optionsValidator.validateOptionsForUpsert(entity, entityMetaMap, options);
         proxifier.ensureNotProxy(entity);
         PersistenceManagerOperations context = initPersistenceContext(entity, options);
-        return context.persist(entity);
+        return context.insert(entity);
     }
 
     protected <T> AchillesFuture<T> asyncUpdate(T entity, Options options) {
@@ -141,14 +139,6 @@ abstract class AbstractPersistenceManager {
         return context.getProxyForUpdate(entityClass);
     }
 
-    protected <T> AchillesFuture<T> asyncRefresh(final T entity, Options options) throws AchillesStaleObjectStateException {
-        proxifier.ensureProxy(entity);
-        Object realObject = proxifier.getRealObject(entity);
-        entityValidator.validateEntity(realObject, entityMetaMap);
-        PersistenceManagerOperations context = initPersistenceContext(realObject, options);
-        return context.refresh(entity);
-    }
-
     protected <T> T initialize(final T entity) {
         proxifier.ensureProxy(entity);
         T realObject = proxifier.getRealObject(entity);
@@ -169,10 +159,10 @@ abstract class AbstractPersistenceManager {
     }
 
     protected <T> EntityMeta validateSliceQueryInternal(Class<T> entityClass) {
-        Validator.validateNotNull(entityClass,"The entityClass should be provided for slice query");
+        Validator.validateNotNull(entityClass, "The entityClass should be provided for slice query");
         EntityMeta meta = entityMetaMap.get(entityClass);
         Validator.validateNotNull(meta, "The entity '%s' is not managed by achilles", entityClass.getName());
-        Validator.validateTrue(meta.structure().isClusteredEntity(),"Cannot perform slice query on entity type '%s' because it is " + "not a clustered entity",meta.getClassName());
+        Validator.validateTrue(meta.structure().isClusteredEntity(), "Cannot perform slice query on entity type '%s' because it is " + "not a clustered entity", meta.getClassName());
         return meta;
     }
 

@@ -39,7 +39,6 @@ import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.async.AchillesFuture;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.async.ImmediateValue;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
@@ -53,7 +52,6 @@ import info.archinnov.achilles.internal.persistence.operations.EntityInitializer
 import info.archinnov.achilles.internal.persistence.operations.EntityLoader;
 import info.archinnov.achilles.internal.persistence.operations.EntityPersister;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.internal.persistence.operations.EntityRefresher;
 import info.archinnov.achilles.internal.persistence.operations.EntityUpdater;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
@@ -70,7 +68,6 @@ public class PersistenceContext {
     protected EntityInitializer initializer = EntityInitializer.Singleton.INSTANCE.get();
     protected EntityPersister persister = EntityPersister.Singleton.INSTANCE.get();
     protected EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
-    protected EntityRefresher refresher = EntityRefresher.Singleton.INSTANCE.get();
     protected EntityLoader loader = EntityLoader.Singleton.INSTANCE.get();
     protected EntityUpdater updater = EntityUpdater.Singleton.INSTANCE.get();
 
@@ -272,7 +269,7 @@ public class PersistenceContext {
         private PersistenceManagerFacade() {
         }
 
-        public <T> AchillesFuture<T> persist(final T rawEntity) {
+        public <T> AchillesFuture<T> insert(final T rawEntity) {
             flushContext.triggerInterceptor(entityMeta, rawEntity, PRE_INSERT);
             persister.persist(entityFacade);
             final ListenableFuture<List<ResultSet>> resultSetFutures = flush();
@@ -284,10 +281,10 @@ public class PersistenceContext {
                 }
             };
 
-            Function<T, T> createProxy = new Function<T, T>() {
+            Function<T, T> returnRaw = new Function<T, T>() {
                 @Override
                 public T apply(T input) {
-                    return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, entityFacade);
+                    return rawEntity;
                 }
             };
 
@@ -295,7 +292,7 @@ public class PersistenceContext {
 
             asyncUtils.maybeAddAsyncListeners(triggersApplied, options);
 
-            final ListenableFuture<T> proxyCreated = asyncUtils.transformFuture(triggersApplied, createProxy);
+            final ListenableFuture<T> proxyCreated = asyncUtils.transformFuture(triggersApplied, returnRaw);
 
             return asyncUtils.buildInterruptible(proxyCreated);
         }
@@ -400,33 +397,6 @@ public class PersistenceContext {
         public <T> T getProxyForUpdate(Class<T> entityClass) {
             T entity = loader.createEmptyEntity(entityFacade, entityClass);
             return proxifier.buildProxyForUpdate(entity, entityFacade);
-        }
-
-        public <T> AchillesFuture<T> refresh(T proxy) throws AchillesStaleObjectStateException {
-            final AchillesFuture<T> achillesFuture = refresher.refresh(proxy, entityFacade);
-
-            final Function<T, T> removeProxy = new Function<T, T>() {
-                @Override
-                public T apply(T proxy) {
-                    return proxifier.removeProxy(proxy);
-                }
-            };
-
-            final ListenableFuture<T> proxyRemoved = asyncUtils.transformFuture(achillesFuture, removeProxy);
-
-            asyncUtils.maybeAddAsyncListeners(proxyRemoved, options);
-
-            final Function<T, T> applyTriggers = new Function<T, T>() {
-                @Override
-                public T apply(T refreshedEntity) {
-                    flushContext.triggerInterceptor(entityMeta, entity, POST_LOAD);
-                    return refreshedEntity;
-                }
-            };
-
-            final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(achillesFuture, applyTriggers);
-
-            return asyncUtils.buildInterruptible(triggersApplied);
         }
 
         public <T> T initialize(T proxy) {

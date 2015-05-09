@@ -82,15 +82,17 @@ public class BatchModeIT {
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-        entity = batch.insert(entity);
+        batch.insert(entity);
 
-        entity.setLabel("label");
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.setLabel("label");
 
         Tweet welcomeTweet = TweetTestBuilder.tweet().randomId().content("welcomeTweet").buid();
-        entity.setWelcomeTweet(welcomeTweet);
+        proxy.setWelcomeTweet(welcomeTweet);
 
-        entity.getVersion().incr(10L);
-        batch.update(entity);
+        proxy.getVersion().incr(10L);
+        batch.update(proxy);
 
         final RegularStatement selectLabel = select("label").from("CompleteBean").where(eq("id", entity.getId()));
         Map<String, Object> result = manager.nativeQuery(selectLabel).getFirst();
@@ -164,7 +166,7 @@ public class BatchModeIT {
         User user = UserTestBuilder.user().id(123456494L).firstname("firstname").lastname("lastname").buid();
         Tweet tweet = TweetTestBuilder.tweet().randomId().content("simple_tweet").creator(user).buid();
 
-        user = manager.insert(user);
+        manager.insert(user);
 
         // Start batch
         Batch batch = manager.createBatch();
@@ -181,6 +183,8 @@ public class BatchModeIT {
 
             assertThat(manager.find(Tweet.class, tweet.getId())).isNull();
         }
+
+        assertThat(exceptionCaught).isTrue();
 
         // batch should reinit batch context
         batch.insertOrUpdate(user);
@@ -270,9 +274,12 @@ public class BatchModeIT {
         //When
         batch.startBatch();
 
-        entity = batch.insert(entity);
-        entity.setLabel("label");
-        batch.update(entity);
+        batch.insert(entity);
+
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.setLabel("label");
+        batch.update(proxy);
 
         batch.endBatch();
 
@@ -292,9 +299,12 @@ public class BatchModeIT {
         //When
         batch.startBatch();
 
-        entity = batch.insert(entity);
-        entity.setName("name");
-        batch.update(entity);
+        batch.insert(entity);
+
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.setName("name");
+        batch.update(proxy);
 
         batch.endBatch();
 

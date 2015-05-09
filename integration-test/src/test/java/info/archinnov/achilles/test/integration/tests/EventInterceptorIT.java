@@ -29,10 +29,13 @@ import static info.archinnov.achilles.interceptor.Event.PRE_DELETE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static info.archinnov.achilles.type.CounterBuilder.incr;
+import static info.archinnov.achilles.type.OptionsBuilder.withProxy;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.List;
+
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -206,18 +209,21 @@ public class EventInterceptorIT {
 
         CompleteBean entity = builder().randomId().buid();
 
-        entity = manager.insert(entity);
-        entity.setName("DuyHai");
-        entity.setLabel("label");
+        manager.insert(entity);
 
-        manager.update(entity);
+        CompleteBean proxy = manager.find(CompleteBean.class, entity.getId(), withProxy());
 
-        Row row = session.execute("select name,label from CompleteBean where id = " + entity.getId()).one();
+        proxy.setName("DuyHai");
+        proxy.setLabel("label");
+
+        manager.update(proxy);
+
+        Row row = session.execute("select name,label from CompleteBean where id = " + proxy.getId()).one();
 
         assertThat(row.getString("name")).isEqualTo("preUpdate");
         assertThat(row.getString("label")).isEqualTo("label");
-        assertThat(entity.getName()).isEqualTo("preUpdate");
-        assertThat(entity.getLabel()).isEqualTo("postUpdate");
+        assertThat(proxy.getName()).isEqualTo("preUpdate");
+        assertThat(proxy.getLabel()).isEqualTo("postUpdate");
     }
 
     @Test

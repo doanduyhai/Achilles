@@ -24,7 +24,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Collections;
 import java.util.List;
 
-import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -118,13 +117,6 @@ public class SliceQuerySelectIT {
 
         ClusteredEntity check = manager.find(ClusteredEntity.class, clusteredEntity.getId(), withProxy());
         assertThat(check.getValue()).isEqualTo("dirty");
-
-        // Check for refresh
-        check.setValue("dirty_again");
-        manager.update(check);
-
-        manager.refresh(clusteredEntity);
-        assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
 
         // Check for remove
         manager.delete(clusteredEntity);

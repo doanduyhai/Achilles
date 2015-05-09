@@ -15,12 +15,22 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_FQCN;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_PRIMARY_KEY;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_PROPERTY_NAME;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_TABLE;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
 import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
+
+import com.datastax.driver.core.SimpleStatement;
+import info.archinnov.achilles.counter.AchillesCounter;
+import info.archinnov.achilles.test.integration.entity.EntityWithClassLevelConstraint;
+import info.archinnov.achilles.type.TypedMap;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,14 +71,16 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity.setId(id);
         entity.setName("name");
 
-        final EntityWithConsistencyLevelOnClassAndField managed = manager.insert(entity);
+        manager.insert(entity);
 
         Batch batch = pmf.createBatch();
         batch.startBatch(ONE);
-        managed.setName("changed_name");
+
+        final EntityWithConsistencyLevelOnClassAndField proxy = manager.forUpdate(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
+        proxy.setName("changed_name");
         logAsserter.prepareLogLevelForDriverConnection();
 
-        batch.update(managed);
+        batch.update(proxy);
 
         batch.endBatch();
         logAsserter.assertConsistencyLevels(ONE);
@@ -89,30 +101,34 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity.setId(RandomUtils.nextLong(0,Long.MAX_VALUE));
         entity.setName("name");
         entity.setCount(CounterBuilder.incr());
-        entity = manager.insert(entity);
+
+        manager.insert(entity);
 
         logAsserter.prepareLogLevelForDriverConnection();
-        Counter counter = entity.getCount();
+
+        final EntityWithConsistencyLevelOnClassAndField proxy = manager.forUpdate(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
+
+        Counter counter = proxy.getCount();
         counter.incr(10L);
-        assertThat(counter.get()).isEqualTo(11L);
+        manager.update(proxy);
         logAsserter.assertConsistencyLevels(ONE);
-    }
 
-    @Test
-    public void should_override_mapping_on_field_by_batch_value_for_counter_type() throws Exception {
-        EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-        entity.setId(RandomUtils.nextLong(0,Long.MAX_VALUE));
-        entity.setName("name");
-        entity.setCount(CounterBuilder.incr());
+        StringBuilder query = new StringBuilder("");
+        query.append("SELECT ")
+            .append(ACHILLES_COUNTER_VALUE)
+            .append(" FROM ")
+            .append(ACHILLES_COUNTER_TABLE)
+            .append(" WHERE ")
+            .append(ACHILLES_COUNTER_FQCN).append("='").append(EntityWithConsistencyLevelOnClassAndField.class.getCanonicalName()).append("'")
+            .append(" AND ")
+            .append(ACHILLES_COUNTER_PRIMARY_KEY).append("='").append(entity.getId()).append("'")
+            .append(" AND ")
+            .append(ACHILLES_COUNTER_PROPERTY_NAME).append("='count'");
 
-        Batch batchEm = pmf.createBatch();
-        batchEm.startBatch(THREE);
-        entity = batchEm.insert(entity);
+        final TypedMap first = manager.nativeQuery(new SimpleStatement(query.toString())).getFirst();
 
-        expectedEx.expect(UnavailableException.class);
-        expectedEx.expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
+        assertThat(first.<Long>get(ACHILLES_COUNTER_VALUE)).isEqualTo(11L);
 
-        entity.getCount();
     }
 
     private void assertThatBatchContextHasBeenReset(Batch batchEm) {

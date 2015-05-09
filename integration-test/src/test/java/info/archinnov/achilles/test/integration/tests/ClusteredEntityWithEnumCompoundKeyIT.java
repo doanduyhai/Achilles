@@ -63,10 +63,12 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
-		entity.setValue("new_clustered_value");
-		manager.update(entity);
+		final ClusteredEntityWithEnumCompoundKey proxy = manager.forUpdate(ClusteredEntityWithEnumCompoundKey.class, entity.getId());
+
+		proxy.setValue("new_clustered_value");
+		manager.update(proxy);
 
 		entity = manager.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey);
 
@@ -79,29 +81,11 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
 		manager.delete(entity);
 
 		assertThat(manager.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey)).isNull();
 
-	}
-
-	@Test
-	public void should_refresh() throws Exception {
-
-		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		compoundKey = new ClusteredKey(partitionKey, Type.FILE);
-
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
-
-		entity = manager.insert(entity);
-
-		session.execute("UPDATE " + TABLE_NAME + " set value='new_clustered_value' where id=" + partitionKey
-				+ " and type = 'FILE'");
-
-		manager.refresh(entity);
-
-		assertThat(entity.getValue()).isEqualTo("new_clustered_value");
 	}
 }

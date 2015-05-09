@@ -18,7 +18,6 @@ package info.archinnov.achilles.persistence;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.async.AchillesFuture;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
@@ -212,34 +211,6 @@ public class AsyncManager extends CommonAsyncManager {
     public <T> T forUpdate(Class<T> entityClass, Object primaryKey) {
         log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
         return super.getProxyForUpdateInternal(entityClass, primaryKey);
-    }
-
-    /**
-     * Refresh an entity asynchronously.
-     *
-     * @param entity
-     *            Entity to be refreshed
-     *
-     * @return AchillesFuture&lt;T&gt; future managed entity
-     */
-    public <T> AchillesFuture<T> refresh(T entity) throws AchillesStaleObjectStateException {
-        log.debug("Refreshing entity '{}' asynchronously", proxifier.removeProxy(entity));
-        return super.asyncRefresh(entity, noOptions());
-    }
-
-    /**
-     * Refresh an entity with the given Consistency Level for read, asynchronously.
-     *
-     * @param entity
-     *            Entity to be refreshed
-     * @param options
-     *            Options
-     *
-     * @return AchillesFuture&lt;T&gt; future managed entity
-     */
-    public <T> AchillesFuture<T> refresh(final T entity, Options options) throws AchillesStaleObjectStateException {
-        log.debug("Refreshing entity '{}' asynchronously with options '{}'", proxifier.removeProxy(entity), options);
-        return super.asyncRefresh(entity, options);
     }
 
     /**

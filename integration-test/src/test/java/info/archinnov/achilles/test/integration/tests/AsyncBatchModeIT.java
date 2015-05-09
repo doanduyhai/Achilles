@@ -80,15 +80,16 @@ public class AsyncBatchModeIT {
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-        entity = batch.insert(entity);
+        batch.insert(entity);
 
-        entity.setLabel("label");
+        final CompleteBean proxy = asyncManager.forUpdate(CompleteBean.class, entity.getId());
+        proxy.setLabel("label");
 
         Tweet welcomeTweet = TweetTestBuilder.tweet().randomId().content("welcomeTweet").buid();
-        entity.setWelcomeTweet(welcomeTweet);
+        proxy.setWelcomeTweet(welcomeTweet);
 
-        entity.getVersion().incr(10L);
-        batch.update(entity);
+        proxy.getVersion().incr(10L);
+        batch.update(proxy);
 
         RegularStatement selectLabel = select("label").from("CompleteBean").where(eq("id", entity.getId()));
         Map<String, Object> result = asyncManager.nativeQuery(selectLabel).getFirst().getImmediately();
@@ -329,9 +330,12 @@ public class AsyncBatchModeIT {
         //When
         batch.startBatch();
 
-        entity = batch.insert(entity);
-        entity.setLabel("label");
-        batch.update(entity);
+        batch.insert(entity);
+
+        final CompleteBean proxy = asyncManager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.setLabel("label");
+        batch.update(proxy);
 
         batch.asyncEndBatch().getImmediately();
 
@@ -351,9 +355,12 @@ public class AsyncBatchModeIT {
         //When
         batch.startBatch();
 
-        entity = batch.insert(entity);
-        entity.setName("name");
-        batch.update(entity);
+        batch.insert(entity);
+
+        final CompleteBean proxy = asyncManager.forUpdate(CompleteBean.class, entity.getId());
+
+        proxy.setName("name");
+        batch.update(proxy);
 
         batch.asyncEndBatch().getImmediately();
 

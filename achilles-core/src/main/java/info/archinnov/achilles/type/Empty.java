@@ -21,5 +21,5 @@ package info.archinnov.achilles.type;
  *
  */
 public enum Empty {
-    INSTANCE;
+    INSTANCE
 }

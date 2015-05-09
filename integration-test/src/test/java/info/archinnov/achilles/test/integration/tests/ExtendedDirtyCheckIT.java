@@ -47,12 +47,14 @@ public class ExtendedDirtyCheckIT {
                 .addFollowers("George", "Paul").addPreference(1, "FR").addPreference(2, "Paris")
                 .addPreference(3, "75014").buid();
 
-        bean = manager.insert(bean);
+        manager.insert(bean);
     }
 
     @Test
     public void should_add_elements_to_list_with_ttl() throws Exception {
         //Given
+        bean = manager.forUpdate(CompleteBean.class, bean.getId());
+
         bean.getFriends().add("qux");
         bean.getFriends().add("tux");
 
@@ -61,14 +63,17 @@ public class ExtendedDirtyCheckIT {
         Thread.sleep(1000);
 
         //Then
-        manager.refresh(bean);
 
-        assertThat(bean.getFriends()).containsExactly("foo","bar");
+        bean = manager.find(CompleteBean.class, bean.getId());
+
+        assertThat(bean.getFriends()).containsExactly("foo", "bar");
     }
 
     @Test
     public void should_add_elements_to_list_with_timestamp() throws Exception {
         //Given
+        bean = manager.forUpdate(CompleteBean.class, bean.getId());
+
         bean.getFriends().add("qux");
         bean.getFriends().add("tux");
 
@@ -76,7 +81,7 @@ public class ExtendedDirtyCheckIT {
         manager.update(bean, OptionsBuilder.withTimestamp((System.currentTimeMillis()-100000)*1000));
 
         //Then
-        manager.refresh(bean);
+        bean = manager.find(CompleteBean.class, bean.getId());
 
         assertThat(bean.getFriends()).containsExactly("foo","bar");
     }
@@ -84,6 +89,8 @@ public class ExtendedDirtyCheckIT {
     @Test
     public void should_add_elements_to_set_with_ttl() throws Exception {
         //Given
+        bean = manager.forUpdate(CompleteBean.class, bean.getId());
+
         bean.getFollowers().add("Sylvain");
         bean.getFollowers().add("Jonathan");
 
@@ -92,7 +99,7 @@ public class ExtendedDirtyCheckIT {
         Thread.sleep(1000);
 
         //Then
-        manager.refresh(bean);
+        bean = manager.find(CompleteBean.class, bean.getId());
 
         assertThat(bean.getFollowers()).containsOnly("George", "Paul");
     }
@@ -100,6 +107,8 @@ public class ExtendedDirtyCheckIT {
     @Test
     public void should_add_elements_to_set_with_timestamp() throws Exception {
         //Given
+        bean = manager.forUpdate(CompleteBean.class, bean.getId());
+
         bean.getFollowers().add("Sylvain");
         bean.getFollowers().add("Jonathan");
 
@@ -107,7 +116,7 @@ public class ExtendedDirtyCheckIT {
         manager.update(bean, OptionsBuilder.withTimestamp((System.currentTimeMillis()-100000)*1000));
 
         //Then
-        manager.refresh(bean);
+        bean = manager.find(CompleteBean.class, bean.getId());
 
         assertThat(bean.getFollowers()).containsOnly("George", "Paul");
     }
@@ -115,6 +124,7 @@ public class ExtendedDirtyCheckIT {
     @Test
     public void should_add_elements_to_map_with_ttl() throws Exception {
         //Given
+        bean = manager.forUpdate(CompleteBean.class, bean.getId());
         bean.getPreferences().put(4, "Cassandra");
         bean.getPreferences().put(5, "CQL");
 
@@ -123,7 +133,7 @@ public class ExtendedDirtyCheckIT {
         Thread.sleep(1000);
 
         //Then
-        manager.refresh(bean);
+        bean = manager.find(CompleteBean.class, bean.getId());
 
         assertThat(bean.getPreferences())
                 .hasSize(3)
@@ -133,6 +143,7 @@ public class ExtendedDirtyCheckIT {
     @Test
     public void should_add_elements_to_map_with_timestamp() throws Exception {
         //Given
+        bean = manager.forUpdate(CompleteBean.class, bean.getId());
         bean.getPreferences().put(4, "Cassandra");
         bean.getPreferences().put(5, "CQL");
 
@@ -140,7 +151,7 @@ public class ExtendedDirtyCheckIT {
         manager.update(bean, OptionsBuilder.withTimestamp((System.currentTimeMillis()-100000)*1000));
 
         //Then
-        manager.refresh(bean);
+        bean = manager.find(CompleteBean.class, bean.getId());
 
         assertThat(bean.getPreferences())
                 .hasSize(3)

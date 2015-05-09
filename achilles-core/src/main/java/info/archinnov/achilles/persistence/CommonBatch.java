@@ -110,12 +110,11 @@ abstract class CommonBatch extends CommonPersistenceManager {
      * </code></pre>
      *
      * @param entity Entity to be inserted
-     * @return proxified entity
      */
     @Override
-    public <T> T insert(final T entity) {
+    public <T> void insert(final T entity) {
         log.debug("Inserting entity '{}'", entity);
-        return super.insert(entity, maybeAddTimestampToStatement(noOptions()));
+        super.insert(entity, maybeAddTimestampToStatement(noOptions()));
     }
 
     /**
@@ -134,13 +133,12 @@ abstract class CommonBatch extends CommonPersistenceManager {
      *
      * @param entity  Entity to be inserted
      * @param options options
-     * @return proxified entity
      */
     @Override
-    public <T> T insert(final T entity, Options options) {
+    public <T> void insert(final T entity, Options options) {
         log.debug("Inserting entity '{}' and options '{}'", entity, options);
         Options modifiedOptions = adaptOptionsForBatch(options);
-        return super.asyncInsert(entity, modifiedOptions).getImmediately();
+        super.asyncInsert(entity, modifiedOptions).getImmediately();
     }
 
     /**

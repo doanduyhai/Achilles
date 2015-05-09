@@ -77,10 +77,12 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
-		entity.setValue("value2");
-		manager.update(entity);
+		final EntityWithCompositePartitionKey proxy = manager.forUpdate(EntityWithCompositePartitionKey.class, entity.getId());
+
+		proxy.setValue("value2");
+		manager.update(proxy);
 
 		EntityWithCompositePartitionKey found = manager.find(EntityWithCompositePartitionKey.class, new EmbeddedKey(id,
 				"type"));
@@ -92,7 +94,7 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
 		manager.delete(entity);
 
@@ -116,18 +118,4 @@ public class EntityWithCompositePartitionKeyIT {
 
 	}
 
-	@Test
-	public void should_refresh() throws Exception {
-		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
-
-		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
-
-		entity = manager.insert(entity);
-
-		session.execute("UPDATE " + TABLE_NAME + " SET value='new_value' WHERE id=" + id + " AND type='type'");
-
-		manager.refresh(entity);
-
-		assertThat(entity.getValue()).isEqualTo("new_value");
-	}
 }

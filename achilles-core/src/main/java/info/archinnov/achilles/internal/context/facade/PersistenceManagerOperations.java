@@ -19,12 +19,11 @@ package info.archinnov.achilles.internal.context.facade;
 import java.util.List;
 import java.util.Set;
 import info.archinnov.achilles.async.AchillesFuture;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.type.Empty;
 
 public interface PersistenceManagerOperations extends PersistentStateHolder {
 
-    public <T> AchillesFuture<T> persist(T rawEntity);
+    public <T> AchillesFuture<T> insert(T rawEntity);
 
     public <T> AchillesFuture<T> update(T proxy);
 
@@ -35,8 +34,6 @@ public interface PersistenceManagerOperations extends PersistentStateHolder {
     public <T> AchillesFuture<T> find(Class<T> entityClass);
 
     public <T> T getProxyForUpdate(Class<T> entityClass);
-
-    public <T> AchillesFuture<T> refresh(T proxy) throws AchillesStaleObjectStateException;
 
     public <T> T initialize(T proxy);
 

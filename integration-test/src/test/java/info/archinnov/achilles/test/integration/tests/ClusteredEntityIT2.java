@@ -69,7 +69,7 @@ public class ClusteredEntityIT2 {
 	@Test
 	public void should_merge() throws Exception {
 		Long userId = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		Long originalAuthorId = RandomUtils.nextLong(0,Long.MAX_VALUE);
+		Long originalAuthorId = RandomUtils.nextLong(0, Long.MAX_VALUE);
 
 		UUID tweetId = UUIDGen.getTimeUUID();
 		Date creationDate = new Date();
@@ -77,13 +77,16 @@ public class ClusteredEntityIT2 {
 		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
-		tweet = manager.insert(tweet);
+		manager.insert(tweet);
 
-		tweet.setContent("this is a new tweet2");
-		tweet.setIsARetweet(true);
-		tweet.setOriginalAuthorId(originalAuthorId);
+		final ClusteredTweetEntity proxy = manager.forUpdate(ClusteredTweetEntity.class, tweet.getId());
 
-		manager.update(tweet);
+
+		proxy.setContent("this is a new tweet2");
+		proxy.setIsARetweet(true);
+		proxy.setOriginalAuthorId(originalAuthorId);
+
+		manager.update(proxy);
 
 		ClusteredTweetEntity found = manager.find(ClusteredTweetEntity.class, id);
 
@@ -102,40 +105,13 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 
-		tweet = manager.insert(tweet);
+		manager.insert(tweet);
 
 		manager.delete(tweet);
 
 		ClusteredTweetEntity found = manager.find(ClusteredTweetEntity.class, id);
 
 		assertThat(found).isNull();
-	}
-
-	@Test
-	public void should_refresh() throws Exception {
-
-		Long userId = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		Long originalAuthorId = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		UUID tweetId = UUIDGen.getTimeUUID();
-		Date creationDate = new Date();
-
-		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
-
-		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
-
-		tweet = manager.insert(tweet);
-
-		session.execute("update " + CLUSTERED_TWEET_TABLE + " set content='New tweet',original_author_id="
-				+ originalAuthorId + ",is_a_retweet=true where user_id=" + userId + " and tweet_id=" + tweetId
-				+ " and creation_date=" + creationDate.getTime());
-
-		Thread.sleep(100);
-
-		manager.refresh(tweet);
-
-		assertThat(tweet.getContent()).isEqualTo("New tweet");
-		assertThat(tweet.getOriginalAuthorId()).isEqualTo(originalAuthorId);
-		assertThat(tweet.getIsARetweet()).isTrue();
 	}
 
 	@Test
@@ -161,11 +137,13 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an image");
 
-		message = manager.insert(message);
+		manager.insert(message);
 
-		message.setLabel("a JPEG image");
+		final ClusteredMessageEntity proxy = manager.forUpdate(ClusteredMessageEntity.class, message.getId());
 
-		manager.update(message);
+		proxy.setLabel("a JPEG image");
+
+		manager.update(proxy);
 
 		ClusteredMessageEntity found = manager.find(ClusteredMessageEntity.class, messageId);
 
@@ -179,36 +157,12 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an mp3");
 
-		message = manager.insert(message);
+		manager.insert(message);
 
 		manager.delete(message);
 
 		ClusteredMessageEntity found = manager.find(ClusteredMessageEntity.class, messageId);
 
 		assertThat(found).isNull();
-	}
-
-	@Test
-	public void should_refresh_entity_having_compound_id_with_enum() throws Exception {
-		String label = "a random file";
-		String newLabel = "a pdf file";
-
-		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.FILE);
-
-		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, label);
-
-		message = manager.insert(message);
-
-		String updateQuery = "update " + CLUSTERED_MESSAGE_TABLE + " set label='" + newLabel + "' where id=" + id
-				+ " and type='FILE'";
-
-		session.execute(new SimpleStatement(updateQuery));
-
-		Thread.sleep(200);
-
-		manager.refresh(message, ConsistencyLevel.ALL);
-
-		assertThat(message.getLabel()).isEqualTo("a pdf file");
 	}
 }

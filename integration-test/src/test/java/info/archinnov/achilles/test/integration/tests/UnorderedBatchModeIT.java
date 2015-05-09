@@ -60,21 +60,22 @@ public class UnorderedBatchModeIT {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
         Batch batch = manager.createBatch();
 
-        CompleteBean managed = manager.insert(entity);
+        manager.insert(entity);
 
         //When
         batch.startBatch();
 
-        managed.setName("name3");
-        batch.update(managed);
-        managed.setName("name1");
-        batch.update(managed);
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+        proxy.setName("name3");
+        batch.update(proxy);
+        proxy.setName("name1");
+        batch.update(proxy);
 
         batch.endBatch();
 
         //Then
-        manager.refresh(managed);
+        CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 
-        assertThat(managed.getName()).isEqualTo("name3");
+        assertThat(found.getName()).isEqualTo("name3");
     }
 }

@@ -24,6 +24,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -138,12 +140,14 @@ public class BeanValidationIT {
         StringBuilder errorMessage = new StringBuilder("Bean validation error : \n");
         errorMessage.append("\tproperty 'name' of class '");
         errorMessage.append(EntityWithFieldLevelConstraint.class.getCanonicalName()).append("'");
-        EntityWithFieldLevelConstraint managedEntity = manager.insert(entity);
+        manager.insert(entity);
 
         try {
             // When
-            managedEntity.setName(null);
-            manager.update(managedEntity);
+            final EntityWithFieldLevelConstraint proxy = manager.forUpdate(EntityWithFieldLevelConstraint.class, entity.getId());
+
+            proxy.setName(null);
+            manager.update(proxy);
         } catch (AchillesBeanValidationException ex) {
 
             // Then
@@ -188,12 +192,14 @@ public class BeanValidationIT {
         StringBuilder errorMessage = new StringBuilder("Bean validation error : \n");
         errorMessage.append("\tproperty 'name' of class '");
         errorMessage.append(EntityWithPropertyLevelConstraint.class.getCanonicalName()).append("'");
-        EntityWithPropertyLevelConstraint managedEntity = manager.insert(entity);
+        manager.insert(entity);
 
         try {
             // When
-            managedEntity.setName(null);
-            manager.update(managedEntity);
+            final EntityWithPropertyLevelConstraint proxy = manager.forUpdate(EntityWithPropertyLevelConstraint.class, entity.getId());
+
+            proxy.setName(null);
+            manager.update(proxy);
         } catch (AchillesBeanValidationException ex) {
             // Then
             assertThat(ex.getMessage()).contains(errorMessage.toString());
@@ -240,12 +246,14 @@ public class BeanValidationIT {
         errorMessage.append("\tfirstname and lastname should not be blank for class '");
         errorMessage.append(EntityWithClassLevelConstraint.class.getCanonicalName()).append("'");
 
-        EntityWithClassLevelConstraint managedEntity = manager.insert(entity);
+        manager.insert(entity);
 
         try {
             // When
-            managedEntity.setFirstname(null);
-            manager.update(managedEntity);
+            final EntityWithClassLevelConstraint proxy = manager.forUpdate(EntityWithClassLevelConstraint.class, entity.getId());
+
+            proxy.setFirstname(null);
+            manager.update(proxy);
         } catch (AchillesBeanValidationException ex) {
             // Then
             assertThat(ex.getMessage()).contains(errorMessage.toString());

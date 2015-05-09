@@ -43,20 +43,22 @@ public class CacheSizeIT {
         //Given
         CompleteBean bean = builder().id(RandomUtils.nextLong(0,Long.MAX_VALUE)).name("name").buid();
 
-        CompleteBean managed = pm.insert(bean);
+        pm.insert(bean);
+
+        final CompleteBean proxy = pm.forUpdate(CompleteBean.class, bean.getId());
 
         //When
-        managed.setAge(10L);
-        pm.update(managed);
+        proxy.setAge(10L);
+        pm.update(proxy);
 
-        managed.setFriends(Arrays.asList("foo", "bar"));
-        pm.update(managed);
+        proxy.setFriends(Arrays.asList("foo", "bar"));
+        pm.update(proxy);
 
-        managed.setFollowers(Sets.newHashSet("George", "Paul"));
-        pm.update(managed);
+        proxy.setFollowers(Sets.newHashSet("George", "Paul"));
+        pm.update(proxy);
 
-        managed.setAge(11L);
-        pm.update(managed);
+        proxy.setAge(11L);
+        pm.update(proxy);
 
         //Then
         CompleteBean found = pm.find(CompleteBean.class, bean.getId());

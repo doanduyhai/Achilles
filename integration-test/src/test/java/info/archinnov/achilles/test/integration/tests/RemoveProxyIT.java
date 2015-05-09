@@ -42,9 +42,10 @@ public class RemoveProxyIT {
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
 		bean.setWelcomeTweet(tweet);
 
-		bean = manager.insert(bean);
+		manager.insert(bean);
 
-		bean = manager.removeProxy(bean);
+		final CompleteBean proxy = manager.forUpdate(CompleteBean.class, bean.getId());
+		bean = manager.removeProxy(proxy);
 
 		assertThat(bean).isNotInstanceOf(Factory.class);
 	}

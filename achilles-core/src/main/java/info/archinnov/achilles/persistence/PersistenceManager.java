@@ -28,7 +28,6 @@ import info.archinnov.achilles.internal.validation.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
@@ -223,52 +222,6 @@ public class PersistenceManager extends CommonPersistenceManager {
     public <T> T forUpdate(Class<T> entityClass, Object primaryKey) {
         log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
         return super.getProxyForUpdateInternal(entityClass, primaryKey);
-    }
-
-
-    /**
-     * Refresh an entity.
-     *
-     *  <pre class="code"><code class="java">
-     *      // Create a proxy
-     *      User managedUser = manager.find(User.class,1L);
-     *      ...
-     *      // Perform some logic
-     *
-     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
-     *      manager.initialize(managedUser);
-     *  </code></pre>
-     *
-     * @param entity
-     *            Entity to be refreshed
-     */
-    public void refresh(Object entity) throws AchillesStaleObjectStateException {
-        log.debug("Refreshing entity '{}'", proxifier.removeProxy(entity));
-        super.asyncRefresh(entity, noOptions()).getImmediately();
-    }
-
-
-    /**
-     * Refresh an entity with the given Consistency Level for read.
-     *
-     *  <pre class="code"><code class="java">
-     *      // Create a proxy
-     *      User managedUser = manager.find(User.class,1L);
-     *      ...
-     *      // Perform some logic
-     *
-     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
-     *      manager.initialize(managedUser, QUORUM);
-     *  </code></pre>
-     *
-     * @param entity
-     *            Entity to be refreshed
-     * @param readLevel
-     *            Consistency Level for read
-     */
-    public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
-        log.debug("Refreshing entity '{}' with consistency level '{}'", proxifier.removeProxy(entity));
-        super.asyncRefresh(entity, withConsistency(readLevel)).getImmediately();
     }
 
     /**

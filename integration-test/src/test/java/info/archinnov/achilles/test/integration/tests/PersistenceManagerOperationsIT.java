@@ -34,15 +34,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.internal.proxy.wrapper.ListWrapper;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.CounterBuilder;
-import net.sf.cglib.proxy.Factory;
 
 public class PersistenceManagerOperationsIT {
     @Rule
@@ -170,13 +167,15 @@ public class PersistenceManagerOperationsIT {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
                 .addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
                 .addPreference(2, "New York").buid();
-        CompleteBean managed = manager.insert(entity);
+        manager.insert(entity);
 
-        managed.setAge(100L);
-        managed.getFriends().add("eve");
-        managed.getPreferences().put(1, "FR");
+        CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
 
-        manager.update(managed);
+        proxy.setAge(100L);
+        proxy.getFriends().add("eve");
+        proxy.getPreferences().put(1, "FR");
+
+        manager.update(proxy);
 
         Row row = session.execute("select * from completebean where id=" + entity.getId()).one();
 
@@ -218,20 +217,13 @@ public class PersistenceManagerOperationsIT {
                 .addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
                 .addPreference(2, "New York").buid();
 
-        entity = manager.insert(entity);
+        manager.insert(entity);
 
         exception.expect(IllegalAccessException.class);
         exception.expectMessage("Cannot change primary key value for existing entity");
 
-        entity.setId(RandomUtils.nextLong(0, Long.MAX_VALUE));
-    }
-
-    @Test
-    public void should_return_managed_entity_after_persist() throws Exception {
-        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
-        entity = manager.insert(entity);
-
-        assertThat(entity).isInstanceOf(Factory.class);
+        final CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
+        proxy.setId(RandomUtils.nextLong(0, Long.MAX_VALUE));
     }
 
     @Test
@@ -240,7 +232,7 @@ public class PersistenceManagerOperationsIT {
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        entity = manager.insert(entity);
+        manager.insert(entity);
 
         manager.delete(entity);
 
@@ -256,7 +248,7 @@ public class PersistenceManagerOperationsIT {
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        entity = manager.insert(entity);
+        manager.insert(entity);
 
         manager.deleteById(CompleteBean.class, entity.getId());
 
@@ -329,7 +321,7 @@ public class PersistenceManagerOperationsIT {
 
         final List<String> friends = proxy.getFriends();
         friends.add("qux"); // foo bar qux
-        friends.add(0,"alice"); // alice foo bar qux
+        friends.add(0, "alice"); // alice foo bar qux
         friends.set(1, "bob"); // alice foo bob qux
         friends.addAll(Arrays.asList("Richard", "Paul")); // alice foo bob qux Richard Paul
 
@@ -357,7 +349,7 @@ public class PersistenceManagerOperationsIT {
         proxy.setFriends(Arrays.asList("a","b","c"));
         final List<String> friends = proxy.getFriends();
         friends.add("qux"); // a b c qux
-        friends.add(0,"alice"); // alice a b c qux
+        friends.add(0, "alice"); // alice a b c qux
         friends.set(1, "bob"); // alice a bob c qux
         friends.addAll(Arrays.asList("Richard", "Paul")); // alice a bob c qux Richard Paul
 
@@ -384,7 +376,7 @@ public class PersistenceManagerOperationsIT {
         followers.add("qux");
         followers.addAll(Arrays.asList("bob", "alice"));
         followers.remove("foo");
-        followers.removeAll(Arrays.asList("foo","bar"));
+        followers.removeAll(Arrays.asList("foo", "bar"));
 
         manager.update(proxy);
 
@@ -405,13 +397,13 @@ public class PersistenceManagerOperationsIT {
         //When
         CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
 
-        proxy.setFollowers(Sets.newHashSet("a","c","c"));
+        proxy.setFollowers(Sets.newHashSet("a", "c", "c"));
         final Set<String> followers = proxy.getFollowers();
         followers.add("qux");
         followers.addAll(Arrays.asList("bob", "alice"));
         followers.remove("foo");
         followers.remove("b");
-        followers.removeAll(Arrays.asList("foo","bar"));
+        followers.removeAll(Arrays.asList("foo", "bar"));
 
         manager.update(proxy);
 
@@ -433,7 +425,7 @@ public class PersistenceManagerOperationsIT {
         CompleteBean proxy = manager.forUpdate(CompleteBean.class, entity.getId());
 
         final Map<Integer, String> preferences = proxy.getPreferences();
-        preferences.put(1,"FR");
+        preferences.put(1, "FR");
         preferences.putAll(ImmutableMap.of(2, "Paris", 3, "Rue de la Paix"));
         preferences.remove(2);
 
@@ -494,56 +486,12 @@ public class PersistenceManagerOperationsIT {
     }
 
     @Test
-    public void should_exception_refreshing_non_managed_entity() throws Exception {
-        CompleteBean completeBean = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("The entity '" + completeBean + "' is not in 'managed' state");
-        manager.refresh(completeBean);
-    }
-
-    @Test
-    public void should_refresh() throws Exception {
-
-        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-                .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-                .addPreference(2, "Paris").addPreference(3, "75014").buid();
-
-        entity = manager.insert(entity);
-
-        entity.getFriends();
-
-        session.execute("UPDATE completebean SET name='DuyHai_modified' WHERE id=" + entity.getId());
-        session.execute("UPDATE completebean SET friends=friends + ['qux'] WHERE id=" + entity.getId());
-
-        manager.refresh(entity);
-
-        assertThat(entity.getName()).isEqualTo("DuyHai_modified");
-        assertThat(entity.getFriends()).hasSize(3);
-        assertThat(entity.getFriends().get(2)).isEqualTo("qux");
-    }
-
-    @Test
-    public void should_exception_when_staled_object_during_refresh() throws Exception {
-
-        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
-
-        entity = manager.insert(entity);
-
-        session.execute("DELETE FROM completebean WHERE id=" + entity.getId());
-
-        exception.expect(AchillesStaleObjectStateException.class);
-
-        manager.refresh(entity);
-    }
-
-    @Test
     public void should_find_unmapped_field() throws Exception {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai")
-                //
                 .label("label").age(35L).addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        entity = manager.insert(entity);
+        manager.insert(entity);
 
         assertThat(entity.getLabel()).isEqualTo("label");
     }

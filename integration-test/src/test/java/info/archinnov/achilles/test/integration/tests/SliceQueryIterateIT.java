@@ -111,13 +111,6 @@ public class SliceQueryIterateIT {
         ClusteredEntity check = manager.find(ClusteredEntity.class, clusteredEntity.getId(), OptionsBuilder.withProxy());
         assertThat(check.getValue()).isEqualTo("dirty");
 
-        // Check for refresh
-        check.setValue("dirty_again");
-        manager.update(check);
-
-        manager.refresh(clusteredEntity);
-        assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
-
         // Check for remove
         manager.delete(clusteredEntity);
         assertThat(manager.find(ClusteredEntity.class, clusteredEntity.getId())).isNull();

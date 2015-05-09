@@ -23,7 +23,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Iterator;
 import java.util.List;
 
-import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +44,6 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	private PersistenceManager manager = resource.getPersistenceManager();
 
-	private Session session = resource.getNativeSession();
 
 	private ClusteredEntityWithCompositePartitionKey entity;
 
@@ -76,10 +74,11 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
-		entity.setValue("new_clustered_value");
-		manager.update(entity);
+		final ClusteredEntityWithCompositePartitionKey proxy = manager.forUpdate(ClusteredEntityWithCompositePartitionKey.class, compoundKey);
+		proxy.setValue("new_clustered_value");
+		manager.update(proxy);
 
 		entity = manager.find(ClusteredEntityWithCompositePartitionKey.class, compoundKey);
 
@@ -94,7 +93,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
 		manager.delete(entity);
 
@@ -110,30 +109,11 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.insert(entity);
+		manager.insert(entity);
 
 		manager.deleteById(ClusteredEntityWithCompositePartitionKey.class, entity.getId());
 
 		assertThat(manager.find(ClusteredEntityWithCompositePartitionKey.class, compoundKey)).isNull();
-
-	}
-
-	@Test
-	public void should_refresh() throws Exception {
-		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
-		Integer index = 11;
-		compoundKey = new EmbeddedKey(id, "type", index);
-
-		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
-
-		entity = manager.insert(entity);
-
-		session.execute("UPDATE " + TABLE_NAME + " SET value='new_clustered_value' WHERE id=" + id
-				+ " AND type='type' AND indexes=11");
-
-		manager.refresh(entity);
-
-		assertThat(entity.getValue()).isEqualTo("new_clustered_value");
 
 	}
 
@@ -192,14 +172,6 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		ClusteredEntityWithCompositePartitionKey check = manager.find(ClusteredEntityWithCompositePartitionKey.class,
 				clusteredEntity.getId(),withProxy());
 		assertThat(check.getValue()).isEqualTo("dirty");
-
-
-		// Check for refresh
-		check.setValue("dirty_again");
-		manager.update(check);
-
-		manager.refresh(clusteredEntity);
-		assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
 
 		// Check for delete
 		manager.delete(clusteredEntity);
@@ -393,13 +365,6 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 				.find(ClusteredEntityWithCompositePartitionKey.class,
 				clusteredEntity.getId(), withProxy());
 		assertThat(check.getValue()).isEqualTo("dirty");
-
-		// Check for refresh
-		check.setValue("dirty_again");
-		manager.update(check);
-
-		manager.refresh(clusteredEntity);
-		assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
 
 		// Check for delete
 		manager.delete(clusteredEntity);
