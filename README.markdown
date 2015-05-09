@@ -39,12 +39,12 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
 		<tr>
-			<td>3.1.7</td>
+			<td>3.2.0</td>
 			<td>2.1.5</td>
-			<td>2.1.3</td>
+			<td>2.1.5</td>
 		</tr>		
 		<tr>
-			<td>3.0.18</td>
+			<td>3.0.19</td>
 			<td>2.1.5</td>
 			<td>2.0.13</td>
 		</tr>
