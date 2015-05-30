@@ -16,6 +16,7 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
 import static com.google.common.collect.FluentIterable.from;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.STATIC_COLUMN_FILTER;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER_TYPE;
 
 import java.lang.reflect.Method;
@@ -47,7 +48,6 @@ public class EntityMeta {
             return !meta.clusteredCounter;
         }
     };
-
 
     private Class<?> entityClass;
     private String className;
@@ -216,6 +216,10 @@ public class EntityMeta {
 
     public List<PropertyMeta> getAllCounterMetas() {
         return from(propertyMetas.values()).filter(COUNTER_TYPE).toList();
+    }
+
+    public List<PropertyMeta> getAllStaticMetas() {
+        return from(propertyMetas.values()).filter(STATIC_COLUMN_FILTER).toList();
     }
 
     void setClusteredCounter(boolean clusteredCounter) {

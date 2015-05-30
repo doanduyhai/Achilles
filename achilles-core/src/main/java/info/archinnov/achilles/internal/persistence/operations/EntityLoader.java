@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import info.archinnov.achilles.type.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;
@@ -26,6 +27,9 @@ import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
+
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 
 public class EntityLoader {
 
@@ -46,6 +50,7 @@ public class EntityLoader {
 
         AchillesFuture<T> achillesFuture;
 
+        final Options options = context.getOptions();
         if (entityMeta.structure().isClusteredCounter()) {
             achillesFuture = counterLoader.loadClusteredCounters(context);
         } else {
@@ -56,7 +61,7 @@ public class EntityLoader {
                     T entity = null;
                     if (row != null) {
                         entity = entityMeta.forOperations().instanciate();
-                        mapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
+                        mapper.setNonCounterPropertiesToEntity(row, entityMeta, entity, options.shouldCreateProxy() ? MANAGED: NOT_MANAGED);
                     }
                     return entity;
                 }
@@ -93,7 +98,7 @@ public class EntityLoader {
             if (row == null && pm.structure().isCollectionAndMap()) {
                 row = new NullRow();
             }
-            mapper.setPropertyToEntity(row, context.getEntityMeta(), pm, realObject);
+            mapper.setPropertyToEntity(row, context.getEntityMeta(), pm, realObject, context.getOptions().shouldCreateProxy() ? MANAGED : NOT_MANAGED);
         }
 
     }

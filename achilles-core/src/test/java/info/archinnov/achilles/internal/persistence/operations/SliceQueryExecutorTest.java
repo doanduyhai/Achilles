@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ITERATOR;
@@ -201,7 +203,7 @@ public class SliceQueryExecutorTest {
         final Function<List<Row>, List<ClusteredEntity>> rowsToEntities = rowsToEntitiesCaptor.getValue();
         List<ClusteredEntity> entities = rowsToEntities.apply(rows);
         assertThat(entities).containsExactly(entity);
-        verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity);
+        verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity, MANAGED);
         verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
 
         final Function<List<ClusteredEntity>, List<ClusteredEntity>> entitiesFunction = isoEntitiesCaptor.getValue();

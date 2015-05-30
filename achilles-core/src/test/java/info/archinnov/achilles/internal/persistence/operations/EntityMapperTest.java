@@ -16,6 +16,7 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -97,7 +98,7 @@ public class EntityMapperTest {
         when(row.isNull("name")).thenReturn(false);
         when(pm.forRowExtraction().invokeOnRowForFields(row)).thenReturn("value");
 
-        entityMapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
+        entityMapper.setNonCounterPropertiesToEntity(row, entityMeta, entity, NOT_MANAGED);
 
         verify(pm.forValues()).setValueToField(entity, "value");
     }
@@ -127,7 +128,7 @@ public class EntityMapperTest {
 
         when(row.isNull("name")).thenReturn(true);
 
-        entityMapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
+        entityMapper.setNonCounterPropertiesToEntity(row, entityMeta, entity, NOT_MANAGED);
 
         verify(pm.forValues(), never()).setValueToField(eq(entity), any());
         verifyZeroInteractions(cqlRowInvoker);
@@ -135,7 +136,7 @@ public class EntityMapperTest {
 
     @Test
     public void should_do_nothing_when_null_row() throws Exception {
-        entityMapper.setPropertyToEntity(null, entityMeta, pm, entity);
+        entityMapper.setPropertyToEntity(null, entityMeta, pm, entity, NOT_MANAGED);
 
         verifyZeroInteractions(cqlRowInvoker);
     }
@@ -150,7 +151,7 @@ public class EntityMapperTest {
         when(rowExtractor.extractCompoundPrimaryKeyFromRow(row, entityMeta, MANAGED)).thenReturn(compoundPK);
 
         //When
-        entityMapper.setPropertyToEntity(row, entityMeta, pm, entity);
+        entityMapper.setPropertyToEntity(row, entityMeta, pm, entity, MANAGED);
 
         //Then
         verify(pm.forValues()).setValueToField(entity, compoundPK);

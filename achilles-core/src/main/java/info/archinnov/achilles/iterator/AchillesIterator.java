@@ -27,6 +27,9 @@ import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
 
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
+
 /**
  *
  * Implementation of an Iterator&lt;T&gt; that uses <strong>CQL</strong> paging feature to fetch results by batches
@@ -67,9 +70,9 @@ public class AchillesIterator<T> implements Iterator<T> {
             clusteredEntity = meta.forOperations().instanciate();
             if (context.getStateHolderFacade().isClusteredCounter()) {
                 mapper.setValuesToClusteredCounterEntity(row, meta, clusteredEntity);
-                mapper.setPropertyToEntity(row, meta, meta.getIdMeta(), clusteredEntity);
+                mapper.setPropertyToEntity(row, meta, meta.getIdMeta(), clusteredEntity, createProxy ? MANAGED : NOT_MANAGED);
             } else {
-                mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
+                mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity, createProxy ? MANAGED : NOT_MANAGED);
             }
             meta.forInterception().intercept(clusteredEntity, Event.POST_LOAD);
             if (createProxy) {

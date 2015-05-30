@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.iterator;
 
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -109,7 +110,7 @@ public class AchillesIteratorTest {
 
         assertThat(actual).isSameAs(entity);
         verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
-        verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity);
+        verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity, MANAGED);
     }
 
     @Test(expected = UnsupportedOperationException.class)

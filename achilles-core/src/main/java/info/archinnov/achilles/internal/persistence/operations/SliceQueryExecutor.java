@@ -17,6 +17,9 @@ package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ITERATOR;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -102,7 +105,7 @@ public class SliceQueryExecutor {
                 List<T> clusteredEntities = new ArrayList<>();
                 for (Row row : rows) {
                     T clusteredEntity = meta.forOperations().instanciate();
-                    mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
+                    mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity, sliceQueryProperties.shouldCreateProxy()? MANAGED : NOT_MANAGED);
                     if (!sliceQueryProperties.shouldCreateProxy()) {
                         mapper.setValuesToClusteredCounterEntity(row, meta, clusteredEntity);
                     }

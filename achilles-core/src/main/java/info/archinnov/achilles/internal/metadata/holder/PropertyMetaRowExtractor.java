@@ -25,22 +25,40 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         super(meta);
     }
 
-    public List<Object> extractRawCompoundPrimaryComponentsFromRow(Row row) {
+    public List<Object> extractRawCompoundPrimaryComponentsFromRow(Row row, boolean hasStaticColumns) {
         log.trace("Extract raw compound primary components from CQL row {} for id meta {}", row, meta);
         Validator.validateNotNull(meta.getCompoundPKProperties(), "Cannot extract raw compound primary keys from CQL row because entity '%s' does not have a compound primary key", meta.getEntityClassName());
         final List<Class<?>> componentClasses = meta.getCompoundPKProperties().getCQLComponentClasses();
         final List<String> cqlComponentNames = meta.getCompoundPKProperties().getCQLComponentNames();
+        final int partitionComponentsCount = meta.getCompoundPKProperties().getPartitionComponents().getCQLComponentNames().size();
         List<Object> rawValues = new ArrayList<>(Collections.nCopies(cqlComponentNames.size(), null));
-        try {
-            for (int index=0; index<cqlComponentNames.size(); index++) {
-                Object rawValue;
-                Class<?> componentClass = componentClasses.get(index);
+
+        for (int index=0; index<partitionComponentsCount; index++) {
+            Object rawValue;
+            Class<?> componentClass = componentClasses.get(index);
+            try {
                 rawValue = getRowMethod(componentClass).invoke(row, cqlComponentNames.get(index));
-                rawValues.set(index, rawValue);
+            } catch (Exception e) {
+                throw new AchillesException(format("Cannot retrieve partition key(s) for entity class '%s' from CQL Row", meta.getEntityClassName()), e);
             }
-        } catch (Exception e) {
-            throw new AchillesException(format("Cannot retrieve compound primary key for entity class '%s' from CQL Row", meta.getEntityClassName()), e);
+            rawValues.set(index, rawValue);
         }
+
+        for (int index=partitionComponentsCount; index<cqlComponentNames.size(); index++) {
+            Object rawValue;
+            Class<?> componentClass = componentClasses.get(index);
+            try {
+                rawValue = getRowMethod(componentClass).invoke(row, cqlComponentNames.get(index));
+            } catch (Exception e) {
+                if (hasStaticColumns) {
+                    rawValue = null;
+                } else {
+                    throw new AchillesException(format("Cannot retrieve compound primary key for entity class '%s' from CQL Row", meta.getEntityClassName()), e);
+                }
+            }
+            rawValues.set(index, rawValue);
+        }
+
         return rawValues;
     }
 
@@ -84,12 +102,60 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
 
     public Object extractCompoundPrimaryKeyFromRow(Row row, EntityMeta entityMeta, EntityState entityState) {
         log.trace("Extract compound primary key {} from CQL row for entity class {}", meta.getPropertyName(),meta.getEntityClassName());
-        final List<Object> rawComponents = extractRawCompoundPrimaryComponentsFromRow(row);
-        if (entityState.isManaged() && !entityMeta.structure().hasOnlyStaticColumns()) {
-           validateExtractedCompoundPrimaryComponents(rawComponents);
+        boolean hasSomeStaticValue = rowHasSomeStaticValue(row, entityMeta);
+        final List<Object> rawComponents = extractRawCompoundPrimaryComponentsFromRow(row, hasSomeStaticValue);
+        if (entityState.isManaged() ) {
+
+
+            if (entityMeta.structure().hasOnlyStaticColumns() || hasSomeStaticValue) {
+                // Do nothing
+            } else {
+                validateExtractedCompoundPrimaryComponents(rawComponents);
+            }
         }
         return meta.forTranscoding().decodeFromComponents(rawComponents);
 
+    }
+
+    protected boolean rowHasSomeStaticValue(Row row, EntityMeta entityMeta) {
+        boolean hasSomeStaticValue=false;
+        final List<PropertyMeta> allStaticMetas = entityMeta.getAllStaticMetas();
+        for (PropertyMeta staticMeta : allStaticMetas) {
+            switch (staticMeta.type()) {
+                case SIMPLE:
+                    try {
+                        hasSomeStaticValue = staticMeta.forRowExtraction().invokeOnRowForProperty(row) != null;
+                    } catch (AchillesException e) {
+
+                    }
+                    break;
+                case LIST:
+                    try {
+                        hasSomeStaticValue = staticMeta.forRowExtraction().invokeOnRowForList(row) != null;
+                    } catch (AchillesException e) {
+
+                    }
+                    break;
+                case SET:
+                    try {
+                        hasSomeStaticValue = staticMeta.forRowExtraction().invokeOnRowForSet(row) != null;
+                    } catch (AchillesException e) {
+
+                    }
+                    break;
+                case MAP:
+                    try {
+                        hasSomeStaticValue = staticMeta.forRowExtraction().invokeOnRowForMap(row) != null;
+                    } catch (AchillesException e) {
+
+                    }
+                    break;
+                default:
+                    break;
+            }
+            if(hasSomeStaticValue) break;
+        }
+        return hasSomeStaticValue;
     }
 
     public void validateExtractedCompoundPrimaryComponents(List<Object> rawComponents) {
@@ -102,7 +168,7 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         }
     }
 
-    private Object invokeOnRowForProperty(Row row) {
+    protected Object invokeOnRowForProperty(Row row) {
         final String cqlColumnName = meta.getCQLColumnName();
         final String entityClassName = meta.getEntityClassName();
         log.trace("Extract property {} from CQL row for entity class {}", cqlColumnName, entityClassName);
@@ -114,7 +180,7 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         }
     }
 
-    private Object invokeOnRowForList(Row row) {
+    protected Object invokeOnRowForList(Row row) {
         final String cqlColumnName = meta.getCQLColumnName();
         final String entityClassName = meta.getEntityClassName();
         log.trace("Extract list property {} from CQL row for entity class {}", cqlColumnName, entityClassName);
@@ -128,7 +194,7 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         }
     }
 
-    private Object invokeOnRowForSet(Row row) {
+    protected Object invokeOnRowForSet(Row row) {
         final String cqlColumnName = meta.getCQLColumnName();
         final String entityClassName = meta.getEntityClassName();
         log.trace("Extract set property {} from CQL row for entity class {}", cqlColumnName, entityClassName);
@@ -141,7 +207,7 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         }
     }
 
-    private Object invokeOnRowForMap(Row row) {
+    protected Object invokeOnRowForMap(Row row) {
         final String cqlColumnName = meta.getCQLColumnName();
         final String entityClassName = meta.getEntityClassName();
         log.trace("Extract map property {} from CQL row for entity class {}", cqlColumnName, entityClassName);

@@ -1,5 +1,9 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.MAP;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SET;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -22,6 +26,7 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +41,7 @@ public class PropertyMetaRowExtractorTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta meta;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private CompoundPKProperties compoundPKProperties;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -54,8 +59,9 @@ public class PropertyMetaRowExtractorTest {
     @Test
     public void should_extract_raw_compound_pk_components_from_row() throws Exception {
         //Given
-        when(compoundPKProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
+        when(compoundPKProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class, String.class));
         when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getPartitionComponents().getCQLComponentNames().size()).thenReturn(1);
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
         Definition columnDef2 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "name", DataType.text());
@@ -65,10 +71,31 @@ public class PropertyMetaRowExtractorTest {
         when(row.getString("name")).thenReturn("DuyHai");
 
         //When
-        final List<Object> raws = extractor.extractRawCompoundPrimaryComponentsFromRow(row);
+        final List<Object> raws = extractor.extractRawCompoundPrimaryComponentsFromRow(row, false);
 
         //Then
         assertThat(raws).containsExactly(10L, "DuyHai");
+    }
+
+    @Test
+    public void should_extract_raw_partition_components_from_row() throws Exception {
+        //Given
+        when(compoundPKProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class, String.class));
+        when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getPartitionComponents().getCQLComponentNames().size()).thenReturn(1);
+
+        Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
+        Definition columnDef2 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "name", DataType.text());
+
+        when(row.getColumnDefinitions().iterator()).thenReturn(Arrays.asList(columnDef1,columnDef2).iterator());
+        when(row.getLong("id")).thenReturn(10L);
+        when(row.getString("name")).thenThrow(new RuntimeException(""));
+
+        //When
+        final List<Object> raws = extractor.extractRawCompoundPrimaryComponentsFromRow(row, true);
+
+        //Then
+        assertThat(raws).containsExactly(10L, null);
     }
 
     @Test
@@ -102,7 +129,7 @@ public class PropertyMetaRowExtractorTest {
         //Given
         when(meta.getCQLColumnName()).thenReturn("column");
         when(row.isNull("column")).thenReturn(false);
-        when(meta.type()).thenReturn(PropertyType.SIMPLE);
+        when(meta.type()).thenReturn(SIMPLE);
         when(meta.<String>getValueClass()).thenReturn(String.class);
 
         when(row.getString("column")).thenReturn("a");
@@ -124,7 +151,7 @@ public class PropertyMetaRowExtractorTest {
         when(meta.type()).thenReturn(PropertyType.LIST);
         when(meta.<String>getValueClass()).thenReturn(String.class);
         final List<String> rawList = Arrays.asList("a");
-        when(row.getList("list",String.class)).thenReturn(rawList);
+        when(row.getList("list", String.class)).thenReturn(rawList);
         when(meta.forTranscoding().decodeFromCassandra(rawList)).thenReturn(rawList);
 
         //When
@@ -162,7 +189,7 @@ public class PropertyMetaRowExtractorTest {
         when(meta.type()).thenReturn(PropertyType.MAP);
         when(meta.<Integer>getCQLKeyClass()).thenReturn(Integer.class);
         when(meta.<String>getCqlValueClass()).thenReturn(String.class);
-        final Map<Integer,String> rawMap = ImmutableMap.of(1,"a");
+        final Map<Integer,String> rawMap = ImmutableMap.of(1, "a");
         when(row.getMap("map", Integer.class, String.class)).thenReturn(rawMap);
         when(meta.forTranscoding().decodeFromCassandra(rawMap)).thenReturn(rawMap);
 
@@ -196,7 +223,7 @@ public class PropertyMetaRowExtractorTest {
         //Given
         when(meta.getCQLColumnName()).thenReturn("column");
         when(row.isNull("column")).thenReturn(true);
-        when(meta.type()).thenReturn(PropertyType.SIMPLE);
+        when(meta.type()).thenReturn(SIMPLE);
         //When
 
         final Object decoded = extractor.invokeOnRowForFields(row);
@@ -213,6 +240,7 @@ public class PropertyMetaRowExtractorTest {
 
         when(compoundPKProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
         when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getPartitionComponents().getCQLComponentNames().size()).thenReturn(1);
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
         Definition columnDef2 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "name", DataType.text());
@@ -240,6 +268,7 @@ public class PropertyMetaRowExtractorTest {
 
         when(compoundPKProperties.getCQLComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
         when(compoundPKProperties.getCQLComponentNames()).thenReturn(asList("id", "name"));
+        when(compoundPKProperties.getPartitionComponents().getCQLComponentNames().size()).thenReturn(1);
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
         Definition columnDef2 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "name", DataType.text());
@@ -257,5 +286,69 @@ public class PropertyMetaRowExtractorTest {
         //Then
         assertThat(actual).isSameAs(pk);
         verify(meta.getCompoundPKProperties(),times(2)).getCQLComponentNames();
+    }
+
+    @Test
+    public void should_return_true_when_row_has_simple_static_value() throws Exception {
+        //Given
+        EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
+        when(meta.type()).thenReturn(SIMPLE);
+        when(meta.forRowExtraction().invokeOnRowForProperty(row)).thenReturn(10L);
+
+        when(entityMeta.getAllStaticMetas()).thenReturn(Arrays.asList(meta));
+
+        //When
+        final boolean actual = extractor.rowHasSomeStaticValue(row, entityMeta);
+
+        //Then
+        assertThat(actual).isTrue();
+    }
+
+    @Test
+    public void should_return_true_when_row_has_list_static_value() throws Exception {
+        //Given
+        EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
+        when(meta.type()).thenReturn(LIST);
+        when(meta.forRowExtraction().invokeOnRowForList(row)).thenReturn(new ArrayList<>());
+
+        when(entityMeta.getAllStaticMetas()).thenReturn(Arrays.asList(meta));
+
+        //When
+        final boolean actual = extractor.rowHasSomeStaticValue(row, entityMeta);
+
+        //Then
+        assertThat(actual).isTrue();
+    }
+
+    @Test
+    public void should_return_true_when_row_has_set_static_value() throws Exception {
+        //Given
+        EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
+        when(meta.type()).thenReturn(SET);
+        when(meta.forRowExtraction().invokeOnRowForSet(row)).thenReturn(new ArrayList<>());
+
+        when(entityMeta.getAllStaticMetas()).thenReturn(Arrays.asList(meta));
+
+        //When
+        final boolean actual = extractor.rowHasSomeStaticValue(row, entityMeta);
+
+        //Then
+        assertThat(actual).isTrue();
+    }
+
+    @Test
+    public void should_return_true_when_row_has_map_static_value() throws Exception {
+        //Given
+        EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
+        when(meta.type()).thenReturn(MAP);
+        when(meta.forRowExtraction().invokeOnRowForMap(row)).thenReturn(new ArrayList<>());
+
+        when(entityMeta.getAllStaticMetas()).thenReturn(Arrays.asList(meta));
+
+        //When
+        final boolean actual = extractor.rowHasSomeStaticValue(row, entityMeta);
+
+        //Then
+        assertThat(actual).isTrue();
     }
 }

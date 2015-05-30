@@ -11,6 +11,9 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyMetaTypedQueryTest {
 
@@ -32,7 +35,7 @@ public class PropertyMetaTypedQueryTest {
         when(meta.<CompleteBean>getValueClass()).thenReturn(CompleteBean.class);
 
         //When
-        view.validateTypedQuery("Select id, name From table");
+        view.validateTypedQuery("Select id, name From table", new ArrayList<String>());
 
         //Then
     }
@@ -45,7 +48,20 @@ public class PropertyMetaTypedQueryTest {
         when(meta.<CompleteBean>getValueClass()).thenReturn(CompleteBean.class);
 
         //When
-        view.validateTypedQuery("Select id From table");
+        view.validateTypedQuery("Select id From table", new ArrayList<String>());
+
+        //Then
+    }
+
+    @Test
+    public void should_validate_typed_query_for_static_column() throws Exception {
+        //Given
+        when(meta.structure().isCompoundPK()).thenReturn(true);
+        when(meta.getCompoundPKProperties().getPartitionComponents().getCQLComponentNames()).thenReturn(asList("id"));
+        when(meta.<CompleteBean>getValueClass()).thenReturn(CompleteBean.class);
+
+        //When
+        view.validateTypedQuery("select id,name from table", Arrays.asList("name"));
 
         //Then
     }

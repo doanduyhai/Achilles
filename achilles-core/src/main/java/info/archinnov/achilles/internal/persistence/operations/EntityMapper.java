@@ -36,19 +36,19 @@ public class EntityMapper {
 
     private RowMethodInvoker cqlRowInvoker = RowMethodInvoker.Singleton.INSTANCE.get();
 
-    public void setNonCounterPropertiesToEntity(Row row, EntityMeta entityMeta, Object entity) {
+    public void setNonCounterPropertiesToEntity(Row row, EntityMeta entityMeta, Object entity, EntityState entityState) {
         log.debug("Set non-counter properties to entity class {} from fetched CQL row", entityMeta.getClassName());
         for (PropertyMeta pm : entityMeta.getAllMetasExceptCounters()) {
-            setPropertyToEntity(row, entityMeta, pm, entity);
+            setPropertyToEntity(row, entityMeta, pm, entity, entityState);
         }
     }
 
-    public void setPropertyToEntity(Row row, EntityMeta meta,PropertyMeta pm, Object entity) {
+    public void setPropertyToEntity(Row row, EntityMeta meta,PropertyMeta pm, Object entity, EntityState entityState) {
         log.debug("Set property {} value from fetched CQL row", pm.getPropertyName());
         if (row != null) {
             final PropertyMetaRowExtractor rowExtractor = pm.forRowExtraction();
             if (pm.structure().isCompoundPK()) {
-                Object compoundKey = rowExtractor.extractCompoundPrimaryKeyFromRow(row, meta, MANAGED);
+                Object compoundKey = rowExtractor.extractCompoundPrimaryKeyFromRow(row, meta, entityState);
                 pm.forValues().setValueToField(entity, compoundKey);
             } else {
                 Object value = rowExtractor.invokeOnRowForFields(row);

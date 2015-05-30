@@ -55,6 +55,13 @@ public class PropertyMeta {
         }
     };
 
+    public static final Function<String,String> TO_LOWER_CASE = new Function<String, String>() {
+        @Override
+        public String apply(String name) {
+            return name.toLowerCase();
+        }
+    };
+
     public static final Function<PropertyMeta, List<String>> GET_CQL_COLUMN_NAMES_FROM_COMPOUND_PK = new Function<PropertyMeta, List<String>>() {
         @Override
         public List<String> apply(PropertyMeta compoundPKMeta) {

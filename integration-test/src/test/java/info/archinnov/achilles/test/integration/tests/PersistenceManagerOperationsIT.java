@@ -335,7 +335,7 @@ public class PersistenceManagerOperationsIT {
 
     @Test
     @Ignore
-    //FIXME Inconsistencies because list mutations are applied as batch so orderning is not guaranteed
+    //FIXME Inconsistencies because list mutations are applied as batch so ordering is not guaranteed
     public void should_intercept_switching_list() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()

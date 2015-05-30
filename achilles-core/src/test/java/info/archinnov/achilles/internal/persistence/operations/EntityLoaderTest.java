@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Matchers.eq;
@@ -24,6 +26,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import java.util.concurrent.ExecutorService;
+
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -119,6 +123,7 @@ public class EntityLoaderTest {
         when(meta.forOperations().instanciate()).thenReturn(entity);
         when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
+        when(context.getOptions()).thenReturn(OptionsBuilder.withProxy());
 
         // When
         final AchillesFuture<CompleteBean> actual = loader.load(context, CompleteBean.class);
@@ -129,7 +134,7 @@ public class EntityLoaderTest {
         final CompleteBean actualEntity = rowToEntityCaptor.getValue().apply(row);
         assertThat(actualEntity).isSameAs(entity);
 
-        verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity);
+        verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity, MANAGED);
 
         verifyZeroInteractions(counterLoader);
     }
@@ -175,12 +180,13 @@ public class EntityLoaderTest {
         when(pm.structure().isCounter()).thenReturn(false);
         Row row = mock(Row.class);
         when(context.loadProperty(pm)).thenReturn(row);
+        when(context.getOptions()).thenReturn(OptionsBuilder.noOptions());
 
         // When
         loader.loadPropertyIntoObject(context, entity, pm);
 
         // Then
-        verify(mapper).setPropertyToEntity(row, meta, pm, entity);
+        verify(mapper).setPropertyToEntity(row, meta, pm, entity, NOT_MANAGED);
         verifyZeroInteractions(counterLoader);
     }
 
@@ -190,6 +196,7 @@ public class EntityLoaderTest {
         ArgumentCaptor<Row> rowCaptor = ArgumentCaptor.forClass(Row.class);
         when(pm.structure().isCounter()).thenReturn(false);
         when(pm.structure().isCollectionAndMap()).thenReturn(true);
+        when(context.getOptions()).thenReturn(OptionsBuilder.noOptions());
 
         when(context.loadProperty(pm)).thenReturn(null);
 
@@ -197,7 +204,7 @@ public class EntityLoaderTest {
         loader.loadPropertyIntoObject(context, entity, pm);
 
         // Then
-        verify(mapper).setPropertyToEntity(rowCaptor.capture(), eq(meta), eq(pm), eq(entity));
+        verify(mapper).setPropertyToEntity(rowCaptor.capture(), eq(meta), eq(pm), eq(entity), eq(NOT_MANAGED));
         assertThat(rowCaptor.getValue()).isInstanceOf(NullRow.class);
 
         verifyZeroInteractions(counterLoader);

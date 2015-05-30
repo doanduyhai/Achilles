@@ -17,6 +17,11 @@ package info.archinnov.achilles.query.typed;
 
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.Statement;
+import com.google.common.base.Functions;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import info.archinnov.achilles.internal.statement.StatementHelper;
 import info.archinnov.achilles.query.cql.NativeQueryValidator;
 import org.slf4j.Logger;
@@ -26,7 +31,12 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
 
+import java.util.List;
 import java.util.regex.Pattern;
+
+import static com.google.common.collect.FluentIterable.from;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.GET_CQL_COLUMN_NAME;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.TO_LOWER_CASE;
 
 public class TypedQueryValidator {
     private static final Logger log  = LoggerFactory.getLogger(TypedQueryValidator.class);
@@ -46,7 +56,9 @@ public class TypedQueryValidator {
 		validateRawTypedQuery(entityClass, statement, meta);
 
 		if (!normalizedQueryString.contains("select *")) {
-			idMeta.forTypedQuery().validateTypedQuery(normalizedQueryString);
+
+            final List<String> staticColumns = from(meta.getAllStaticMetas()).transform(GET_CQL_COLUMN_NAME).transform(TO_LOWER_CASE).toList();
+			idMeta.forTypedQuery().validateTypedQuery(normalizedQueryString, staticColumns);
 		}
 	}
 
