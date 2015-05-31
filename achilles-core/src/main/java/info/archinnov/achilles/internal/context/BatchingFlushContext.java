@@ -24,6 +24,7 @@ import static java.util.Arrays.asList;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.datastax.driver.core.BatchStatement;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.type.Empty;
 import org.slf4j.Logger;
@@ -43,16 +44,18 @@ public class BatchingFlushContext extends AbstractFlushContext {
 
     private static final Logger log = LoggerFactory.getLogger(BatchingFlushContext.class);
     protected List<EventHolder> eventHolders = new ArrayList<>();
-
+    protected final BatchStatement.Type batchType;
 
     public BatchingFlushContext(DaoContext daoContext, ConsistencyLevel consistencyLevel,
-            Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel) {
+            Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel, BatchStatement.Type batchType) {
         super(daoContext, consistencyLevel, serialConsistencyLevel);
+        this.batchType = batchType;
     }
 
     private BatchingFlushContext(DaoContext daoContext, List<AbstractStatementWrapper> statementWrappers,
-            ConsistencyLevel consistencyLevel, Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel) {
+            ConsistencyLevel consistencyLevel, Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel, BatchStatement.Type batchType) {
         super(daoContext, statementWrappers, consistencyLevel, serialConsistencyLevel);
+        this.batchType = batchType;
     }
 
     @Override
@@ -80,7 +83,7 @@ public class BatchingFlushContext extends AbstractFlushContext {
             }
         };
 
-        final ListenableFuture<ResultSet> resultSetFutureFields = executeBatch(LOGGED, statementWrappers);
+        final ListenableFuture<ResultSet> resultSetFutureFields = executeBatch(batchType, statementWrappers);
         final ListenableFuture<ResultSet> resultSetFutureCounters = executeBatch(COUNTER, counterStatementWrappers);
         final List<ListenableFuture<ResultSet>> resultSetFutures = from(asList(resultSetFutureFields, resultSetFutureCounters)).filter(not(isNull())).toList();
 
@@ -96,7 +99,7 @@ public class BatchingFlushContext extends AbstractFlushContext {
 
     @Override
     public BatchingFlushContext duplicate() {
-        return new BatchingFlushContext(daoContext, statementWrappers, consistencyLevel, serialConsistencyLevel);
+        return new BatchingFlushContext(daoContext, statementWrappers, consistencyLevel, serialConsistencyLevel, batchType);
     }
 
     @Override
@@ -109,15 +112,11 @@ public class BatchingFlushContext extends AbstractFlushContext {
     }
 
     public BatchingFlushContext duplicateWithNoData(ConsistencyLevel defaultConsistencyLevel) {
-        return new BatchingFlushContext(daoContext, new ArrayList<AbstractStatementWrapper>(), defaultConsistencyLevel, serialConsistencyLevel);
+        return new BatchingFlushContext(daoContext, new ArrayList<AbstractStatementWrapper>(), defaultConsistencyLevel, serialConsistencyLevel, batchType);
     }
 
     public BatchingFlushContext duplicateWithNoData(ConsistencyLevel defaultConsistencyLevel,
             Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel ) {
-        return new BatchingFlushContext(daoContext, new ArrayList<AbstractStatementWrapper>(), defaultConsistencyLevel, serialConsistencyLevel);
-    }
-
-    public BatchingFlushContext duplicateWithNoData() {
-        return new BatchingFlushContext(daoContext, new ArrayList<AbstractStatementWrapper>(), consistencyLevel, serialConsistencyLevel);
+        return new BatchingFlushContext(daoContext, new ArrayList<AbstractStatementWrapper>(), defaultConsistencyLevel, serialConsistencyLevel, batchType);
     }
 }

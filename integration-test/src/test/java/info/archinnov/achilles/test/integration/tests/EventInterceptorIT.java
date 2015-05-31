@@ -35,7 +35,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.List;
 
-import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -261,7 +260,7 @@ public class EventInterceptorIT {
     @Test
     public void should_apply_interceptors_after_flush_for_batch() throws Exception {
         // Given
-        final Batch batchingPM = pmf.createBatch();
+        final Batch batchingPM = pmf.createLoggedBatch();
         batchingPM.startBatch();
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();

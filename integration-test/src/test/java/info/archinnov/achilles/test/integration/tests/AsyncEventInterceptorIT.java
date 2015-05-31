@@ -321,7 +321,7 @@ public class AsyncEventInterceptorIT {
     @Test
     public void should_apply_interceptors_after_flush_for_batch() throws Exception {
         // Given
-        final AsyncBatch asyncBatch = asyncManager.createBatch();
+        final AsyncBatch asyncBatch = asyncManager.createLoggedBatch();
         asyncBatch.startBatch();
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();

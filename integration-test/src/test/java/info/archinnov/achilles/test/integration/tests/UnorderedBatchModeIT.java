@@ -36,7 +36,7 @@ public class UnorderedBatchModeIT {
     public void should_not_order_batch_statements_for_insert() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
-        Batch batch = manager.createBatch();
+        Batch batch = manager.createLoggedBatch();
 
         //When
         batch.startBatch();
@@ -58,7 +58,7 @@ public class UnorderedBatchModeIT {
     public void should_not_order_batch_statements_for_update() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
-        Batch batch = manager.createBatch();
+        Batch batch = manager.createLoggedBatch();
 
         manager.insert(entity);
 

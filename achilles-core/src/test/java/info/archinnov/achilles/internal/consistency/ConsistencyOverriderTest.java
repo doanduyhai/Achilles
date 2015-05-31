@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internal.consistency;
 
+import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
 import static com.google.common.base.Optional.fromNullable;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
@@ -23,6 +24,8 @@ import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+
+import com.datastax.driver.core.BatchStatement;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -63,7 +66,7 @@ public class ConsistencyOverriderTest {
     public void should_override_runtime_value_by_batch_setting() throws Exception {
         //Given
         Options options = withConsistency(LOCAL_QUORUM);
-        AbstractFlushContext flushContext = new BatchingFlushContext(null, EACH_QUORUM, NO_SERIAL_CONSISTENCY);
+        AbstractFlushContext flushContext = new BatchingFlushContext(null, EACH_QUORUM, NO_SERIAL_CONSISTENCY, LOGGED);
 
         //When
         final Options actual = overrider.overrideRuntimeValueByBatchSetting(options, flushContext);

@@ -22,14 +22,11 @@ import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_T
 import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
 import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
 
 import com.datastax.driver.core.SimpleStatement;
-import info.archinnov.achilles.counter.AchillesCounter;
-import info.archinnov.achilles.test.integration.entity.EntityWithClassLevelConstraint;
 import info.archinnov.achilles.type.TypedMap;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -73,7 +70,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 
         manager.insert(entity);
 
-        Batch batch = pmf.createBatch();
+        Batch batch = pmf.createLoggedBatch();
         batch.startBatch(ONE);
 
         final EntityWithConsistencyLevelOnClassAndField proxy = manager.forUpdate(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());

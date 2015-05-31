@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.persistence;
 
+import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.async.AchillesFuture;
@@ -36,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
+import static com.datastax.driver.core.BatchStatement.Type.UNLOGGED;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 
 /**
@@ -553,7 +556,7 @@ public class AsyncManager extends CommonAsyncManager {
     }
 
     /**
-     * Create a new state-full asynchronous Batch <br/>
+     * Create a new state-full asynchronous <strong>LOGGED</strong> Batch <br/>
      * <br/>
      * <p/>
      * <strong>WARNING : This Batch is state-full and not
@@ -562,14 +565,28 @@ public class AsyncManager extends CommonAsyncManager {
      *
      * @return a new state-full AsyncBatch
      */
-    public AsyncBatch createBatch() {
-        log.debug("Spawn new AsyncBatch");
-        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, false);
+    public AsyncBatch createLoggedBatch() {
+        log.debug("Spawn new Logged AsyncBatch");
+        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, LOGGED, false);
     }
 
+    /**
+     * Create a new state-full asynchronous <strong>UNLOGGED</strong> Batch <br/>
+     * <br/>
+     * <p/>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full AsyncBatch
+     */
+    public AsyncBatch createUnloggedBatch() {
+        log.debug("Spawn new Unlogged AsyncBatch");
+        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, UNLOGGED, false);
+    }
 
     /**
-     * Create a new state-full asynchronous <strong>ordered</strong> Batch <br/>
+     * Create a new state-full asynchronous <strong>ordered and LOGGED</strong> Batch <br/>
      * <br/>
      * <p>
      * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
@@ -582,8 +599,27 @@ public class AsyncManager extends CommonAsyncManager {
      *
      * @return a new state-full AsyncBatch
      */
-    public AsyncBatch createOrderedBatch() {
-        log.debug("Spawn new AsyncBatch");
-        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, true);
+    public AsyncBatch createOrderedLoggedBatch() {
+        log.debug("Spawn new ordered Logged AsyncBatch");
+        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, LOGGED, true);
+    }
+
+    /**
+     * Create a new state-full asynchronous <strong>ordered and UNLOGGED</strong> Batch <br/>
+     * <br/>
+     * <p>
+     * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
+     * If you use ordered Batch in multiple clients, do not forget to synchronize the clock between those clients
+     * to avoid statements interleaving
+     * </p>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full AsyncBatch
+     */
+    public AsyncBatch createOrderedUnloggedBatch() {
+        log.debug("Spawn new ordered Unlogged AsyncBatch");
+        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, UNLOGGED, true);
     }
 }

@@ -51,11 +51,11 @@ abstract class CommonBatch extends CommonPersistenceManager {
     private final boolean orderedBatch;
 
     CommonBatch(Map<Class<?>, EntityMeta> entityMetaMap, PersistenceContextFactory contextFactory,
-                DaoContext daoContext, ConfigurationContext configContext, boolean orderedBatch) {
+                DaoContext daoContext, ConfigurationContext configContext, BatchStatement.Type batchType, boolean orderedBatch) {
         super(entityMetaMap, contextFactory, daoContext, configContext);
         this.defaultConsistencyLevel = configContext.getDefaultWriteConsistencyLevel();
         this.orderedBatch = orderedBatch;
-        this.flushContext = new BatchingFlushContext(daoContext, defaultConsistencyLevel, Optional.<com.datastax.driver.core.ConsistencyLevel>absent());
+        this.flushContext = new BatchingFlushContext(daoContext, defaultConsistencyLevel, Optional.<com.datastax.driver.core.ConsistencyLevel>absent(),batchType);
     }
 
     /**

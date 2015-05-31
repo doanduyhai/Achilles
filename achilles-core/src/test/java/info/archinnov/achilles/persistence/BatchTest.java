@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.persistence;
 
+import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.SimpleStatement;
 import org.junit.Before;
@@ -133,7 +135,7 @@ public class BatchTest {
     public void setUp() {
         when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
         when(configContext.getExecutorService()).thenReturn(executorService);
-        batch = new Batch(null, contextFactory, daoContext, configContext,false);
+        batch = new Batch(null, contextFactory, daoContext, configContext, LOGGED, false);
         batch.optionsValidator = optionsValidator;
         batch.entityValidator = entityValidator;
         batch.proxifier = proxifier;
@@ -141,7 +143,6 @@ public class BatchTest {
         batch.contextFactory = contextFactory;
         batch.validator = validator;
         Whitebox.setInternalState(batch, BatchingFlushContext.class, flushContext);
-        //Whitebox.setInternalState(batch, AsyncUtils.class, asyncUtils);
 
     }
 
@@ -190,7 +191,7 @@ public class BatchTest {
     public void should_add_timestamp_to_statement_if_ordered_batch() throws Exception {
         //Given
         Options options = noOptions();
-        batch = new Batch(null, contextFactory, daoContext, configContext, true);
+        batch = new Batch(null, contextFactory, daoContext, configContext, LOGGED, true);
 
         //When
         final Options actual = batch.maybeAddTimestampToStatement(options);

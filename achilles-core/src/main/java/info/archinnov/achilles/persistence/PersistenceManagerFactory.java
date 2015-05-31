@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
+import com.datastax.driver.core.BatchStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
@@ -46,6 +47,8 @@ import info.archinnov.achilles.type.InsertStrategy;
 
 import javax.annotation.PreDestroy;
 
+import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
+import static com.datastax.driver.core.BatchStatement.Type.UNLOGGED;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 
 /**
@@ -148,7 +151,7 @@ public class PersistenceManagerFactory {
     }
 
     /**
-     * Create a new state-full Batch <br/>
+     * Create a new state-full <strong>LOGGED</strong> Batch <br/>
      * <br/>
      * <p/>
      * <strong>WARNING : This Batch is state-full and not
@@ -157,14 +160,29 @@ public class PersistenceManagerFactory {
      *
      * @return a new state-full Batch
      */
-    public Batch createBatch() {
-        log.debug("Spawn new Batch");
-        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, false);
+    public Batch createLoggedBatch() {
+        log.debug("Spawn new Logged Batch");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, LOGGED, false);
+    }
+
+    /**
+     * Create a new state-full <strong>UNLOGGED</strong> Batch <br/>
+     * <br/>
+     * <p/>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full Batch
+     */
+    public Batch createUnloggedBatch() {
+        log.debug("Spawn new Unlogged Batch");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, UNLOGGED, false);
     }
 
 
     /**
-     * Create a new asynchronous state-full Batch <br/>
+     * Create a new asynchronous state-full <strong>LOGGED</strong> Batch <br/>
      * <br/>
      * <p/>
      * <strong>WARNING : This Batch is state-full and not
@@ -173,13 +191,28 @@ public class PersistenceManagerFactory {
      *
      * @return a new state-full AsyncBatch
      */
-    public AsyncBatch createAsyncBatch() {
-        log.debug("Spawn new AsyncBatch");
-        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, false);
+    public AsyncBatch createAsyncLoggedBatch() {
+        log.debug("Spawn new Logged AsyncBatch");
+        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, LOGGED, false);
     }
 
     /**
-     * Create a new state-full <strong>ordered</strong> Batch <br/>
+     * Create a new asynchronous state-full <strong>UNLOGGED</strong> Batch <br/>
+     * <br/>
+     * <p/>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full AsyncBatch
+     */
+    public AsyncBatch createAsyncUnloggedBatch() {
+        log.debug("Spawn new Unlogged AsyncBatch");
+        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, UNLOGGED, false);
+    }
+
+    /**
+     * Create a new state-full <strong>ordered and LOGGED</strong> Batch <br/>
      * <br/>
      * <p>
      * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
@@ -192,13 +225,32 @@ public class PersistenceManagerFactory {
      *
      * @return a new state-full Batch
      */
-    public Batch createOrderedBatch() {
-        log.debug("Spawn new ordered Batch");
-        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, true);
+    public Batch createOrderedLoggedBatch() {
+        log.debug("Spawn new ordered Logged Batch");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, LOGGED, true);
     }
 
     /**
-     * Create a new state-full <strong>ordered</strong> Batch <br/>
+     * Create a new state-full <strong>ordered and UNLOGGED</strong> Batch <br/>
+     * <br/>
+     * <p>
+     * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
+     * If you use ordered Batch in multiple clients, do not forget to synchronize the clock between those clients
+     * to avoid statements interleaving
+     * </p>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full Batch
+     */
+    public Batch createOrderedUnloggedBatch() {
+        log.debug("Spawn new ordered Unlogged Batch");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, UNLOGGED, true);
+    }
+
+    /**
+     * Create a new state-full <strong>ordered and LOGGED</strong> Batch <br/>
      * <br/>
      * <p>
      * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
@@ -211,9 +263,28 @@ public class PersistenceManagerFactory {
      *
      * @return a new state-full AsyncBatch
      */
-    public AsyncBatch createOrderedAsyncBatch() {
-        log.debug("Spawn new ordered AsyncBatch");
-        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, true);
+    public AsyncBatch createOrderedAsyncLoggedBatch() {
+        log.debug("Spawn new ordered Logged AsyncBatch");
+        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, LOGGED, true);
+    }
+
+    /**
+     * Create a new state-full <strong>ordered and UNLOGGED</strong> Batch <br/>
+     * <br/>
+     * <p>
+     * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
+     * If you use ordered Batch in multiple clients, do not forget to synchronize the clock between those clients
+     * to avoid statements interleaving
+     * </p>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full AsyncBatch
+     */
+    public AsyncBatch createOrderedAsyncUnloggedBatch() {
+        log.debug("Spawn new ordered Unlogged AsyncBatch");
+        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, UNLOGGED, true);
     }
 
     /**

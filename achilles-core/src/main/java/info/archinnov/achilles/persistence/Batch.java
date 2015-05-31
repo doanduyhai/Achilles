@@ -16,6 +16,8 @@
 package info.archinnov.achilles.persistence;
 
 import java.util.Map;
+
+import com.datastax.driver.core.BatchStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -68,8 +70,8 @@ public class Batch extends CommonBatch {
     private static final Logger log = LoggerFactory.getLogger(Batch.class);
 
     Batch(Map<Class<?>, EntityMeta> entityMetaMap, PersistenceContextFactory contextFactory,
-            DaoContext daoContext, ConfigurationContext configContext, boolean orderedBatch) {
-        super(entityMetaMap, contextFactory, daoContext, configContext, orderedBatch);
+            DaoContext daoContext, ConfigurationContext configContext, BatchStatement.Type batchType, boolean orderedBatch) {
+        super(entityMetaMap, contextFactory, daoContext, configContext, batchType, orderedBatch);
     }
 
     /**

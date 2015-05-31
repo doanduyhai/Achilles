@@ -75,7 +75,7 @@ public class AsyncBatchModeIT {
     @Test
     public void should_batch_counters_async() throws Exception {
         // Start batch
-        AsyncBatch batch = asyncManager.createBatch();
+        AsyncBatch batch = asyncManager.createLoggedBatch();
         batch.startBatch();
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
@@ -189,7 +189,7 @@ public class AsyncBatchModeIT {
         };
 
         // Start batch
-        AsyncBatch batch = asyncManager.createBatch();
+        AsyncBatch batch = asyncManager.createLoggedBatch();
         batch.startBatch();
 
         batch.insert(bean);
@@ -255,7 +255,7 @@ public class AsyncBatchModeIT {
         asyncManager.insert(tweet1).getImmediately();
 
         // Start batch
-        AsyncBatch batch = asyncManager.createBatch();
+        AsyncBatch batch = asyncManager.createLoggedBatch();
 
         batch.startBatch(QUORUM);
 
@@ -301,7 +301,7 @@ public class AsyncBatchModeIT {
         asyncManager.insert(tweet1);
 
         // Start batch
-        AsyncBatch batch = asyncManager.createBatch();
+        AsyncBatch batch = asyncManager.createLoggedBatch();
 
         batch.startBatch(EACH_QUORUM);
         batch.insert(tweet2);
@@ -325,7 +325,7 @@ public class AsyncBatchModeIT {
     public void should_order_batch_operations_on_the_same_column_with_insert_and_update_async() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-        final AsyncBatch batch = asyncManager.createOrderedBatch();
+        final AsyncBatch batch = asyncManager.createOrderedLoggedBatch();
 
         //When
         batch.startBatch();
@@ -350,7 +350,7 @@ public class AsyncBatchModeIT {
     public void should_order_batch_operations_on_the_same_column_async() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
-        final AsyncBatch batch = asyncManager.createOrderedBatch();
+        final AsyncBatch batch = asyncManager.createOrderedLoggedBatch();
 
         //When
         batch.startBatch();
@@ -380,7 +380,7 @@ public class AsyncBatchModeIT {
         final PreparedStatement ps = asyncManager.getNativeSession().prepare(insert);
         final BoundStatement bs = ps.bind(id, name);
 
-        final AsyncBatch batch = asyncManager.createBatch();
+        final AsyncBatch batch = asyncManager.createLoggedBatch();
 
         batch.startBatch();
 

@@ -16,6 +16,8 @@
 package info.archinnov.achilles.persistence;
 
 
+import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
+import static com.datastax.driver.core.BatchStatement.Type.UNLOGGED;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import java.io.IOException;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.internal.validation.Validator;
 import org.slf4j.Logger;
@@ -569,7 +572,7 @@ public class PersistenceManager extends CommonPersistenceManager {
     }
 
     /**
-     * Create a new state-full Batch <br/>
+     * Create a new state-full <strong>LOGGED</strong> Batch <br/>
      * <br/>
      * <p/>
      * <strong>WARNING : This Batch is state-full and not
@@ -578,14 +581,28 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      * @return a new state-full Batch
      */
-    public Batch createBatch() {
-        log.debug("Create new Batch instance");
-        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, false);
+    public Batch createLoggedBatch() {
+        log.debug("Create new Logged Batch instance");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, LOGGED, false);
     }
 
+    /**
+     * Create a new state-full <strong>UNLOGGED</strong> Batch <br/>
+     * <br/>
+     * <p/>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full Batch
+     */
+    public Batch createUnloggedBatch() {
+        log.debug("Create new Unlogged Batch instance");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, UNLOGGED, false);
+    }
 
     /**
-     * Create a new state-full <strong>ordered</strong> Batch <br/>
+     * Create a new state-full <strong>ordered and LOGGED</strong> Batch <br/>
      * <br/>
      * <p>
      * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
@@ -598,8 +615,27 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      * @return a new state-full ordered Batch
      */
-    public Batch createOrderedBatch() {
-        log.debug("Create new ordered Batch");
-        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, true);
+    public Batch createOrderedLoggedBatch() {
+        log.debug("Create new ordered Logged Batch");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, LOGGED, true);
+    }
+
+    /**
+     * Create a new state-full <strong>ordered and UNLOGGED</strong> Batch <br/>
+     * <br/>
+     * <p>
+     * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
+     * If you use ordered Batch in multiple clients, do not forget to synchronize the clock between those clients
+     * to avoid statements interleaving
+     * </p>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full ordered Batch
+     */
+    public Batch createOrderedUnloggedBatch() {
+        log.debug("Create new ordered Unlogged Batch");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, UNLOGGED, true);
     }
 }

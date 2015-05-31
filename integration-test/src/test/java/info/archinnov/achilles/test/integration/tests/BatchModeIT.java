@@ -77,7 +77,7 @@ public class BatchModeIT {
     @Test
     public void should_batch_counters() throws Exception {
         // Start batch
-        Batch batch = manager.createBatch();
+        Batch batch = manager.createLoggedBatch();
         batch.startBatch();
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
@@ -124,7 +124,7 @@ public class BatchModeIT {
         Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
         // Start batch
-        Batch batch = manager.createBatch();
+        Batch batch = manager.createLoggedBatch();
         batch.startBatch();
 
         batch.insert(bean);
@@ -169,7 +169,7 @@ public class BatchModeIT {
         manager.insert(user);
 
         // Start batch
-        Batch batch = manager.createBatch();
+        Batch batch = manager.createLoggedBatch();
         batch.startBatch();
 
         boolean exceptionCaught = false;
@@ -214,7 +214,7 @@ public class BatchModeIT {
         manager.insert(tweet1);
 
         // Start batch
-        Batch batch = manager.createBatch();
+        Batch batch = manager.createLoggedBatch();
         batch.startBatch();
 
         batch.startBatch(QUORUM);
@@ -243,7 +243,7 @@ public class BatchModeIT {
         manager.insert(tweet1);
 
         // Start batch
-        Batch batch = manager.createBatch();
+        Batch batch = manager.createLoggedBatch();
         batch.startBatch();
 
         batch.startBatch(TWO);
@@ -269,7 +269,7 @@ public class BatchModeIT {
     public void should_order_batch_operations_on_the_same_column_with_insert_and_update() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-        final Batch batch = manager.createOrderedBatch();
+        final Batch batch = manager.createOrderedLoggedBatch();
 
         //When
         batch.startBatch();
@@ -294,7 +294,7 @@ public class BatchModeIT {
     public void should_order_batch_operations_on_the_same_column() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
-        final Batch batch = manager.createOrderedBatch();
+        final Batch batch = manager.createOrderedLoggedBatch();
 
         //When
         batch.startBatch();
@@ -322,7 +322,7 @@ public class BatchModeIT {
 
         manager.insert(entity2);
 
-        final Batch batch = manager.createBatch();
+        final Batch batch = manager.createLoggedBatch();
 
         batch.startBatch();
 
@@ -346,7 +346,7 @@ public class BatchModeIT {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
         manager.insert(entity);
-        final Batch batch = manager.createBatch();
+        final Batch batch = manager.createLoggedBatch();
         final Insert statement = insertInto("CompleteBean").value("id", bindMarker("id")).value("name", bindMarker("name")).ifNotExists();
 
         final AtomicBoolean error = new AtomicBoolean(false);
@@ -387,7 +387,7 @@ public class BatchModeIT {
         String name = "DuyHai";
         final Insert statement = insertInto("CompleteBean").value("id", id).value("name", name).ifNotExists();
 
-        final Batch batch = manager.createBatch();
+        final Batch batch = manager.createLoggedBatch();
 
         batch.startBatch();
 
@@ -411,7 +411,7 @@ public class BatchModeIT {
         final PreparedStatement ps = manager.getNativeSession().prepare(insert);
         final BoundStatement bs = ps.bind(id, name);
 
-        final Batch batch = manager.createBatch();
+        final Batch batch = manager.createLoggedBatch();
 
         batch.startBatch();
 

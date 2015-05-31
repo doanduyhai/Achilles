@@ -24,7 +24,7 @@ public class NativeStatementBoundValueNotFoundIT {
     @Test
     public void should_execute_native_batch() {
         // create persistence manager -- pm
-        Batch batch = manager.createBatch();
+        Batch batch = manager.createLoggedBatch();
         batch.startBatch();
 
         RegularStatement statement = QueryBuilder.insertInto(ValuelessEntity.TABLE_NAME).value("id", 234L);

@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.persistence;
 
+import com.datastax.driver.core.BatchStatement;
 import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.async.AsyncUtils;
@@ -77,8 +78,8 @@ public class AsyncBatch extends CommonBatch {
     private AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
 
     AsyncBatch(Map<Class<?>, EntityMeta> entityMetaMap, PersistenceContextFactory contextFactory,
-               DaoContext daoContext, ConfigurationContext configContext, boolean orderedBatch) {
-        super(entityMetaMap, contextFactory, daoContext, configContext, orderedBatch);
+               DaoContext daoContext, ConfigurationContext configContext, BatchStatement.Type batchType, boolean orderedBatch) {
+        super(entityMetaMap, contextFactory, daoContext, configContext, batchType, orderedBatch);
     }
 
     /**

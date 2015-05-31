@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.context;
 
+import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import com.datastax.driver.core.BatchStatement;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.Empty;
@@ -108,7 +110,7 @@ public class BatchingFlushContextTest {
 
     @Before
     public void setUp() {
-        context = new BatchingFlushContext(daoContext, EACH_QUORUM, NO_SERIAL_CONSISTENCY);
+        context = new BatchingFlushContext(daoContext, EACH_QUORUM, NO_SERIAL_CONSISTENCY, LOGGED);
         context.asyncUtils = asyncUtils;
         when(daoContext.getExecutorService()).thenReturn(executorService);
     }
