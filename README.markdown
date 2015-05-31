@@ -39,14 +39,14 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
 		<tr>
-			<td>3.2.0</td>
-			<td>2.1.5</td>
+			<td>3.2.1</td>
+			<td>2.1.6</td>
 			<td>2.1.5</td>
 		</tr>		
 		<tr>
-			<td>3.0.19</td>
-			<td>2.1.5</td>
-			<td>2.0.13</td>
+			<td>3.0.20</td>
+			<td>2.1.6</td>
+			<td>2.0.15</td>
 		</tr>
     </tbody>
 </table>    
@@ -79,7 +79,7 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
  2. cassandra-driver-core (see matrix version above)
  3. CGLIB nodep 2.2.2 for proxy building
  4. Jackson core, annotations, databind & module jaxb annotations 2.3.3
- 5. org.reflections 0.9.9-RC1
+ 5. org.reflections 0.9.10
  6. Guava 15.0
  7. slf4j-api 1.7.2
  8. commons-io 2.4
