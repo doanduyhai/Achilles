@@ -214,6 +214,11 @@ public class NullRow implements Row {
     }
 
     @Override
+    public Object getObject(int i) {
+        return null;
+    }
+
+    @Override
     public <K, V> Map<K, V> getMap(String name, Class<K> keysClass, Class<V> valuesClass) {
         return null;
     }
@@ -255,6 +260,11 @@ public class NullRow implements Row {
 
     @Override
     public TupleValue getTupleValue(String name) {
+        return null;
+    }
+
+    @Override
+    public Object getObject(String name) {
         return null;
     }
 
