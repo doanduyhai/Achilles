@@ -276,4 +276,18 @@ public enum ConfigurationParameters {
         this.label = label;
     }
 
+    /**
+     * Small utility method that resolves a configuration based on its label.
+     * @param label the configuration label that would be populated in the map.
+     * @return the label in ConfigurationParameters format, or null if no match found.
+     */
+    public static ConfigurationParameters fromLabel(String label) {
+        for(ConfigurationParameters param : ConfigurationParameters.values()) {
+            if(param.label.equals(label)) {
+                return param;
+            }
+        }
+        return null;
+    }
+
 }
