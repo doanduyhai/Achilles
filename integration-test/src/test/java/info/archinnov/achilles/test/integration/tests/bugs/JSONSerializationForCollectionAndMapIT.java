@@ -22,7 +22,6 @@ import com.google.common.collect.Sets;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithStaticColumn;
 import info.archinnov.achilles.test.integration.entity.EntityWithJSONOnCollectionAndMap;
 import info.archinnov.achilles.type.TypedMap;
 import org.apache.commons.lang3.RandomUtils;

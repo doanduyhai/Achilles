@@ -26,7 +26,7 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 
 public interface PersistentStateHolder {
 

@@ -20,8 +20,8 @@ import static com.datastax.driver.core.querybuilder.Update.Conditions;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST_AT_INDEX;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.test.builders.CompleteBeanTestBuilder.builder;
-import static info.archinnov.achilles.type.Options.LWTCondition;
-import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
+import static info.archinnov.achilles.options.Options.LWTCondition;
+import static info.archinnov.achilles.options.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
@@ -49,7 +49,7 @@ import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 import java.util.ArrayList;
 

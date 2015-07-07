@@ -22,7 +22,7 @@ import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_T
 import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
+import static info.archinnov.achilles.options.OptionsBuilder.withConsistency;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
 

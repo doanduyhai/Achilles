@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import com.datastax.driver.core.BatchStatement;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.type.Empty;

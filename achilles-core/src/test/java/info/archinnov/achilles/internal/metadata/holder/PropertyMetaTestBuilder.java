@@ -27,7 +27,7 @@ import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 public class PropertyMetaTestBuilder<T, K, V> {
     private EntityIntrospector achillesEntityIntrospector = new EntityIntrospector();

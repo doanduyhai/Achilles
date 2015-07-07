@@ -24,7 +24,6 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -33,7 +32,6 @@ import info.archinnov.achilles.test.integration.entity.ClusteredMessageId;
 import info.archinnov.achilles.test.integration.entity.ClusteredMessageId.Type;
 import info.archinnov.achilles.test.integration.entity.ClusteredTweetEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredTweetId;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class ClusteredEntityIT2 {
 

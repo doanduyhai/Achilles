@@ -10,7 +10,7 @@ import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static info.archinnov.achilles.type.OptionsBuilder.ifEqualCondition;
+import static info.archinnov.achilles.options.OptionsBuilder.ifEqualCondition;
 
 public class UpdateWithLWTRepreparedManyTimesIT {
 

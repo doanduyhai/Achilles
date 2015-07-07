@@ -30,8 +30,8 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_SET;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.type.Options.LWTCondition;
-import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
+import static info.archinnov.achilles.options.Options.LWTCondition;
+import static info.archinnov.achilles.options.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -44,7 +44,7 @@ import java.util.Map;
 import java.util.Set;
 
 import info.archinnov.achilles.test.parser.entity.CompoundPK;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;

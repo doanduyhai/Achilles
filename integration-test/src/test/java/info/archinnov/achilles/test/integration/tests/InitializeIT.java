@@ -18,7 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static info.archinnov.achilles.type.OptionsBuilder.withProxy;
+import static info.archinnov.achilles.options.OptionsBuilder.withProxy;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.apache.cassandra.utils.UUIDGen;

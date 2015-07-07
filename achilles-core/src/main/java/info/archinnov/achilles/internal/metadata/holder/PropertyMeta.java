@@ -29,7 +29,7 @@ import info.archinnov.achilles.json.DefaultJacksonMapper;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 public class PropertyMeta {
 

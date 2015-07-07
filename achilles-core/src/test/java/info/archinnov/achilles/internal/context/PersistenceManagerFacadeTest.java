@@ -63,7 +63,7 @@ import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PersistenceManagerFacadeTest {

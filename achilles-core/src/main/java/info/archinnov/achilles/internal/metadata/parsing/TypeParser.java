@@ -1,7 +1,7 @@
 package info.archinnov.achilles.internal.metadata.parsing;
 
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

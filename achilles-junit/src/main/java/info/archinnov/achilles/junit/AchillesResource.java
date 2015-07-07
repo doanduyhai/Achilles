@@ -20,17 +20,12 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYS
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 
 import com.datastax.driver.core.Session;
-import info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
 import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.script.ScriptExecutor;
 import info.archinnov.achilles.type.TypedMap;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AchillesResource extends AchillesTestResource {
 

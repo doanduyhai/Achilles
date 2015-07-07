@@ -32,14 +32,14 @@ import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.listener.LWTResultListener;
 import info.archinnov.achilles.query.cql.NativeQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.options.OptionsBuilder.noOptions;
 
 abstract class CommonBatch extends CommonPersistenceManager {
 

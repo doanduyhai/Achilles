@@ -13,15 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.type;
+package info.archinnov.achilles.options;
 
-import static info.archinnov.achilles.type.Options.LWTCondition;
-import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
-import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.GTE_CONDITION;
-import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.GT_CONDITION;
-import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.LTE_CONDITION;
-import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.LT_CONDITION;
-import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.NOT_EQUAL_CONDITION;
+import static info.archinnov.achilles.options.Options.LWTCondition;
+import static info.archinnov.achilles.options.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
+import static info.archinnov.achilles.options.Options.LWTPredicate.LWTType.GTE_CONDITION;
+import static info.archinnov.achilles.options.Options.LWTPredicate.LWTType.GT_CONDITION;
+import static info.archinnov.achilles.options.Options.LWTPredicate.LWTType.LTE_CONDITION;
+import static info.archinnov.achilles.options.Options.LWTPredicate.LWTType.LT_CONDITION;
+import static info.archinnov.achilles.options.Options.LWTPredicate.LWTType.NOT_EQUAL_CONDITION;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +29,7 @@ import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.listener.LWTResultListener;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 /**
  * <p>

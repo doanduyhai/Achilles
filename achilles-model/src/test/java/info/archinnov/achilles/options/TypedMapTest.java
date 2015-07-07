@@ -14,13 +14,16 @@
  *  limitations under the License.
  */
 
-package info.archinnov.achilles.type;
+package info.archinnov.achilles.options;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.CounterBuilder;
+import info.archinnov.achilles.type.TypedMap;
 import org.junit.Test;
 
 public class TypedMapTest {

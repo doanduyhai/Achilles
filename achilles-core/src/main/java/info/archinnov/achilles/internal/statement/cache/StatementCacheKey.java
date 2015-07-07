@@ -16,7 +16,7 @@
 package info.archinnov.achilles.internal.statement.cache;
 
 import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.type.Options.LWTPredicate;
+import static info.archinnov.achilles.options.Options.LWTPredicate;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,9 +25,8 @@ import java.util.Set;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 
 public class StatementCacheKey {
 

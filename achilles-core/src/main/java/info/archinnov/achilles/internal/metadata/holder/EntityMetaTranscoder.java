@@ -2,7 +2,7 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.IndexCondition;
-import info.archinnov.achilles.type.Options.LWTCondition;
+import info.archinnov.achilles.options.Options.LWTCondition;
 
 import java.util.List;
 

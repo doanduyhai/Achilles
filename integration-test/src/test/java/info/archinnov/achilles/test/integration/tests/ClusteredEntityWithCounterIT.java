@@ -23,7 +23,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Iterator;
 import java.util.List;
 
-import info.archinnov.achilles.test.integration.entity.EntityWithCompositePartitionKey;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;

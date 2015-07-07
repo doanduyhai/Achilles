@@ -28,7 +28,7 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.CompoundPK;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

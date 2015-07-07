@@ -23,7 +23,7 @@ import org.apache.commons.collections.MapUtils;
 import com.datastax.driver.core.querybuilder.Update;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;

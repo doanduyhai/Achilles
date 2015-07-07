@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.internal.statement.cache;
 
-import static info.archinnov.achilles.type.OptionsBuilder.withTimestamp;
+import static info.archinnov.achilles.options.OptionsBuilder.withTimestamp;
 import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
 import com.google.common.collect.Sets;

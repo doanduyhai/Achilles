@@ -62,7 +62,7 @@ import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 public class DaoContext {
     private static final Logger log = LoggerFactory.getLogger(DaoContext.class);

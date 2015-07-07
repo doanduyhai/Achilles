@@ -16,7 +16,6 @@
 package info.archinnov.achilles.internal.context;
 
 import static com.datastax.driver.core.BatchStatement.Type.COUNTER;
-import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
 import static com.google.common.base.Predicates.isNull;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.FluentIterable.from;

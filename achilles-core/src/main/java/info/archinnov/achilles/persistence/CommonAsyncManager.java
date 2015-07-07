@@ -22,15 +22,14 @@ import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.type.Empty;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PreDestroy;
 import java.util.Map;
-import java.util.concurrent.Future;
 
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.options.OptionsBuilder.noOptions;
 
 public class CommonAsyncManager extends AbstractPersistenceManager {
 

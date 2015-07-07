@@ -21,7 +21,7 @@ import static info.archinnov.achilles.test.integration.entity.CompositeClustered
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Iterator;
 
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;

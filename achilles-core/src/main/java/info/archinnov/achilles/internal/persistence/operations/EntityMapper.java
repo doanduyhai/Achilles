@@ -16,7 +16,7 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+
 import java.util.Map;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaRowExtractor;

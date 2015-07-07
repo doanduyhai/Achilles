@@ -33,7 +33,6 @@ import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.integration.entity.EntityWithSecondaryIndex;
 import info.archinnov.achilles.test.integration.entity.EntityWithSecondaryIndexOnEnum;
 import info.archinnov.achilles.type.IndexCondition;
 

@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 public class EntityMetaBuilder {
     private static final Logger log = LoggerFactory.getLogger(EntityMetaBuilder.class);

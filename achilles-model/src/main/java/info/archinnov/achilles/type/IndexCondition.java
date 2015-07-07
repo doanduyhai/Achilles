@@ -16,8 +16,7 @@
 
 package info.archinnov.achilles.type;
 
-import com.google.common.base.Objects;
-import info.archinnov.achilles.internal.validation.Validator;
+import java.util.Objects;
 
 /**
  * <p>
@@ -47,8 +46,13 @@ public class IndexCondition {
      *            value of indexed column
      */
     public IndexCondition(String columnName, Object columnValue) {
-        Validator.validateNotBlank(columnName, "Column name for index condition '%s' should be provided", this);
-        Validator.validateNotNull(columnValue, "Column value for index condition '%s' should be provided", this);
+        if (columnName == null || columnName.trim().equals("")) {
+            throw new IllegalArgumentException("Column name for index condition '%s' should be provided");
+
+        }
+        if (columnValue == null) {
+            throw new IllegalArgumentException("Column value for index condition '%s' should be provided");
+        }
         this.columnName = columnName;
         this.indexRelation = IndexRelation.EQUAL;
         this.columnValue = columnValue;
@@ -68,8 +72,10 @@ public class IndexCondition {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(IndexCondition.class).add("columnName", columnValue)
-                .add("columnValue", columnValue).add("index relation", indexRelation).toString();
+        return "IndexCondition{" +
+                "columnName='" + Objects.toString(columnName) + '\'' +
+                ", indexRelation=" + Objects.toString(indexRelation) +
+                ", columnValue=" + Objects.toString(columnValue) +
+                '}';
     }
-
 }

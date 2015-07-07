@@ -16,7 +16,6 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ITERATOR;

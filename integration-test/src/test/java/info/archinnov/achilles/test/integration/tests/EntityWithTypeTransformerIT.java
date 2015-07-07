@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.test.integration.tests;
 
-import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;

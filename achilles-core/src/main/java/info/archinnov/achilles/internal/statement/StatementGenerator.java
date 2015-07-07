@@ -18,12 +18,11 @@ package info.archinnov.achilles.internal.statement;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
-import static info.archinnov.achilles.type.Options.LWTCondition;
+import static info.archinnov.achilles.options.Options.LWTCondition;
 import static org.apache.commons.lang3.ArrayUtils.addAll;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.datastax.driver.core.querybuilder.IfExistsClause;
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,7 @@ import info.archinnov.achilles.internal.context.facade.PersistentStateHolder;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 public class StatementGenerator {
 

@@ -2,7 +2,7 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 public class EntityMetaConfig extends EntityMetaView {
     protected EntityMetaConfig(EntityMeta meta) {

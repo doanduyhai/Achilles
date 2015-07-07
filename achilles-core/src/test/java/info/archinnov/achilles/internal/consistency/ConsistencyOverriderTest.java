@@ -20,12 +20,11 @@ import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
 import static com.google.common.base.Optional.fromNullable;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
-import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
+import static info.archinnov.achilles.options.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.options.OptionsBuilder.withConsistency;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import com.datastax.driver.core.BatchStatement;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -39,7 +38,7 @@ import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConsistencyOverriderTest {

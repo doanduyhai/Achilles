@@ -21,8 +21,6 @@ import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.iterator.AchillesIterator;
 import info.archinnov.achilles.listener.LWTResultListener;
-import info.archinnov.achilles.query.slice.SliceQueryProperties;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

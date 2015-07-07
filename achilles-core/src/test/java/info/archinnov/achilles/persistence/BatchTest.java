@@ -22,8 +22,8 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
-import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
+import static info.archinnov.achilles.options.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.options.OptionsBuilder.withConsistency;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.SimpleStatement;
 import org.junit.Before;
@@ -66,8 +65,8 @@ import info.archinnov.achilles.query.cql.NativeQueryValidator;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.Options;
+import info.archinnov.achilles.options.OptionsBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BatchTest {

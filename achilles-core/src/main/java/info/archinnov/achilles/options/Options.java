@@ -13,13 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.type;
+package info.archinnov.achilles.options;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.gt;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.lt;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.lte;
 
@@ -27,10 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.datastax.driver.core.querybuilder.NotEqualCQLClause;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.listener.LWTResultListener;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import org.apache.commons.collections.CollectionUtils;
 import com.datastax.driver.core.querybuilder.Clause;
 import com.google.common.base.Objects;

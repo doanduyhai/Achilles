@@ -22,7 +22,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Map;
 
-import com.datastax.driver.core.ResultSet;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.type.TypedMap;

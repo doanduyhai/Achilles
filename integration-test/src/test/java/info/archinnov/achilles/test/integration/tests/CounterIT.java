@@ -16,7 +16,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
-import static info.archinnov.achilles.type.OptionsBuilder.withProxy;
+import static info.archinnov.achilles.options.OptionsBuilder.withProxy;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.persistence.PersistenceManager;
@@ -26,7 +26,6 @@ import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.CounterBuilder;
 
-import info.archinnov.achilles.type.OptionsBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

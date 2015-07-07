@@ -13,9 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.type;
+package info.archinnov.achilles.options;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+
+import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.CounterBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

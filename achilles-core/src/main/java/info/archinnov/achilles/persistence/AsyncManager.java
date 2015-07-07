@@ -15,7 +15,6 @@
  */
 package info.archinnov.achilles.persistence;
 
-import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.async.AchillesFuture;
@@ -28,7 +27,7 @@ import info.archinnov.achilles.query.cql.AsyncNativeQuery;
 import info.archinnov.achilles.query.slice.AsyncSliceQueryBuilder;
 import info.archinnov.achilles.query.typed.AsyncTypedQuery;
 import info.archinnov.achilles.type.IndexCondition;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +38,7 @@ import java.util.Set;
 
 import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
 import static com.datastax.driver.core.BatchStatement.Type.UNLOGGED;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.options.OptionsBuilder.noOptions;
 
 /**
  * <p>

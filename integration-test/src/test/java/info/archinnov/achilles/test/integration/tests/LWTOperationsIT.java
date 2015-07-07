@@ -25,7 +25,7 @@ import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBu
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_SERIAL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.type.OptionsBuilder.*;
+import static info.archinnov.achilles.options.OptionsBuilder.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,7 @@ import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.EntityWithEnum;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.OptionsBuilder;
 
 public class LWTOperationsIT {
 

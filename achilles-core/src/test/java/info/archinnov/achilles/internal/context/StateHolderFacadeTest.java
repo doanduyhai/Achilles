@@ -17,7 +17,7 @@
 package info.archinnov.achilles.internal.context;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_ONE;
-import static info.archinnov.achilles.type.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
+import static info.archinnov.achilles.options.Options.LWTPredicate.LWTType.EQUAL_CONDITION;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -38,8 +38,8 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.Options;
+import info.archinnov.achilles.options.OptionsBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StateHolderFacadeTest {

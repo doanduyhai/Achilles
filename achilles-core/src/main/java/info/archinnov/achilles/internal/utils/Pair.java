@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package info.archinnov.achilles.type;
+package info.archinnov.achilles.internal.utils;
 
 import com.google.common.base.Objects;
 

@@ -18,14 +18,13 @@ package info.archinnov.achilles.persistence;
 
 import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
 import static com.datastax.driver.core.BatchStatement.Type.UNLOGGED;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
-import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
+import static info.archinnov.achilles.options.OptionsBuilder.noOptions;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.internal.validation.Validator;
 import org.slf4j.Logger;
@@ -38,9 +37,8 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.query.cql.NativeQuery;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQuery;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 
 /**
  * <p>

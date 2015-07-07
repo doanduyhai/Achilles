@@ -80,7 +80,7 @@ public interface LWTResultListener {
      * and {@link info.archinnov.achilles.listener.LWTResultListener.LWTResult.Operation}.UPDATE
      * <br>
      * <br>
-     * The "<em>public TypedMap currentValues()</em>" method returns a {@link info.archinnov.achilles.type.TypedMap}
+     * The "<em>public TypedMap currentValues()</em>" method returns a {@link TypedMap}
      * of current value for each column involved in the LWT operation
      * <br>
      * <br>

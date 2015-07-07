@@ -16,7 +16,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static info.archinnov.achilles.type.OptionsBuilder.withProxy;
+import static info.archinnov.achilles.options.OptionsBuilder.withProxy;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.HashMap;
@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import info.archinnov.achilles.type.OptionsBuilder;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;

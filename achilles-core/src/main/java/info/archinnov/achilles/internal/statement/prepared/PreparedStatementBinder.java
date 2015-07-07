@@ -16,7 +16,7 @@
 package info.archinnov.achilles.internal.statement.prepared;
 
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
-import static info.archinnov.achilles.type.Options.LWTCondition;
+import static info.archinnov.achilles.options.Options.LWTCondition;
 import static org.apache.commons.lang3.ArrayUtils.addAll;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapC
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 
 public class PreparedStatementBinder {
 

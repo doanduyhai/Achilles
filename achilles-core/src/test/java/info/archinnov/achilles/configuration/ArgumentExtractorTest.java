@@ -82,7 +82,6 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.bean.validation.FakeValidator;
 import info.archinnov.achilles.internal.context.ConfigurationContext;

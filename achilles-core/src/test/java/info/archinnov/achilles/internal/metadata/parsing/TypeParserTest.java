@@ -1,15 +1,13 @@
 package info.archinnov.achilles.internal.metadata.parsing;
 
 import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.lang.reflect.Field;
