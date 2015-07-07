@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Optional;
+import info.archinnov.achilles.test.parser.entity.ChildBean;
+import info.archinnov.achilles.test.parser.entity.ParentBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.NamingStrategy;
 import org.junit.Before;
@@ -233,6 +235,22 @@ public class AchillesBootstrapperTest {
         assertThat(metaLong.forInterception().getInterceptors()).contains(longInterceptor);
     }
 
+    @Test
+    public void should_add_interceptor_to_parent_and_children_entity_classes() throws Exception {
+        //Given
+        final EntityMeta metaParent = new EntityMeta();
+        final EntityMeta metaChild = new EntityMeta();
+        final List<Interceptor<?>> interceptors = Arrays.<Interceptor<?>>asList(parentInterceptor);
+        final Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta>of(ParentBean.class, metaParent, ChildBean.class, metaChild);
+
+        //When
+        bootstrapper.addInterceptorsToEntityMetas(interceptors, entityMetaMap);
+
+        //Then
+        assertThat(metaParent.forInterception().getInterceptors()).contains(parentInterceptor);
+        assertThat(metaChild.forInterception().getInterceptors()).contains(parentInterceptor);
+    }
+
     private Interceptor<String> stringInterceptor1 = new Interceptor<String>() {
         @Override
         public void onEvent(String entity) {
@@ -258,6 +276,18 @@ public class AchillesBootstrapperTest {
     private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
         @Override
         public void onEvent(Long entity) {
+        }
+
+        @Override
+        public List<Event> events() {
+            return null;
+        }
+    };
+
+    private Interceptor<ParentBean> parentInterceptor = new Interceptor<ParentBean>() {
+        @Override
+        public void onEvent(ParentBean entity) {
+
         }
 
         @Override

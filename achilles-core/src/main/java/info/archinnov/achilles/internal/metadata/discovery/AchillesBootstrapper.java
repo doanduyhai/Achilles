@@ -20,7 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +41,8 @@ import info.archinnov.achilles.internal.metadata.parsing.PropertyParser;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.internal.validation.Validator;
+
+import static com.google.common.collect.FluentIterable.from;
 
 public class AchillesBootstrapper {
     private static final Logger log = LoggerFactory.getLogger(AchillesBootstrapper.class);
@@ -100,11 +106,31 @@ public class AchillesBootstrapper {
     public void addInterceptorsToEntityMetas(List<Interceptor<?>> interceptors, Map<Class<?>,
             EntityMeta> entityMetaMap) {
         for (Interceptor<?> interceptor : interceptors) {
-            Class<?> entityClass = propertyParser.inferEntityClassFromInterceptor(interceptor);
-            EntityMeta entityMeta = entityMetaMap.get(entityClass);
-            Validator.validateBeanMappingTrue(entityMeta != null, "The entity class '%s' is not found",
-                    entityClass.getCanonicalName());
-            entityMeta.forInterception().addInterceptor(interceptor);
+            Class<?> parentEntityClass = propertyParser.inferEntityClassFromInterceptor(interceptor);
+
+            final Set<Class<?>> candidateEntityClasses = from(entityMetaMap.keySet())
+                    .filter(new ChildClassOf(parentEntityClass))
+                    .toSet();
+            for (Class<?> candidateEntityClass : candidateEntityClasses) {
+                final EntityMeta entityMeta = entityMetaMap.get(candidateEntityClass);
+                Validator.validateBeanMappingTrue(entityMeta != null, "The entity class '%s' is not found",
+                        parentEntityClass.getCanonicalName());
+                entityMeta.forInterception().addInterceptor(interceptor);
+            }
+        }
+    }
+
+    static class ChildClassOf implements Predicate<Class<?>> {
+
+        private final Class<?> parentClass;
+
+        ChildClassOf(Class<?> parentClass) {
+            this.parentClass = parentClass;
+        }
+
+        @Override
+        public boolean apply(Class<?> childClass) {
+            return parentClass.isAssignableFrom(childClass);
         }
     }
 }
