@@ -35,6 +35,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.List;
 
+import info.archinnov.achilles.test.integration.entity.ChildEntity;
+import info.archinnov.achilles.test.integration.entity.ParentEntity;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -57,11 +59,11 @@ public class EventInterceptorIT {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private Interceptor<CompleteBean> prePersist = new Interceptor<CompleteBean>() {
+    private Interceptor<CompleteBean> preInsert = new Interceptor<CompleteBean>() {
 
         @Override
         public void onEvent(CompleteBean entity) {
-            entity.setName("prePersist");
+            entity.setName("preInsert");
         }
 
         @Override
@@ -70,10 +72,10 @@ public class EventInterceptorIT {
         }
     };
 
-    private Interceptor<CompleteBean> postPersist = new Interceptor<CompleteBean>() {
+    private Interceptor<CompleteBean> postInsert = new Interceptor<CompleteBean>() {
         @Override
         public void onEvent(CompleteBean entity) {
-            entity.setLabel("postPersist : " + entity.getLabel());
+            entity.setLabel("postInsert : " + entity.getLabel());
         }
 
         @Override
@@ -107,10 +109,10 @@ public class EventInterceptorIT {
         }
     };
 
-    private Interceptor<CompleteBean> preRemove = new Interceptor<CompleteBean>() {
+    private Interceptor<CompleteBean> preDelete = new Interceptor<CompleteBean>() {
         @Override
         public void onEvent(CompleteBean entity) {
-            entity.setName("preRemove");
+            entity.setName("preDelete");
         }
 
         @Override
@@ -119,10 +121,10 @@ public class EventInterceptorIT {
         }
     };
 
-    private Interceptor<CompleteBean> postRemove = new Interceptor<CompleteBean>() {
+    private Interceptor<CompleteBean> postDelete = new Interceptor<CompleteBean>() {
         @Override
         public void onEvent(CompleteBean entity) {
-            entity.setLabel("postRemove");
+            entity.setLabel("postDelete");
         }
 
         @Override
@@ -155,13 +157,25 @@ public class EventInterceptorIT {
         }
     };
 
-    private List<Interceptor<CompleteBean>> interceptors = Arrays.asList(prePersist, postPersist, preUpdate,
-            postUpdate, preRemove, postLoad);
+    private Interceptor<ParentEntity> postInsertParentEntity = new Interceptor<ParentEntity>() {
+        @Override
+        public void onEvent(ParentEntity entity) {
+            entity.setParentValue("post_insert_parent_and_children");
+        }
 
-    private List<Interceptor<CompleteBean>> postRemoveInterceptors = Arrays.asList(postRemove);
+        @Override
+        public List<Event> events() {
+            return Arrays.asList(POST_INSERT);
+        }
+    };
+
+    private List<Interceptor<?>> interceptors = Arrays.asList(preInsert, postInsert, preUpdate,
+            postUpdate, preDelete, postLoad, postInsertParentEntity);
+
+    private List<Interceptor<CompleteBean>> postRemoveInterceptors = Arrays.asList(postDelete);
 
     private PersistenceManagerFactory pmf = CassandraEmbeddedServerBuilder
-            .withEntities(CompleteBean.class)
+            .withEntities(CompleteBean.class, ParentEntity.class, ChildEntity.class)
             .cleanDataFilesAtStartup(true)
             .withKeyspaceName("interceptor_keyspace1")
             .withAchillesConfigParams(ImmutableMap.of(EVENT_INTERCEPTORS, interceptors, FORCE_TABLE_CREATION, true))
@@ -187,20 +201,39 @@ public class EventInterceptorIT {
             .buildPersistenceManager();
 
     @Test
-    public void should_apply_persist_interceptors() throws Exception {
+    public void should_apply_insert_interceptors() throws Exception {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").version(incr(2L)).buid();
 
         manager.insert(entity);
 
-        assertThat(entity.getName()).isEqualTo("prePersist");
-        assertThat(entity.getLabel()).isEqualTo("postPersist : label");
+        assertThat(entity.getName()).isEqualTo("preInsert");
+        assertThat(entity.getLabel()).isEqualTo("postInsert : label");
 
         Row row = session.execute("select name,label from CompleteBean where id = " + entity.getId()).one();
 
-        assertThat(row.getString("name")).isEqualTo("prePersist");
+        assertThat(row.getString("name")).isEqualTo("preInsert");
         assertThat(row.getString("label")).isEqualTo("label");
+    }
 
+    @Test
+    public void should_apply_insert_interceptors_for_parent_and_children() throws Exception {
+        //Given
+        ParentEntity parentEntity = new ParentEntity(10L, "parentValue");
+        ChildEntity childEntity = new ChildEntity(10L, "parentValue", "childValue");
+
+        //When
+        manager.insert(parentEntity);
+        manager.insert(childEntity);
+
+        Row rowParent = session.execute("select parent_value from parent_entity where id = " + parentEntity.getId()).one();
+        Row rowChild = session.execute("select parent_value from child_entity where id = " + childEntity.getId()).one();
+
+        //Then
+        assertThat(parentEntity.getParentValue()).isEqualTo("post_insert_parent_and_children");
+        assertThat(childEntity.getParentValue()).isEqualTo("post_insert_parent_and_children");
+        assertThat(rowParent.getString("parent_value")).isEqualTo("parentValue");
+        assertThat(rowChild.getString("parent_value")).isEqualTo("parentValue");
     }
 
     @Test
@@ -232,7 +265,7 @@ public class EventInterceptorIT {
 
         manager.delete(entity);
 
-        assertThat(entity.getName()).isEqualTo("preRemove");
+        assertThat(entity.getName()).isEqualTo("preDelete");
     }
 
     @Test
@@ -242,7 +275,7 @@ public class EventInterceptorIT {
 
         manager2.delete(entity);
 
-        assertThat(entity.getLabel()).isEqualTo("postRemove");
+        assertThat(entity.getLabel()).isEqualTo("postDelete");
     }
 
     @Test
@@ -276,8 +309,8 @@ public class EventInterceptorIT {
         batchingPM.endBatch();
 
         // Then
-        assertThat(entity.getName()).isEqualTo("prePersist");
-        assertThat(entity.getLabel()).isEqualTo("postPersist : label");
+        assertThat(entity.getName()).isEqualTo("preInsert");
+        assertThat(entity.getLabel()).isEqualTo("postInsert : label");
     }
 
     @Test
