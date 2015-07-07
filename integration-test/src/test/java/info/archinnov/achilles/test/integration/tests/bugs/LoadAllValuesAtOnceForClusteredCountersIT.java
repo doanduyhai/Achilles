@@ -15,7 +15,6 @@
  */
 package info.archinnov.achilles.test.integration.tests.bugs;
 
-import com.datastax.driver.core.Session;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.logger.AchillesLoggers;
 import info.archinnov.achilles.persistence.PersistenceManager;
@@ -25,9 +24,6 @@ import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.util.Iterator;
-import java.util.List;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.CompoundPK;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.TABLE_NAME;

@@ -24,7 +24,7 @@ import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

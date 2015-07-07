@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.type;
+package info.archinnov.achilles.options;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static org.fest.assertions.api.Assertions.assertThat;

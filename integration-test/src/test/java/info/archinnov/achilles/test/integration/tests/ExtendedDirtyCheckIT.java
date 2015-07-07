@@ -21,7 +21,7 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.OptionsBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

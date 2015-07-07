@@ -37,8 +37,8 @@ import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_T
 import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
-import static info.archinnov.achilles.type.Options.LWTCondition;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.options.Options.LWTCondition;
+import static info.archinnov.achilles.options.OptionsBuilder.noOptions;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +61,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 
 public class PreparedStatementGenerator {
     private static final Logger log = LoggerFactory.getLogger(PreparedStatementGenerator.class);

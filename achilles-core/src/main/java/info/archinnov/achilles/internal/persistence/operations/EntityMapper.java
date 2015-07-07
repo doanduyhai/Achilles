@@ -15,10 +15,11 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.*;
+
 import java.util.Map;
 
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaRowExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

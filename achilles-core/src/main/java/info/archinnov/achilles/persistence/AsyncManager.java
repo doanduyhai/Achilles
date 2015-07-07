@@ -28,7 +28,7 @@ import info.archinnov.achilles.query.cql.AsyncNativeQuery;
 import info.archinnov.achilles.query.slice.AsyncSliceQueryBuilder;
 import info.archinnov.achilles.query.typed.AsyncTypedQuery;
 import info.archinnov.achilles.type.IndexCondition;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +39,7 @@ import java.util.Set;
 
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.options.OptionsBuilder.noOptions;
 
 /**
  * <p>

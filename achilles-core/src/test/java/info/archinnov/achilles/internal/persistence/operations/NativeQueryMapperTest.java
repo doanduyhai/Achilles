@@ -20,7 +20,6 @@ import static org.mockito.Mockito.*;
 
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
-import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
 import info.archinnov.achilles.type.TypedMap;
 
 import java.math.BigInteger;

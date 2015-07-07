@@ -16,7 +16,7 @@ import info.archinnov.achilles.internal.persistence.operations.TypedMapIterator;
 import info.archinnov.achilles.internal.statement.wrapper.NativeQueryLog;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.type.Empty;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 import info.archinnov.achilles.type.TypedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

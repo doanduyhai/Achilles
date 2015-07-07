@@ -51,7 +51,7 @@ import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.OptionsBuilder;
 
 public class BatchModeIT {
 

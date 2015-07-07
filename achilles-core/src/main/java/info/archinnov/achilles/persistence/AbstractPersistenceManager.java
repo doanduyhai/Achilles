@@ -19,7 +19,7 @@ package info.archinnov.achilles.persistence;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.options.OptionsBuilder.noOptions;
 
 import java.io.IOException;
 import java.util.List;
@@ -48,7 +48,7 @@ import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecuto
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.query.typed.TypedQueryValidator;
 import info.archinnov.achilles.type.IndexCondition;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 
 abstract class AbstractPersistenceManager {
 

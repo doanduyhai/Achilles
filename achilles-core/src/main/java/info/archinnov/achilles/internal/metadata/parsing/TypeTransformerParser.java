@@ -11,7 +11,7 @@ import info.archinnov.achilles.internal.metadata.codec.MapCodecBuilder;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodecBuilder;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 import java.lang.reflect.Field;
 

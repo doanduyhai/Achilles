@@ -23,7 +23,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.EntityIntrospector;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.NamingStrategy;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

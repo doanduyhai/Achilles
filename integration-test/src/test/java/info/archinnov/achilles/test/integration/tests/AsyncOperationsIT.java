@@ -16,7 +16,8 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static info.archinnov.achilles.type.OptionsBuilder.withAsyncListeners;
+import static info.archinnov.achilles.options.OptionsBuilder.withAsyncListeners;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;

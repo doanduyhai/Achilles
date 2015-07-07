@@ -29,6 +29,7 @@ import static info.archinnov.achilles.interceptor.Event.PRE_DELETE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static info.archinnov.achilles.type.CounterBuilder.incr;
+
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;

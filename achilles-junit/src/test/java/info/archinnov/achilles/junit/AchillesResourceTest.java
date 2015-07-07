@@ -22,8 +22,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
-import info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters;
-import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.script.ScriptExecutor;
 import info.archinnov.achilles.type.TypedMap;
 import org.apache.commons.lang3.RandomUtils;
@@ -35,7 +33,6 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.test.integration.entity.User;
-import sun.font.Script;
 
 import java.util.ArrayList;
 

@@ -1,12 +1,9 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
-import static info.archinnov.achilles.internal.metadata.holder.EntityMetaBuilder.entityMetaBuilder;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.InsertStrategy;
 import org.apache.commons.lang3.RandomUtils;
@@ -17,7 +14,6 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Arrays;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)

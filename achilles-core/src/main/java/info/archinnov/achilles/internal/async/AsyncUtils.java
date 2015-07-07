@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import info.archinnov.achilles.type.Empty;
@@ -35,7 +34,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 
 public class AsyncUtils {
 

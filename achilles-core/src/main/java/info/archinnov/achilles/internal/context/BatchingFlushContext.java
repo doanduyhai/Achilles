@@ -116,8 +116,4 @@ public class BatchingFlushContext extends AbstractFlushContext {
             Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel ) {
         return new BatchingFlushContext(daoContext, new ArrayList<AbstractStatementWrapper>(), defaultConsistencyLevel, serialConsistencyLevel);
     }
-
-    public BatchingFlushContext duplicateWithNoData() {
-        return new BatchingFlushContext(daoContext, new ArrayList<AbstractStatementWrapper>(), consistencyLevel, serialConsistencyLevel);
-    }
 }

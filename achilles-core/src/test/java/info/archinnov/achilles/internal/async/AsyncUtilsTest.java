@@ -14,8 +14,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
-import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.Options;
+import info.archinnov.achilles.options.OptionsBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AsyncUtilsTest {

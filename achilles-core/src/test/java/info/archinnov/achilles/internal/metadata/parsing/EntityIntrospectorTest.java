@@ -24,7 +24,6 @@ import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static info.archinnov.achilles.type.InsertStrategy.NOT_NULL_FIELDS;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
@@ -34,7 +33,6 @@ import java.util.Map;
 
 import com.google.common.base.Optional;
 import info.archinnov.achilles.annotations.*;
-import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.test.parser.entity.BeanWithKeyspaceAndTableName;
 import info.archinnov.achilles.test.parser.entity.BeanWithNamingStrategy;
 import info.archinnov.achilles.type.NamingStrategy;
@@ -54,7 +52,7 @@ import info.archinnov.achilles.test.parser.entity.BeanWithComment;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityIntrospectorTest {

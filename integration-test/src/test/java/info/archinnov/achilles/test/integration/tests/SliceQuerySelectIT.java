@@ -19,6 +19,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.CompoundPK;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Collections;
 import java.util.List;

@@ -16,12 +16,12 @@
 package info.archinnov.achilles.internal.statement.cache;
 
 import static com.google.common.collect.Collections2.transform;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.options.OptionsBuilder.noOptions;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;

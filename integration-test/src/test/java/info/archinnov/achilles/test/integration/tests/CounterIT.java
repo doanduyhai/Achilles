@@ -16,6 +16,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.persistence.PersistenceManager;

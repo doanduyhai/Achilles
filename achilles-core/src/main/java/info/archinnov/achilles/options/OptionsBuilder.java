@@ -13,15 +13,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.type;
+package info.archinnov.achilles.options;
 
-import static info.archinnov.achilles.type.Options.LWTCondition;
+import static info.archinnov.achilles.options.Options.LWTCondition;
+
 import java.util.Arrays;
 import java.util.List;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.listener.LWTResultListener;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 /**
  * <p>

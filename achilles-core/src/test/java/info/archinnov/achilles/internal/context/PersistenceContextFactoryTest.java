@@ -35,7 +35,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.OptionsBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PersistenceContextFactoryTest {

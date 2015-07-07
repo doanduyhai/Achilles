@@ -61,7 +61,7 @@ import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsing
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyParserTest {

@@ -35,7 +35,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMetaBuilderTest {

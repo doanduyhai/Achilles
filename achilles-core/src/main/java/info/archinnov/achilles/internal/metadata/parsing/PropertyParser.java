@@ -56,7 +56,7 @@ import info.archinnov.achilles.internal.metadata.parsing.validator.PropertyParsi
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 public class PropertyParser {
     private static final Logger log = LoggerFactory.getLogger(PropertyFilter.class);

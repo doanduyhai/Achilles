@@ -17,12 +17,9 @@
 package info.archinnov.achilles.junit;
 
 import info.archinnov.achilles.configuration.ConfigurationParameters;
-import info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.type.InsertStrategy;
-import info.archinnov.achilles.type.NamingStrategy;
 import info.archinnov.achilles.type.TypedMap;
 
 import java.util.ArrayList;
@@ -34,8 +31,6 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SCRIPT_LOCATIONS;
 

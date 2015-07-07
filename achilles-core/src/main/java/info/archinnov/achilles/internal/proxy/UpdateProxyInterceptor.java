@@ -15,18 +15,13 @@
  */
 package info.archinnov.achilles.internal.proxy;
 
-import com.google.common.collect.Sets;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.operations.CounterLoader;
-import info.archinnov.achilles.internal.persistence.operations.EntityLoader;
 import info.archinnov.achilles.internal.persistence.operations.InternalCounterBuilder;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.internal.proxy.dirtycheck.SimpleDirtyChecker;
-import info.archinnov.achilles.internal.proxy.wrapper.UpdateSetWrapper;
 import info.archinnov.achilles.internal.proxy.wrapper.builder.*;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
-import info.archinnov.achilles.type.Counter;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import org.slf4j.Logger;

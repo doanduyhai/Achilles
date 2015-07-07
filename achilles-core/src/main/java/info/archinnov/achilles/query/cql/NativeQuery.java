@@ -26,7 +26,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.persistence.operations.TypedMapIterator;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 import info.archinnov.achilles.type.TypedMap;
 
 /**
@@ -85,7 +85,7 @@ public class NativeQuery extends AbstractNativeQuery {
     }
 
     /**
-     * Return an iterator of {@link info.archinnov.achilles.type.TypedMap} instance. Each instance represents a CQL row
+     * Return an iterator of {@link TypedMap} instance. Each instance represents a CQL row
      * @return Iterator&lt;TypedMap&gt;
      */
     public Iterator<TypedMap> iterator() {
@@ -95,7 +95,7 @@ public class NativeQuery extends AbstractNativeQuery {
     }
 
     /**
-     * Return an iterator of {@link info.archinnov.achilles.type.TypedMap} instance. Each instance represents a CQL row
+     * Return an iterator of {@link TypedMap} instance. Each instance represents a CQL row
      *
      * @param fetchSize the fetch size to set for paging
      * @return Iterator&lt;TypedMap&gt;

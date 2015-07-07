@@ -30,7 +30,7 @@ import com.google.common.base.Predicate;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 public class EntityMeta {
 

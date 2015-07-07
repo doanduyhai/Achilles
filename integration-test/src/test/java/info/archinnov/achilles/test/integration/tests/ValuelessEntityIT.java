@@ -24,7 +24,7 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ValuelessEntity;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.OptionsBuilder;
 
 public class ValuelessEntityIT {
 

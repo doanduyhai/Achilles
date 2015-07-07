@@ -27,7 +27,7 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ValuelessClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ValuelessClusteredEntity.CompoundKey;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.OptionsBuilder;
 
 public class ValuelessClusteredEntityIT {
 

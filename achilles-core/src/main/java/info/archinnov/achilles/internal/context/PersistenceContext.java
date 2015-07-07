@@ -23,7 +23,7 @@ import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
 import static info.archinnov.achilles.interceptor.Event.PRE_INSERT;
 import static info.archinnov.achilles.interceptor.Event.PRE_DELETE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
-import static info.archinnov.achilles.type.Options.LWTCondition;
+import static info.archinnov.achilles.options.Options.LWTCondition;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -59,8 +59,8 @@ import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.Options;
+import info.archinnov.achilles.options.OptionsBuilder;
 
 public class PersistenceContext {
 

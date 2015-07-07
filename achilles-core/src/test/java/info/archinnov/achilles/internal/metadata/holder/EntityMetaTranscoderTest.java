@@ -1,11 +1,12 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
+
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import info.archinnov.achilles.type.IndexCondition;
-import info.archinnov.achilles.type.Options.LWTCondition;
+import info.archinnov.achilles.options.Options.LWTCondition;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

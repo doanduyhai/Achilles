@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.type.OptionsBuilder.withTimestamp;
+import static info.archinnov.achilles.options.OptionsBuilder.withTimestamp;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -25,8 +25,8 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.options.Options;
+import info.archinnov.achilles.options.OptionsBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Ignore;
 import org.junit.Rule;

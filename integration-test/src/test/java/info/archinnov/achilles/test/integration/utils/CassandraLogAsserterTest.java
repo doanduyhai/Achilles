@@ -21,7 +21,6 @@ import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
 import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
-import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayOutputStream;
@@ -31,7 +30,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraLogAsserterTest {

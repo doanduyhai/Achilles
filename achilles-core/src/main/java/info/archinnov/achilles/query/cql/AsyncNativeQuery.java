@@ -22,7 +22,7 @@ import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.type.Empty;
-import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.options.Options;
 import info.archinnov.achilles.type.TypedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +82,7 @@ public class AsyncNativeQuery extends AbstractNativeQuery {
     }
 
     /**
-     * Return an asynchronous iterator of {@link info.archinnov.achilles.type.TypedMap} instance. Each instance represents a CQL row
+     * Return an asynchronous iterator of {@link TypedMap} instance. Each instance represents a CQL row
      * @return Iterator&lt;TypedMap&gt;
      */
     public AchillesFuture<Iterator<TypedMap>> iterator(FutureCallback<Object>... asyncListeners) {
@@ -90,7 +90,7 @@ public class AsyncNativeQuery extends AbstractNativeQuery {
     }
 
     /**
-     * Return an asynchronous iterator of {@link info.archinnov.achilles.type.TypedMap} instance. Each instance represents a CQL row
+     * Return an asynchronous iterator of {@link TypedMap} instance. Each instance represents a CQL row
      *
      * @param fetchSize the fetch size to set for paging
      * @return Iterator&lt;TypedMap&gt;

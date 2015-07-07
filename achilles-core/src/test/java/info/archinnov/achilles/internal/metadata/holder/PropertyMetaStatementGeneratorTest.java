@@ -17,7 +17,7 @@ import com.datastax.driver.core.querybuilder.Update.Conditions;
 import com.datastax.driver.core.querybuilder.Update.Where;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

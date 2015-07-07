@@ -19,7 +19,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder.completeBean;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.options.OptionsBuilder.noOptions;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;

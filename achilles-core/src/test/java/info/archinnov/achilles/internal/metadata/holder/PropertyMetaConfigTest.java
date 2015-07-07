@@ -5,7 +5,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_ONE;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

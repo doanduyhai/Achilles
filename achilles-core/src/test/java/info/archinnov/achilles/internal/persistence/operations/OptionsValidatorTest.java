@@ -16,9 +16,8 @@
 
 package info.archinnov.achilles.internal.persistence.operations;
 
-import static info.archinnov.achilles.type.OptionsBuilder.ifConditions;
-import static info.archinnov.achilles.type.OptionsBuilder.ifNotExists;
-import static info.archinnov.achilles.type.OptionsBuilder.withTtl;
+import static info.archinnov.achilles.options.OptionsBuilder.ifNotExists;
+import static info.archinnov.achilles.options.OptionsBuilder.withTtl;
 import static org.mockito.Mockito.verify;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +31,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.Options;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OptionsValidatorTest {

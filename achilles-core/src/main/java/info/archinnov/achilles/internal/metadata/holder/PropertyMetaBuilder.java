@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.utils.Pair;
 
 public class PropertyMetaBuilder {
     private static final Logger log = LoggerFactory.getLogger(PropertyMetaBuilder.class);

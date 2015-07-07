@@ -17,6 +17,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCompositePartitionKey.TABLE_NAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;

@@ -43,7 +43,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.FORC
 import static info.archinnov.achilles.interceptor.Event.*;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static info.archinnov.achilles.type.CounterBuilder.incr;
-import static info.archinnov.achilles.type.OptionsBuilder.withAsyncListeners;
+import static info.archinnov.achilles.options.OptionsBuilder.withAsyncListeners;
+
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 

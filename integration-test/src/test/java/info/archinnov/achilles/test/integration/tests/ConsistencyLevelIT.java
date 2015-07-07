@@ -22,7 +22,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
-import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
+import static info.archinnov.achilles.options.OptionsBuilder.withConsistency;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
 import org.apache.commons.lang3.RandomUtils;

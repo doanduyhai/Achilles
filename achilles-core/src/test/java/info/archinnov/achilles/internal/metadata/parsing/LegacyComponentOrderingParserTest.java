@@ -1,11 +1,9 @@
 package info.archinnov.achilles.internal.metadata.parsing;
 
 import static info.archinnov.achilles.type.NamingStrategy.CASE_SENSITIVE;
-import static org.fest.assertions.api.Assertions.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
