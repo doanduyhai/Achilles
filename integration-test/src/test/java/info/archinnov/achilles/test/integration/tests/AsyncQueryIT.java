@@ -37,8 +37,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
+import info.archinnov.achilles.internal.async.EntitiesWithExecutionInfo;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import info.archinnov.achilles.persistence.AsyncManager;
+import info.archinnov.achilles.query.cql.TypedMapsWithPagingState;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -139,7 +141,7 @@ public class AsyncQueryIT {
         assertThat(preferences2.get(2)).isEqualTo("NewYork");
 
         latch.await();
-        assertThat(successSpy.get()).isNotNull().isInstanceOf(List.class);
+        assertThat(successSpy.get()).isNotNull().isInstanceOf(TypedMapsWithPagingState.class);
     }
 
     @Test
@@ -330,7 +332,7 @@ public class AsyncQueryIT {
 
         latch.await();
         Thread.sleep(100);
-        assertThat(successSpy1.get()).isNotNull().isInstanceOf(List.class);
+        assertThat(successSpy1.get()).isNotNull().isInstanceOf(EntitiesWithExecutionInfo.class);
         assertThat(successSpy2.get()).isNotNull().isInstanceOf(CompleteBean.class).isNotInstanceOf(Factory.class);
     }
 

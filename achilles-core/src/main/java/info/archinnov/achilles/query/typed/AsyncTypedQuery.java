@@ -16,9 +16,12 @@
 package info.archinnov.achilles.query.typed;
 
 import com.datastax.driver.core.Statement;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.async.AchillesFuture;
+import info.archinnov.achilles.internal.async.EntitiesWithExecutionInfo;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
@@ -26,9 +29,9 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
 
 /**
  * Class to perform native Cassandra query asynchronously and let <strong>Achilles</strong> map back the result set into list of entities.
@@ -74,9 +77,40 @@ public class AsyncTypedQuery<T> extends AbstractTypedQuery<T> {
      *
      */
     public AchillesFuture<List<T>> get(FutureCallback<Object>... asyncListeners) {
-       return super.asyncGetInternal(asyncListeners);
+        final ListenableFuture<EntitiesWithExecutionInfo<T>> futures = super.asyncGetInternal(asyncListeners);
+        final ListenableFuture<List<T>> extractEntities = asyncUtils.transformFuture(futures, new Function<EntitiesWithExecutionInfo<T>, List<T>>() {
+            @Nullable
+            @Override
+            public List<T> apply(EntitiesWithExecutionInfo<T> input) {
+                return input.getEntities();
+            }
+        });
+        return asyncUtils.buildInterruptible(extractEntities);
     }
 
+    /**
+     * Executes the query and returns entities asynchronously with the paging state
+     *
+     * Matching CQL rows are mapped to entities by reflection. All un-mapped
+     * columns are ignored.
+     *
+     * The size of the list is equal or lesser than the number of matching CQL
+     * row, because some null or empty rows are ignored and filtered out
+     *
+     * @return AchillesFuture&lt;List&lt;T&gt;&gt; future of list of found entities or empty list
+     *
+     */
+    public AchillesFuture<EntitiesWithPagingState<T>> getWithPagingState(FutureCallback<Object>... asyncListeners) {
+        final ListenableFuture<EntitiesWithExecutionInfo<T>> futures = super.asyncGetInternal(asyncListeners);
+        final ListenableFuture<EntitiesWithPagingState<T>> extractEntities = asyncUtils.transformFuture(futures, new Function<EntitiesWithExecutionInfo<T>, EntitiesWithPagingState<T>>() {
+            @Nullable
+            @Override
+            public EntitiesWithPagingState<T> apply(EntitiesWithExecutionInfo<T> input) {
+                return input.toEntitiesWithPagingState();
+            }
+        });
+        return asyncUtils.buildInterruptible(extractEntities);
+    }
 
     /**
      * Executes the query and returns first entity

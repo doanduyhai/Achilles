@@ -16,8 +16,10 @@
 package info.archinnov.achilles.query.cql;
 
 import com.datastax.driver.core.Statement;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
@@ -27,6 +29,7 @@ import info.archinnov.achilles.type.TypedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,12 +45,17 @@ import java.util.List;
  *
  * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query</a>
  */
-public class AsyncNativeQuery extends AbstractNativeQuery {
+public class AsyncNativeQuery extends AbstractNativeQuery<AsyncNativeQuery> {
     private static final Logger log = LoggerFactory.getLogger(AsyncNativeQuery.class);
 
 
     public AsyncNativeQuery(DaoContext daoContext, ConfigurationContext configContext, Statement statement, Options options, Object... boundValues) {
         super(daoContext, configContext, statement, options, boundValues);
+    }
+
+    @Override
+    protected AsyncNativeQuery getThis() {
+        return this;
     }
 
     /**
@@ -59,7 +67,28 @@ public class AsyncNativeQuery extends AbstractNativeQuery {
      * @return AchillesFuture&lt;List&lt;TypedMap&gt;&gt;
      */
     public AchillesFuture<List<TypedMap>> get(FutureCallback<Object>... asyncListeners) {
-        return super.asyncGetInternal(asyncListeners);
+        final ListenableFuture<TypedMapsWithPagingState> typedMapsWithPagingFutures = super.asyncGetInternal(asyncListeners);
+        final ListenableFuture<List<TypedMap>> typedMapsFuture = asyncUtils.transformFuture(typedMapsWithPagingFutures, new Function<TypedMapsWithPagingState, List<TypedMap>>() {
+            @Nullable
+            @Override
+            public List<TypedMap> apply(TypedMapsWithPagingState input) {
+                return input.getTypedMaps();
+            }
+        });
+        return asyncUtils.buildInterruptible(typedMapsFuture);
+    }
+
+    /**
+     * Return found rows asynchronously with paging state. The list represents the number of returned rows The
+     * map contains the (column name, column value) of each row. The map is
+     * backed by a LinkedHashMap and thus preserves the columns order as they
+     * were declared in the native query
+     *
+     * @return AchillesFuture&lt;TypedMapsWithPagingState&gt;
+     */
+    public AchillesFuture<TypedMapsWithPagingState> getWithPagingState(FutureCallback<Object>... asyncListeners) {
+        final ListenableFuture<TypedMapsWithPagingState> typedMapsWithPagingFutures = super.asyncGetInternal(asyncListeners);
+        return asyncUtils.buildInterruptible(typedMapsWithPagingFutures);
     }
 
     /**

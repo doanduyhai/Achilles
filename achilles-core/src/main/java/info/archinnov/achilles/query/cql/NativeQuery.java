@@ -18,7 +18,9 @@ package info.archinnov.achilles.query.cql;
 import java.util.Iterator;
 import java.util.List;
 
+import com.datastax.driver.core.PagingState;
 import com.datastax.driver.core.Statement;
+import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ResultSet;
@@ -41,12 +43,16 @@ import info.archinnov.achilles.type.TypedMap;
  *
  * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query</a>
  */
-public class NativeQuery extends AbstractNativeQuery {
+public class NativeQuery extends AbstractNativeQuery<NativeQuery> {
     private static final Logger log = LoggerFactory.getLogger(NativeQuery.class);
-
 
     public NativeQuery(DaoContext daoContext, ConfigurationContext configContext, Statement statement, Options options, Object... boundValues) {
         super(daoContext, configContext, statement, options, boundValues);
+    }
+
+    @Override
+    protected NativeQuery getThis() {
+        return this;
     }
 
     /**
@@ -59,8 +65,22 @@ public class NativeQuery extends AbstractNativeQuery {
      */
     public List<TypedMap> get() {
         log.debug("Get results for native query '{}'", nativeStatementWrapper.getStatement());
-        return asyncGetInternal().getImmediately();
+        return asyncUtils.buildInterruptible(asyncGetInternal()).getImmediately().getTypedMaps();
     }
+
+    /**
+     * Return found rows with paging state. The list represents the number of returned rows The
+     * map contains the (column name, column value) of each row. The map is
+     * backed by a LinkedHashMap and thus preserves the columns order as they
+     * were declared in the native query
+     *
+     * @return TypedMapsWithPagingState
+     */
+    public TypedMapsWithPagingState getWithPagingState() {
+        log.debug("Get results for native query '{}'", nativeStatementWrapper.getStatement());
+        return asyncUtils.buildInterruptible(asyncGetInternal()).getImmediately();
+    }
+
 
 
     /**

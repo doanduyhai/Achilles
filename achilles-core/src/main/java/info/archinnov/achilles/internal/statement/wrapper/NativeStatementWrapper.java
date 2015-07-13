@@ -21,6 +21,8 @@ import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+
+import com.datastax.driver.core.PagingState;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
@@ -36,6 +38,7 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
 
 
     private Statement statement;
+    private PagingState pagingState;
 
     private static final List<ProtocolVersion> SUPPORTED_NATIVE_PROTOCOLS = Arrays.asList(ProtocolVersion.V1, ProtocolVersion.V2, ProtocolVersion.V3);
 
@@ -61,6 +64,10 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
     public Statement getStatement() {
         if (statement instanceof RegularStatement) {
             this.statement = buildParameterizedStatement();
+        }
+
+        if (pagingState != null) {
+            statement.setPagingState(pagingState);
         }
 
         return statement;
@@ -118,6 +125,9 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
         } else {
             return statement;
         }
+    }
 
+    public void setPagingState(PagingState pagingState) {
+        this.pagingState = pagingState;
     }
 }
