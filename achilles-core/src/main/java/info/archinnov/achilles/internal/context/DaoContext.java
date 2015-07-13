@@ -92,12 +92,7 @@ public class DaoContext {
     protected static final Function<ResultSet, Row> RESULTSET_TO_ROW = new Function<ResultSet, Row>() {
         @Override
         public Row apply(ResultSet resultSet) {
-            final List<Row> rows = resultSet.all();
-            if (rows.isEmpty()) {
-                return null;
-            } else {
-                return rows.get(0);
-            }
+        return resultSet.one();
         }
     };
 

@@ -39,6 +39,8 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.ConsistencyLevel;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import info.archinnov.achilles.listener.LWTResultListener;
+import info.archinnov.achilles.query.cql.TypedMapsWithPagingState;
+import info.archinnov.achilles.query.typed.EntitiesWithPagingState;
 import info.archinnov.achilles.test.integration.entity.*;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.options.*;
@@ -111,6 +113,83 @@ public class QueryIT {
         assertThat(preferences2.get(1)).isEqualTo("US");
         assertThat(preferences2.get(2)).isEqualTo("NewYork");
     }
+
+    @Test
+    public void should_return_rows_for_native_query_with_paging_state() throws Exception {
+        //Given
+        final long partitionKey = RandomUtils.nextLong(0, Long.MAX_VALUE);
+
+        final ClusteredEntity.CompoundPK compoundKey1 = new ClusteredEntity.CompoundPK(partitionKey, 1, "name1");
+        final ClusteredEntity.CompoundPK compoundKey2 = new ClusteredEntity.CompoundPK(partitionKey, 2, "name2");
+        final ClusteredEntity.CompoundPK compoundKey3 = new ClusteredEntity.CompoundPK(partitionKey, 3, "name3");
+        final ClusteredEntity.CompoundPK compoundKey4 = new ClusteredEntity.CompoundPK(partitionKey, 4, "name4");
+        final ClusteredEntity.CompoundPK compoundKey5 = new ClusteredEntity.CompoundPK(partitionKey, 5, "name5");
+        final ClusteredEntity.CompoundPK compoundKey6 = new ClusteredEntity.CompoundPK(partitionKey, 6, "name6");
+        final ClusteredEntity.CompoundPK compoundKey7 = new ClusteredEntity.CompoundPK(partitionKey, 7, "name7");
+        final ClusteredEntity.CompoundPK compoundKey8 = new ClusteredEntity.CompoundPK(partitionKey, 8, "name8");
+        final ClusteredEntity.CompoundPK compoundKey9 = new ClusteredEntity.CompoundPK(partitionKey, 9, "name9");
+        final ClusteredEntity.CompoundPK compoundKey10 = new ClusteredEntity.CompoundPK(partitionKey, 10, "name10");
+
+        manager.insert(new ClusteredEntity(compoundKey1, "clustered_value1"));
+        manager.insert(new ClusteredEntity(compoundKey2, "clustered_value2"));
+        manager.insert(new ClusteredEntity(compoundKey3, "clustered_value3"));
+        manager.insert(new ClusteredEntity(compoundKey4, "clustered_value4"));
+        manager.insert(new ClusteredEntity(compoundKey5, "clustered_value5"));
+        manager.insert(new ClusteredEntity(compoundKey6, "clustered_value6"));
+        manager.insert(new ClusteredEntity(compoundKey7, "clustered_value7"));
+        manager.insert(new ClusteredEntity(compoundKey8, "clustered_value8"));
+        manager.insert(new ClusteredEntity(compoundKey9, "clustered_value9"));
+        manager.insert(new ClusteredEntity(compoundKey10, "clustered_value10"));
+
+        Statement statement = select("value").from(ClusteredEntity.TABLE_NAME).where(eq("id", partitionKey));
+        statement.setFetchSize(3);
+
+        //When
+        final TypedMapsWithPagingState page1 = manager.nativeQuery(statement).getWithPagingState();
+
+        //Then
+        final List<TypedMap> typedMaps1 = page1.getTypedMaps();
+        assertThat(typedMaps1).hasSize(3);
+        assertThat(typedMaps1.get(0).getTyped("value")).isEqualTo("clustered_value1");
+        assertThat(typedMaps1.get(1).getTyped("value")).isEqualTo("clustered_value2");
+        assertThat(typedMaps1.get(2).getTyped("value")).isEqualTo("clustered_value3");
+
+        //When
+        final TypedMapsWithPagingState page2 = manager.nativeQuery(statement)
+                .withPagingState(page1.getPagingState())
+                .getWithPagingState();
+
+        //Then
+        final List<TypedMap> typedMaps2 = page2.getTypedMaps();
+        assertThat(typedMaps2).hasSize(3);
+        assertThat(typedMaps2.get(0).getTyped("value")).isEqualTo("clustered_value4");
+        assertThat(typedMaps2.get(1).getTyped("value")).isEqualTo("clustered_value5");
+        assertThat(typedMaps2.get(2).getTyped("value")).isEqualTo("clustered_value6");
+
+        //When
+        final TypedMapsWithPagingState page3 = manager.nativeQuery(statement)
+                .withPagingState(page2.getPagingState())
+                .getWithPagingState();
+
+        //Then
+        final List<TypedMap> typedMaps3 = page3.getTypedMaps();
+        assertThat(typedMaps3).hasSize(3);
+        assertThat(typedMaps3.get(0).getTyped("value")).isEqualTo("clustered_value7");
+        assertThat(typedMaps3.get(1).getTyped("value")).isEqualTo("clustered_value8");
+        assertThat(typedMaps3.get(2).getTyped("value")).isEqualTo("clustered_value9");
+
+        //When
+        final TypedMapsWithPagingState page4 = manager.nativeQuery(statement)
+                .withPagingState(page3.getPagingState())
+                .getWithPagingState();
+
+        //Then
+        final List<TypedMap> typedMaps4 = page4.getTypedMaps();
+        assertThat(typedMaps4).hasSize(1);
+        assertThat(typedMaps4.get(0).getTyped("value")).isEqualTo("clustered_value10");
+
+    }
+
 
     @Test
     public void should_return_rows_for_native_query_with_bound_values() throws Exception {
@@ -188,7 +267,7 @@ public class QueryIT {
 
         manager.insert(entity, OptionsBuilder.withTtl(1000).withTimestamp(timestamp));
 
-        RegularStatement statement = select().fcall("ttl", column("name")).fcall("writetime",column("age_in_years"))
+        RegularStatement statement = select().fcall("ttl", column("name")).fcall("writetime", column("age_in_years"))
                 .from("CompleteBean").where(eq("id",entity.getId()));
 
         Map<String, Object> result = manager.nativeQuery(statement).getFirst();
@@ -413,6 +492,84 @@ public class QueryIT {
             assertThat(found2.getName()).isEqualTo(reference.getName());
             assertThat(found2.getFriends()).containsAll(reference.getFriends());
         }
+    }
+
+    @Test
+    public void should_return_entities_for_typed_query_with_paging_state() throws Exception {
+        //Given
+        final long partitionKey = RandomUtils.nextLong(0, Long.MAX_VALUE);
+
+        final ClusteredEntity.CompoundPK compoundKey1 = new ClusteredEntity.CompoundPK(partitionKey, 1, "name1");
+        final ClusteredEntity.CompoundPK compoundKey2 = new ClusteredEntity.CompoundPK(partitionKey, 2, "name2");
+        final ClusteredEntity.CompoundPK compoundKey3 = new ClusteredEntity.CompoundPK(partitionKey, 3, "name3");
+        final ClusteredEntity.CompoundPK compoundKey4 = new ClusteredEntity.CompoundPK(partitionKey, 4, "name4");
+        final ClusteredEntity.CompoundPK compoundKey5 = new ClusteredEntity.CompoundPK(partitionKey, 5, "name5");
+        final ClusteredEntity.CompoundPK compoundKey6 = new ClusteredEntity.CompoundPK(partitionKey, 6, "name6");
+        final ClusteredEntity.CompoundPK compoundKey7 = new ClusteredEntity.CompoundPK(partitionKey, 7, "name7");
+        final ClusteredEntity.CompoundPK compoundKey8 = new ClusteredEntity.CompoundPK(partitionKey, 8, "name8");
+        final ClusteredEntity.CompoundPK compoundKey9 = new ClusteredEntity.CompoundPK(partitionKey, 9, "name9");
+        final ClusteredEntity.CompoundPK compoundKey10 = new ClusteredEntity.CompoundPK(partitionKey, 10, "name10");
+
+        manager.insert(new ClusteredEntity(compoundKey1, "clustered_value1"));
+        manager.insert(new ClusteredEntity(compoundKey2, "clustered_value2"));
+        manager.insert(new ClusteredEntity(compoundKey3, "clustered_value3"));
+        manager.insert(new ClusteredEntity(compoundKey4, "clustered_value4"));
+        manager.insert(new ClusteredEntity(compoundKey5, "clustered_value5"));
+        manager.insert(new ClusteredEntity(compoundKey6, "clustered_value6"));
+        manager.insert(new ClusteredEntity(compoundKey7, "clustered_value7"));
+        manager.insert(new ClusteredEntity(compoundKey8, "clustered_value8"));
+        manager.insert(new ClusteredEntity(compoundKey9, "clustered_value9"));
+        manager.insert(new ClusteredEntity(compoundKey10, "clustered_value10"));
+
+        //When
+        final Statement statement = new SimpleStatement("SELECT * FROM " + ClusteredEntity.TABLE_NAME + " WHERE id = ?");
+        statement.setFetchSize(3);
+        final EntitiesWithPagingState<ClusteredEntity> page1 =
+                manager.typedQuery(ClusteredEntity.class, statement, partitionKey).getWithPagingState();
+
+        //Then
+        final List<ClusteredEntity> entities1 = page1.getEntities();
+        assertThat(entities1).hasSize(3);
+        assertThat(entities1.get(0).getValue()).isEqualTo("clustered_value1");
+        assertThat(entities1.get(1).getValue()).isEqualTo("clustered_value2");
+        assertThat(entities1.get(2).getValue()).isEqualTo("clustered_value3");
+
+        //When
+        final EntitiesWithPagingState<ClusteredEntity> page2 =
+                manager.typedQuery(ClusteredEntity.class, statement, partitionKey)
+                        .withPagingState(page1.getPagingState())
+                        .getWithPagingState();
+
+        //Then
+        final List<ClusteredEntity> entities2 = page2.getEntities();
+        assertThat(entities2).hasSize(3);
+        assertThat(entities2.get(0).getValue()).isEqualTo("clustered_value4");
+        assertThat(entities2.get(1).getValue()).isEqualTo("clustered_value5");
+        assertThat(entities2.get(2).getValue()).isEqualTo("clustered_value6");
+
+        //When
+        final EntitiesWithPagingState<ClusteredEntity> page3 =
+                manager.typedQuery(ClusteredEntity.class, statement, partitionKey)
+                        .withPagingState(page2.getPagingState())
+                        .getWithPagingState();
+
+        //Then
+        final List<ClusteredEntity> entities3 = page3.getEntities();
+        assertThat(entities3).hasSize(3);
+        assertThat(entities3.get(0).getValue()).isEqualTo("clustered_value7");
+        assertThat(entities3.get(1).getValue()).isEqualTo("clustered_value8");
+        assertThat(entities3.get(2).getValue()).isEqualTo("clustered_value9");
+
+        //When
+        final EntitiesWithPagingState<ClusteredEntity> page4 =
+                manager.typedQuery(ClusteredEntity.class, statement, partitionKey)
+                        .withPagingState(page3.getPagingState())
+                        .getWithPagingState();
+
+        //Then
+        final List<ClusteredEntity> entities4 = page4.getEntities();
+        assertThat(entities4).hasSize(1);
+        assertThat(entities4.get(0).getValue()).isEqualTo("clustered_value10");
     }
 
     @Test

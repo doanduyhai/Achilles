@@ -16,6 +16,7 @@
 package info.archinnov.achilles.query.cql;
 
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS;
+import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS_WITH_EXECUTION_INFO;
 import static org.fest.assertions.api.Assertions.anyOf;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -29,8 +30,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.SimpleStatement;
 import com.google.common.base.Optional;
+import info.archinnov.achilles.internal.async.RowsWithExecutionInfo;
 import info.archinnov.achilles.internal.persistence.operations.TypedMapIterator;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,7 +90,10 @@ public class NativeQueryTest {
     private ListenableFuture<List<Row>> futureRows;
 
     @Mock
-    private ListenableFuture<List<TypedMap>> futureTypedMaps;
+    private ListenableFuture<RowsWithExecutionInfo> futureRowsWithPaging;
+
+    @Mock
+    private ListenableFuture<TypedMapsWithPagingState> futureTypedMaps;
 
     @Mock
     private ListenableFuture<TypedMap> futureTypedMap;
@@ -96,7 +102,7 @@ public class NativeQueryTest {
     private ListenableFuture<Empty> futureEmpty;
 
     @Mock
-    private AchillesFuture<List<TypedMap>> achillesFutureTypedMaps;
+    private AchillesFuture<TypedMapsWithPagingState> typedMapsWithPagingFuture;
 
     @Mock
     private AchillesFuture<TypedMap> achillesFutureTypedMap;
@@ -105,7 +111,7 @@ public class NativeQueryTest {
     private AchillesFuture<Empty> achillesFutureEmpty;
 
     @Captor
-    private ArgumentCaptor<Function<List<Row>, List<TypedMap>>> rowsToTypedMapsCaptor;
+    private ArgumentCaptor<Function<RowsWithExecutionInfo, TypedMapsWithPagingState>> rowsToTypedMapsCaptor;
 
     @Captor
     private ArgumentCaptor<Function<List<Row>, TypedMap>> rowsToTypedMapCaptor;
@@ -137,23 +143,22 @@ public class NativeQueryTest {
         List<TypedMap> typedMaps = new ArrayList<>();
 
         when(daoContext.execute(any(NativeStatementWrapper.class))).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS)).thenReturn(futureRows);
-        when(asyncUtils.transformFuture(eq(futureRows), rowsToTypedMapsCaptor.capture())).thenReturn(futureTypedMaps);
-        when(asyncUtils.buildInterruptible(futureTypedMaps)).thenReturn(achillesFutureTypedMaps);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS_WITH_EXECUTION_INFO)).thenReturn(futureRowsWithPaging);
+        when(asyncUtils.transformFuture(eq(futureRowsWithPaging), rowsToTypedMapsCaptor.capture())).thenReturn(futureTypedMaps);
 
         when(mapper.mapRows(rows)).thenReturn(typedMaps);
 
         // When
-        final AchillesFuture<List<TypedMap>> actual = query.asyncGetInternal(asyncListeners);
+        final ListenableFuture<TypedMapsWithPagingState> actual = query.asyncGetInternal(asyncListeners);
 
         // Then
-        assertThat(actual).isSameAs(achillesFutureTypedMaps);
+        assertThat(actual).isSameAs(futureTypedMaps);
         verify(asyncUtils).maybeAddAsyncListeners(futureTypedMaps, asyncListeners);
 
-        final Function<List<Row>, List<TypedMap>> function = rowsToTypedMapsCaptor.getValue();
-        final List<TypedMap> actualTypedMaps = function.apply(rows);
+        final Function<RowsWithExecutionInfo, TypedMapsWithPagingState> function = rowsToTypedMapsCaptor.getValue();
+        final TypedMapsWithPagingState actualTypedMaps = function.apply(new RowsWithExecutionInfo(rows, mock(ExecutionInfo.class)));
 
-        assertThat(actualTypedMaps).isSameAs(typedMaps);
+        assertThat(actualTypedMaps.getTypedMaps()).isSameAs(typedMaps);
     }
 
     @Test

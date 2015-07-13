@@ -15,38 +15,17 @@
  */
 package info.archinnov.achilles.query.typed;
 
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
-import static com.google.common.base.Predicates.notNull;
-import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROW;
-import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS;
-
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-
+import com.datastax.driver.core.PagingState;
 import com.datastax.driver.core.Statement;
-import info.archinnov.achilles.iterator.AchillesIterator;
-import info.archinnov.achilles.listener.LWTResultListener;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.ListenableFuture;
-import info.archinnov.achilles.async.AchillesFuture;
-import info.archinnov.achilles.interceptor.Event;
-import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
-import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
-import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 
 /**
  * Class to perform native Cassandra query and let <strong>Achilles</strong> map back the result set into list of entities.
@@ -70,6 +49,38 @@ public class TypedQuery<T> extends AbstractTypedQuery<T> {
     }
 
     /**
+     * With provided paging state
+     *
+     * @return current typed query
+     */
+    public TypedQuery<T> withPagingState(PagingState pagingState) {
+        super.pagingStateO = Optional.fromNullable(pagingState);
+        return this;
+    }
+
+    /**
+     * With provided paging state as String
+     *
+     * @return current typed query
+     */
+    public TypedQuery<T> withPagingState(String pagingState) {
+        super.pagingStateO = Optional.fromNullable(PagingState.fromString(pagingState));
+        return this;
+    }
+
+    /**
+     * With provided paging state as byte array
+     *
+     * @return current typed query
+     */
+    public TypedQuery<T> withPagingState(byte[] pagingState) {
+        super.pagingStateO = Optional.fromNullable(PagingState.fromBytes(pagingState));
+        return this;
+    }
+
+
+
+    /**
      * Executes the query and returns entities
      * <p/>
      * Matching CQL rows are mapped to entities by reflection. All un-mapped
@@ -83,9 +94,25 @@ public class TypedQuery<T> extends AbstractTypedQuery<T> {
      */
     public List<T> get() {
         log.debug("Get results for typed query '{}'", nativeStatementWrapper.getStatement());
-        return asyncGetInternal().getImmediately();
+        return asyncUtils.buildInterruptible(asyncGetInternal()).getImmediately().getEntities();
     }
 
+    /**
+     * Executes the query and returns entities with the paging state
+     * <p/>
+     * Matching CQL rows are mapped to entities by reflection. All un-mapped
+     * columns are ignored.
+     * <p/>
+     * The size of the list is equal or lesser than the number of matching CQL
+     * row, because some null or empty rows are ignored and filtered out
+     *
+     * @return EntitiesWithPagingState<T> list of found entities or empty list with possibly null paging state
+     *
+     */
+    public EntitiesWithPagingState<T> getWithPagingState() {
+        log.debug("Get results for typed query '{}'", nativeStatementWrapper.getStatement());
+        return asyncUtils.buildInterruptible(asyncGetInternal()).getImmediately().toEntitiesWithPagingState();
+    }
 
     /**
      * Executes the query and returns first entity
@@ -98,7 +125,7 @@ public class TypedQuery<T> extends AbstractTypedQuery<T> {
      */
     public T getFirst() {
         log.debug("Get first result for typed query '{}'", nativeStatementWrapper.getStatement());
-        return asyncGetFirstInternal().getImmediately();
+        return asyncUtils.buildInterruptible(asyncGetFirstInternal()).getImmediately();
     }
 
     /**

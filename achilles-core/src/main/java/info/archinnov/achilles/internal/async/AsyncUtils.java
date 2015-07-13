@@ -22,8 +22,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import com.datastax.driver.core.ExecutionInfo;
 import com.google.common.util.concurrent.MoreExecutors;
+import info.archinnov.achilles.query.cql.TypedMapsWithPagingState;
 import info.archinnov.achilles.type.Empty;
+import info.archinnov.achilles.type.TypedMap;
 import org.apache.commons.lang3.ArrayUtils;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
@@ -36,6 +39,8 @@ import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.options.Options;
 
+import javax.annotation.Nullable;
+
 public class AsyncUtils {
 
     public static final Function<ResultSet, List<Row>> RESULTSET_TO_ROWS = new Function<ResultSet, List<Row>>() {
@@ -43,11 +48,31 @@ public class AsyncUtils {
         public List<Row> apply(ResultSet resultSet) {
             List<Row> rows = new ArrayList<>();
             if (resultSet != null) {
-                rows = resultSet.all();
+                final int availableWithoutFetching = resultSet.getAvailableWithoutFetching();
+                for (int i = 0; i < availableWithoutFetching; i++) {
+                    rows.add(resultSet.one());
+                }
             }
             return rows;
         }
     };
+
+    public static final Function<ResultSet, RowsWithExecutionInfo> RESULTSET_TO_ROWS_WITH_EXECUTION_INFO = new Function<ResultSet, RowsWithExecutionInfo>() {
+        @Override
+        public RowsWithExecutionInfo apply(ResultSet resultSet) {
+            List<Row> rows = new ArrayList<>();
+            ExecutionInfo info = null;
+            if (resultSet != null) {
+                final int availableWithoutFetching = resultSet.getAvailableWithoutFetching();
+                for (int i = 0; i < availableWithoutFetching; i++) {
+                    rows.add(resultSet.one());
+                }
+                info = resultSet.getExecutionInfo();
+            }
+            return new RowsWithExecutionInfo(rows, info);
+        }
+    };
+
 
     public static final Function<ResultSet, Row> RESULTSET_TO_ROW = new Function<ResultSet, Row>() {
         @Override

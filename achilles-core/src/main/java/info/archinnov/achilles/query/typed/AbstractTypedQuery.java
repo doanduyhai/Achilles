@@ -1,5 +1,6 @@
 package info.archinnov.achilles.query.typed;
 
+import com.datastax.driver.core.PagingState;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
@@ -10,6 +11,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.internal.async.AsyncUtils;
+import info.archinnov.achilles.internal.async.EntitiesWithExecutionInfo;
+import info.archinnov.achilles.internal.async.RowsWithExecutionInfo;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
@@ -32,6 +35,9 @@ import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ITERATOR;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROW;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS;
+import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS_WITH_EXECUTION_INFO;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 
 public abstract class AbstractTypedQuery<T> {
 
@@ -47,6 +53,7 @@ public abstract class AbstractTypedQuery<T> {
     protected PersistenceContextFactory contextFactory;
     protected EntityMeta.EntityState entityState;
     protected Object[] boundValues;
+    protected Optional<PagingState> pagingStateO = Optional.absent();
 
     protected EntityMapper mapper = EntityMapper.Singleton.INSTANCE.get();
     protected EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
@@ -64,24 +71,28 @@ public abstract class AbstractTypedQuery<T> {
         this.propertiesMap = transformPropertiesMap(meta);
     }
 
-    protected AchillesFuture<List<T>> asyncGetInternal(FutureCallback<Object>... asyncListeners) {
+    protected ListenableFuture<EntitiesWithExecutionInfo<T>> asyncGetInternal(FutureCallback<Object>... asyncListeners) {
         log.debug("Get results asynchronously for typed query '{}'", nativeStatementWrapper.getStatement());
 
+        if (pagingStateO.isPresent()) {
+            nativeStatementWrapper.setPagingState(pagingStateO.get());
+        }
+
         final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(nativeStatementWrapper);
-        final ListenableFuture<List<Row>> futureRows = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROWS);
+        final ListenableFuture<RowsWithExecutionInfo> futureRows = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROWS_WITH_EXECUTION_INFO);
 
-        Function<List<Row>, List<T>> rowsToEntities = rowsToEntities();
-        Function<List<T>, List<T>> applyTriggers = applyTriggersToEntities();
-        Function<List<T>, List<T>> maybeCreateProxy = proxifyEntities();
+        Function<RowsWithExecutionInfo, EntitiesWithExecutionInfo<T>> rowsToEntities = rowsToEntities();
+        Function<EntitiesWithExecutionInfo<T>, EntitiesWithExecutionInfo<T>> applyTriggers = applyTriggersToEntities();
+        Function<EntitiesWithExecutionInfo<T>, EntitiesWithExecutionInfo<T>> maybeCreateProxy = proxifyEntities();
 
-        final ListenableFuture<List<T>> rawEntities = asyncUtils.transformFuture(futureRows, rowsToEntities);
-        final ListenableFuture<List<T>> entitiesWithTriggers = asyncUtils.transformFuture(rawEntities, applyTriggers);
+        final ListenableFuture<EntitiesWithExecutionInfo<T>> rawEntities = asyncUtils.transformFuture(futureRows, rowsToEntities);
+        final ListenableFuture<EntitiesWithExecutionInfo<T>> entitiesWithTriggers = asyncUtils.transformFuture(rawEntities, applyTriggers);
 
         asyncUtils.maybeAddAsyncListeners(entitiesWithTriggers, asyncListeners);
 
-        final ListenableFuture<List<T>> maybeProxyCreated = asyncUtils.transformFuture(entitiesWithTriggers, maybeCreateProxy);
+        final ListenableFuture<EntitiesWithExecutionInfo<T>> maybeProxyCreated = asyncUtils.transformFuture(entitiesWithTriggers, maybeCreateProxy);
 
-        return asyncUtils.buildInterruptible(maybeProxyCreated);
+        return maybeProxyCreated;
     }
 
     protected AchillesFuture<T> asyncGetFirstInternal(FutureCallback<Object>... asyncListeners) {
@@ -166,24 +177,24 @@ public abstract class AbstractTypedQuery<T> {
     }
 
 
-    protected Function<List<Row>, List<T>> rowsToEntities() {
-        return new Function<List<Row>, List<T>>() {
+    protected Function<RowsWithExecutionInfo, EntitiesWithExecutionInfo<T>> rowsToEntities() {
+        return new Function<RowsWithExecutionInfo, EntitiesWithExecutionInfo<T>>() {
             @Override
-            public List<T> apply(List<Row> rows) {
+            public EntitiesWithExecutionInfo<T> apply(RowsWithExecutionInfo rows) {
                 List<T> entities = new ArrayList<>();
-                for (Row row : rows) {
+                for (Row row : rows.getRows()) {
                     entities.add(rowToEntity().apply(row));
                 }
-                return from(entities).filter(notNull()).toList();
+                return new EntitiesWithExecutionInfo<>(from(entities).filter(notNull()).toList(), rows.getExecutionInfo());
             }
         };
     }
 
-    protected Function<List<T>, List<T>> applyTriggersToEntities() {
-        return new Function<List<T>, List<T>>() {
+    protected Function<EntitiesWithExecutionInfo<T>, EntitiesWithExecutionInfo<T>> applyTriggersToEntities() {
+        return new Function<EntitiesWithExecutionInfo<T>, EntitiesWithExecutionInfo<T>>() {
             @Override
-            public List<T> apply(List<T> entities) {
-                for (T entity : entities) {
+            public EntitiesWithExecutionInfo<T> apply(EntitiesWithExecutionInfo<T> entities) {
+                for (T entity : entities.getEntities()) {
                     applyTriggersToEntity().apply(entity);
                 }
                 return entities;
@@ -191,15 +202,15 @@ public abstract class AbstractTypedQuery<T> {
         };
     }
 
-    protected Function<List<T>, List<T>> proxifyEntities() {
-        return new Function<List<T>, List<T>>() {
+    protected Function<EntitiesWithExecutionInfo<T>, EntitiesWithExecutionInfo<T>> proxifyEntities() {
+        return new Function<EntitiesWithExecutionInfo<T>, EntitiesWithExecutionInfo<T>>() {
             @Override
-            public List<T> apply(List<T> entities) {
+            public EntitiesWithExecutionInfo<T> apply(EntitiesWithExecutionInfo<T> entities) {
                 List<T> proxies = new ArrayList<>();
-                for (T entity : entities) {
+                for (T entity : entities.getEntities()) {
                     proxies.add(proxifyEntity().apply(entity));
                 }
-                return from(proxies).filter(notNull()).toList();
+                return new EntitiesWithExecutionInfo<>(from(proxies).filter(notNull()).toList(),entities.getExecutionInfo());
             }
         };
     }

@@ -17,6 +17,7 @@ package info.archinnov.achilles.query.typed;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ITERATOR;
+import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS_WITH_EXECUTION_INFO;
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
 import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROW;
@@ -33,6 +34,8 @@ import static org.mockito.Mockito.when;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 
+import info.archinnov.achilles.internal.async.EntitiesWithExecutionInfo;
+import info.archinnov.achilles.internal.async.RowsWithExecutionInfo;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.iterator.AchillesIterator;
 import org.junit.Before;
@@ -105,13 +108,13 @@ public class TypedQueryTest {
     private ListenableFuture<ResultSet> futureResultSet;
 
     @Mock
-    private ListenableFuture<List<Row>> futureRows;
+    private ListenableFuture<RowsWithExecutionInfo> futureRows;
 
     @Mock
     private ListenableFuture<Row> futureRow;
 
     @Mock
-    private ListenableFuture<List<CompleteBean>> futureEntities;
+    private ListenableFuture<EntitiesWithExecutionInfo<CompleteBean>> futureEntities;
 
     @Mock
     private ListenableFuture<CompleteBean> futureEntity;
@@ -123,7 +126,7 @@ public class TypedQueryTest {
     private ListenableFuture<Iterator<CompleteBean>> futureIteratorEntity;
 
     @Mock
-    private AchillesFuture<List<CompleteBean>> achillesFuturesEntities;
+    private AchillesFuture<EntitiesWithExecutionInfo<CompleteBean>> achillesFuturesEntities;
 
     @Mock
     private AchillesFuture<CompleteBean> achillesFuturesEntity;
@@ -139,13 +142,13 @@ public class TypedQueryTest {
     private EntityMeta meta;
 
     @Captor
-    private ArgumentCaptor<Function<List<Row>, List<CompleteBean>>> rowsToEntitiesCaptor;
+    private ArgumentCaptor<Function<RowsWithExecutionInfo, EntitiesWithExecutionInfo<CompleteBean>>> rowsToEntitiesCaptor;
 
     @Captor
     private ArgumentCaptor<Function<Row, CompleteBean>> rowToEntityCaptor;
 
     @Captor
-    private ArgumentCaptor<Function<List<CompleteBean>, List<CompleteBean>>> isoEntitiesCaptor;
+    private ArgumentCaptor<Function<EntitiesWithExecutionInfo<CompleteBean>, EntitiesWithExecutionInfo<CompleteBean>>> isoEntitiesCaptor;
 
     @Captor
     private ArgumentCaptor<Function<CompleteBean, CompleteBean>> isoEntityCaptor;
@@ -184,7 +187,7 @@ public class TypedQueryTest {
         initTypedQuery(statement, meta, meta.getPropertyMetas(), MANAGED);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS)).thenReturn(futureRows);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS_WITH_EXECUTION_INFO)).thenReturn(futureRows);
         when(asyncUtils.transformFuture(eq(futureRows), rowsToEntitiesCaptor.capture())).thenReturn(futureEntities);
         when(asyncUtils.transformFuture(eq(futureEntities), isoEntitiesCaptor.capture())).thenReturn(futureEntities);
         when(asyncUtils.buildInterruptible(futureEntities)).thenReturn(achillesFuturesEntities);
@@ -194,24 +197,24 @@ public class TypedQueryTest {
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
         // When
-        final AchillesFuture<List<CompleteBean>> actual = typedQuery.asyncGetInternal(asyncListeners);
+        final ListenableFuture<EntitiesWithExecutionInfo<CompleteBean>> actual = typedQuery.asyncGetInternal(asyncListeners);
 
         // Then
-        assertThat(actual).isSameAs(achillesFuturesEntities);
+        assertThat(actual).isSameAs(futureEntities);
         verify(asyncUtils).maybeAddAsyncListeners(futureEntities, asyncListeners);
 
-        final Function<List<Row>, List<CompleteBean>> rowsToEntities = rowsToEntitiesCaptor.getValue();
-        final List<CompleteBean> entities = rowsToEntities.apply(asList(row));
-        assertThat(entities).containsExactly(entity);
+        final Function<RowsWithExecutionInfo, EntitiesWithExecutionInfo<CompleteBean>> rowsToEntities = rowsToEntitiesCaptor.getValue();
+        final EntitiesWithExecutionInfo<CompleteBean> entities = rowsToEntities.apply(new RowsWithExecutionInfo(asList(row), null));
+        assertThat(entities.getEntities()).contains(entity);
 
-        final List<Function<List<CompleteBean>, List<CompleteBean>>> entitiesFunctions = isoEntitiesCaptor.getAllValues();
+        final List<Function<EntitiesWithExecutionInfo<CompleteBean>, EntitiesWithExecutionInfo<CompleteBean>>> entitiesFunctions = isoEntitiesCaptor.getAllValues();
 
-        final List<CompleteBean> entitiesWithTriggers = entitiesFunctions.get(0).apply(asList(entity));
-        assertThat(entitiesWithTriggers).containsExactly(entity);
+        final EntitiesWithExecutionInfo<CompleteBean> entitiesWithTriggers = entitiesFunctions.get(0).apply(new EntitiesWithExecutionInfo<>(asList(entity), null));
+        assertThat(entitiesWithTriggers.getEntities()).containsExactly(entity);
         verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
 
-        final List<CompleteBean> entitiesWithProxy = entitiesFunctions.get(1).apply(asList(entity));
-        assertThat(entitiesWithProxy).containsExactly(entity);
+        final EntitiesWithExecutionInfo<CompleteBean> entitiesWithProxy = entitiesFunctions.get(1).apply(new EntitiesWithExecutionInfo(asList(entity), null));
+        assertThat(entitiesWithProxy.getEntities()).containsExactly(entity);
     }
 
 
