@@ -17,8 +17,6 @@ package info.archinnov.achilles.type;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import info.archinnov.achilles.json.CounterDeserializer;
-import info.archinnov.achilles.json.CounterSerializer;
 
 /**
  * <p>
