@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package info.archinnov.achilles.json;
+package info.archinnov.achilles.type;
 
 import java.io.IOException;
 import com.fasterxml.jackson.core.JsonParser;
