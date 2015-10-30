@@ -38,6 +38,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.manager.SimpleEntity_Manager;
+import info.archinnov.achilles.internals.entities.EntityWithClusteringColumns;
 import info.archinnov.achilles.internals.entities.SimpleEntity;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
@@ -56,7 +57,7 @@ public class TestTypedQueries {
             .truncateBeforeAndAfterTest()
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
-                    .withManagedEntityClasses(SimpleEntity.class)
+                    .withManagedEntityClasses(SimpleEntity.class, EntityWithClusteringColumns.class)
                     .doForceSchemaCreation(true)
                     .withStatementsCache(statementsCache)
                     .withDefaultKeyspaceName(DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME)

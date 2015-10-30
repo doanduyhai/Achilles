@@ -83,6 +83,7 @@ public class AnnotationTree {
                                         areSameByClass(x, TimeUUID.class) ||
                                         areSameByClass(x, Codec.class)
                 )
+                .map(x -> (AnnotationMirror)x)
                 .collect(toList());
 
         final AnnotationTree annotationTree = new AnnotationTree(currentType, annotationMirrors, 1);
