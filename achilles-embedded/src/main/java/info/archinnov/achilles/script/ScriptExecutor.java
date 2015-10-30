@@ -1,42 +1,63 @@
+/*
+ * Copyright (C) 2012-2015 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package info.archinnov.achilles.script;
+
+import static info.archinnov.achilles.internals.statement.StatementHelper.isDMLStatement;
+import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DDL_SCRIPT;
+import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DML_STATEMENT;
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
-import info.archinnov.achilles.async.AchillesFuture;
-import info.archinnov.achilles.internal.async.AsyncUtils;
-import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.query.cql.NativeQueryValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.common.util.concurrent.MoreExecutors;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-
-import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DDL_SCRIPT;
-import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DML_STATEMENT;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import info.archinnov.achilles.internals.futures.FutureUtils;
+import info.archinnov.achilles.validation.Validator;
 
 /**
- * Facility class to execute a CQL script file or a plain CQL statement
+ * Facility class to execute a CQL script file, CQL script templates or plain CQL statements
  */
 public class ScriptExecutor {
 
     private static final Logger DML_LOGGER = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
     private static final Logger DDL_LOGGER = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
-
     private static final String COMMA = ";";
+
     private static final String BATCH_BEGIN = "BEGIN";
     private static final String BATCH_APPLY = "APPLY";
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([a-z][a-zA-Z0-9_]*)\\}");
+    private static final Map<String, Object> EMPTY_MAP = new HashMap<>();
+
+    private final ExecutorService sameThreadExecutor = MoreExecutors.newDirectExecutorService();
 
     private final Session session;
-
-    private AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
-
-    private NativeQueryValidator queryValidator = NativeQueryValidator.Singleton.INSTANCE.get();
 
     public ScriptExecutor(Session session) {
         this.session = session;
@@ -44,13 +65,24 @@ public class ScriptExecutor {
 
     /**
      * Execute a CQL script file located in the class path
-     * @param scriptLocation
-     *      the location of the script file in the class path
+     *
+     * @param scriptLocation the location of the script file in the class path
      */
     public void executeScript(String scriptLocation) {
-        final List<SimpleStatement> statements = buildStatements(loadScriptAsLines(scriptLocation));
+        executeScriptTemplate(scriptLocation, EMPTY_MAP);
+    }
+
+    /**
+     * Execute a CQL script template located in the class path and
+     * inject provided values into the template to produce the actual script
+     *
+     * @param scriptTemplateLocation the location of the script template in the class path
+     * @param values                 template values
+     */
+    public void executeScriptTemplate(String scriptTemplateLocation, Map<String, Object> values) {
+        final List<SimpleStatement> statements = buildStatements(loadScriptAsLines(scriptTemplateLocation, values));
         for (SimpleStatement statement : statements) {
-            if (queryValidator.isDMLStatement(statement)) {
+            if (isDMLStatement(statement)) {
                 DML_LOGGER.debug("\tSCRIPT : {}", statement.getQueryString());
             } else {
                 DDL_LOGGER.debug("\t\tSCRIPT : {}", statement.getQueryString());
@@ -59,13 +91,12 @@ public class ScriptExecutor {
         }
     }
 
+
     /**
      * Execute a plain CQL string statement
-     * @param statement
-     *      plain CQL string statement
      *
+     * @param statement plain CQL string statement
      * @return the resultSet
-     *
      */
     public ResultSet execute(String statement) {
         return session.execute(statement);
@@ -73,11 +104,9 @@ public class ScriptExecutor {
 
     /**
      * Execute a CQL statement
-     * @param statement
-     *      CQL statement
      *
+     * @param statement CQL statement
      * @return the resultSet
-     *
      */
     public ResultSet execute(Statement statement) {
         return session.execute(statement);
@@ -87,39 +116,56 @@ public class ScriptExecutor {
      * Execute a plain CQL string statement asynchronously
      *
      * @param statement the CQL string statement
-     *
-     * @return AchillesFuture&lt;ResultSet&gt;
+     * @return CompletableFuture&lt;ResultSet&gt;
      */
-    public AchillesFuture<ResultSet> executeAsync(String statement) {
-        return asyncUtils.buildInterruptible(session.executeAsync(statement));
+    public CompletableFuture<ResultSet> executeAsync(String statement) {
+        return FutureUtils.toCompletableFuture(session.executeAsync(statement), sameThreadExecutor);
     }
 
     /**
      * Execute a CQL statement asynchronously
      *
      * @param statement CQL statement
-     *
-     * @return AchillesFuture&lt;ResultSet&gt;
+     * @return CompletableFuture&lt;ResultSet&gt;
      */
-    public AchillesFuture<ResultSet> executeAsync(Statement statement) {
-        return asyncUtils.buildInterruptible(session.executeAsync(statement));
+    public CompletableFuture<ResultSet> executeAsync(Statement statement) {
+        return FutureUtils.toCompletableFuture(session.executeAsync(statement), sameThreadExecutor);
     }
 
     protected List<String> loadScriptAsLines(String scriptLocation) {
+        return loadScriptAsLines(scriptLocation, EMPTY_MAP);
+    }
+
+    protected List<String> loadScriptAsLines(String scriptLocation, Map<String, Object> variables) {
 
         InputStream inputStream = this.getClass().getResourceAsStream("/" + scriptLocation);
 
-        Validator.validateNotNull(inputStream,"Cannot find CQL script file at location '%s'", scriptLocation);
+        Validator.validateNotNull(inputStream, "Cannot find CQL script file at location '%s'", scriptLocation);
 
         Scanner scanner = new Scanner(inputStream);
         List<String> lines = new ArrayList<>();
         while (scanner.hasNextLine()) {
-            final String nextLine = scanner.nextLine().trim();
+            String nextLine = maybeReplaceVariables(scanner, variables);
             if (isNotBlank(nextLine)) {
                 lines.add(nextLine);
             }
         }
         return lines;
+    }
+
+    private String maybeReplaceVariables(Scanner scanner, Map<String, Object> variables) {
+        String nextLine = scanner.nextLine().trim();
+        if (isNoneBlank(nextLine) && !variables.isEmpty()) {
+            final Matcher matcher = VARIABLE_PATTERN.matcher(nextLine);
+            while (matcher.find()) {
+                final String group = matcher.group(1);
+                Validator.validateTrue(variables.containsKey(group),
+                        "Cannot find value for variable ${%s} in the variable map provided to ScriptExecutor", group);
+                nextLine = nextLine.replaceFirst("\\$\\{" + group + "\\}", variables.get(group).toString());
+
+            }
+        }
+        return nextLine;
     }
 
     protected List<SimpleStatement> buildStatements(List<String> lines) {
@@ -135,13 +181,14 @@ public class ScriptExecutor {
                 batchStatement.append(line);
                 if (line.startsWith(BATCH_APPLY)) {
                     batch = false;
-                    statements.add(new SimpleStatement(batchStatement.toString()));
+
+                    statements.add(session.newSimpleStatement(batchStatement.toString()));
                     batchStatement = new StringBuilder();
                 }
             } else {
                 statement.append(line);
                 if (line.endsWith(COMMA)) {
-                    statements.add(new SimpleStatement(statement.toString()));
+                    statements.add(session.newSimpleStatement(statement.toString()));
                     statement = new StringBuilder();
                 } else {
                     statement.append(" ");
@@ -150,5 +197,9 @@ public class ScriptExecutor {
 
         }
         return statements;
+    }
+
+    public Session getSession() {
+        return session;
     }
 }

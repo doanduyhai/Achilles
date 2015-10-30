@@ -1,0 +1,16 @@
+INSERT INTO achilles_embedded.entity_complex_types(id, codec_on_class, complex_nesting_map,
+	consistencylevel, integer, json_map, list_nesting,
+	list_udt,
+	map_udt,
+	map_with_nested_json, object_bool, object_byte, object_byte_array, ok_set,
+	primitive_bool, primitive_byte, primitive_byte_array, simple_udt, time,
+	timeuuid, tuple1, tuple2,
+	tuple_nesting, value)
+VALUES(${id}, 'ClassAnnotatedByCodec', {'{"list":["list"],"map":{"1":"1"},"name":"name"}': {1:('1', 2, 5)}},
+	'EACH_QUORUM', '123', '{"1":[1,2,3]}', [{1: 'one'}],
+	[{name: 'name', list: ['list'], map: {'1':'1'}}],
+	{1:{name: 'name', list: ['list'], map: {'1':'1'}}},
+	{1: '[{"1":"one"}]'}, true, 5, bigintAsBlob(7), {6, 10},
+	true, 3, bigintAsBlob(4), {name: 'name', list: ['list'], map: {'1':'1'}}, '1234567',
+	50554d6e-29bb-11e5-b345-feff819cdc9f, ('"THREE"'), ('"TWO"', '2'),
+	(1, ['1']), 'val');

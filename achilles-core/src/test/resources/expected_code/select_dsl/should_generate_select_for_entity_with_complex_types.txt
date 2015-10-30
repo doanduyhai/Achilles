@@ -1,0 +1,255 @@
+public final class TestEntityWithComplexTypes_Select extends info.archinnov.achilles.internals.query.AbstractSelect {
+  public final TestEntityWithComplexTypes_Select(com.datastax.driver.core.Cluster cluster, java.lang.String keyspace, java.lang.String table) {
+    super(cluster, keyspace, table);
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectId() {
+    select.column("id");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectId(java.lang.String alias) {
+    select.column("id").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectValue() {
+    select.column("value");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectValue(java.lang.String alias) {
+    select.column("value").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectConsistencyLevel() {
+    select.column("consistencylevel");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectConsistencyLevel(java.lang.String alias) {
+    select.column("consistencylevel").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectTime() {
+    select.column("time");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectTime(java.lang.String alias) {
+    select.column("time").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectPrimitiveBoolean() {
+    select.column("primitiveboolean");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectPrimitiveBoolean(java.lang.String alias) {
+    select.column("primitiveboolean").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectObjectBoolean() {
+    select.column("objectboolean");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectObjectBoolean(java.lang.String alias) {
+    select.column("objectboolean").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectPrimitiveByte() {
+    select.column("primitivebyte");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectPrimitiveByte(java.lang.String alias) {
+    select.column("primitivebyte").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectObjectByte() {
+    select.column("objectbyte");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectObjectByte(java.lang.String alias) {
+    select.column("objectbyte").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectPrimitiveByteArray() {
+    select.column("primitivebytearray");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectPrimitiveByteArray(java.lang.String alias) {
+    select.column("primitivebytearray").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectObjectByteArray() {
+    select.column("objectbytearray");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectObjectByteArray(java.lang.String alias) {
+    select.column("objectbytearray").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectInteger() {
+    select.column("integer");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectInteger(java.lang.String alias) {
+    select.column("integer").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectSimpleUdt() {
+    select.column("simpleudt");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectSimpleUdt(java.lang.String alias) {
+    select.column("simpleudt").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectListUdt() {
+    select.column("listudt");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectListUdt(java.lang.String alias) {
+    select.column("listudt").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectMapUdt() {
+    select.column("mapudt");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectMapUdt(java.lang.String alias) {
+    select.column("mapudt").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectOkSet() {
+    select.column("okset");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectOkSet(java.lang.String alias) {
+    select.column("okset").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectJsonMap() {
+    select.column("jsonmap");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectJsonMap(java.lang.String alias) {
+    select.column("jsonmap").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectMapWithNestedJson() {
+    select.column("mapwithnestedjson");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectMapWithNestedJson(java.lang.String alias) {
+    select.column("mapwithnestedjson").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectListNesting() {
+    select.column("listnesting");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectListNesting(java.lang.String alias) {
+    select.column("listnesting").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectTupleNesting() {
+    select.column("tuplenesting");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectTupleNesting(java.lang.String alias) {
+    select.column("tuplenesting").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectTuple1() {
+    select.column("tuple1");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectTuple1(java.lang.String alias) {
+    select.column("tuple1").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectTuple2() {
+    select.column("tuple2");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectTuple2(java.lang.String alias) {
+    select.column("tuple2").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectComplexNestingMap() {
+    select.column("complexnestingmap");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectComplexNestingMap(java.lang.String alias) {
+    select.column("complexnestingmap").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectTimeuuid() {
+    select.column("timeuuid");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectTimeuuid(java.lang.String alias) {
+    select.column("timeuuid").as(alias);
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectWriteTime() {
+    select.fcall("writetime","value").as("write_time");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_Select selectWriteTimeWithCodec() {
+    select.fcall("writetime","value").as("write_time_2");
+    return this;
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_SelectWhere selectAll() {
+    final Select.Where where = select.all().from(keyspace, table).where();
+    return new info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_SelectWhere(where);
+  }
+
+  public final info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_SelectWhere where() {
+    final Select.Where where = select.from(keyspace, table).where();
+    return new info.archinnov.achilles.generated.dsl.TestEntityWithComplexTypes_SelectWhere(where);
+  }
+}

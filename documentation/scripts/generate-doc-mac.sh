@@ -39,7 +39,7 @@ git clone -b NextRelease https://github.com/doanduyhai/Achilles.wiki.git
 cp $BASEDIR/html/achilles.css Achilles.wiki/
 
 #copy assets to target html assets directory
-cp $BASEDIR/target/Achilles.wiki/assets/* $BASEDIR/target/html/assets/
+cp -r $BASEDIR/target/Achilles.wiki/assets/* $BASEDIR/target/html/assets/
 
 
 

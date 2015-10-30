@@ -1,0 +1,174 @@
+package info.archinnov.achilles.generated;
+
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.DataType;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.reflect.TypeToken;
+import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
+import info.archinnov.achilles.internals.codec.FallThroughCodec;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractProperty;
+import info.archinnov.achilles.internals.metamodel.SimpleProperty;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
+import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
+import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityAsChild;
+import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
+import info.archinnov.achilles.type.strategy.InsertStrategy;
+import java.lang.Class;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Meta class of all entities of type TestEntityAsChild<br/>
+ * The meta class is responsible for<br/>
+ * <ul>
+ *    <li>determining runtime consistency levels (read/write,serial)<li/>
+ *    <li>determining runtime insert strategy<li/>
+ *    <li>trigger event interceptors (if any)<li/>
+ *    <li>map a com.datastax.driver.core.Row back to an instance of TestEntityAsChild<li/>
+ *    <li>determine runtime keyspace name using static annotations and runtime SchemaNameProvider (if any)<li/>
+ *    <li>determine runtime table name using static annotations and runtime SchemaNameProvider (if any)<li/>
+ *    <li>generate schema during bootstrap<li/>
+ *    <li>validate schema during bootstrap<li/>
+ *    <li>expose all property meta classes for encoding/decoding purpose on unitary columns<li/>
+ * <ul/>
+ */
+@AchillesMeta
+public final class TestEntityAsChild_AchillesMeta extends AbstractEntityProperty<TestEntityAsChild> {
+  /**
+   * Meta class for 'id' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityAsChild instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityAsChild, Long, Long> id = new SimpleProperty<TestEntityAsChild, Long, Long>(new FieldInfo<>((TestEntityAsChild entity$) -> entity$.getId(), (TestEntityAsChild entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.getLong("id"), (settableData$, value$) -> settableData$.setLong("id", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+
+  /**
+   * Meta class for 'value' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityAsChild instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityAsChild, String, String> value = new SimpleProperty<TestEntityAsChild, String, String>(new FieldInfo<>((TestEntityAsChild entity$) -> entity$.getValue(), (TestEntityAsChild entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("value"), (settableData$, value$) -> settableData$.setString("value", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+
+  /**
+   * Meta class for 'anotherValue' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityAsChild instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityAsChild, String, String> anotherValue = new SimpleProperty<TestEntityAsChild, String, String>(new FieldInfo<>((TestEntityAsChild entity$) -> entity$.getAnotherValue(), (TestEntityAsChild entity$, String value$) -> entity$.setAnotherValue(value$), "anotherValue", "anothervalue", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("anothervalue"), (settableData$, value$) -> settableData$.setString("anothervalue", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+
+  @Override
+  protected Class<TestEntityAsChild> getEntityClass() {
+    return TestEntityAsChild.class;
+  }
+
+  @Override
+  protected Optional<String> getStaticKeyspace() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<String> getStaticTableName() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected String getDerivedTableName() {
+    return "testentityaschild";
+  }
+
+  @Override
+  protected BiMap<String, String> fieldNameToCqlColumn() {
+    BiMap<String,String> map = HashBiMap.create(3);
+    map.put("id", "id");
+    map.put("value", "value");
+    map.put("anotherValue", "anothervalue");
+    return map;
+  }
+
+  @Override
+  protected boolean isCounterTable() {
+    return false;
+  }
+
+  @Override
+  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<ConsistencyLevel> getStaticWriteConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<ConsistencyLevel> getStaticSerialConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<Integer> getStaticTTL() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InsertStrategy> getStaticInsertStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getPartitionKeys() {
+    return Arrays.asList(id);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getClusteringColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getStaticColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getNormalColumns() {
+    return Arrays.asList(anotherValue,value);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getComputedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getCounterColumns() {
+    return Arrays.asList();
+  }
+}

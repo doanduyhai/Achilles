@@ -1,0 +1,90 @@
+public final class TestUDT_AchillesMeta extends info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT> {
+  /**
+   * Meta class for 'name' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @java.lang.SuppressWarnings("serial")
+  public static final info.archinnov.achilles.internals.metamodel.SimpleProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, java.lang.String, java.lang.String> name = new info.archinnov.achilles.internals.metamodel.SimpleProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, java.lang.String, java.lang.String>(new info.archinnov.achilles.internals.metamodel.columns.FieldInfo<>((info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT entity$) -> entity$.getName(), (info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT entity$, java.lang.String value$) -> entity$.setName(value$), "name", "name", info.archinnov.achilles.internals.metamodel.columns.ColumnType.NORMAL, new info.archinnov.achilles.internals.metamodel.columns.ColumnInfo(false), info.archinnov.achilles.internals.metamodel.index.IndexInfo.noIndex()), com.datastax.driver.core.DataType.text(), gettableData$ -> gettableData$.getString("name"), (settableData$, value$) -> settableData$.setString("name", value$), new com.google.common.reflect.TypeToken<java.lang.String>(){}, new com.google.common.reflect.TypeToken<java.lang.String>(){}, new info.archinnov.achilles.internals.codec.FallThroughCodec<>(java.lang.String.class));
+
+  /**
+   * Meta class for 'list' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @java.lang.SuppressWarnings({
+      "serial",
+      "unchecked"
+  })
+  public static final info.archinnov.achilles.internals.metamodel.ListProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, java.lang.String, java.lang.String> list = new info.archinnov.achilles.internals.metamodel.ListProperty<>(new info.archinnov.achilles.internals.metamodel.columns.FieldInfo<>((info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT entity$) -> entity$.getList(), (info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT entity$, java.util.List<java.lang.String> value$) -> entity$.setList(value$), "list", "list", info.archinnov.achilles.internals.metamodel.columns.ColumnType.NORMAL, new info.archinnov.achilles.internals.metamodel.columns.ColumnInfo(false), info.archinnov.achilles.internals.metamodel.index.IndexInfo.noIndex()), false, false, java.lang.String.class, new info.archinnov.achilles.internals.metamodel.SimpleProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, java.lang.String, java.lang.String>(info.archinnov.achilles.internals.metamodel.columns.FieldInfo.<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, java.lang.String> of("list", "list"), com.datastax.driver.core.DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new com.google.common.reflect.TypeToken<java.lang.String>(){}, new com.google.common.reflect.TypeToken<java.lang.String>(){}, new info.archinnov.achilles.internals.codec.FallThroughCodec<>(java.lang.String.class)));
+
+  /**
+   * Meta class for 'map' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @java.lang.SuppressWarnings({
+      "serial",
+      "unchecked"
+  })
+  public static final info.archinnov.achilles.internals.metamodel.MapProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String> map = new info.archinnov.achilles.internals.metamodel.MapProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String>(new info.archinnov.achilles.internals.metamodel.columns.FieldInfo<>((info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT entity$) -> entity$.getMap(), (info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT entity$, java.util.Map<java.lang.Integer, java.lang.String> value$) -> entity$.setMap(value$), "map", "map", info.archinnov.achilles.internals.metamodel.columns.ColumnType.NORMAL, new info.archinnov.achilles.internals.metamodel.columns.ColumnInfo(false), info.archinnov.achilles.internals.metamodel.index.IndexInfo.noIndex()), false, false, new info.archinnov.achilles.internals.metamodel.SimpleProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, java.lang.Integer, java.lang.String>(info.archinnov.achilles.internals.metamodel.columns.FieldInfo.<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, java.lang.Integer> of("map", "map"), com.datastax.driver.core.DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new com.google.common.reflect.TypeToken<java.lang.Integer>(){}, new com.google.common.reflect.TypeToken<java.lang.String>(){}, new info.archinnov.achilles.internals.codec.JSONCodec<>(java.lang.Integer.class, com.fasterxml.jackson.databind.type.SimpleType.construct(java.lang.Integer.class))), new info.archinnov.achilles.internals.metamodel.SimpleProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, java.lang.String, java.lang.String>(info.archinnov.achilles.internals.metamodel.columns.FieldInfo.<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, java.lang.String> of("map", "map"), com.datastax.driver.core.DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new com.google.common.reflect.TypeToken<java.lang.String>(){}, new com.google.common.reflect.TypeToken<java.lang.String>(){}, new info.archinnov.achilles.internals.codec.FallThroughCodec<>(java.lang.String.class)));
+
+  public static final info.archinnov.achilles.generated.meta.udt.TestUDT_AchillesMeta INSTANCE = new info.archinnov.achilles.generated.meta.udt.TestUDT_AchillesMeta();
+
+  @java.lang.Override
+  protected java.util.Optional<java.lang.String> getStaticKeyspace() {
+    return java.util.Optional.of("test");
+  }
+
+  @java.lang.Override
+  protected java.util.Optional<java.lang.String> getStaticUdtName() {
+    return java.util.Optional.of("my_type");
+  }
+
+  @java.lang.Override
+  protected java.util.Optional<info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy> getStaticNamingStrategy() {
+    return java.util.Optional.empty();
+  }
+
+  @java.lang.Override
+  protected java.lang.String getUdtName() {
+    return "my_type";
+  }
+
+  @java.lang.Override
+  protected java.lang.Class<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT> getUdtClass() {
+    return info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT.class;
+  }
+
+  @java.lang.Override
+  protected java.util.List<info.archinnov.achilles.internals.metamodel.AbstractProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, ?, ?>> getComponentsProperty() {
+    return java.util.Arrays.asList(name, list, map);
+  }
+
+  @java.lang.Override
+  protected com.datastax.driver.core.UDTValue createUDTFromBean(info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance) {
+    final com.datastax.driver.core.UDTValue udtValue = userType.newValue();
+    name.encodeFieldToUdt(instance, udtValue);
+    list.encodeFieldToUdt(instance, udtValue);
+    map.encodeFieldToUdt(instance, udtValue);
+    return udtValue;
+  }
+
+  @java.lang.Override
+  protected info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT createBeanFromUDT(com.datastax.driver.core.UDTValue udtValue) {
+    final info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance = udtFactory.newInstance(udtClass);
+    name.decodeField(udtValue, instance);
+    list.decodeField(udtValue, instance);
+    map.decodeField(udtValue, instance);
+    return instance;
+  }
+}

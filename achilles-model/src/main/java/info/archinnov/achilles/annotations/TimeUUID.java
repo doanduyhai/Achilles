@@ -1,44 +1,37 @@
 /*
- * Copyright (C) 2012-2014 DuyHai DOAN
+ * Copyright (C) 2012-2015 DuyHai DOAN
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package info.archinnov.achilles.annotations;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
- * <p>
  * Map this <strong>Java UUID</strong> type to Cassandra <strong>timeuuid</strong> type.
  * This annotation has no effect on a field type different from java.util.UUID
- *
  * <pre class="code"><code class="java">
- *
- *   {@literal @}Column
- *   <strong>{@literal @}TimeUUID</strong>
- *   private UUID moment;
- *
+
+ * {@literal @}Column
+ * <strong>{@literal @}TimeUUID</strong>
+ * private UUID date;
  * </code></pre>
- * </p>
+ *
  * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#time-uuid" target="_blank">@TimeUUID</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
+@Target({ElementType.FIELD, ElementType.TYPE_USE})
 @Documented
 public @interface TimeUUID {
 

@@ -1,0 +1,489 @@
+package info.archinnov.achilles.generated;
+
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.TupleValue;
+import com.datastax.driver.core.UDTValue;
+import com.fasterxml.jackson.databind.type.SimpleType;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.reflect.TypeToken;
+import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
+import info.archinnov.achilles.internals.codec.ByteArrayCodec;
+import info.archinnov.achilles.internals.codec.ByteArrayPrimitiveCodec;
+import info.archinnov.achilles.internals.codec.EnumNameCodec;
+import info.archinnov.achilles.internals.codec.EnumOrdinalCodec;
+import info.archinnov.achilles.internals.codec.FallThroughCodec;
+import info.archinnov.achilles.internals.codec.JSONCodec;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractProperty;
+import info.archinnov.achilles.internals.metamodel.ComputedProperty;
+import info.archinnov.achilles.internals.metamodel.ListProperty;
+import info.archinnov.achilles.internals.metamodel.MapProperty;
+import info.archinnov.achilles.internals.metamodel.SetProperty;
+import info.archinnov.achilles.internals.metamodel.SimpleProperty;
+import info.archinnov.achilles.internals.metamodel.Tuple1Property;
+import info.archinnov.achilles.internals.metamodel.Tuple2Property;
+import info.archinnov.achilles.internals.metamodel.Tuple3Property;
+import info.archinnov.achilles.internals.metamodel.UDTProperty;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
+import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
+import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithComplexTypes;
+import info.archinnov.achilles.internals.sample_classes.parser.field.IntToStringCodec;
+import info.archinnov.achilles.internals.sample_classes.parser.field.StringToLongCodec;
+import info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT;
+import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
+import info.archinnov.achilles.type.strategy.InsertStrategy;
+import info.archinnov.achilles.type.tuples.Tuple1;
+import info.archinnov.achilles.type.tuples.Tuple2;
+import info.archinnov.achilles.type.tuples.Tuple3;
+import java.lang.Boolean;
+import java.lang.Byte;
+import java.lang.Class;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * Meta class of all entities of type TestEntityWithComplexTypes<br/>
+ * The meta class is responsible for<br/>
+ * <ul>
+ *    <li>determining runtime consistency levels (read/write,serial)<li/>
+ *    <li>determining runtime insert strategy<li/>
+ *    <li>trigger event interceptors (if any)<li/>
+ *    <li>map a com.datastax.driver.core.Row back to an instance of TestEntityWithComplexTypes<li/>
+ *    <li>determine runtime keyspace name using static annotations and runtime SchemaNameProvider (if any)<li/>
+ *    <li>determine runtime table name using static annotations and runtime SchemaNameProvider (if any)<li/>
+ *    <li>generate schema during bootstrap<li/>
+ *    <li>validate schema during bootstrap<li/>
+ *    <li>expose all property meta classes for encoding/decoding purpose on unitary columns<li/>
+ * <ul/>
+ */
+@AchillesMeta
+public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntityProperty<TestEntityWithComplexTypes> {
+  /**
+   * Meta class for 'id' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, Long, Long> id = new SimpleProperty<TestEntityWithComplexTypes, Long, Long>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getId(), (TestEntityWithComplexTypes entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.getLong("id"), (settableData$, value$) -> settableData$.setLong("id", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+
+  /**
+   * Meta class for 'value' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, String, String> value = new SimpleProperty<TestEntityWithComplexTypes, String, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getValue(), (TestEntityWithComplexTypes entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("value"), (settableData$, value$) -> settableData$.setString("value", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+
+  /**
+   * Meta class for 'consistencyLevel' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String> consistencyLevel = new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getConsistencyLevel(), (TestEntityWithComplexTypes entity$, ConsistencyLevel value$) -> entity$.setConsistencyLevel(value$), "consistencyLevel", "consistencylevel", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("consistencylevel"), (settableData$, value$) -> settableData$.setString("consistencylevel", value$), new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new EnumNameCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class));
+
+  /**
+   * Meta class for 'time' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, Date, String> time = new SimpleProperty<TestEntityWithComplexTypes, Date, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTime(), (TestEntityWithComplexTypes entity$, Date value$) -> entity$.setTime(value$), "time", "time", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("time"), (settableData$, value$) -> settableData$.setString("time", value$), new TypeToken<Date>(){}, new TypeToken<String>(){}, new JSONCodec<>(Date.class, SimpleType.construct(Date.class)));
+
+  /**
+   * Meta class for 'primitiveBoolean' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean> primitiveBoolean = new SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.isPrimitiveBoolean(), (TestEntityWithComplexTypes entity$, Boolean value$) -> entity$.setPrimitiveBoolean(value$), "primitiveBoolean", "primitiveboolean", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.cboolean(), gettableData$ -> gettableData$.getBool("primitiveboolean"), (settableData$, value$) -> settableData$.setBool("primitiveboolean", value$), new TypeToken<Boolean>(){}, new TypeToken<Boolean>(){}, new FallThroughCodec<>(Boolean.class));
+
+  /**
+   * Meta class for 'objectBoolean' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean> objectBoolean = new SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectBoolean(), (TestEntityWithComplexTypes entity$, Boolean value$) -> entity$.setObjectBoolean(value$), "objectBoolean", "objectboolean", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.cboolean(), gettableData$ -> gettableData$.getBool("objectboolean"), (settableData$, value$) -> settableData$.setBool("objectboolean", value$), new TypeToken<Boolean>(){}, new TypeToken<Boolean>(){}, new FallThroughCodec<>(Boolean.class));
+
+  /**
+   * Meta class for 'primitiveByte' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, Byte, Byte> primitiveByte = new SimpleProperty<TestEntityWithComplexTypes, Byte, Byte>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getPrimitiveByte(), (TestEntityWithComplexTypes entity$, Byte value$) -> entity$.setPrimitiveByte(value$), "primitiveByte", "primitivebyte", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.tinyint(), gettableData$ -> gettableData$.getByte("primitivebyte"), (settableData$, value$) -> settableData$.setByte("primitivebyte", value$), new TypeToken<Byte>(){}, new TypeToken<Byte>(){}, new FallThroughCodec<>(Byte.class));
+
+  /**
+   * Meta class for 'objectByte' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, Byte, Byte> objectByte = new SimpleProperty<TestEntityWithComplexTypes, Byte, Byte>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectByte(), (TestEntityWithComplexTypes entity$, Byte value$) -> entity$.setObjectByte(value$), "objectByte", "objectbyte", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.tinyint(), gettableData$ -> gettableData$.getByte("objectbyte"), (settableData$, value$) -> settableData$.setByte("objectbyte", value$), new TypeToken<Byte>(){}, new TypeToken<Byte>(){}, new FallThroughCodec<>(Byte.class));
+
+  /**
+   * Meta class for 'primitiveByteArray' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, byte[], ByteBuffer> primitiveByteArray = new SimpleProperty<TestEntityWithComplexTypes, byte[], ByteBuffer>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getPrimitiveByteArray(), (TestEntityWithComplexTypes entity$, byte[] value$) -> entity$.setPrimitiveByteArray(value$), "primitiveByteArray", "primitivebytearray", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.blob(), gettableData$ -> gettableData$.getBytes("primitivebytearray"), (settableData$, value$) -> settableData$.setBytes("primitivebytearray", value$), new TypeToken<byte[]>(){}, new TypeToken<ByteBuffer>(){}, new ByteArrayPrimitiveCodec());
+
+  /**
+   * Meta class for 'objectByteArray' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, Byte[], ByteBuffer> objectByteArray = new SimpleProperty<TestEntityWithComplexTypes, Byte[], ByteBuffer>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectByteArray(), (TestEntityWithComplexTypes entity$, Byte[] value$) -> entity$.setObjectByteArray(value$), "objectByteArray", "objectbytearray", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.blob(), gettableData$ -> gettableData$.getBytes("objectbytearray"), (settableData$, value$) -> settableData$.setBytes("objectbytearray", value$), new TypeToken<Byte[]>(){}, new TypeToken<ByteBuffer>(){}, new ByteArrayCodec());
+
+  /**
+   * Meta class for 'integer' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, Integer, String> integer = new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getInteger(), (TestEntityWithComplexTypes entity$, Integer value$) -> entity$.setInteger(value$), "integer", "integer", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("integer"), (settableData$, value$) -> settableData$.setString("integer", value$), new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec());
+
+  /**
+   * Meta class for 'simpleUdt' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  public static final UDTProperty<TestEntityWithComplexTypes, TestUDT> simpleUdt = new UDTProperty<TestEntityWithComplexTypes, TestUDT>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getSimpleUdt(), (TestEntityWithComplexTypes entity$, TestUDT value$) -> entity$.setSimpleUdt(value$), "simpleUdt", "simpleudt", ColumnType.NORMAL, new ColumnInfo(true), IndexInfo.noIndex()), TestUDT.class, info.archinnov.achilles.generated.meta.udt.TestUDT_AchillesMeta.INSTANCE);
+
+  /**
+   * Meta class for 'listUdt' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("unchecked")
+  public static final ListProperty<TestEntityWithComplexTypes, TestUDT, UDTValue> listUdt = new ListProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getListUdt(), (TestEntityWithComplexTypes entity$, List<TestUDT> value$) -> entity$.setListUdt(value$), "listUdt", "listudt", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, UDTValue.class, new UDTProperty<TestEntityWithComplexTypes, TestUDT>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("listUdt", "listudt"), TestUDT.class, info.archinnov.achilles.generated.meta.udt.TestUDT_AchillesMeta.INSTANCE));
+
+  /**
+   * Meta class for 'mapUdt' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings({
+      "serial",
+      "unchecked"
+  })
+  public static final MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue> mapUdt = new MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getMapUdt(), (TestEntityWithComplexTypes entity$, Map<Integer, TestUDT> value$) -> entity$.setMapUdt(value$), "mapUdt", "mapudt", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("mapUdt", "mapudt"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new UDTProperty<TestEntityWithComplexTypes, TestUDT>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("mapUdt", "mapudt"), TestUDT.class, info.archinnov.achilles.generated.meta.udt.TestUDT_AchillesMeta.INSTANCE));
+
+  /**
+   * Meta class for 'okSet' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings({
+      "serial",
+      "unchecked"
+  })
+  public static final SetProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer> okSet = new SetProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getOkSet(), (TestEntityWithComplexTypes entity$, Set<ConsistencyLevel> value$) -> entity$.setOkSet(value$), "okSet", "okset", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, Integer.class, new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("okSet", "okset"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<Integer>(){}, new EnumOrdinalCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class)));
+
+  /**
+   * Meta class for 'jsonMap' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, Map<Integer, List<Integer>>, String> jsonMap = new SimpleProperty<TestEntityWithComplexTypes, Map<Integer, List<Integer>>, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getJsonMap(), (TestEntityWithComplexTypes entity$, Map<Integer, List<Integer>> value$) -> entity$.setJsonMap(value$), "jsonMap", "jsonmap", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("jsonmap"), (settableData$, value$) -> settableData$.setString("jsonmap", value$), new TypeToken<Map<Integer, List<Integer>>>(){}, new TypeToken<String>(){}, new JSONCodec<>(Map.class, JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(Map.class,SimpleType.construct(Integer.class),JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(List.class,SimpleType.construct(Integer.class)))));
+
+  /**
+   * Meta class for 'mapWithNestedJson' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings({
+      "serial",
+      "unchecked"
+  })
+  public static final MapProperty<TestEntityWithComplexTypes, Integer, Integer, List<Map<Integer, String>>, String> mapWithNestedJson = new MapProperty<TestEntityWithComplexTypes, Integer, Integer, List<Map<Integer, String>>, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getMapWithNestedJson(), (TestEntityWithComplexTypes entity$, Map<Integer, List<Map<Integer, String>>> value$) -> entity$.setMapWithNestedJson(value$), "mapWithNestedJson", "mapwithnestedjson", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("mapWithNestedJson", "mapwithnestedjson"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, List<Map<Integer, String>>, String>(FieldInfo.<TestEntityWithComplexTypes, List<Map<Integer, String>>> of("mapWithNestedJson", "mapwithnestedjson"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<List<Map<Integer, String>>>(){}, new TypeToken<String>(){}, new JSONCodec<>(List.class, JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(List.class,JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(Map.class,SimpleType.construct(Integer.class),SimpleType.construct(String.class))))));
+
+  /**
+   * Meta class for 'listNesting' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings({
+      "serial",
+      "unchecked"
+  })
+  public static final ListProperty<TestEntityWithComplexTypes, Map<Integer, String>, Map<Integer, String>> listNesting = new ListProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getListNesting(), (TestEntityWithComplexTypes entity$, List<Map<Integer, String>> value$) -> entity$.setListNesting(value$), "listNesting", "listnesting", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, Map.class, new MapProperty<TestEntityWithComplexTypes, Integer, Integer, String, String>(FieldInfo.<TestEntityWithComplexTypes, Map<Integer, String>> of("listNesting", "listnesting"), true, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("listNesting", "listnesting"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, String, String>(FieldInfo.<TestEntityWithComplexTypes, String> of("listNesting", "listnesting"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class))));
+
+  /**
+   * Meta class for 'tupleNesting' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings({
+      "serial",
+      "unchecked"
+  })
+  public static final Tuple2Property<TestEntityWithComplexTypes, Integer, List<String>> tupleNesting = new Tuple2Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTupleNesting(), (TestEntityWithComplexTypes entity$, Tuple2<Integer, List<String>> value$) -> entity$.setTupleNesting(value$), "tupleNesting", "tuplenesting", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("tupleNesting", "tuplenesting"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new ListProperty<>(FieldInfo.<TestEntityWithComplexTypes, List<String>> of("tupleNesting", "tuplenesting"), false, false, String.class, new SimpleProperty<TestEntityWithComplexTypes, String, String>(FieldInfo.<TestEntityWithComplexTypes, String> of("tupleNesting", "tuplenesting"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class))));
+
+  /**
+   * Meta class for 'tuple1' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings({
+      "serial",
+      "unchecked"
+  })
+  public static final Tuple1Property<TestEntityWithComplexTypes, ConsistencyLevel> tuple1 = new Tuple1Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTuple1(), (TestEntityWithComplexTypes entity$, Tuple1<ConsistencyLevel> value$) -> entity$.setTuple1(value$), "tuple1", "tuple1", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("tuple1", "tuple1"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new JSONCodec<>(ConsistencyLevel.class, SimpleType.construct(ConsistencyLevel.class))));
+
+  /**
+   * Meta class for 'tuple2' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings({
+      "serial",
+      "unchecked"
+  })
+  public static final Tuple2Property<TestEntityWithComplexTypes, ConsistencyLevel, Integer> tuple2 = new Tuple2Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTuple2(), (TestEntityWithComplexTypes entity$, Tuple2<ConsistencyLevel, Integer> value$) -> entity$.setTuple2(value$), "tuple2", "tuple2", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("tuple2", "tuple2"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new JSONCodec<>(ConsistencyLevel.class, SimpleType.construct(ConsistencyLevel.class))), new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("tuple2", "tuple2"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec()));
+
+  /**
+   * Meta class for 'complexNestingMap' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings({
+      "serial",
+      "unchecked"
+  })
+  public static final MapProperty<TestEntityWithComplexTypes, TestUDT, String, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>, Map<Integer, TupleValue>> complexNestingMap = new MapProperty<TestEntityWithComplexTypes, TestUDT, String, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>, Map<Integer, TupleValue>>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getComplexNestingMap(), (TestEntityWithComplexTypes entity$, Map<TestUDT, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>> value$) -> entity$.setComplexNestingMap(value$), "complexNestingMap", "complexnestingmap", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, true, new SimpleProperty<TestEntityWithComplexTypes, TestUDT, String>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("complexNestingMap", "complexnestingmap"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<TestUDT>(){}, new TypeToken<String>(){}, new JSONCodec<>(TestUDT.class, SimpleType.construct(TestUDT.class))), new MapProperty<TestEntityWithComplexTypes, Integer, Integer, Tuple3<Integer, Integer, ConsistencyLevel>, TupleValue>(FieldInfo.<TestEntityWithComplexTypes, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>> of("complexNestingMap", "complexnestingmap"), true, true, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new Tuple3Property<>(FieldInfo.<TestEntityWithComplexTypes, Tuple3<Integer, Integer, ConsistencyLevel>> of("complexNestingMap", "complexnestingmap"), new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec()), new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("complexNestingMap", "complexnestingmap"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<Integer>(){}, new EnumOrdinalCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class)))));
+
+  /**
+   * Meta class for 'writeTime' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  public static final ComputedProperty<TestEntityWithComplexTypes, Long, Long> writeTime = new ComputedProperty<TestEntityWithComplexTypes, Long, Long>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getWriteTime(), (TestEntityWithComplexTypes entity$, Long value$) -> entity$.setWriteTime(value$), "writeTime", "writetime", ColumnType.COMPUTED, new ComputedColumnInfo("writetime", "write_time", Arrays.asList(new String[]{"value"}), Long.class), IndexInfo.noIndex()), gettableData$ -> gettableData$.getLong("write_time"), new FallThroughCodec<>(Long.class));
+
+  /**
+   * Meta class for 'writeTimeWithCodec' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  public static final ComputedProperty<TestEntityWithComplexTypes, String, Long> writeTimeWithCodec = new ComputedProperty<TestEntityWithComplexTypes, String, Long>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getWriteTimeWithCodec(), (TestEntityWithComplexTypes entity$, String value$) -> entity$.setWriteTimeWithCodec(value$), "writeTimeWithCodec", "writetimewithcodec", ColumnType.COMPUTED, new ComputedColumnInfo("writetime", "write_time_2", Arrays.asList(new String[]{"value"}), Long.class), IndexInfo.noIndex()), gettableData$ -> gettableData$.getLong("write_time_2"), new StringToLongCodec());
+
+  /**
+   * Meta class for 'timeuuid' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithComplexTypes instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithComplexTypes, UUID, UUID> timeuuid = new SimpleProperty<TestEntityWithComplexTypes, UUID, UUID>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTimeuuid(), (TestEntityWithComplexTypes entity$, UUID value$) -> entity$.setTimeuuid(value$), "timeuuid", "timeuuid", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.timeuuid(), gettableData$ -> gettableData$.getUUID("timeuuid"), (settableData$, value$) -> settableData$.setUUID("timeuuid", value$), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
+
+  @Override
+  protected Class<TestEntityWithComplexTypes> getEntityClass() {
+    return TestEntityWithComplexTypes.class;
+  }
+
+  @Override
+  protected Optional<String> getStaticKeyspace() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<String> getStaticTableName() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected String getDerivedTableName() {
+    return "testentitywithcomplextypes";
+  }
+
+  @Override
+  protected BiMap<String, String> fieldNameToCqlColumn() {
+    BiMap<String,String> map = HashBiMap.create(25);
+    map.put("id", "id");
+    map.put("value", "value");
+    map.put("consistencyLevel", "consistencylevel");
+    map.put("time", "time");
+    map.put("primitiveBoolean", "primitiveboolean");
+    map.put("objectBoolean", "objectboolean");
+    map.put("primitiveByte", "primitivebyte");
+    map.put("objectByte", "objectbyte");
+    map.put("primitiveByteArray", "primitivebytearray");
+    map.put("objectByteArray", "objectbytearray");
+    map.put("integer", "integer");
+    map.put("simpleUdt", "simpleudt");
+    map.put("listUdt", "listudt");
+    map.put("mapUdt", "mapudt");
+    map.put("okSet", "okset");
+    map.put("jsonMap", "jsonmap");
+    map.put("mapWithNestedJson", "mapwithnestedjson");
+    map.put("listNesting", "listnesting");
+    map.put("tupleNesting", "tuplenesting");
+    map.put("tuple1", "tuple1");
+    map.put("tuple2", "tuple2");
+    map.put("complexNestingMap", "complexnestingmap");
+    map.put("writeTime", "writetime");
+    map.put("writeTimeWithCodec", "writetimewithcodec");
+    map.put("timeuuid", "timeuuid");
+    return map;
+  }
+
+  @Override
+  protected boolean isCounterTable() {
+    return false;
+  }
+
+  @Override
+  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<ConsistencyLevel> getStaticWriteConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<ConsistencyLevel> getStaticSerialConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<Integer> getStaticTTL() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InsertStrategy> getStaticInsertStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getPartitionKeys() {
+    return Arrays.asList(id);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getClusteringColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getStaticColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getNormalColumns() {
+    return Arrays.asList(complexNestingMap,consistencyLevel,integer,jsonMap,listNesting,listUdt,mapUdt,mapWithNestedJson,objectBoolean,objectByte,objectByteArray,okSet,primitiveBoolean,primitiveByte,primitiveByteArray,simpleUdt,time,timeuuid,tuple1,tuple2,tupleNesting,value);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getComputedColumns() {
+    return Arrays.asList(writeTime,writeTimeWithCodec);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getCounterColumns() {
+    return Arrays.asList();
+  }
+}

@@ -1,26 +1,26 @@
 /*
- * Copyright (C) 2012-2014 DuyHai DOAN
+ * Copyright (C) 2012-2015 DuyHai DOAN
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package info.archinnov.achilles.embedded;
 
 import java.util.Set;
-import com.datastax.driver.core.ProtocolOptions.Compression;
-import com.datastax.driver.core.policies.FallthroughRetryPolicy;
+
+import com.datastax.driver.core.ProtocolOptions;
 import com.datastax.driver.core.policies.Policies;
-import com.google.common.collect.ImmutableSet;
+
 import info.archinnov.achilles.type.TypedMap;
 
 public class CassandraEmbeddedConfigParameters {
@@ -38,7 +38,7 @@ public class CassandraEmbeddedConfigParameters {
 
     public static final String SAVED_CACHES_FOLDER = "savedCachesFolder";
 
-    public static final String CONFIG_YAML_FILE = "configYamlFile";
+    public static final String LOGBACK_FILE = "logbackXmlFile";
 
     public static final String CLUSTER_NAME = "clusterName";
 
@@ -57,44 +57,34 @@ public class CassandraEmbeddedConfigParameters {
     public static final String CASSANDRA_STORAGE_PORT = "storagePort";
 
     public static final String CASSANDRA_STORAGE_SSL_PORT = "storageSSLPort";
-  
+
+    public static final String CASSANDRA_JMX_PORT = "jmxPort";
+
     public static final String CASSANDRA_CONCURRENT_READS = "concurrentReads";
-  
+
     public static final String CASSANDRA_CONCURRENT_WRITES = "concurrentWrites";
+
+    public static final String DEFAULT_KEYSPACE_NAME = "defaultKeyspaceName";
 
     public static final String KEYSPACE_DURABLE_WRITE = "keyspaceDurableWrite";
 
-    public static final String BUILD_NATIVE_SESSION_ONLY = "buildNativeSessionOnly";
-
-    public static final String BUILD_NATIVE_CLUSTER_ONLY = "buildNativeClusterOnly";
-
     public static final String SCRIPT_LOCATIONS = "scriptLocations";
+    public static final String SCRIPT_TEMPLATES = "scriptTemplates";
 
     /*
      * Default values
      */
     public static final String DEFAULT_CASSANDRA_HOST = "localhost";
-
-    public static final String DEFAULT_ACHILLES_TEST_KEYSPACE_NAME = "achilles_test";
-
+    public static final String DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME = "achilles_embedded";
     static final String DEFAULT_ACHILLES_TEST_DATA_FOLDER = "target/cassandra_embedded/data";
-
     static final String DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER = "target/cassandra_embedded/commitlog";
-
     static final String DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER = "target/cassandra_embedded/saved_caches";
-
-    static final String DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER = "/cassandra_triggers";
-
-    static final Set<String> DEFAULT_ACHILLES_TEST_FOLDERS = ImmutableSet.of(DEFAULT_ACHILLES_TEST_DATA_FOLDER,
+    static final String DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER = "target/cassandra_embedded/cassandra_triggers";
+    static final Set<String> DEFAULT_ACHILLES_TEST_FOLDERS = SetUtils.of(DEFAULT_ACHILLES_TEST_DATA_FOLDER,
             DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
-
-    static final String DEFAULT_ACHILLES_TEST_CONFIG_YAML_FILE = "target/cassandra_embedded/cassandra.yaml";
-
+    static final String DEFAULT_CASSANDRA_EMBEDDED_LOGBACK_FILE = "target/cassandra_embedded/logback.xml";
     static final String DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME = "Achilles Embedded Cassandra Cluster";
-
-    static final String DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME = "achilles_embedded";
-
-    static final Boolean DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE = true;
+    static final Boolean DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE = false;
 
     /**
      * Default values
@@ -107,15 +97,14 @@ public class CassandraEmbeddedConfigParameters {
         defaultParams.put(DATA_FILE_FOLDER, DEFAULT_ACHILLES_TEST_DATA_FOLDER);
         defaultParams.put(COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER);
         defaultParams.put(SAVED_CACHES_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
-        defaultParams.put(CONFIG_YAML_FILE, DEFAULT_ACHILLES_TEST_CONFIG_YAML_FILE);
+        defaultParams.put(LOGBACK_FILE, DEFAULT_CASSANDRA_EMBEDDED_LOGBACK_FILE);
         defaultParams.put(CLUSTER_NAME, DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME);
+        defaultParams.put(DEFAULT_KEYSPACE_NAME, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);
         defaultParams.put(KEYSPACE_DURABLE_WRITE, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE);
-        defaultParams.put(COMPRESSION_TYPE, Compression.NONE);
+        defaultParams.put(COMPRESSION_TYPE, ProtocolOptions.Compression.NONE);
         defaultParams.put(LOAD_BALANCING_POLICY, Policies.defaultLoadBalancingPolicy());
         defaultParams.put(RETRY_POLICY, Policies.defaultRetryPolicy());
         defaultParams.put(RECONNECTION_POLICY, Policies.defaultReconnectionPolicy());
-        defaultParams.put(BUILD_NATIVE_SESSION_ONLY, false);
-        defaultParams.put(BUILD_NATIVE_CLUSTER_ONLY, false);
         defaultParams.putAll(parameters);
 
         return defaultParams;

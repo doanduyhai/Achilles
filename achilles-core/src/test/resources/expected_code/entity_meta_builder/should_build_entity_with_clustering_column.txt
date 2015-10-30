@@ -1,0 +1,190 @@
+package info.archinnov.achilles.generated;
+
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.TableMetadata;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.reflect.TypeToken;
+import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
+import info.archinnov.achilles.internals.codec.FallThroughCodec;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractProperty;
+import info.archinnov.achilles.internals.metamodel.SimpleProperty;
+import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
+import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
+import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithClusteringColumns;
+import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
+import info.archinnov.achilles.type.strategy.InsertStrategy;
+import java.lang.Class;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Meta class of all entities of type TestEntityWithClusteringColumns<br/>
+ * The meta class is responsible for<br/>
+ * <ul>
+ *    <li>determining runtime consistency levels (read/write,serial)<li/>
+ *    <li>determining runtime insert strategy<li/>
+ *    <li>trigger event interceptors (if any)<li/>
+ *    <li>map a com.datastax.driver.core.Row back to an instance of TestEntityWithClusteringColumns<li/>
+ *    <li>determine runtime keyspace name using static annotations and runtime SchemaNameProvider (if any)<li/>
+ *    <li>determine runtime table name using static annotations and runtime SchemaNameProvider (if any)<li/>
+ *    <li>generate schema during bootstrap<li/>
+ *    <li>validate schema during bootstrap<li/>
+ *    <li>expose all property meta classes for encoding/decoding purpose on unitary columns<li/>
+ * <ul/>
+ */
+@AchillesMeta
+public final class TestEntityWithClusteringColumns_AchillesMeta extends AbstractEntityProperty<TestEntityWithClusteringColumns> {
+  /**
+   * Meta class for 'id' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithClusteringColumns instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithClusteringColumns, Long, Long> id = new SimpleProperty<TestEntityWithClusteringColumns, Long, Long>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getId(), (TestEntityWithClusteringColumns entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.getLong("id"), (settableData$, value$) -> settableData$.setLong("id", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+
+  /**
+   * Meta class for 'uuid' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithClusteringColumns instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithClusteringColumns, UUID, UUID> uuid = new SimpleProperty<TestEntityWithClusteringColumns, UUID, UUID>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getUuid(), (TestEntityWithClusteringColumns entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, TableMetadata.Order.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.getUUID("uuid"), (settableData$, value$) -> settableData$.setUUID("uuid", value$), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
+
+  /**
+   * Meta class for 'date' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithClusteringColumns instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithClusteringColumns, Date, Date> date = new SimpleProperty<TestEntityWithClusteringColumns, Date, Date>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getDate(), (TestEntityWithClusteringColumns entity$, Date value$) -> entity$.setDate(value$), "date", "date", ColumnType.CLUSTERING, new ClusteringColumnInfo(2, false, TableMetadata.Order.DESC), IndexInfo.noIndex()), DataType.timestamp(), gettableData$ -> gettableData$.getTimestamp("date"), (settableData$, value$) -> settableData$.setTimestamp("date", value$), new TypeToken<Date>(){}, new TypeToken<Date>(){}, new FallThroughCodec<>(Date.class));
+
+  /**
+   * Meta class for 'value' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestEntityWithClusteringColumns instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestEntityWithClusteringColumns, String, String> value = new SimpleProperty<TestEntityWithClusteringColumns, String, String>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getValue(), (TestEntityWithClusteringColumns entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("value"), (settableData$, value$) -> settableData$.setString("value", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+
+  @Override
+  protected Class<TestEntityWithClusteringColumns> getEntityClass() {
+    return TestEntityWithClusteringColumns.class;
+  }
+
+  @Override
+  protected Optional<String> getStaticKeyspace() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<String> getStaticTableName() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected String getDerivedTableName() {
+    return "testentitywithclusteringcolumns";
+  }
+
+  @Override
+  protected BiMap<String, String> fieldNameToCqlColumn() {
+    BiMap<String,String> map = HashBiMap.create(4);
+    map.put("id", "id");
+    map.put("uuid", "uuid");
+    map.put("date", "date");
+    map.put("value", "value");
+    return map;
+  }
+
+  @Override
+  protected boolean isCounterTable() {
+    return false;
+  }
+
+  @Override
+  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<ConsistencyLevel> getStaticWriteConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<ConsistencyLevel> getStaticSerialConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<Integer> getStaticTTL() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InsertStrategy> getStaticInsertStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getPartitionKeys() {
+    return Arrays.asList(id);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getClusteringColumns() {
+    return Arrays.asList(uuid,date);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getStaticColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getNormalColumns() {
+    return Arrays.asList(value);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getComputedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getCounterColumns() {
+    return Arrays.asList();
+  }
+}
