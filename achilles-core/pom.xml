@@ -121,7 +121,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
                 <configuration>
                     <!--Disables annotation processing, otherwise compiler will look for the Processor declared in the-->
                     <!--META-INF/services/javax.annotation.processing.Processor file and compilation will fail-->
