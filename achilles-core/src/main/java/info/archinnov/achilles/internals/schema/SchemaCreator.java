@@ -127,10 +127,6 @@ public class SchemaCreator {
         final String keyspace = entityProperty.getKeyspace().orElse(session.getLoggedKeyspace());
         final SchemaContext schemaContext = new SchemaContext(keyspace, true, true);
         final List<String> schemas = generateTable_And_Indices(schemaContext, entityProperty);
-//        entityProperty.allColumns.stream()
-//                .filter(property -> property instanceof UDTProperty)
-//                .map(property -> (UDTProperty) property)
-//                .forEach(udtProp -> schemas.add(udtProp.udtClassProperty.generateSchema(schemaContext)));
 
         schemas.forEach(schema -> {
 

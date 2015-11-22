@@ -38,30 +38,28 @@ public class FieldParsingContext {
     public final ColumnInfo columnInfo;
     public boolean buildExtractor;
 
-    private FieldParsingContext(EntityParsingContext entityContext, TypeName entityRawType, CodeBlock fieldInfoCode,
-                                String fieldName, String cqlColumn, ColumnType columnType, ColumnInfo columnInfo, boolean buildExtractor) {
-        this(entityContext, entityRawType, fieldInfoCode, fieldName, cqlColumn, columnType, columnInfo);
-        this.buildExtractor = buildExtractor;
-    }
-
-    public FieldParsingContext(EntityParsingContext entityContext, TypeName entityRawType, CodeBlock fieldInfoCode,
-                               String fieldName, String cqlColumn, ColumnType columnType, ColumnInfo columnInfo) {
+    public FieldParsingContext(EntityParsingContext entityContext, TypeName entityRawType, FieldInfoContext fieldInfoContext) {
         this.entityRawType = entityRawType;
-        this.fieldInfoCode = fieldInfoCode;
-        this.fieldName = fieldName;
+        this.fieldInfoCode = fieldInfoContext.codeBlock;
+        this.fieldName = fieldInfoContext.fieldName;
         this.entityContext = entityContext;
-        this.columnType = columnType;
-        this.columnInfo = columnInfo;
+        this.columnType = fieldInfoContext.columnType;
+        this.columnInfo = fieldInfoContext.columnInfo;
         this.className = entityContext.className;
-        this.cqlColumn = cqlColumn;
+        this.cqlColumn = fieldInfoContext.cqlColumn;
         this.buildExtractor = true;
     }
 
+    public FieldParsingContext(EntityParsingContext entityContext, TypeName entityRawType, FieldInfoContext fieldInfoContext, boolean buildExtractor) {
+        this(entityContext, entityRawType, fieldInfoContext);
+        this.buildExtractor = buildExtractor;
+    }
+
     public FieldParsingContext noLambda(TypeName entityType, TypeName sourceType) {
-        return new FieldParsingContext(entityContext, entityRawType,
+        return new FieldParsingContext(entityContext, entityRawType, new FieldInfoContext(
                 CodeBlock.builder().add("$T.<$T, $T> of($S, $S)", FIELD_INFO, entityType, sourceType,
                         fieldName, cqlColumn).build(),
-                fieldName, cqlColumn, columnType, columnInfo, false);
+                fieldName, cqlColumn, columnType, columnInfo), false);
     }
 
     @Override

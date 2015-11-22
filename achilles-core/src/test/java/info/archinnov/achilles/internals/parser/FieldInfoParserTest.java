@@ -35,18 +35,17 @@ import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
+import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
 import info.archinnov.achilles.type.tuples.Tuple2;
-import info.archinnov.achilles.type.tuples.Tuple5;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FieldInfoParserTest extends AbstractTestProcessor {
 
     private final InternalNamingStrategy strategy = new SnakeCaseNaming();
-//    private EntityParsingContext context;
 
     @Before
     public void setUp() {
@@ -292,8 +291,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @PartitionKey(0) private Long wrongPartitionOrder;
             VariableElement elm = findFieldInType(typeElement, "wrongPartitionOrder");
-
-            parser.buildColumnInfo(elm, "wrongPartitionOrder", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            parser.buildColumnInfo(annotationTree, elm, "wrongPartitionOrder", typeName);
         });
         failTestWithMessage("@PartitionKey order on field 'wrongPartitionOrder' of class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
@@ -310,8 +309,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @ClusteringColumn(0) private String wrongClusteringOrder;
             VariableElement elm = findFieldInType(typeElement, "wrongClusteringOrder");
-
-            parser.buildColumnInfo(elm, "wrongClusteringOrder", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            parser.buildColumnInfo(annotationTree, elm, "wrongClusteringOrder", typeName);
         });
         failTestWithMessage("@ClusteringColumn order on field 'wrongClusteringOrder' of class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
@@ -328,8 +327,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @PartitionKey(1) private Long id;
             VariableElement elm = findFieldInType(typeElement, "id");
-
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(elm, "id", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "id", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo(1, false)");
         });
@@ -346,8 +345,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @ClusteringColumn(value = 2, asc = false) private int clust2;
             VariableElement elm = findFieldInType(typeElement, "clust2");
-
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(elm, "clust2", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "clust2", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo(2, false, com.datastax.driver.core.TableMetadata.Order.DESC)");
         });
@@ -364,8 +363,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @Static private int staticCol;
             VariableElement elm = findFieldInType(typeElement, "staticCol");
-
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(elm, "staticCol", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "staticCol", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ColumnInfo(false)");
         });
@@ -383,8 +382,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @Computed(function = "writetime", alias = "writetime", targettargetColumnstaticCol","normal"}, cqlClass = Long.class)
             // private Long computed;
             VariableElement elm = findFieldInType(typeElement, "computed");
-
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(elm, "computed", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "computed", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo(\"writetime\", \"writetime\", java.util.Arrays.asList(new String[]{\"staticCol\",\"normal\"}), java.lang.Long.class)");
         });
@@ -402,8 +401,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @Column private String normal;
             VariableElement elm = findFieldInType(typeElement, "normal");
-
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(elm, "normal", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "normal", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ColumnInfo(false)");
         });
@@ -420,8 +419,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @Column @Frozen private TestUDT udt;
             VariableElement elm = findFieldInType(typeElement, "udt");
-
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(elm, "udt", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "udt", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ColumnInfo(true)");
         });
@@ -441,7 +440,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
-                    .isEqualTo("new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.COLLECTION, \"indexed_list_index\", null, \"\")");
+                    .isEqualTo("new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.COLLECTION, \"indexed_list_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -460,7 +459,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
-                    .isEqualTo("new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.COLLECTION, \"list_index\", null, \"\")");
+                    .isEqualTo("new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.COLLECTION, \"list_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -499,7 +498,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(
-                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.CUSTOM, \"indexed_entry_map_index\", info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo.class, \"\")");
+                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.CUSTOM, \"indexed_entry_map_index\", \"java.lang.Long\", \"\")");
         });
         launchTest();
     }
@@ -519,7 +518,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(
-                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.MAP_KEY, \"indexed_key_map_index\", null, \"\")");
+                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.MAP_KEY, \"indexed_key_map_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -539,7 +538,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(
-                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.COLLECTION, \"indexed_value_map_index\", null, \"\")");
+                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.COLLECTION, \"indexed_value_map_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -596,7 +595,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(
-                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.NORMAL, \"indexed_udt_index\", null, \"\")");
+                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.NORMAL, \"indexed_udt_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -616,7 +615,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(
-                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.FULL, \"indexed_frozen_list_index\", null, \"\")");
+                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.FULL, \"indexed_frozen_list_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -651,9 +650,9 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "consistencyLevel");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
 
-            Tuple5<CodeBlock, String, String, ColumnType, ColumnInfo> tuple3 = parser.buildFieldInfo(elm, annotationTree, context);
+            FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
 
-            assertThat(tuple3._1().toString().trim().replaceAll("\n", ""))
+            assertThat(fieldInfo.codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(readCodeLineFromFile("expected_code/method_parser/should_generate_field_info_for_consistencyLevel.txt"));
         });
         launchTest();
@@ -671,9 +670,9 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "primitiveBoolean");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
 
-            Tuple5<CodeBlock, String, String, ColumnType, ColumnInfo> tuple5 = parser.buildFieldInfo(elm, annotationTree, context);
+            FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
 
-            assertThat(tuple5._1().toString().trim().replaceAll("\n", ""))
+            assertThat(fieldInfo.codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(readCodeLineFromFile("expected_code/method_parser/should_generate_field_info_for_primitiveBoolean.txt"));
         });
         launchTest();
@@ -691,9 +690,9 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "objectBoolean");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
 
-            Tuple5<CodeBlock, String, String, ColumnType, ColumnInfo> tuple5 = parser.buildFieldInfo(elm, annotationTree, context);
+            FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
 
-            assertThat(tuple5._1().toString().trim().replaceAll("\n", ""))
+            assertThat(fieldInfo.codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(readCodeLineFromFile("expected_code/method_parser/should_generate_field_info_for_objectBoolean.txt"));
         });
         launchTest();
@@ -718,9 +717,9 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "map");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
 
-            Tuple5<CodeBlock, String, String, ColumnType, ColumnInfo> tuple5 = parser.buildFieldInfo(elm, annotationTree, context);
+            FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
 
-            assertThat(tuple5._1().toString().trim().replaceAll("\n", ""))
+            assertThat(fieldInfo.codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(readCodeLineFromFile("expected_code/method_parser/should_generate_field_info_for_map.txt"));
         });
         launchTest();

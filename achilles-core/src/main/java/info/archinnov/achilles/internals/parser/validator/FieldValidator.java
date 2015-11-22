@@ -16,26 +16,19 @@
 
 package info.archinnov.achilles.internals.parser.validator;
 
-import static com.google.auto.common.MoreTypes.asDeclared;
 import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
-import static info.archinnov.achilles.internals.apt.AptUtils.getElementValueClassName;
 import static info.archinnov.achilles.internals.parser.TypeUtils.ALLOWED_TYPES;
 import static info.archinnov.achilles.internals.parser.validator.TypeValidator.validateAllowedTypes;
 import static java.util.stream.Collectors.summingInt;
-import static java.util.stream.Collectors.toList;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Arrays;
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import javax.lang.model.element.AnnotationMirror;
+import java.util.Set;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 
-import com.squareup.javapoet.ClassName;
+import com.google.auto.common.MoreTypes;
 import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.annotations.*;
@@ -100,10 +93,10 @@ public class FieldValidator {
         aptUtils.validateFalse((counter != null) && (timeUUID != null), "Cannot have both @Counter and @TimeUUID annotation on the same field '%s' in class '%s'", fieldName, className);
     }
 
-    public static void validateAllowedFrozen(Optional<Frozen> frozen, AptUtils aptUtils, VariableElement elm, String fieldName, TypeName rawClass) {
-        if (frozen.isPresent()) {
+    public static void validateAllowedFrozen(boolean isFrozen, AptUtils aptUtils, VariableElement elm, String fieldName, TypeName rawClass) {
+        if (isFrozen) {
             aptUtils.validateTrue(aptUtils.isCompositeType(elm.asType()),
-                    "@Frozen annotation only field '%s' of class '%s' is only allowed for collections an UDT ",
+                    "@Frozen annotation on field '%s' of class '%s' is only allowed for collections and UDT",
                     fieldName, rawClass);
         }
     }
@@ -114,7 +107,7 @@ public class FieldValidator {
                 rawTargetType.toString(), context.fieldName, context.className);
     }
 
-    public static void validateCounter(AptUtils aptUtils, TypeName targetType, List<AnnotationMirror> annotations, FieldParsingContext context) {
+    public static void validateCounter(AptUtils aptUtils, TypeName targetType, Set<Class<? extends Annotation>> annotations, FieldParsingContext context) {
         if (containsAnnotation(annotations, Counter.class)) {
             aptUtils.validateTrue(targetType.box().equals(TypeName.LONG.box()),
                     "Field '%s' of class '%s' annotated with @Counter should be of type Long/long",
@@ -133,10 +126,8 @@ public class FieldValidator {
         aptUtils.validateTrue(checkForKeyOrdering == sumOfOrders, "The %s ordering is wrong in class '%s'", type, rawClassName);
     }
 
-    public static CodecContext validateCodec(AptUtils aptUtils, AnnotationMirror codecFromType, TypeName sourceType,
+    public static CodecContext validateCodec(AptUtils aptUtils, CodecContext codecContext, TypeName sourceType,
                                              Optional<TypeName> cqlClass, boolean isCounter) {
-
-        final CodecContext codecContext = getCodecTypes(aptUtils, codecFromType);
         final String codecClass = codecContext.codecType.toString();
 
         aptUtils.validateTrue(sourceType.box().equals(codecContext.sourceType.box()), "Codec '%s' source type '%s' should match current object type '%s'",
@@ -153,46 +144,5 @@ public class FieldValidator {
         validateAllowedTypes(aptUtils, sourceType, codecContext.targetType);
 
         return codecContext;
-    }
-
-    private static CodecContext getCodecTypes(AptUtils aptUtils, AnnotationMirror codecFromType) {
-        Optional<Class<Codec>> codecClassO = AptUtils.getElementValueClass(codecFromType, "value", false);
-        if (codecClassO.isPresent()) {
-            Class<Codec> codecClass = codecClassO.get();
-            List<Type> genericTypes = Arrays.asList(codecClass.getGenericInterfaces());
-
-            final List<TypeName> codecTypes = genericTypes
-                    .stream()
-                    .filter(x -> x instanceof ParameterizedType)
-                    .map(x -> (ParameterizedType) x)
-                    .filter(x -> x.getRawType().getTypeName().equals(info.archinnov.achilles.type.codec.Codec.class.getCanonicalName()))
-                    .flatMap(x -> Arrays.asList(x.getActualTypeArguments()).stream())
-                    .map(TypeName::get)
-                    .collect(Collectors.toList());
-            aptUtils.validateTrue(codecTypes.size() == 2, "Codec class '%s' should have 2 parameters: Codec<FROM, TO>", codecClass);
-            return new CodecContext(ClassName.get(codecClass), codecTypes.get(0), codecTypes.get(1));
-        } else {
-            final TypeMirror codecInterfaceType = aptUtils.erasure(aptUtils.elementUtils.getTypeElement(info.archinnov.achilles.type.codec.Codec.class.getCanonicalName()).asType());
-            final Optional<? extends TypeMirror> foundCodecInterface = aptUtils.elementUtils.getTypeElement(getElementValueClassName(codecFromType, "value", false))
-                    .getInterfaces()
-                    .stream()
-                    .filter(x -> aptUtils.typeUtils.isSameType(aptUtils.erasure(x), codecInterfaceType))
-                    .findFirst();
-
-            aptUtils.validateTrue(foundCodecInterface.isPresent(), "Codec class '%s' should implement the Codec<FROM, TO> interface", codecFromType);
-
-            final TypeMirror typeMirror = foundCodecInterface.get();
-
-            final List<TypeName> codecTypes = asDeclared(typeMirror)
-                    .getTypeArguments()
-                    .stream()
-                    .map(TypeName::get)
-                    .collect(toList());
-            aptUtils.validateTrue(codecTypes.size() == 2, "Codec class '%s' should have 2 parameters: Codec<FROM, TO>", codecInterfaceType);
-
-            final TypeMirror codecType = aptUtils.erasure(aptUtils.elementUtils.getTypeElement(getElementValueClassName(codecFromType, "value", false)));
-
-            return new CodecContext(TypeName.get(codecType), codecTypes.get(0), codecTypes.get(1));
-        }
     }
 }

@@ -41,6 +41,7 @@ import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.parser.CodecFactory.CodecInfo;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
+import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.parser.field.ClassAnnotatedByCodec;
@@ -439,6 +440,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
 
     private FieldParsingContext getFieldParsingContext(AptUtils aptUtils, TypeElement typeElement) {
         final EntityParsingContext epc = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), null, new GlobalParsingContext());
-        return new FieldParsingContext(epc, ClassName.get(aptUtils.erasure(typeElement)), fieldInfoCode, "field", "column", ColumnType.NORMAL, new ColumnInfo((false)));
+        return new FieldParsingContext(epc, ClassName.get(aptUtils.erasure(typeElement)),
+                new FieldInfoContext(fieldInfoCode, "field", "column", ColumnType.NORMAL, new ColumnInfo((false))));
     }
 }

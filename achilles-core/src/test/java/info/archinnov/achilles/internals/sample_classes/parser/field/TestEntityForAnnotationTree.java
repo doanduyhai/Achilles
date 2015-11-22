@@ -16,15 +16,11 @@
 
 package info.archinnov.achilles.internals.sample_classes.parser.field;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import info.archinnov.achilles.annotations.EmptyCollectionIfNull;
-import info.archinnov.achilles.annotations.Enumerated;
-import info.archinnov.achilles.annotations.Frozen;
-import info.archinnov.achilles.annotations.JSON;
+import com.datastax.driver.core.ConsistencyLevel;
+
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 import info.archinnov.achilles.type.tuples.Tuple3;
 
@@ -40,6 +36,7 @@ public class TestEntityForAnnotationTree {
 
     private List<Integer> list;
 
+    @Frozen
     private TestUDT testUdt;
 
     private List<Map<Integer, String>> level1Nesting;
@@ -59,6 +56,24 @@ public class TestEntityForAnnotationTree {
     private Map<@JSON Integer, List<Integer>> jsonMap;
 
     private Map<Integer, @JSON List<Map<Integer, String>>> mapWithNestedJson;
+
+    private Map<@Codec(IntToStringCodec.class) Integer, String> mapWithCodec;
+
+    @Computed(function = "writetime", alias = "writetime_col", cqlClass = Long.class, targetColumns = {"id", "value"})
+    private Long writetime;
+
+    @Index(indexClassName = "myName", name = "my_index", indexOptions = "{}")
+    private String indexedValue;
+
+    @PartitionKey
+    private Long partitionKey;
+
+    @ClusteringColumn(value = 2, asc = false)
+    private UUID clusteringCol;
+
+    @Enumerated
+    private ConsistencyLevel consistencyLevel;
+
 }
 
 

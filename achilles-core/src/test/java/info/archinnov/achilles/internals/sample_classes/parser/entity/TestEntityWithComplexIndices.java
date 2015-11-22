@@ -51,7 +51,7 @@ public class TestEntityWithComplexIndices {
     @Column
     private Map<Integer, String> indexOnMapEntry;
 
-    @Index(indexClass = Long.class)
+    @Index(indexClassName = "java.lang.Long")
     private Long customIndex;
 
     public Long getId() {

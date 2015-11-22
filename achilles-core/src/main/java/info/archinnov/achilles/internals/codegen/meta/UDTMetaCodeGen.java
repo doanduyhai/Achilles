@@ -49,7 +49,7 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
 
         final TypeName rawBeanType = TypeName.get(aptUtils.erasure(elm));
 
-        final Optional<Strategy> strategy = Optional.ofNullable(elm.getAnnotation(Strategy.class));
+        final Optional<Strategy> strategy = aptUtils.getAnnotationOnClass(elm, Strategy.class);
 
         final String className = elm.getSimpleName() + META_SUFFIX;
         TypeName classType = ClassName.get(UDT_META_PACKAGE, className);
@@ -57,7 +57,7 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(genericType(ABSTRACT_UDT_CLASS_PROPERTY, rawBeanType))
                 .addMethod(buildGetStaticKeyspace(elm))
-                .addMethod(buildGetStaticUDTName(elm, context))
+                .addMethod(buildGetStaticUDTName(elm))
                 .addMethod(buildGetStaticNamingStrategy(strategy))
                 .addMethod(buildGetUdtName(elm, context))
                 .addMethod(buildGetUdtClass(rawBeanType))
@@ -85,9 +85,8 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .build();
     }
 
-    private MethodSpec buildGetStaticUDTName(TypeElement elm, EntityParsingContext context) {
-        final UDT udt = elm.getAnnotation(UDT.class);
-
+    private MethodSpec buildGetStaticUDTName(TypeElement elm) {
+        final UDT udt = aptUtils.getAnnotationOnClass(elm, UDT.class).get();
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("getStaticUdtName")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
@@ -103,8 +102,8 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
     }
 
     private MethodSpec buildGetUdtName(TypeElement elm, EntityParsingContext context) {
-        final UDT udt = elm.getAnnotation(UDT.class);
-        final Optional<Strategy> strategy = Optional.ofNullable(elm.getAnnotation(Strategy.class));
+        final UDT udt = aptUtils.getAnnotationOnClass(elm, UDT.class).get();
+        final Optional<Strategy> strategy = aptUtils.getAnnotationOnClass(elm, Strategy.class);
         final String udtName = isBlank(udt.name())
                 ? inferNamingStrategy(strategy, context.namingStrategy).apply(elm.getSimpleName().toString())
                 : udt.name();
@@ -119,7 +118,7 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
     }
 
     private MethodSpec buildGetStaticKeyspace(TypeElement elm) {
-        final UDT udt = elm.getAnnotation(UDT.class);
+        final UDT udt = aptUtils.getAnnotationOnClass(elm, UDT.class).get();
         final CodeBlock keyspaceCodeBlock = Optional
                 .ofNullable(isBlank(udt.keyspace()) ? null : udt.keyspace())
                 .map(x -> CodeBlock.builder().addStatement("return $T.of($S)", OPTIONAL, x).build())

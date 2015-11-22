@@ -69,9 +69,9 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
 
     public EntityMetaSignature buildEntityMeta(TypeElement elm, GlobalParsingContext globalParsingContext, List<TypeParsingResult> parsingResults) {
         final TypeName rawClassTypeName = getRawType(TypeName.get(elm.asType()));
-        final Optional<Consistency> consistency = Optional.ofNullable(elm.getAnnotation(Consistency.class));
-        final Optional<TTL> ttl = Optional.ofNullable(elm.getAnnotation(TTL.class));
-        final Optional<Strategy> strategy = Optional.ofNullable(elm.getAnnotation(Strategy.class));
+        final Optional<Consistency> consistency = aptUtils.getAnnotationOnClass(elm, Consistency.class);
+        final Optional<TTL> ttl = aptUtils.getAnnotationOnClass(elm, TTL.class);
+        final Optional<Strategy> strategy = aptUtils.getAnnotationOnClass(elm, Strategy.class);
 
         validateIsAConcreteNonFinalClass(aptUtils, elm);
         validateHasPublicConstructor(aptUtils, rawClassTypeName, elm);
@@ -169,7 +169,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
     }
 
     private MethodSpec buildStaticKeyspace(TypeElement elm) {
-        final Entity entity = elm.getAnnotation(Entity.class);
+        final Entity entity = aptUtils.getAnnotationOnClass(elm, Entity.class).get();
 
         final Optional<String> keyspace = Optional.ofNullable(isBlank(entity.keyspace()) ? null : entity.keyspace());
 
@@ -186,7 +186,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
     }
 
     private MethodSpec buildDerivedTableName(TypeElement elm, InternalNamingStrategy defaultStrategy) {
-        final Optional<Strategy> strategy = Optional.ofNullable(elm.getAnnotation(Strategy.class));
+        final Optional<Strategy> strategy = aptUtils.getAnnotationOnClass(elm, Strategy.class);
 
         final String tableName = inferNamingStrategy(strategy, defaultStrategy).apply(elm.getSimpleName().toString());
 
@@ -200,7 +200,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
     }
 
     private MethodSpec buildStaticTableName(TypeElement elm) {
-        final Entity entity = elm.getAnnotation(Entity.class);
+        final Entity entity = aptUtils.getAnnotationOnClass(elm, Entity.class).get();
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("getStaticTableName")
                 .addAnnotation(Override.class)

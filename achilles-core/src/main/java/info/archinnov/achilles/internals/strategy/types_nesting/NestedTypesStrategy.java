@@ -18,9 +18,7 @@ package info.archinnov.achilles.internals.strategy.types_nesting;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
 
-import java.util.List;
 import java.util.Map;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
 import com.squareup.javapoet.TypeName;
@@ -40,7 +38,7 @@ public interface NestedTypesStrategy {
             final AnnotationTree next = annotationTree.next();
             final TypeMirror mapKey = next.getCurrentType();
             if (aptUtils.isCompositeType(mapKey)) {
-                aptUtils.validateTrue(containsAnnotation(next.getAnnotations(), Frozen.class),
+                aptUtils.validateTrue(containsAnnotation(next, Frozen.class),
                         "Map key of type collection/UDT/tuples '%s' in field '%s' of class '%s' should be annotated with @Frozen",
                         mapKey, fieldName, rawClass);
             }
@@ -51,9 +49,8 @@ public interface NestedTypesStrategy {
     }
 
     default void validateIndexAnnotation(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
-        final List<AnnotationMirror> annotations = annotationTree.getAnnotations();
         if (annotationTree.depth() > 2) {
-            aptUtils.validateFalse(containsAnnotation(annotations, Index.class),
+            aptUtils.validateFalse(containsAnnotation(annotationTree, Index.class),
                     "@Index annotation cannot be nested for depth > 2 for field '%s' of class '%s'",
                     fieldName, rawClass);
         }

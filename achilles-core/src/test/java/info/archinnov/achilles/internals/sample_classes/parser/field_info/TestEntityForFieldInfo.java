@@ -97,7 +97,7 @@ public class TestEntityForFieldInfo {
 
     private List<String> notIndexedList;
 
-    @Index(indexClass = TestEntityForFieldInfo.class)
+    @Index(indexClassName = "java.lang.Long")
     private Map<Integer, String> indexedEntryMap;
 
     private Map<@Index Integer, String> indexedKeyMap;

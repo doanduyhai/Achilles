@@ -32,6 +32,8 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
+import org.eclipse.jdt.internal.compiler.apt.model.DeclaredTypeImpl;
+
 import com.datastax.driver.core.UDTValue;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
@@ -43,6 +45,8 @@ import com.sun.tools.javac.model.JavacElements;
 
 import info.archinnov.achilles.annotations.Codec;
 import info.archinnov.achilles.annotations.UDT;
+import info.archinnov.achilles.internals.parser.AnnotationTree;
+import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 /**
@@ -71,28 +75,12 @@ public class AptUtils {
         }
     }
 
-
-    public static TypeName getFieldTypeName(VariableElement variableElement) {
-        return ParameterizedTypeName.get(variableElement.asType());
-    }
-
-    public static String getFieldType(VariableElement variableElement) {
-        return MoreTypes.asTypeElement(variableElement.asType()).getQualifiedName().toString();
-    }
-
-    public static boolean isPrimitiveByte(TypeMirror typeMirror) {
-        return typeMirror.getKind() == TypeKind.BYTE;
-    }
-
-    public static Optional<Codec> getOptionalCodecFromClass(TypeMirror typeMirror) {
-        final Optional<Codec> codecFromClass;
-
+    public Optional<Codec> getOptionalCodecFromClass(TypeMirror typeMirror) {
         if (isPrimitive(typeMirror) || isArray(typeMirror)) {
-            codecFromClass = Optional.empty();
+            return Optional.empty();
         } else {
-            codecFromClass = Optional.ofNullable(MoreTypes.asTypeElement(typeMirror).getAnnotation(Codec.class));
+            return getAnnotationOnClass(typeMirror, Codec.class);
         }
-        return codecFromClass;
     }
 
     public static boolean isPrimitive(TypeMirror typeMirror) {
@@ -107,8 +95,8 @@ public class AptUtils {
         return asDeclared(typeMirror).asElement().getKind() == ElementKind.ENUM;
     }
 
-    public static VariableElement findFieldByName(List<VariableElement> elements, String name) {
-        return elements.stream().filter(x -> x.getSimpleName().contentEquals(name)).findFirst().get();
+    public static boolean isAnEnum(Object enumValue) {
+        return enumValue.getClass().isEnum();
     }
 
     public static List<? extends TypeMirror> getTypeArguments(TypeMirror typeMirror) {
@@ -119,18 +107,29 @@ public class AptUtils {
         return MoreElements.asType(MoreTypes.asElement(typeMirror)).getInterfaces();
     }
 
-    public static String getFQN(TypeMirror typeMirror) {
-        return MoreTypes.asTypeElement(typeMirror).getQualifiedName().toString();
-    }
-
-    public static boolean containsAnnotation(List<AnnotationMirror> annotationMirrors, Class<? extends Annotation> annotationClass) {
-        return annotationMirrors.stream().anyMatch(x -> areSameByClass(x, annotationClass));
-    }
-
-    public static Optional<? extends AnnotationMirror> extractAnnotation(List<? extends AnnotationMirror> annotationMirrors, Class<? extends Annotation> annotationClass) {
+    public static boolean containsAnnotation(Set<Class<? extends Annotation>> annotationMirrors, Class<? extends Annotation> annotationClass) {
         return annotationMirrors
                 .stream()
-                .filter(x -> areSameByClass(x, annotationClass))
+                .filter(x -> x.equals(annotationClass))
+                .findAny().isPresent();
+    }
+
+    public static boolean containsAnnotation(AnnotationTree annotationTree, Class<? extends Annotation> annotationClass) {
+        return annotationTree
+                .getAnnotations()
+                .keySet()
+                .stream()
+                .filter(x -> x.equals(annotationClass))
+                .findAny().isPresent();
+    }
+
+    public static Optional<TypedMap> extractTypedMap(AnnotationTree annotationTree, Class<? extends Annotation> annotationClass) {
+        return annotationTree
+                .getAnnotations()
+                .entrySet()
+                .stream()
+                .filter(x -> x.getKey().equals(annotationClass))
+                .map(Map.Entry::getValue)
                 .findFirst();
     }
 
@@ -139,20 +138,6 @@ public class AptUtils {
     }
 
     // INSTANCE METHODS
-
-    public static boolean areSame(AnnotationMirror a1, AnnotationMirror a2) {
-        if (a1 != null && a2 != null) {
-            if (!annotationName(a1).equals(annotationName(a2))) {
-                return false;
-            } else {
-                return getElementValuesWithDefaults(a1).equals(getElementValuesWithDefaults(a2));
-            }
-        } else {
-            // only true, iff both are null
-            return a1 == a2;
-        }
-
-    }
 
     /**
      * Checks that the annotation {@code am} has the name of {@code anno}.
@@ -329,6 +314,21 @@ public class AptUtils {
         return null;
     }
 
+
+    public <T extends Annotation> Optional<T> getAnnotationOnClass(TypeMirror typeMirror, Class<T> annotationClass) {
+        if (typeMirror.getKind() == TypeKind.DECLARED) {
+            return Optional.ofNullable(this.elementUtils.getTypeElement(MoreTypes.asDeclared(this.erasure(typeMirror)).asElement().toString())
+                    .getAnnotation(annotationClass));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public <T extends Annotation> Optional<T> getAnnotationOnClass(TypeElement typeElement, Class<T> annotationClass) {
+        return Optional.ofNullable(this.elementUtils.getTypeElement(typeElement.getQualifiedName())
+                .getAnnotation(annotationClass));
+    }
+
     public TypeName extractTypeArgument(TypeName typeName, int argumentIndex) {
         validateTrue(typeName instanceof ParameterizedTypeName, "Type name %s is not an instance of ParameterizedTypeName", typeName);
         final ParameterizedTypeName paramTypeName = (ParameterizedTypeName) typeName;
@@ -449,6 +449,6 @@ public class AptUtils {
                 || this.isAssignableFrom(Map.class, type)
                 || this.isAssignableFrom(List.class, type)
                 || this.isAssignableFrom(UDTValue.class, type)
-                || MoreTypes.asTypeElement(type).getAnnotation(UDT.class) != null;
+                || getAnnotationOnClass(typeMirror, UDT.class).isPresent();
     }
 }

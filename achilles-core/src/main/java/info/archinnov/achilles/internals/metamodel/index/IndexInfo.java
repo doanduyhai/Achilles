@@ -17,10 +17,10 @@
 package info.archinnov.achilles.internals.metamodel.index;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,14 +30,14 @@ public class IndexInfo {
 
     public final IndexType type;
     public final String name;
-    public final Optional<Class<?>> indexClass;
+    public final Optional<String> indexClassName;
     public final Optional<String> indexOptions;
 
-    public IndexInfo(IndexType type, String name, Class<?> indexClass, String indexOptions) {
+    public IndexInfo(IndexType type, String name, String indexClassName, String indexOptions) {
         this.type = type;
         this.name = name;
-        this.indexClass = Optional.ofNullable(indexClass);
-        this.indexOptions = Optional.ofNullable(indexOptions);
+        this.indexClassName = isNotBlank(indexClassName) ? Optional.ofNullable(indexClassName): Optional.empty();
+        this.indexOptions = isNotBlank(indexOptions) ? Optional.ofNullable(indexClassName): Optional.empty();
     }
 
     public static IndexInfo noIndex() {
@@ -75,11 +75,11 @@ public class IndexInfo {
             tableWithKeyspace = keyspace.get() + "." + table;
         }
 
-        if (indexClass.isPresent()) {
+        if (indexClassName.isPresent()) {
             custom = "CUSTOM";
-            indexClassString = " USING '" + indexClass.get().getCanonicalName() + "'";
+            indexClassString = " USING '" + indexClassName.get() + "'";
             indexOptions.ifPresent(x -> {
-                if (StringUtils.isNotBlank(x)) {
+                if (isNotBlank(x)) {
                     indexOptionsString.append(" WITH OPTIONS = '").append(x).append("'");
                 }
             });

@@ -16,17 +16,16 @@
 
 package info.archinnov.achilles.internals.parser;
 
+import static com.google.auto.common.MoreTypes.asDeclared;
 import static info.archinnov.achilles.internals.apt.AptUtils.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateCodec;
 import static info.archinnov.achilles.internals.parser.validator.TypeValidator.validateAllowedTypes;
+import static java.util.stream.Collectors.toList;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.MirroredTypeException;
@@ -44,6 +43,7 @@ import info.archinnov.achilles.annotations.Enumerated.Encoding;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.context.CodecContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
+import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 
@@ -60,6 +60,52 @@ public class CodecFactory {
         this.aptUtils = aptUtils;
     }
 
+    public static CodecContext buildCodecContext(AptUtils aptUtils, AnnotationMirror codecFromType) {
+        Optional<Class<Codec>> codecClassO = AptUtils.getElementValueClass(codecFromType, "value", false);
+        if (codecClassO.isPresent()) {
+            Class<Codec> codecClass = codecClassO.get();
+            List<Type> genericTypes = Arrays.asList(codecClass.getGenericInterfaces());
+
+            final List<TypeName> codecTypes = genericTypes
+                    .stream()
+                    .filter(x -> x instanceof ParameterizedType)
+                    .map(x -> (ParameterizedType) x)
+                    .filter(x -> x.getRawType().getTypeName().equals(info.archinnov.achilles.type.codec.Codec.class.getCanonicalName()))
+                    .flatMap(x -> Arrays.asList(x.getActualTypeArguments()).stream())
+                    .map(TypeName::get)
+                    .collect(Collectors.toList());
+            aptUtils.validateTrue(codecTypes.size() == 2, "Codec class '%s' should have 2 parameters: Codec<FROM, TO>", codecClass);
+            return new CodecContext(ClassName.get(codecClass), codecTypes.get(0), codecTypes.get(1));
+        } else {
+            return buildCodecContext(aptUtils, getElementValueClassName(codecFromType, "value", false).toString());
+        }
+    }
+
+    public static CodecContext buildCodecContext(AptUtils aptUtils, String codecClassName) {
+
+        final TypeMirror codecInterfaceType = aptUtils.erasure(aptUtils.elementUtils.getTypeElement(info.archinnov.achilles.type.codec.Codec.class.getCanonicalName()).asType());
+        final Optional<? extends TypeMirror> foundCodecInterface = aptUtils.elementUtils.getTypeElement(codecClassName)
+                .getInterfaces()
+                .stream()
+                .filter(x -> aptUtils.typeUtils.isSameType(aptUtils.erasure(x), codecInterfaceType))
+                .findFirst();
+
+        aptUtils.validateTrue(foundCodecInterface.isPresent(), "Codec class '%s' should implement the Codec<FROM, TO> interface", codecClassName);
+
+        final TypeMirror typeMirror = foundCodecInterface.get();
+
+        final List<TypeName> codecTypes = asDeclared(typeMirror)
+                .getTypeArguments()
+                .stream()
+                .map(TypeName::get)
+                .collect(toList());
+        aptUtils.validateTrue(codecTypes.size() == 2, "Codec class '%s' should have 2 parameters: Codec<FROM, TO>", codecInterfaceType);
+
+        final TypeMirror codecType = aptUtils.erasure(aptUtils.elementUtils.getTypeElement(codecClassName));
+
+        return new CodecContext(TypeName.get(codecType), codecTypes.get(0), codecTypes.get(1));
+    }
+
     public CodecInfo createCodec(TypeName sourceType, AnnotationTree annotationTree, FieldParsingContext context) {
         final String fieldName = context.fieldName;
         final String className = context.className;
@@ -67,16 +113,15 @@ public class CodecFactory {
         TypeName targetType = sourceType;
         TypeMirror typeMirror = annotationTree.getCurrentType();
 
-        final List<AnnotationMirror> annotations = annotationTree.getAnnotations();
-        final Optional<? extends AnnotationMirror> jsonTransform = extractAnnotation(annotations, JSON.class);
-        final Optional<? extends AnnotationMirror> enumerated = extractAnnotation(annotations, Enumerated.class);
-        final Optional<? extends AnnotationMirror> codecFromType = extractAnnotation(annotations, Codec.class);
-        final Optional<Codec> codecFromClass = getOptionalCodecFromClass(typeMirror);
-        final Optional<? extends AnnotationMirror> computed = extractAnnotation(annotations, Computed.class);
+        final Optional<TypedMap> jsonTransform = extractTypedMap(annotationTree, JSON.class);
+        final Optional<TypedMap> enumerated = extractTypedMap(annotationTree, Enumerated.class);
+        final Optional<TypedMap> codecFromType = extractTypedMap(annotationTree, Codec.class);
+        final Optional<Codec> codecFromClass = aptUtils.getOptionalCodecFromClass(typeMirror);
+        final Optional<TypedMap> computed = extractTypedMap(annotationTree, Computed.class);
         final Optional<TypeName> computedCQLClass = computed
-                .flatMap(x -> getElementValueClass(x, "cqlClass", false))
-                .map(x -> ClassName.get(x));
-        final boolean isCounter = extractAnnotation(annotations, Counter.class).isPresent();
+                .map(x -> x.<Class<?>>getTyped("cqlClass"))
+                .map(ClassName::get);
+        final boolean isCounter = extractTypedMap(annotationTree, Counter.class).isPresent();
 
         CodeBlock codec;
 
@@ -92,7 +137,7 @@ public class CodecFactory {
             targetType = tuple2._1();
             codec = tuple2._2();
         } else if (enumerated.isPresent()) {
-            final Tuple2<TypeName, CodeBlock> tuple2 = buildEnumeratedCodec(typeMirror, enumerated.get(), sourceType, fieldName, className);
+            final Tuple2<TypeName, CodeBlock> tuple2 = buildEnumeratedCodec(enumerated.get(), sourceType, fieldName, className);
             codec = tuple2._2();
             targetType = tuple2._1();
         } else if (typeMirror.getKind() == TypeKind.ARRAY && typeMirror.toString().equals("byte[]")) {
@@ -138,9 +183,11 @@ public class CodecFactory {
                 .collect(Collectors.toList());
     }
 
-    private Tuple2<TypeName, CodeBlock> buildCodecFromType(AnnotationMirror codecFromType, TypeName sourceType,
+    private Tuple2<TypeName, CodeBlock> buildCodecFromType(TypedMap annotationInfo, TypeName sourceType,
                                                            Optional<TypeName> cqlClass, boolean isCounter) {
-        final CodecContext codecContext = validateCodec(aptUtils, codecFromType, sourceType, cqlClass, isCounter);
+
+        final CodecContext codecContext = annotationInfo.getTyped("codecContext");
+        validateCodec(aptUtils, codecContext, sourceType, cqlClass, isCounter);
         CodeBlock codec = CodeBlock.builder().add("new $T()", codecContext.codecType).build();
 
         return new Tuple2<>(codecContext.targetType.box(), codec);
@@ -182,12 +229,12 @@ public class CodecFactory {
         return new Tuple2<>(targetType, codec);
     }
 
-    private Tuple2<TypeName, CodeBlock> buildEnumeratedCodec(TypeMirror typeMirror, AnnotationMirror enumerated, TypeName sourceType, String fieldName, String className) {
-        typeUtils.isAssignable(typeMirror, elementUtils.getTypeElement(Enum.class.getCanonicalName()).asType());
+    private Tuple2<TypeName, CodeBlock> buildEnumeratedCodec(TypedMap annotationInfo, TypeName sourceType, String fieldName, String className) {
 
-        aptUtils.validateTrue(isAnEnum(typeMirror), "The type '%s' on field '%s' in class '%s' is not a java.lang.Enum type",
+        final Object value = annotationInfo.getTyped("value");
+        aptUtils.validateTrue(isAnEnum(value), "The type '%s' on field '%s' in class '%s' is not a java.lang.Enum type",
                 sourceType.toString(), fieldName, className);
-        final Encoding encoding = getElementValueEnum(enumerated, "value", Encoding.class, true);
+        final Encoding encoding = annotationInfo.getTyped("value");
         if (encoding == Encoding.NAME) {
             return new Tuple2<>(STRING, CodeBlock.builder()
                     .add("new $T<>(java.util.Arrays.asList($T.values()), $T.class)", ENUM_NAME_CODEC, sourceType, sourceType.box())

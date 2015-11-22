@@ -110,6 +110,7 @@
         <auto-service.version>1.0-rc2</auto-service.version>
         <auto-common.version>0.4</auto-common.version>
         <javapoet.version>1.2.0</javapoet.version>
+        <eclipse.compiler.version>4.4.2</eclipse.compiler.version>
 
         <!--Tests-->
         <assertj-core.version>1.7.0</assertj-core.version>
@@ -277,13 +278,19 @@
                 <version>${compile-testing.version}</version>
             </dependency>
 
-
             <dependency>
                 <groupId>com.squareup</groupId>
                 <artifactId>javapoet</artifactId>
                 <version>${javapoet.version}</version>
             </dependency>
 
+            <!--Eclipse compiler-->
+            <dependency>
+                <groupId>org.eclipse.jdt.core.compiler</groupId>
+                <artifactId>ecj</artifactId>
+                <version>${eclipse.compiler.version}</version>
+                <scope>compile</scope>
+            </dependency>
             <!-- Bean Validation -->
             <dependency>
                 <groupId>javax.validation</groupId>

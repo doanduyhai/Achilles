@@ -58,7 +58,7 @@ import java.lang.annotation.*;
 
  * //Custom index
  * {@literal @}Column
- * <strong>{@literal @}Index(indexClass = CustomIndex.class, indexOptions = "{'key1': 'value1', 'key2': 'value2'}")</strong>
+ * <strong>{@literal @}Index(indexClassName = "com.myproject.SecondaryIndex", indexOptions = "{'key1': 'value1', 'key2': 'value2'}")</strong>
  * private String custom;
 
  * ...
@@ -82,7 +82,7 @@ import java.lang.annotation.*;
 
  * CREATE CUSTOM my_entity_custom_index INDEX IF NOT EXISTS
  * ON my_entity(custom)
- * USING xxx.yyy.CustomIndex
+ * USING com.myproject.SecondaryIndex
  * WITH OPTIONS = {'key1': 'value1', 'key2': 'value2'};
 
  * </code></pre>
@@ -119,9 +119,9 @@ public @interface Index {
     String name() default "";
 
     /**
-     * <strong>Optional</strong>. The class of your custom secondary index implementation
+     * <strong>Optional</strong>. The class name of your custom secondary index implementation
      */
-    Class<?> indexClass() default Object.class;
+    String indexClassName() default "";
 
     /**
      * <strong>Optional</strong>. The options for your custom secondary index.

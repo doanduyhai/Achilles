@@ -21,7 +21,6 @@ import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
 import com.datastax.driver.core.UDTValue;
@@ -93,11 +92,11 @@ public class FrozenNestedTypeStrategy implements NestedTypesStrategy {
                 next = validateNestedType(aptUtils, next, fieldName, rawClass);
             }
         } else if (aptUtils.isAssignableFrom(UDTValue.class, currentType)) {
-            aptUtils.validateTrue(containsAnnotation(annotationTree.getAnnotations(), Frozen.class),
+            aptUtils.validateTrue(containsAnnotation(annotationTree, Frozen.class),
                     "UDTValue in field '%s' of class '%s' should be annotated with @Frozen",
                     fieldName, rawClass);
-        } else if (MoreTypes.asTypeElement(currentType).getAnnotation(UDT.class) != null) {
-            aptUtils.validateTrue(containsAnnotation(annotationTree.getAnnotations(), Frozen.class),
+        } else if (aptUtils.getAnnotationOnClass(currentType, UDT.class).isPresent()) {
+            aptUtils.validateTrue(containsAnnotation(annotationTree, Frozen.class),
                     "UDT class '%s' in field '%s' of class '%s' should be annotated with @Frozen",
                     currentType, fieldName, rawClass);
         }
@@ -105,11 +104,10 @@ public class FrozenNestedTypeStrategy implements NestedTypesStrategy {
 
     private AnnotationTree validateNestedType(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
         final AnnotationTree next = annotationTree.next();
-        final List<AnnotationMirror> annotations = next.getAnnotations();
         final TypeMirror nextType = next.getCurrentType();
         if (aptUtils.isCompositeType(nextType)) {
-            aptUtils.validateTrue(containsAnnotation(annotations, Frozen.class),
-                    "Nested collections/UDT/Tuples '%s' in field '%s' of class '%s' should be annotated with @Frozen",
+            aptUtils.validateTrue(containsAnnotation(next, Frozen.class),
+                    "Nested collections and UDT '%s' in field '%s' of class '%s' should be annotated with @Frozen",
                     nextType, fieldName, rawClass);
         }
         return next;

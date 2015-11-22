@@ -21,25 +21,26 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateAllowedType;
 import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateCounter;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import com.datastax.driver.core.GettableData;
+import com.google.auto.common.MoreTypes;
 import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
-import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
-import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
+import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
+import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.*;
 
 
@@ -61,22 +62,22 @@ public class FieldParser {
 
     public TypeParsingResult parse(VariableElement elm, EntityParsingContext entityContext) {
         final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
-        final Tuple5<CodeBlock, String, String, ColumnType, ColumnInfo> tuple5 = fieldInfoParser.buildFieldInfo(elm, annotationTree, entityContext);
-        final FieldParsingContext context = new FieldParsingContext(entityContext, getRawType(entityContext.entityType),
-                tuple5._1(), tuple5._2(), tuple5._3(), tuple5._4(), tuple5._5());
+        final FieldInfoContext fieldInfoContext = fieldInfoParser.buildFieldInfo(elm, annotationTree, entityContext);
+        final FieldParsingContext context = new FieldParsingContext(entityContext, getRawType(entityContext.entityType), fieldInfoContext);
         return parseType(annotationTree, context, TypeName.get(elm.asType()));
     }
 
     protected TypeParsingResult parseType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
         final TypeMirror currentTypeMirror = annotationTree.getCurrentType();
-        final List<AnnotationMirror> annotations = annotationTree.getAnnotations();
+        final Map<Class<? extends Annotation>, TypedMap> annotationsInfo = annotationTree.getAnnotations();
         final List<? extends TypeMirror> typeArguments = AptUtils.getTypeArguments(currentTypeMirror);
-        boolean isUDT = currentTypeMirror.getKind() == TypeKind.DECLARED
-                && asTypeElement(currentTypeMirror).getAnnotation(UDT.class) != null;
 
-        if (containsAnnotation(annotations, JSON.class)) {
+        boolean isUDT = currentTypeMirror.getKind() == TypeKind.DECLARED
+                && aptUtils.getAnnotationOnClass(currentTypeMirror, UDT.class).isPresent();
+
+        if (containsAnnotation(annotationTree, JSON.class)) {
             return parseSimpleType(annotationTree, context, sourceType);
-        } else if (containsAnnotation(annotations, Computed.class)) {
+        } else if (containsAnnotation(annotationTree, Computed.class)) {
             return parseComputedType(annotationTree, context, sourceType);
         } else if (aptUtils.isAssignableFrom(Tuple1.class, currentTypeMirror)) {
             return parseTuple1(annotationTree, context);
@@ -99,11 +100,11 @@ public class FieldParser {
         } else if (aptUtils.isAssignableFrom(Tuple10.class, currentTypeMirror)) {
             return parseTuple10(annotationTree, context);
         } else if (aptUtils.isAssignableFrom(List.class, currentTypeMirror)) {
-            return parseList(annotationTree, context, annotations, typeArguments);
+            return parseList(annotationTree, context, annotationsInfo, typeArguments);
         } else if (aptUtils.isAssignableFrom(Set.class, currentTypeMirror)) {
-            return parseSet(annotationTree, context, annotations, typeArguments);
+            return parseSet(annotationTree, context, annotationsInfo, typeArguments);
         } else if (aptUtils.isAssignableFrom(Map.class, currentTypeMirror)) {
-            return parseMap(annotationTree, context, annotations, typeArguments);
+            return parseMap(annotationTree, context, annotationsInfo, typeArguments);
         } else if (isUDT) {
             return udtParser.parseUDT(annotationTree, context, this);
         } else {
@@ -115,8 +116,9 @@ public class FieldParser {
     private TypeParsingResult parseComputedType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
         final CodecFactory.CodecInfo codecInfo = codecFactory.createCodec(sourceType, annotationTree, context);
         final TypeName rawTargetType = getRawType(codecInfo.targetType);
-        final AnnotationMirror computed = extractAnnotation(annotationTree.getAnnotations(), Computed.class).get();
-        String alias = getElementValue(computed, "alias", String.class, false);
+        final TypedMap computed = extractTypedMap(annotationTree, Computed.class).get();
+        final String alias = computed.getTyped("alias");
+
         CodeBlock extractor = context.buildExtractor
                 ? CodeBlock.builder().add("gettableData$$ -> gettableData$$.$L($S)", DRIVER_GETTABLEDATA_GETTERS.get(rawTargetType), alias).build()
                 : NO_GETTER;
@@ -142,14 +144,13 @@ public class FieldParser {
         final TypeName rawTargetType = getRawType(codecInfo.targetType);
 
         validateAllowedType(aptUtils, rawTargetType, context);
-        validateCounter(aptUtils, rawTargetType, annotationTree.getAnnotations(), context);
+        validateCounter(aptUtils, rawTargetType, annotationTree.getAnnotations().keySet(), context);
 
-        final List<AnnotationMirror> annotations = annotationTree.getAnnotations();
         final String dataType;
 
-        if (containsAnnotation(annotations, TimeUUID.class)) {
+        if (containsAnnotation(annotationTree, TimeUUID.class)) {
             dataType = "timeuuid()";
-        } else if (containsAnnotation(annotations, Counter.class)) {
+        } else if (containsAnnotation(annotationTree, Counter.class)) {
             dataType = "counter()";
         } else {
             dataType = DRIVER_TYPES_MAPPING.get(rawTargetType);
@@ -183,10 +184,10 @@ public class FieldParser {
                 sourceType, codecInfo.targetType, propertyType, typeCode);
     }
 
-    private TypeParsingResult parseMap(AnnotationTree annotationTree, FieldParsingContext context, List<AnnotationMirror> annotations, List<? extends TypeMirror> typeArguments) {
+    private TypeParsingResult parseMap(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
-        final boolean hasFrozen = containsAnnotation(annotations, Frozen.class);
-        final boolean hasEmptyCollectionIfNull = containsAnnotation(annotations, EmptyCollectionIfNull.class);
+        final boolean hasFrozen = containsAnnotation(annotationsInfo.keySet(), Frozen.class);
+        final boolean hasEmptyCollectionIfNull = containsAnnotation(annotationsInfo.keySet(), EmptyCollectionIfNull.class);
         final TypeMirror keyTypeMirror = typeArguments.get(0);
         final TypeMirror valueTypeMirror = typeArguments.get(1);
         final TypeName sourceKeyType = TypeName.get(keyTypeMirror);
@@ -211,10 +212,10 @@ public class FieldParser {
         return new TypeParsingResult(context, valueParsingResult.annotationTree, sourceType, targetType, propertyType, typeCode);
     }
 
-    private TypeParsingResult parseSet(AnnotationTree annotationTree, FieldParsingContext context, List<AnnotationMirror> annotations, List<? extends TypeMirror> typeArguments) {
+    private TypeParsingResult parseSet(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
-        final boolean hasFrozen = containsAnnotation(annotations, Frozen.class);
-        final boolean hasEmptyCollectionIfNull = containsAnnotation(annotations, EmptyCollectionIfNull.class);
+        final boolean hasFrozen = containsAnnotation(annotationsInfo.keySet(), Frozen.class);
+        final boolean hasEmptyCollectionIfNull = containsAnnotation(annotationsInfo.keySet(), EmptyCollectionIfNull.class);
         final TypeMirror typeMirror1 = typeArguments.get(0);
         final TypeName sourceType1 = TypeName.get(typeMirror1);
         final TypeParsingResult parsingResult = this.parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
@@ -231,10 +232,10 @@ public class FieldParser {
         return new TypeParsingResult(context, parsingResult.annotationTree, sourceType, targetType, propertyType, typeCode);
     }
 
-    private TypeParsingResult parseList(AnnotationTree annotationTree, FieldParsingContext context, List<AnnotationMirror> annotations, List<? extends TypeMirror> typeArguments) {
+    private TypeParsingResult parseList(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
-        final boolean hasFrozen = containsAnnotation(annotations, Frozen.class);
-        final boolean hasEmptyCollectionIfNull = containsAnnotation(annotations, EmptyCollectionIfNull.class);
+        final boolean hasFrozen = containsAnnotation(annotationsInfo.keySet(), Frozen.class);
+        final boolean hasEmptyCollectionIfNull = containsAnnotation(annotationsInfo.keySet(), EmptyCollectionIfNull.class);
         final TypeMirror typeMirror1 = typeArguments.get(0);
         final TypeName sourceType1 = TypeName.get(typeMirror1);
         final TypeParsingResult parsingResult = this.parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);

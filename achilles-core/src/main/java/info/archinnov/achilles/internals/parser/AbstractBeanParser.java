@@ -45,7 +45,7 @@ public abstract class AbstractBeanParser {
     }
 
     public List<FieldParser.TypeParsingResult> parseFields(TypeElement elm, FieldParser fieldParser, GlobalParsingContext context) {
-        final Optional<Strategy> strategy = Optional.ofNullable(elm.getAnnotation(Strategy.class));
+        final Optional<Strategy> strategy = aptUtils.getAnnotationOnClass(elm, Strategy.class);
         final InternalNamingStrategy namingStrategy = inferNamingStrategy(strategy, context.namingStrategy);
 
         final EntityParsingContext entityContext = new EntityParsingContext(elm, TypeName.get(aptUtils.erasure(elm)), namingStrategy, context);

@@ -55,6 +55,12 @@ public class TypedMap extends LinkedHashMap<String, Object> {
 
     private static final long serialVersionUID = 1L;
 
+    public static TypedMap of(String key, Object value) {
+        final TypedMap typedMap = new TypedMap();
+        typedMap.put(key, value);
+        return typedMap;
+    }
+
     public static TypedMap fromMap(Map<String, Object> source) {
         TypedMap typedMap = new TypedMap();
         typedMap.addAll(source);
