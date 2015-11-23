@@ -1,7 +1,9 @@
-![Achilles logo](assets/Achilles_New_Logo.png)
+![Achilles](https://raw.github.com/wiki/doanduyhai/Achilles/assets/Achilles_New_Logo.png)
 
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Build Status](https://travis-ci.org/doanduyhai/Achilles.png?branch=master)](https://travis-ci.org/doanduyhai/Achilles)[![Maven central](https://maven-badges.herokuapp.com/maven-central/info.archinnov/achilles-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/info.archinnov/achilles-core)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Build Status](https://travis-ci.org/doanduyhai/Achilles.png?branch=master)](https://travis-ci.org/doanduyhai/Achilles)
+
+## Presentation #
 
   Achilles is an **open source**  advanced object mapper for **Apache Cassandra**. Among all the features:
 
@@ -35,8 +37,8 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
 		<tr>
-			<td>4.0.0</td>
-			<td>2.2.0-rc3</td>
+			<td>4.0.1</td>
+			<td>3.0.0-alpha5</td>
 			<td>2.2.3</td>
 		</tr>		
 		<tr>
@@ -52,7 +54,6 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
     </tbody>
 </table>    
 
-
 > Warning: thre will be no new features for branches older than **4.x.x**. Those branches are
 only supported for bug fixes. New features will **not** be back-ported. Please upgrade to the
 latest version of **Achilles** to benefit from new features 
@@ -67,7 +68,9 @@ latest version of **Achilles** to benefit from new features
 	</dependency>
 ```
 
- For unit-testing with embedded Cassandra, add this dependency with **test** scope:
+>Warning: Achilles 4.x requires a JDK 8 to work. It is recommended to use JDK 8 update 45 or later
+
+For unit-testing with embedded Cassandra, add this dependency with **test** scope:
 
 ```xml
  	<dependency>
@@ -93,6 +96,7 @@ latest version of **Achilles** to benefit from new features
  10. commons-lang3 3.3.2
  11. commons-collections 3.2.1
  12. validation-api 1.1.0.Final
+ 13. org.eclipse.jdt.core.compiler-ecj 4.4.2
 
 ## Configure Your IDE
 
@@ -139,3 +143,4 @@ Unless required by applicable law or agreed to in writing, software distributed 
 [Documentation]: https://github.com/doanduyhai/Achilles/tree/master/documentation/versions
 [Datastax Java Driver]: https://github.com/datastax/java-driver
 [mailing list]: https://groups.google.com/forum/?hl=fr#!forum/cassandra-achilles
+
