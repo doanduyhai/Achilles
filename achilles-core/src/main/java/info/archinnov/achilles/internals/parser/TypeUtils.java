@@ -136,7 +136,7 @@ public class TypeUtils {
     public static final ClassName CLUSTERING_COLUMN_INFO = ClassName.get(ClusteringColumnInfo.class);
     public static final ClassName COMPUTED_COLUMN_INFO = ClassName.get(ComputedColumnInfo.class);
     public static final ClassName COLUMN_INFO = ClassName.get(ColumnInfo.class);
-    public static final ClassName CLUSTERING_ORDER = ClassName.get(TableMetadata.Order.class);
+    public static final ClassName CLUSTERING_ORDER = ClassName.get(ClusteringOrder.class);
     public static final ClassName INDEX_INFO = ClassName.get(IndexInfo.class);
     public static final ClassName INDEX_TYPE = ClassName.get(IndexType.class);
 

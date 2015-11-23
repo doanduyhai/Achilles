@@ -220,7 +220,7 @@ public class TestCRUDSimpleEntity {
 
         //Then
 
-        String expectedQuery = "INSERT INTO " + DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME + ".simple(id,date,consistencylist,simplemap,simpleset,value) " +
+        String expectedQuery = "INSERT INTO " + DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME + ".simple (id,date,consistencylist,simplemap,simpleset,value) " +
                 "VALUES (:id,:date,:consistencylist,:simplemap,:simpleset,:value) " +
                 "USING TTL :ttl;";
 

@@ -348,7 +348,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
             final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "clust2", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
-                    .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo(2, false, com.datastax.driver.core.TableMetadata.Order.DESC)");
+                    .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo(2, false, com.datastax.driver.core.ClusteringOrder.DESC)");
         });
         launchTest();
     }

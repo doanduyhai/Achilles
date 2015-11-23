@@ -1,8 +1,8 @@
 package info.archinnov.achilles.generated;
 
+import com.datastax.driver.core.ClusteringOrder;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TableMetadata;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
@@ -69,7 +69,7 @@ public final class TestEntityWithClusteringColumns_AchillesMeta extends Abstract
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithClusteringColumns, UUID, UUID> uuid = new SimpleProperty<TestEntityWithClusteringColumns, UUID, UUID>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getUuid(), (TestEntityWithClusteringColumns entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, TableMetadata.Order.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.getUUID("uuid"), (settableData$, value$) -> settableData$.setUUID("uuid", value$), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
+  public static final SimpleProperty<TestEntityWithClusteringColumns, UUID, UUID> uuid = new SimpleProperty<TestEntityWithClusteringColumns, UUID, UUID>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getUuid(), (TestEntityWithClusteringColumns entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.getUUID("uuid"), (settableData$, value$) -> settableData$.setUUID("uuid", value$), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
 
   /**
    * Meta class for 'date' property <br/>
@@ -80,7 +80,7 @@ public final class TestEntityWithClusteringColumns_AchillesMeta extends Abstract
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithClusteringColumns, Date, Date> date = new SimpleProperty<TestEntityWithClusteringColumns, Date, Date>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getDate(), (TestEntityWithClusteringColumns entity$, Date value$) -> entity$.setDate(value$), "date", "date", ColumnType.CLUSTERING, new ClusteringColumnInfo(2, false, TableMetadata.Order.DESC), IndexInfo.noIndex()), DataType.timestamp(), gettableData$ -> gettableData$.getTimestamp("date"), (settableData$, value$) -> settableData$.setTimestamp("date", value$), new TypeToken<Date>(){}, new TypeToken<Date>(){}, new FallThroughCodec<>(Date.class));
+  public static final SimpleProperty<TestEntityWithClusteringColumns, Date, Date> date = new SimpleProperty<TestEntityWithClusteringColumns, Date, Date>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getDate(), (TestEntityWithClusteringColumns entity$, Date value$) -> entity$.setDate(value$), "date", "date", ColumnType.CLUSTERING, new ClusteringColumnInfo(2, false, ClusteringOrder.DESC), IndexInfo.noIndex()), DataType.timestamp(), gettableData$ -> gettableData$.getTimestamp("date"), (settableData$, value$) -> settableData$.setTimestamp("date", value$), new TypeToken<Date>(){}, new TypeToken<Date>(){}, new FallThroughCodec<>(Date.class));
 
   /**
    * Meta class for 'value' property <br/>

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.IndexMetadata;
 import com.datastax.driver.core.TableMetadata;
 
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
@@ -74,7 +75,7 @@ public class SchemaValidator {
                             staticType, cqlColumn, entityClass, runtimeType);
 
                     if (x.fieldInfo.hasIndex()) {
-                        validateIndex(entityClass, x, cqlColumn, columnMeta);
+                        validateIndex(entityClass, x, cqlColumn, metadata.getIndex(x.fieldInfo.indexInfo.name));
                     }
 
                     if (x.fieldInfo.columnType == ColumnType.STATIC || x.fieldInfo.columnType == ColumnType.STATIC_COUNTER) {
@@ -83,101 +84,107 @@ public class SchemaValidator {
                 });
     }
 
-    private static void validateIndex(Class<?> entityClass, AbstractProperty<?, ?, ?> x, String cqlColumn, ColumnMetadata columnMeta) {
+    private static void validateIndex(Class<?> entityClass, AbstractProperty<?, ?, ?> x, String cqlColumn, IndexMetadata indexMetadata) {
         final IndexInfo indexInfo = x.fieldInfo.indexInfo;
-        final ColumnMetadata.IndexMetadata indexMeta = columnMeta.getIndex();
+
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Validating index on column % of table %s",
-                    cqlColumn, columnMeta.getTable().getName()));
+                    cqlColumn, indexMetadata.getTable().getName()));
         }
 
-        validateBeanMappingTrue(indexInfo.name.equals(indexMeta.getName()),
+        validateBeanMappingTrue(indexInfo.name.equals(indexMetadata.getName()),
                 "Index name '%s' for column '%s' of entity '%s' does not match name '%s' in live schema",
-                indexInfo.name, cqlColumn, entityClass, indexMeta.getName());
+                indexInfo.name, cqlColumn, entityClass, indexMetadata.getName());
+
+        final String indexTarget = indexMetadata.getTarget().toLowerCase();
+        final boolean isIndexOnFullCollection = indexTarget.contains(format("full(%s)", indexInfo.name));
+        final boolean isIndexOnMapEntries = indexTarget.contains(format("entries(%s)", indexInfo.name));
+        final boolean isIndexOnMapKeys = indexTarget.contains(format("keys(%s)", indexInfo.name));
+        final boolean isCustomIndex = indexMetadata.isCustomIndex();
 
         switch (indexInfo.type) {
             case NORMAL:
-                validateBeanMappingFalse(indexMeta.isEntries(),
+                validateBeanMappingFalse(isIndexOnMapEntries,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         NORMAL, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isFull(),
+                validateBeanMappingFalse(isIndexOnFullCollection,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         NORMAL, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isKeys(),
+                validateBeanMappingFalse(isIndexOnMapKeys,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         NORMAL, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isCustomIndex(),
+                validateBeanMappingFalse(isCustomIndex,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         NORMAL, cqlColumn, entityClass);
                 break;
             case COLLECTION:
-                validateBeanMappingFalse(indexMeta.isEntries(),
+                validateBeanMappingFalse(isIndexOnMapEntries,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         COLLECTION, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isFull(),
+                validateBeanMappingFalse(isIndexOnFullCollection,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         COLLECTION, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isKeys(),
+                validateBeanMappingFalse(isIndexOnMapKeys,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         COLLECTION, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isCustomIndex(),
+                validateBeanMappingFalse(isCustomIndex,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         COLLECTION, cqlColumn, entityClass);
                 break;
             case FULL:
-                validateBeanMappingTrue(indexMeta.isFull(),
+                validateBeanMappingTrue(isIndexOnFullCollection,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         FULL, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isEntries(),
+                validateBeanMappingFalse(isIndexOnMapEntries,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         FULL, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isKeys(),
+                validateBeanMappingFalse(isIndexOnMapKeys,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         FULL, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isCustomIndex(),
+                validateBeanMappingFalse(isCustomIndex,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         FULL, cqlColumn, entityClass);
                 break;
             case MAP_ENTRY:
-                validateBeanMappingTrue(indexMeta.isEntries(),
+                validateBeanMappingTrue(isIndexOnMapEntries,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         MAP_ENTRY, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isFull(),
+                validateBeanMappingFalse(isIndexOnFullCollection,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         MAP_ENTRY, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isKeys(),
+                validateBeanMappingFalse(isIndexOnMapKeys,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         MAP_ENTRY, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isCustomIndex(),
+                validateBeanMappingFalse(isCustomIndex,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         MAP_ENTRY, cqlColumn, entityClass);
                 break;
             case MAP_KEY:
-                validateBeanMappingFalse(indexMeta.isEntries(),
+                validateBeanMappingFalse(isIndexOnMapEntries,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         MAP_KEY, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isFull(),
+                validateBeanMappingFalse(isIndexOnFullCollection,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         MAP_KEY, cqlColumn, entityClass);
-                validateBeanMappingTrue(indexMeta.isKeys(),
+                validateBeanMappingTrue(isIndexOnMapKeys,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         MAP_KEY, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isCustomIndex(),
+                validateBeanMappingFalse(isCustomIndex,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         MAP_KEY, cqlColumn, entityClass);
                 break;
             case CUSTOM:
-                validateBeanMappingFalse(indexMeta.isEntries(),
+                validateBeanMappingFalse(isIndexOnMapEntries,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         CUSTOM, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isFull(),
+                validateBeanMappingFalse(isIndexOnFullCollection,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         CUSTOM, cqlColumn, entityClass);
-                validateBeanMappingFalse(indexMeta.isKeys(),
+                validateBeanMappingFalse(isIndexOnMapKeys,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         CUSTOM, cqlColumn, entityClass);
-                validateBeanMappingTrue(indexMeta.isCustomIndex(),
+                validateBeanMappingTrue(isCustomIndex,
                         "Index type '%s' for column '%s' of entity '%s' does not match type in live schema",
                         CUSTOM, cqlColumn, entityClass);
         }

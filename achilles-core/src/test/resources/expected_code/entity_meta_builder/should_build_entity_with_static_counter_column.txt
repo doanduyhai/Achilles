@@ -1,8 +1,8 @@
 package info.archinnov.achilles.generated;
 
+import com.datastax.driver.core.ClusteringOrder;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TableMetadata;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
@@ -68,7 +68,7 @@ public final class TestEntityWithStaticCounterColumn_AchillesMeta extends Abstra
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithStaticCounterColumn, UUID, UUID> uuid = new SimpleProperty<TestEntityWithStaticCounterColumn, UUID, UUID>(new FieldInfo<>((TestEntityWithStaticCounterColumn entity$) -> entity$.getUuid(), (TestEntityWithStaticCounterColumn entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, TableMetadata.Order.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.getUUID("uuid"), (settableData$, value$) -> settableData$.setUUID("uuid", value$), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
+  public static final SimpleProperty<TestEntityWithStaticCounterColumn, UUID, UUID> uuid = new SimpleProperty<TestEntityWithStaticCounterColumn, UUID, UUID>(new FieldInfo<>((TestEntityWithStaticCounterColumn entity$) -> entity$.getUuid(), (TestEntityWithStaticCounterColumn entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.getUUID("uuid"), (settableData$, value$) -> settableData$.setUUID("uuid", value$), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
 
   /**
    * Meta class for 'count' property <br/>

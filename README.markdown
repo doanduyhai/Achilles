@@ -52,6 +52,11 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
     </tbody>
 </table>    
 
+
+> Warning: thre will be no new features for branches older than **4.x.x**. Those branches are
+only supported for bug fixes. New features will **not** be back-ported. Please upgrade to the
+latest version of **Achilles** to benefit from new features 
+
  To use **Achilles**, just add the following dependency in your **pom.xml**:
 
 ```xml

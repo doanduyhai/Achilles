@@ -16,8 +16,8 @@
 
 package info.archinnov.achilles.internals.parser;
 
-import static com.datastax.driver.core.TableMetadata.Order.ASC;
-import static com.datastax.driver.core.TableMetadata.Order.DESC;
+import static com.datastax.driver.core.ClusteringOrder.ASC;
+import static com.datastax.driver.core.ClusteringOrder.DESC;
 import static info.archinnov.achilles.internals.apt.AptUtils.*;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
@@ -32,7 +32,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.ClusteringOrder;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.TypeName;
@@ -153,7 +153,7 @@ public class FieldInfoParser {
 
         } else if (clusteringColumn.isPresent()) {
             final int order = clusteringColumn.get().getTyped("order");
-            final TableMetadata.Order clusteringOrder = clusteringColumn.get().<Boolean>getTyped("asc") ? ASC : DESC;
+            final ClusteringOrder clusteringOrder = clusteringColumn.get().<Boolean>getTyped("asc") ? ASC : DESC;
             aptUtils.validateTrue(order > 0, "@ClusteringColumn order on field '%s' of class '%s' should be > 0, the ordering starts at 1", fieldName, rawEntityClass);
             builder.add("new $T($L, $L, $T.$L)", CLUSTERING_COLUMN_INFO, order, isFrozen, CLUSTERING_ORDER, clusteringOrder.name());
             return Tuple2.of(builder.build(), new ClusteringColumnInfo(order, isFrozen, clusteringOrder));

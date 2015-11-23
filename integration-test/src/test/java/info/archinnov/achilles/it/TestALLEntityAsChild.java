@@ -93,7 +93,7 @@ public class TestALLEntityAsChild {
         //Then
 
         String expectedQuery = "INSERT INTO " + DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME
-                + ".entity_child(id,child_value,value) " +
+                + ".entity_child (id,child_value,value) " +
                 "VALUES (:id,:child_value,:value) " +
                 "USING TTL :ttl;";
 

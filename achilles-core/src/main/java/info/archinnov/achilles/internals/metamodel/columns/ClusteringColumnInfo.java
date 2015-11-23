@@ -16,23 +16,23 @@
 
 package info.archinnov.achilles.internals.metamodel.columns;
 
-import com.datastax.driver.core.TableMetadata.Order;
+import com.datastax.driver.core.ClusteringOrder;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder.Direction;
 
 public class ClusteringColumnInfo extends ColumnInfo implements KeyColumnInfo {
 
     public final Integer order;
-    public final Order clusteringOrder;
+    public final ClusteringOrder clusteringOrder;
     public final Direction direction;
 
-    public ClusteringColumnInfo(int order, boolean frozen, Order clusteringOrder) {
+    public ClusteringColumnInfo(int order, boolean frozen, ClusteringOrder clusteringOrder) {
         super(frozen);
         this.order = order;
         this.clusteringOrder = clusteringOrder;
         this.direction = mapClusteringOrder(clusteringOrder);
     }
 
-    private static Direction mapClusteringOrder(Order clusteringOrder) {
+    private static Direction mapClusteringOrder(ClusteringOrder clusteringOrder) {
         switch (clusteringOrder) {
             case ASC:
                 return Direction.ASC;
