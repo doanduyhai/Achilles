@@ -67,22 +67,20 @@ public abstract class AbstractUpdateEnd<T extends AbstractUpdateEnd<T, ENTITY>, 
     protected abstract RuntimeEngine getRte();
 
     /**
-     * Not working until UPDATE ... IF EXISTS is implemented by the Java Query Builder
+     *  UPDATE ... IF EXISTS
      */
-    @Deprecated
     public T ifExists(boolean ifExists) {
         if (ifExists) {
-            //TODO
+            where.ifExists();
         }
         return getThis();
     }
 
     /**
-     * Not working until UPDATE ... IF EXISTS is implemented by the Java Query Builder
+     *  UPDATE ... IF EXISTS
      */
-    @Deprecated
     public T ifExists() {
-        //TODO
+        where.ifExists();
         return getThis();
     }
 

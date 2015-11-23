@@ -1065,8 +1065,7 @@ public class TestDSLSimpleEntity {
         assertThat(row.getMap("simplemap", Integer.class, String.class)).hasSize(2);
     }
 
-    @Ignore
-    @Test //TODO when If Exist implemented on update
+    @Test
     public void should_dsl_update_value_if_exists() throws Exception {
         //Given
         final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
@@ -1120,7 +1119,6 @@ public class TestDSLSimpleEntity {
                 .where()
                 .id_Eq(id)
                 .date_Eq(date)
-                .ifExists()
                 .withConsistencyLevel(TWO)
                 .withRetryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE)
                 .executeWithStats();
