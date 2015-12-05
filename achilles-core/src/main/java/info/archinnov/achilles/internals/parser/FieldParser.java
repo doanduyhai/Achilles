@@ -40,6 +40,7 @@ import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
+import info.archinnov.achilles.internals.strategy.types_nesting.NestedTypesStrategy;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.*;
 
@@ -64,6 +65,12 @@ public class FieldParser {
         final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
         final FieldInfoContext fieldInfoContext = fieldInfoParser.buildFieldInfo(elm, annotationTree, entityContext);
         final FieldParsingContext context = new FieldParsingContext(entityContext, getRawType(entityContext.entityType), fieldInfoContext);
+
+        // Perform nested type checking with regard to @Frozen if not a tuple type
+        // Tuple types are frozen by default
+        final NestedTypesStrategy nestedTypesStrategy = context.entityContext.globalContext.nestedTypesStrategy;
+        nestedTypesStrategy.validate(aptUtils, annotationTree, context.fieldName, context.entityRawType);
+
         return parseType(annotationTree, context, TypeName.get(elm.asType()));
     }
 

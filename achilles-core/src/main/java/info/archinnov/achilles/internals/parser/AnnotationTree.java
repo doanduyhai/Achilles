@@ -325,7 +325,8 @@ public class AnnotationTree {
         if (hasNext()) {
             return next;
         } else {
-            throw new IllegalStateException("No more leaf for annotation tree");
+            throw new IllegalStateException(String.format("No more leaf for annotation tree. Current type = %s, depth = %s",
+                    currentType.toString(), depth));
         }
     }
 

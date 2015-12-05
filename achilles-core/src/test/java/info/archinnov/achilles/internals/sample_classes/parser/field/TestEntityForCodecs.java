@@ -60,15 +60,17 @@ public class TestEntityForCodecs {
 
     private List<Integer> list;
 
+    @Frozen
     private TestUDT testUdt;
 
+    @Frozen
     private TestUDT simpleUdt;
 
-    private List<TestUDT> listUdt;
+    private List<@Frozen TestUDT> listUdt;
 
-    private Set<TestUDT> setUdt;
+    private Set<@Frozen TestUDT> setUdt;
 
-    private Map<Integer, TestUDT> mapUdt;
+    private Map<Integer, @Frozen TestUDT> mapUdt;
 
     private Set<@Enumerated(value = ORDINAL) ConsistencyLevel> set;
 
@@ -79,11 +81,11 @@ public class TestEntityForCodecs {
 
     private Map<Integer, @JSON List<Map<Integer, String>>> mapWithNestedJson;
 
-    private List<Map<Integer, String>> listNesting;
+    private List<@Frozen Map<Integer, String>> listNesting;
 
-    private Set<Map<Integer, String>> setNesting;
+    private Set<@Frozen Map<Integer, String>> setNesting;
 
-    private Map<Integer, List<String>> mapNesting;
+    private Map<Integer, @Frozen List<String>> mapNesting;
 
     private Tuple2<Integer, List<String>> tupleNesting;
 
@@ -123,7 +125,7 @@ public class TestEntityForCodecs {
 
     @EmptyCollectionIfNull
     private Map<@JSON TestUDT,
-            @EmptyCollectionIfNull Map<Integer,
+            @Frozen @EmptyCollectionIfNull Map<Integer,
                     Tuple3<@Codec(value = IntToStringCodec.class) Integer,
                             Integer,
                             @Enumerated(value = ORDINAL) ConsistencyLevel>>> map;

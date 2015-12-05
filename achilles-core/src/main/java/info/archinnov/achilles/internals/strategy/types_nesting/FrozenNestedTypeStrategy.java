@@ -24,10 +24,10 @@ import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 
 import com.datastax.driver.core.UDTValue;
-import com.google.auto.common.MoreTypes;
 import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.annotations.Frozen;
+import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
@@ -37,58 +37,22 @@ public class FrozenNestedTypeStrategy implements NestedTypesStrategy {
 
     @Override
     public void validate(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
-        validateMapKeys(aptUtils, annotationTree, fieldName, rawClass);
         validateIndexAnnotation(aptUtils, annotationTree, fieldName, rawClass);
 
         final TypeMirror currentType = aptUtils.erasure(annotationTree.getCurrentType());
 
-        if (aptUtils.isAssignableFrom(List.class, currentType)
-                || aptUtils.isAssignableFrom(Set.class, currentType)
-                || aptUtils.isAssignableFrom(Tuple2.class, currentType)) {
+        if (aptUtils.isAssignableFrom(Tuple.class, currentType) || containsAnnotation(annotationTree, JSON.class)) {
+            // Do not validate nested types for Tuples because
+            // they are @Frozen by default
+            // Do not validate nested types for JSON transformation
+            return;
+        } else if (aptUtils.isAssignableFrom(List.class, currentType)
+                || aptUtils.isAssignableFrom(Set.class, currentType)) {
             validateNestedType(aptUtils, annotationTree, fieldName, rawClass);
         } else if (aptUtils.isAssignableFrom(Map.class, currentType)) {
+            validateMapKeys(aptUtils, annotationTree, fieldName, rawClass);
             AnnotationTree next = annotationTree;
             for (int i = 0; i < 2; i++) {
-                next = validateNestedType(aptUtils, next, fieldName, rawClass);
-            }
-        } else if (aptUtils.isAssignableFrom(Tuple3.class, currentType)) {
-            AnnotationTree next = annotationTree;
-            for (int i = 0; i < 3; i++) {
-                next = validateNestedType(aptUtils, next, fieldName, rawClass);
-            }
-        } else if (aptUtils.isAssignableFrom(Tuple4.class, currentType)) {
-            AnnotationTree next = annotationTree;
-            for (int i = 0; i < 4; i++) {
-                next = validateNestedType(aptUtils, next, fieldName, rawClass);
-            }
-        } else if (aptUtils.isAssignableFrom(Tuple5.class, currentType)) {
-            AnnotationTree next = annotationTree;
-            for (int i = 0; i < 5; i++) {
-                next = validateNestedType(aptUtils, next, fieldName, rawClass);
-            }
-        } else if (aptUtils.isAssignableFrom(Tuple6.class, currentType)) {
-            AnnotationTree next = annotationTree;
-            for (int i = 0; i < 6; i++) {
-                next = validateNestedType(aptUtils, next, fieldName, rawClass);
-            }
-        } else if (aptUtils.isAssignableFrom(Tuple7.class, currentType)) {
-            AnnotationTree next = annotationTree;
-            for (int i = 0; i < 7; i++) {
-                next = validateNestedType(aptUtils, next, fieldName, rawClass);
-            }
-        } else if (aptUtils.isAssignableFrom(Tuple8.class, currentType)) {
-            AnnotationTree next = annotationTree;
-            for (int i = 0; i < 8; i++) {
-                next = validateNestedType(aptUtils, next, fieldName, rawClass);
-            }
-        } else if (aptUtils.isAssignableFrom(Tuple9.class, currentType)) {
-            AnnotationTree next = annotationTree;
-            for (int i = 0; i < 9; i++) {
-                next = validateNestedType(aptUtils, next, fieldName, rawClass);
-            }
-        } else if (aptUtils.isAssignableFrom(Tuple10.class, currentType)) {
-            AnnotationTree next = annotationTree;
-            for (int i = 0; i < 10; i++) {
                 next = validateNestedType(aptUtils, next, fieldName, rawClass);
             }
         } else if (aptUtils.isAssignableFrom(UDTValue.class, currentType)) {
@@ -105,7 +69,7 @@ public class FrozenNestedTypeStrategy implements NestedTypesStrategy {
     private AnnotationTree validateNestedType(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
         final AnnotationTree next = annotationTree.next();
         final TypeMirror nextType = next.getCurrentType();
-        if (aptUtils.isCompositeType(nextType)) {
+        if (aptUtils.isCompositeType(nextType) && !containsAnnotation(next, JSON.class)) {
             aptUtils.validateTrue(containsAnnotation(next, Frozen.class),
                     "Nested collections and UDT '%s' in field '%s' of class '%s' should be annotated with @Frozen",
                     nextType, fieldName, rawClass);

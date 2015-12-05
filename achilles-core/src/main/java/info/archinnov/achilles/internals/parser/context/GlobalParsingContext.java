@@ -30,6 +30,8 @@ import info.archinnov.achilles.internals.strategy.naming.CaseSensitiveNaming;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
+import info.archinnov.achilles.internals.strategy.types_nesting.FrozenNestedTypeStrategy;
+import info.archinnov.achilles.internals.strategy.types_nesting.NestedTypesStrategy;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.strategy.NamingStrategy;
 
@@ -40,12 +42,14 @@ public class GlobalParsingContext {
     public FieldFilter fieldFilter = EXPLICIT_ENTITY_FIELD_FILTER;
     public FieldFilter udtFieldFilter = EXPLICIT_UDT_FIELD_FILTER;
     public Map<TypeName, TypeSpec> udtTypes = new HashMap<>();
+    public NestedTypesStrategy nestedTypesStrategy = new FrozenNestedTypeStrategy();
 
     public GlobalParsingContext(InsertStrategy insertStrategy, NamingStrategy namingStrategy,
-                                FieldFilter fieldFilter, FieldFilter udtFieldFilter) {
+                                FieldFilter fieldFilter, FieldFilter udtFieldFilter, NestedTypesStrategy nestedTypesStrategy) {
         this.insertStrategy = insertStrategy;
         this.fieldFilter = fieldFilter;
         this.udtFieldFilter = udtFieldFilter;
+        this.nestedTypesStrategy = nestedTypesStrategy;
         this.namingStrategy = mapNamingStrategy(namingStrategy);
     }
 

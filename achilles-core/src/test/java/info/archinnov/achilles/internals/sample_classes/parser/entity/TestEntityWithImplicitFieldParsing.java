@@ -18,10 +18,7 @@ package info.archinnov.achilles.internals.sample_classes.parser.entity;
 
 import java.util.UUID;
 
-import info.archinnov.achilles.annotations.ClusteringColumn;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.PartitionKey;
-import info.archinnov.achilles.annotations.Transient;
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 
 @APUnitTest
@@ -39,6 +36,7 @@ public class TestEntityWithImplicitFieldParsing {
     @Transient
     private Long longValue;
 
+    @Frozen
     private TestUDTImplicitFieldParsing udt;
 
     public Long getId() {

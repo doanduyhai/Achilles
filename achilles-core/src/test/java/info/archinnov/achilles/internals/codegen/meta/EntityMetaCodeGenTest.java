@@ -37,6 +37,7 @@ import info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer;
 import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.parser.entity.*;
+import info.archinnov.achilles.internals.strategy.types_nesting.FrozenNestedTypeStrategy;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMetaCodeGenTest extends AbstractTestProcessor
@@ -243,7 +244,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final GlobalParsingContext context = new GlobalParsingContext(ALL_FIELDS, SNAKE_CASE,
-                    IMPLICIT_ENTITY_FIELD_FILTER, IMPLICIT_UDT_FIELD_FILTER);
+                    IMPLICIT_ENTITY_FIELD_FILTER, IMPLICIT_UDT_FIELD_FILTER, new FrozenNestedTypeStrategy());
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
