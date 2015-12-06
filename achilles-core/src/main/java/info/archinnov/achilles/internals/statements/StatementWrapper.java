@@ -114,23 +114,23 @@ public interface StatementWrapper {
         if (actualLogger.isTraceEnabled()) {
             for (ExecutionInfo executionInfo : resultSet.getAllExecutionInfo()) {
 
-                trace.append(format("Tracing for Query ID {} at host {} with achieved consistency level {} ", queryId.toString(), executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel()));
-                trace.append("****************************");
-                trace.append(format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", "Description", "Source", "Source elapsed in micros", "Thread name"));
+                trace.append(format("\n\nTracing for Query ID {%s} at host {%s} with achieved consistency level {} \n", queryId.toString(), executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel()));
+                trace.append("****************************\n");
+                trace.append(format("%1$-80s | %2$-16s | %3$-24s | %4$-20s\n", "Description", "Source", "Source elapsed in micros", "Thread name"));
                 try {
                     final QueryTrace queryTrace = executionInfo.getQueryTrace();
                     if (queryTrace != null) {
                         final List<QueryTrace.Event> events = new ArrayList<>(queryTrace.getEvents());
                         Collections.sort(events, EVENT_TRACE_COMPARATOR);
                         for (QueryTrace.Event event : events) {
-                            trace.append(format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName()));
+                            trace.append(format("%1$-80s | %2$-16s | %3$-24s | %4$-20s\n", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName()));
                         }
                     }
                 } catch (TraceRetrievalException e) {
                     final String queryString = getBoundStatement().preparedStatement().getQueryString();
                     trace.append(format(" ERROR: cannot retrieve trace for query {} because it may not be yet available", queryString));
                 }
-                trace.append("****************************");
+                trace.append("****************************\n\n");
             }
 
             actualLogger.trace(trace.toString());

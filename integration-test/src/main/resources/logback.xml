@@ -44,9 +44,9 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <!--<logger name="info.archinnov.achilles.internals.metamodel.AbstractEntityProperty" level="DEBUG" additivity="false">-->
-    <!--<appender-ref ref="STDOUT" />-->
-    <!--</logger>-->
+    <logger name="info.archinnov.achilles.internals.entities.SimpleEntity" level="TRACE" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
 
     <logger name="org.apache.cassandra.cql3.QueryProcessor" level="OFF" additivity="false">
         <appender-ref ref="STDOUT"/>

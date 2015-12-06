@@ -235,6 +235,7 @@ public class Options {
         if (outgoingPayLoad.isPresent()) statement.setOutgoingPayload(outgoingPayLoad.get());
         if (pagingState.isPresent()) statement.setPagingState(pagingState.get());
         if (retryPolicy.isPresent()) statement.setRetryPolicy(retryPolicy.get());
+        if (tracing.isPresent() || meta.entityLogger.isTraceEnabled()) statement.enableTracing();
 
         return statement;
     }
