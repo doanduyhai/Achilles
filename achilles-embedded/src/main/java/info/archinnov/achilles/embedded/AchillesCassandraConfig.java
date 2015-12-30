@@ -35,6 +35,7 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
     static final String ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER";
     static final String ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER";
     static final String ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER";
+    static final String ACHILLES_EMBEDDED_CASSANDRA_HINTS_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_HINTS_FOLDER";
 
     @Override
     public Config loadConfig() throws ConfigurationException {
@@ -45,7 +46,7 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.storage_port = Integer.parseInt(System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT));
         config.ssl_storage_port = Integer.parseInt(System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_SSL_PORT));
 
-        config.hinted_handoff_enabled = "false";
+        config.hinted_handoff_enabled = false;
         config.max_hint_window_in_ms = 10800000; // 3 hours
         config.hinted_handoff_throttle_in_kb = 1024;
         config.max_hints_delivery_threads = 2;
@@ -97,6 +98,9 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.inter_dc_tcp_nodelay = true;
         config.broadcast_address = "localhost";
         config.broadcast_rpc_address = "localhost";
+        config.enable_user_defined_functions = true;
+        config.enable_user_defined_functions_threads = true;
+        config.enable_scripted_user_defined_functions = false;
 
         // Tuning for perf
         config.memtable_heap_space_in_mb = 64;
@@ -110,6 +114,7 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.data_file_directories = new String[]{System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER)};
         config.commitlog_directory = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER);
         config.saved_caches_directory = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER);
+        config.hints_directory = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_HINTS_FOLDER);
 
         return config;
     }

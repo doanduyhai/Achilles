@@ -729,6 +729,8 @@ public class TestDSLSimpleEntity {
     }
 
     @Test
+    @Ignore
+    //TODO ignore until https://issues.apache.org/jira/browse/CASSANDRA-10954 is fixed
     public void should_dsl_update_list_removeAtIndex() throws Exception {
         //Given
         final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);

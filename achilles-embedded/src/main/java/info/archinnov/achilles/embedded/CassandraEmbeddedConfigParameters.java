@@ -38,6 +38,8 @@ public class CassandraEmbeddedConfigParameters {
 
     public static final String SAVED_CACHES_FOLDER = "savedCachesFolder";
 
+    public static final String HINTS_FOLDER = "hintsFolder";
+
     public static final String LOGBACK_FILE = "logbackXmlFile";
 
     public static final String CLUSTER_NAME = "clusterName";
@@ -80,8 +82,10 @@ public class CassandraEmbeddedConfigParameters {
     static final String DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER = "target/cassandra_embedded/commitlog";
     static final String DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER = "target/cassandra_embedded/saved_caches";
     static final String DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER = "target/cassandra_embedded/cassandra_triggers";
+    static final String DEFAULT_ACHILLES_TEST_HINTS_FOLDER = "target/cassandra_embedded/hints";
     static final Set<String> DEFAULT_ACHILLES_TEST_FOLDERS = SetUtils.of(DEFAULT_ACHILLES_TEST_DATA_FOLDER,
-            DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
+            DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER,
+            DEFAULT_ACHILLES_TEST_HINTS_FOLDER);
     static final String DEFAULT_CASSANDRA_EMBEDDED_LOGBACK_FILE = "target/cassandra_embedded/logback.xml";
     static final String DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME = "Achilles Embedded Cassandra Cluster";
     static final Boolean DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE = false;
@@ -97,6 +101,7 @@ public class CassandraEmbeddedConfigParameters {
         defaultParams.put(DATA_FILE_FOLDER, DEFAULT_ACHILLES_TEST_DATA_FOLDER);
         defaultParams.put(COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER);
         defaultParams.put(SAVED_CACHES_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
+        defaultParams.put(HINTS_FOLDER, DEFAULT_ACHILLES_TEST_HINTS_FOLDER);
         defaultParams.put(LOGBACK_FILE, DEFAULT_CASSANDRA_EMBEDDED_LOGBACK_FILE);
         defaultParams.put(CLUSTER_NAME, DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME);
         defaultParams.put(DEFAULT_KEYSPACE_NAME, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);

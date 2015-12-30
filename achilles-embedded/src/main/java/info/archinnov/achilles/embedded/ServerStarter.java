@@ -177,18 +177,22 @@ public enum ServerStarter {
         final String dataFolder = (String) parameters.get(DATA_FILE_FOLDER);
         final String commitLogFolder = (String) parameters.get(COMMIT_LOG_FOLDER);
         final String savedCachesFolder = (String) parameters.get(SAVED_CACHES_FOLDER);
+        final String hintsFolder = (String) parameters.get(HINTS_FOLDER);
 
         log.debug(" Embedded Cassandra data directory = {}", dataFolder);
         log.debug(" Embedded Cassandra commitlog directory = {}", commitLogFolder);
         log.debug(" Embedded Cassandra saved caches directory = {}", savedCachesFolder);
+        log.debug(" Embedded Cassandra hints directory = {}", hintsFolder);
 
         validateFolder(dataFolder);
         validateFolder(commitLogFolder);
         validateFolder(savedCachesFolder);
+        validateFolder(hintsFolder);
 
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER, dataFolder);
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER, commitLogFolder);
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER, savedCachesFolder);
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_HINTS_FOLDER, hintsFolder);
 
     }
 

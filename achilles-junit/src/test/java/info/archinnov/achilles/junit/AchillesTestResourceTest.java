@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
 import info.archinnov.achilles.internals.runtime.AbstractManagerFactory;
@@ -43,11 +44,13 @@ public class AchillesTestResourceTest {
     @Test
     public void should_start_cassandra_and_create_session() throws Exception {
         //Given
-
         //When
 
         //Then
         assertThat(session).isNotNull();
         assertThat(session.getLoggedKeyspace()).isEqualTo(randomKeyspace);
+        final Row one = session.execute("SELECT * FROM system.local LIMIT 1").one();
+        assertThat(one).isNotNull();
+
     }
 }

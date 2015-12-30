@@ -65,6 +65,8 @@ public class CassandraEmbeddedServerBuilder {
 
     private String savedCachesFolder;
 
+    private String hintsFolder;
+
     private boolean cleanDataFiles = false;
 
     private boolean cleanConfigFile = true;
@@ -139,6 +141,18 @@ public class CassandraEmbeddedServerBuilder {
      */
     public CassandraEmbeddedServerBuilder withSavedCachesFolder(String savedCachesFolder) {
         this.savedCachesFolder = savedCachesFolder;
+        return this;
+    }
+
+    /**
+     * Specify hints folder for the embedded Cassandra server. Default
+     * value is 'target/cassandra_embedded/hints'
+     *
+     * @param hintsFolder hints folder for the embedded Cassandra server
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withHintsFolder(String hintsFolder) {
+        this.hintsFolder = hintsFolder;
         return this;
     }
 
@@ -382,6 +396,9 @@ public class CassandraEmbeddedServerBuilder {
 
         if (StringUtils.isNotBlank(savedCachesFolder))
             cassandraParams.put(SAVED_CACHES_FOLDER, savedCachesFolder);
+
+        if (StringUtils.isNotBlank(hintsFolder))
+            cassandraParams.put(HINTS_FOLDER, hintsFolder);
 
         if (StringUtils.isNotBlank(clusterName))
             cassandraParams.put(CLUSTER_NAME, clusterName);
