@@ -49,6 +49,8 @@ public class CassandraEmbeddedConfigParameters {
 
     public static final String RECONNECTION_POLICY = "reconnectionPolicy";
 
+    public static final String PROTOCOL_VERSION = "protocolVersion";
+
     public static final String CASSANDRA_THRIFT_PORT = "thriftPort";
 
     public static final String CASSANDRA_CQL_PORT = "cqlPort";

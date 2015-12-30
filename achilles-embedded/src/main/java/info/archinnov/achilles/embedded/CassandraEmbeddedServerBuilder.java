@@ -27,6 +27,8 @@ import com.datastax.driver.core.Cluster;
 import info.archinnov.achilles.internal.validation.Validator;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.internal.utils.ConfigMap;
@@ -54,6 +56,7 @@ import info.archinnov.achilles.type.TypedMap;
  *   .withStorageSSLPort(7999)
  *   .withDurableWrite(true)
  *   .withScript("init_script.cql")
+ *   .withProtocolVersion(ProtocolVersion.V3)
  *   .buildPersistenceManager();
  *
  * </code></pre>
@@ -87,6 +90,8 @@ public class CassandraEmbeddedServerBuilder {
     private int storagePort;
 
     private int storageSSLPort;
+
+    private ProtocolVersion protocolVersion = ProtocolVersion.V3;
 
     private String clusterName;
 
@@ -386,6 +391,12 @@ public class CassandraEmbeddedServerBuilder {
         return this;
     }
 
+    public CassandraEmbeddedServerBuilder withProtocolVersion(ProtocolVersion protocolVersion) {
+        Validator.validateNotNull(protocolVersion, "Protocol version should not be null");
+        this.protocolVersion = protocolVersion;
+        return this;
+    }
+
     /**
      * Build CQL Persistence Manager Factory
      *
@@ -490,6 +501,8 @@ public class CassandraEmbeddedServerBuilder {
 
         if (concurrentWrites > 0)
           config.put(CASSANDRA_CONCURRENT_READS, concurrentWrites);
+
+        config.put(PROTOCOL_VERSION, protocolVersion);
 
         config.put(KEYSPACE_DURABLE_WRITE, durableWrite);
 

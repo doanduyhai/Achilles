@@ -19,6 +19,8 @@ package info.archinnov.achilles.embedded;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ProtocolVersion;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -64,6 +66,7 @@ public class CassandraEmbeddedServerBuilderTest {
                 .cleanDataFilesAtStartup(true)
                 .withKeyspaceName("script_without_keyspace1")
                 .withScript("script_without_keyspace.cql")
+                .withProtocolVersion(ProtocolVersion.V3)
                 .buildNativeClusterOnly();
     }
 

@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
@@ -156,12 +157,21 @@ public class AchillesInitializer {
         LoadBalancingPolicy loadBalancingPolicy = parameters.getTyped(LOAD_BALANCING_POLICY);
         RetryPolicy retryPolicy = parameters.getTyped(RETRY_POLICY);
         ReconnectionPolicy reconnectionPolicy = parameters.getTyped(RECONNECTION_POLICY);
+        ProtocolVersion protocolVersion = parameters.getTyped(PROTOCOL_VERSION);
 
         synchronized (this) {
             if (singletonCluster == null) {
-                singletonCluster = Cluster.builder().addContactPoint(host).withPort(cqlPort).withClusterName(clusterName)
-                        .withCompression(compression).withLoadBalancingPolicy(loadBalancingPolicy).withRetryPolicy(retryPolicy)
-                        .withReconnectionPolicy(reconnectionPolicy).build();
+                singletonCluster = Cluster
+                        .builder()
+                        .addContactPoint(host)
+                        .withPort(cqlPort)
+                        .withClusterName(clusterName)
+                        .withCompression(compression)
+                        .withLoadBalancingPolicy(loadBalancingPolicy)
+                        .withRetryPolicy(retryPolicy)
+                        .withReconnectionPolicy(reconnectionPolicy)
+                        .withProtocolVersion(protocolVersion)
+                        .build();
 
                 // Add Cluster for shutdown process
                 ServerStarter.CASSANDRA_EMBEDDED.getShutdownHook().addCluster(singletonCluster);
