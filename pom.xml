@@ -125,7 +125,7 @@
         <!-- Maven plugins -->
         <maven.compiler.version>3.3</maven.compiler.version>
         <maven.enforcer.version>1.0.1</maven.enforcer.version>
-        <maven.surefire.version>2.12</maven.surefire.version>
+        <maven.surefire.version>2.13</maven.surefire.version>
         <maven.gpg.version>1.4</maven.gpg.version>
         <maven.jar.plugin.version>2.6</maven.jar.plugin.version>
         <maven.site.plugin.version>3.3</maven.site.plugin.version>
