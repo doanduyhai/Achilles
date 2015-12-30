@@ -58,7 +58,9 @@ public class CassandraEmbeddedConfigParameters {
     public static final String CASSANDRA_STORAGE_PORT = "storagePort";
 
     public static final String CASSANDRA_STORAGE_SSL_PORT = "storageSSLPort";
-  
+
+    public static final String CASSANDRA_JMX_PORT = "jmxPort";
+
     public static final String CASSANDRA_CONCURRENT_READS = "concurrentReads";
   
     public static final String CASSANDRA_CONCURRENT_WRITES = "concurrentWrites";

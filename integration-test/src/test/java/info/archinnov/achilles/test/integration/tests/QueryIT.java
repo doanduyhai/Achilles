@@ -86,15 +86,20 @@ public class QueryIT {
         manager.insert(entity1);
         manager.insert(entity2);
 
-        RegularStatement statement = select("name", "age_in_years", "friends", "followers", "preferences")
-                .from("CompleteBean").where(in("id", entity1.getId(), entity2.getId()));
+        RegularStatement statement1 = select("name", "age_in_years", "friends", "followers", "preferences")
+                .from("CompleteBean").where(eq("id", entity1.getId()));
 
-        List<TypedMap> actual = manager.nativeQuery(statement).get();
+        RegularStatement statement2 = select("name", "age_in_years", "friends", "followers", "preferences")
+                .from("CompleteBean").where(eq("id", entity2.getId()));
 
-        assertThat(actual).hasSize(2);
+        List<TypedMap> actual1 = manager.nativeQuery(statement1).get();
+        List<TypedMap> actual2 = manager.nativeQuery(statement2).get();
 
-        TypedMap row1 = actual.get(0);
-        TypedMap row2 = actual.get(1);
+        assertThat(actual1).hasSize(1);
+        assertThat(actual2).hasSize(1);
+
+        TypedMap row1 = actual1.get(0);
+        TypedMap row2 = actual2.get(0);
 
         assertThat(row1.get("name")).isEqualTo("DuyHai");
         assertThat(row1.get("age_in_years")).isEqualTo(35L);
@@ -286,15 +291,15 @@ public class QueryIT {
 
         RegularStatement statement = select()
                 .fcall("now")
-                .fcall("dateOf", column("date"))
-                .fcall("unixTimestampOf", column("date"))
+                .fcall("toTimestamp", column("date"))
+                .fcall("toUnixTimestamp", column("date"))
                 .from(ClusteredEntityWithTimeUUID.TABLE_NAME)
                 .where(eq("id", id));
 
         Map<String, Object> result = manager.nativeQuery(statement).getFirst();
-        assertThat(result.get("now()")).isNotNull().isInstanceOf(UUID.class);
-        assertThat(result.get("dateOf(date)")).isNotNull().isInstanceOf(Date.class);
-        assertThat(result.get("unixTimestampOf(date)")).isNotNull().isInstanceOf(Long.class);
+        assertThat(result.get("system.now()")).isNotNull().isInstanceOf(UUID.class);
+        assertThat(result.get("system.totimestamp(date)")).isNotNull().isInstanceOf(Date.class);
+        assertThat(result.get("system.tounixtimestamp(date)")).isNotNull().isInstanceOf(Long.class);
     }
 
     @Test

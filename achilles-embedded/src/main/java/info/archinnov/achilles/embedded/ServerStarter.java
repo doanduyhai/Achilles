@@ -24,26 +24,8 @@
 
 package info.archinnov.achilles.embedded;
 
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_SSL_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_THRIFT_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.COMMIT_LOG_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DATA_FILE_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_FOLDERS;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CONCURRENT_READS;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CONCURRENT_WRITES;
-import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_THRIFT_PORT;
-import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT;
-import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT;
-import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_STORAGE_SSL_PORT;
-import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER;
-import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER;
-import static info.archinnov.achilles.embedded.AchillesCassandraConfig.ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER;
-
+import static info.archinnov.achilles.embedded.AchillesCassandraConfig.*;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import java.io.File;
 import java.io.IOException;
@@ -128,6 +110,7 @@ public enum ServerStarter {
         log.info(" Random embedded Cassandra Native port/CQL port = {}", parameters.getTyped(CASSANDRA_CQL_PORT));
         log.info(" Random embedded Cassandra Storage port = {}", parameters.getTyped(CASSANDRA_STORAGE_PORT));
         log.info(" Random embedded Cassandra Storage SSL port = {}", parameters.getTyped(CASSANDRA_STORAGE_SSL_PORT));
+        log.info(" Random embedded Cassandra JMX port = {}", parameters.getTyped(CASSANDRA_JMX_PORT));
         log.info(" Embedded Cassandra triggers directory = {}", triggersDir);
 
         log.info("Starting Cassandra...");
@@ -137,6 +120,8 @@ public enum ServerStarter {
         System.setProperty("cassandra.embedded.concurrent.reads", parameters.getTypedOr(CASSANDRA_CONCURRENT_READS, 32).toString());
         System.setProperty("cassandra.embedded.concurrent.writes", parameters.getTypedOr(CASSANDRA_CONCURRENT_WRITES, 32).toString());
         System.setProperty("cassandra-foreground", "true");
+        System.setProperty("com.sun.management.jmxremote.port", parameters.<Integer>getTyped(CASSANDRA_JMX_PORT).toString());
+        System.setProperty("cassandra.skip_wait_for_gossip_to_settle", "0");
 
         System.setProperty("cassandra.config.loader","info.archinnov.achilles.embedded.AchillesCassandraConfig");
 
@@ -239,16 +224,19 @@ public enum ServerStarter {
         final Integer storageSSLPort = extractAndValidatePort(
                 Optional.fromNullable(parameters.get(CASSANDRA_STORAGE_SSL_PORT)).or(storageSslRandomPort()),
                 CASSANDRA_STORAGE_SSL_PORT);
+        final Integer jmxPort = extractAndValidatePort(jxmRandomPort(), CASSANDRA_JMX_PORT);
 
         parameters.put(CASSANDRA_THRIFT_PORT, thriftPort);
         parameters.put(CASSANDRA_CQL_PORT, cqlPort);
         parameters.put(CASSANDRA_STORAGE_PORT, storagePort);
         parameters.put(CASSANDRA_STORAGE_SSL_PORT, storageSSLPort);
+        parameters.put(CASSANDRA_JMX_PORT, jmxPort);
 
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_THRIFT_PORT, thriftPort.toString());
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT, cqlPort.toString());
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT, storagePort.toString());
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_SSL_PORT, storageSSLPort.toString());
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_JMX_PORT, jmxPort.toString());
 
         ServerStarter.cqlPort = cqlPort;
         ServerStarter.thriftPort = thriftPort;
@@ -305,5 +293,9 @@ public enum ServerStarter {
 
     private static int thriftRandomPort() {
         return PortFinder.findAvailableBetween(9501, 9999);
+    }
+
+    private static int jxmRandomPort() {
+        return PortFinder.findAvailableBetween(7501, 7999);
     }
 }

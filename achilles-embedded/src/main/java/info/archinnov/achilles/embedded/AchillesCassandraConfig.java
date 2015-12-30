@@ -4,11 +4,13 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.cassandra.config.Config;
 import org.apache.cassandra.config.ConfigurationLoader;
 import org.apache.cassandra.config.EncryptionOptions;
-import org.apache.cassandra.config.SeedProviderDef;
+import org.apache.cassandra.config.ParameterizedClass;
 import org.apache.cassandra.exceptions.ConfigurationException;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class AchillesCassandraConfig implements ConfigurationLoader {
 
@@ -16,6 +18,7 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
     static final String ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT = "ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT";
     static final String ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT = "ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT";
     static final String ACHILLES_EMBEDDED_CASSANDRA_STORAGE_SSL_PORT = "ACHILLES_EMBEDDED_CASSANDRA_STORAGE_SSL_PORT";
+    static final String ACHILLES_EMBEDDED_CASSANDRA_JMX_PORT = "ACHILLES_EMBEDDED_CASSANDRA_JMX_PORT";
 
     static final String ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER";
     static final String ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER";
@@ -53,6 +56,7 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.listen_address = "127.0.0.1";
         config.start_native_transport = true;
         config.start_rpc = true;
+        config.listen_address = "localhost";
         config.rpc_address = "localhost";
         config.rpc_keepalive = true;
         config.rpc_server_type = "sync";
@@ -86,10 +90,10 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.commitlog_total_space_in_mb = 32;
 
         config.disk_failure_policy = Config.DiskFailurePolicy.stop_paranoid;
-        final LinkedHashMap<String, Object> seedConfigs = new LinkedHashMap<>();
-        seedConfigs.put("class_name", "org.apache.cassandra.locator.SimpleSeedProvider");
-        seedConfigs.put("parameters", Arrays.asList(ImmutableMap.of("seeds", "127.0.0.1")));
-        config.seed_provider = new SeedProviderDef(seedConfigs);
+
+        final Map<String, String> seedsMap = new HashMap<>();
+        seedsMap.put("seeds", "localhost");
+        config.seed_provider = new ParameterizedClass("org.apache.cassandra.locator.SimpleSeedProvider", seedsMap);
 
         config.data_file_directories = new String[] { System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER) };
         config.commitlog_directory = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER);
