@@ -42,6 +42,11 @@
             <artifactId>commons-collections</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
         <!-- Google Auto Service -->
         <dependency>
             <groupId>com.google.auto.service</groupId>

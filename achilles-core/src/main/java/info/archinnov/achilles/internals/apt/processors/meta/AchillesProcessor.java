@@ -19,6 +19,7 @@ package info.archinnov.achilles.internals.apt.processors.meta;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static java.util.stream.Collectors.toList;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +29,10 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
+
+import org.apache.commons.io.FileUtils;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
@@ -68,7 +73,7 @@ public class AchillesProcessor extends AbstractProcessor {
             final List<EntityMetaSignature> entityMetas = annotations
                     .stream()
                     .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotation).stream())
-                    .map(x -> MoreElements.asType(x))
+                    .map(MoreElements::asType)
                     .map(x -> entityParser.parseEntity(x, parsingContext))
                     .collect(toList());
 
@@ -76,6 +81,12 @@ public class AchillesProcessor extends AbstractProcessor {
             final ManagersAndDSLClasses managersAndDSLClasses = ManagerFactoryCodeGen.buildInstance(aptUtils, entityMetas, parsingContext);
 
             try {
+                final FileObject resource = aptUtils.filer.getResource(StandardLocation.SOURCE_OUTPUT, GENERATED_PACKAGE, MANAGER_FACTORY_BUILDER_CLASS);
+                final File generatedSourceFolder = new File(resource.toUri().getRawPath().replaceAll("(.+/info/archinnov/achilles/generated/).+", "$1"));
+
+                aptUtils.printNote("[Achilles] Cleaning previously generated source files");
+                FileUtils.deleteDirectory(generatedSourceFolder);
+
                 aptUtils.printNote("[Achilles] Generating ManagerFactoryBuilder");
                 JavaFile.builder(GENERATED_PACKAGE, managerFactoryBuilder)
                         .build().writeTo(aptUtils.filer);
