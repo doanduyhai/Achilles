@@ -73,7 +73,7 @@ public class TestTypedQueries {
         final Long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
         scriptExecutor.executeScriptTemplate("SimpleEntity/insert_single_row.cql", ImmutableMap.of("id", id, "table", "simple"));
 
-        final SimpleStatement statement = session.newSimpleStatement("SELECT * FROM simple WHERE id = " + id);
+        final SimpleStatement statement = new SimpleStatement("SELECT * FROM simple WHERE id = " + id);
 
         //When
         final SimpleEntity actual = manager
@@ -127,7 +127,7 @@ public class TestTypedQueries {
     @Test
     public void should_fail_regular_typed_query_if_not_SELECT_statement() throws Exception {
         //Given
-        final SimpleStatement statement = session.newSimpleStatement("UPDATE simple SET value = 'val' WHERE id = 1");
+        final SimpleStatement statement = new SimpleStatement("UPDATE simple SET value = 'val' WHERE id = 1");
 
         //When
         exception.expect(AchillesException.class);
@@ -142,7 +142,7 @@ public class TestTypedQueries {
     @Test
     public void should_fail_regular_typed_query_if_table_not_correspond() throws Exception {
         //Given
-        final RegularStatement statement = session.newSimpleStatement("SELECT * FROM entity_with_clusterings WHERE id = :id");
+        final RegularStatement statement = new SimpleStatement("SELECT * FROM entity_with_clusterings WHERE id = :id");
 
         //When
         exception.expect(AchillesException.class);
@@ -171,7 +171,7 @@ public class TestTypedQueries {
         values.put("date9", "'2015-10-09 00:00:00+0000'");
         scriptExecutor.executeScriptTemplate("SimpleEntity/insert_many_rows.cql", values);
 
-        final SimpleStatement statement = session.newSimpleStatement("SELECT * FROM simple WHERE id = :id LIMIT 100");
+        final SimpleStatement statement = new SimpleStatement("SELECT * FROM simple WHERE id = :id LIMIT 100");
 
         //When
         final Iterator<SimpleEntity> iter = manager

@@ -272,12 +272,11 @@ public abstract class AbstractEntityProperty<T> implements
             LOGGER.debug(format("Preparing static statements for entity of type %s",
                     entityClass.getCanonicalName()));
         }
-        final QueryBuilder builder = new QueryBuilder(session.getCluster());
         if (!counterTable) {
-            generateStaticInsertQueries(session, cache, builder, this);
+            generateStaticInsertQueries(session, cache, this);
         }
-        generateStaticDeleteQueries(session, cache, builder, this);
-        generateStaticSelectQuery(session, cache, builder, this);
+        generateStaticDeleteQueries(session, cache, this);
+        generateStaticSelectQuery(session, cache, this);
     }
 
     protected List<AbstractProperty<T, ?, ?>> getAllColumns() {

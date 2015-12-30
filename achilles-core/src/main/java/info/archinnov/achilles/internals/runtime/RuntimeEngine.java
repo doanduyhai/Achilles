@@ -120,8 +120,4 @@ public class RuntimeEngine {
     public Cluster getCluster() {
         return session.getCluster();
     }
-
-    public QueryBuilder newQueryBuilder() {
-        return new QueryBuilder(session.getCluster());
-    }
 }

@@ -35,7 +35,7 @@ public abstract class AbstractSelect implements SchemaNameAware {
     protected final List<Object> encodedValues = new ArrayList<>();
 
     protected AbstractSelect(RuntimeEngine rte) {
-        this.select = new QueryBuilder(rte.session.getCluster()).select();
+        this.select = QueryBuilder.select();
         this.rte = rte;
     }
 }

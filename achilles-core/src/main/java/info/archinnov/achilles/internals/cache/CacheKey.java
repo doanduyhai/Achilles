@@ -76,7 +76,7 @@ public class CacheKey {
 
                 final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, FIND));
-                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateSelectQuery(rte.newQueryBuilder(), meta, provider))
+                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateSelectQuery(meta, provider))
                         .orElse(psFromCache);
 
             }
@@ -90,7 +90,7 @@ public class CacheKey {
                 }
                 final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, INSERT));
-                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsert(rte.newQueryBuilder(), meta, provider))
+                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsert(meta, provider))
                         .orElse(psFromCache);
             }
         },
@@ -103,7 +103,7 @@ public class CacheKey {
                 }
                 final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, INSERT_IF_NOT_EXISTS));
-                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsertIfNotExists(rte.newQueryBuilder(), meta, provider))
+                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsertIfNotExists(meta, provider))
                         .orElse(psFromCache);
             }
         },
@@ -116,7 +116,7 @@ public class CacheKey {
                 }
                 final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, DELETE));
-                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateDeleteByKeys(rte.newQueryBuilder(), meta, provider))
+                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateDeleteByKeys(meta, provider))
                         .orElse(psFromCache);
             }
         },
@@ -129,7 +129,7 @@ public class CacheKey {
                 }
                 final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, DELETE_IF_EXISTS));
-                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateDeleteByKeysIfExists(rte.newQueryBuilder(), meta, provider))
+                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateDeleteByKeysIfExists(meta, provider))
                         .orElse(psFromCache);
             }
         },
@@ -142,7 +142,7 @@ public class CacheKey {
                 }
                 final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, DELETE_BY_PARTITION));
-                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateDeleteByPartition(rte.newQueryBuilder(), meta, provider))
+                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateDeleteByPartition(meta, provider))
                         .orElse(psFromCache);
             }
         },

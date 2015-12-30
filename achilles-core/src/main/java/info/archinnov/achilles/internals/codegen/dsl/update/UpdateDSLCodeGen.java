@@ -145,7 +145,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addParameter(SCHEMA_NAME_PROVIDER, "schemaNameProvider", Modifier.FINAL)
                 .addStatement("final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass)")
                 .addStatement("final String currentTable = lookupTable(schemaNameProvider, meta.entityClass)")
-                .addStatement("final $T where = builder.update(currentKeyspace, currentTable).where()", UPDATE_WHERE)
+                .addStatement("final $T where = $T.update(currentKeyspace, currentTable).where()", UPDATE_WHERE, QUERY_BUILDER)
                 .addStatement("return new $T(where)", updateFromTypeName)
                 .returns(updateFromTypeName)
                 .build();
@@ -157,7 +157,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("final String currentKeyspace = meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName())",
                         "unknown_keyspace_for_")
-                .addStatement("final $T where = builder.update(currentKeyspace, meta.getTableName()).where()", UPDATE_WHERE)
+                .addStatement("final $T where = $T.update(currentKeyspace, meta.getTableName()).where()", UPDATE_WHERE, QUERY_BUILDER)
                 .addStatement("return new $T(where)", updateFromTypeName)
                 .returns(updateFromTypeName)
                 .build();

@@ -74,7 +74,7 @@ public class TestNativeQueries {
         final Long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
         scriptExecutor.executeScriptTemplate("SimpleEntity/insert_single_row.cql", ImmutableMap.of("id", id, "table", "simple"));
 
-        final SimpleStatement statement = session.newSimpleStatement("SELECT * FROM simple WHERE id = " + id);
+        final SimpleStatement statement = new SimpleStatement("SELECT * FROM simple WHERE id = " + id);
 
         //When
         final TypedMap actual = manager
@@ -143,7 +143,7 @@ public class TestNativeQueries {
         values.put("date9", "'2015-10-09 00:00:00+0000'");
         scriptExecutor.executeScriptTemplate("SimpleEntity/insert_many_rows.cql", values);
 
-        final SimpleStatement statement = session.newSimpleStatement("SELECT * FROM simple WHERE id = :id LIMIT 100");
+        final SimpleStatement statement = new SimpleStatement("SELECT * FROM simple WHERE id = :id LIMIT 100");
 
         //When
         final Iterator<TypedMap> iter = manager
@@ -166,7 +166,7 @@ public class TestNativeQueries {
     public void should_perform_regular_insert_as_native_query() throws Exception {
         //Given
         final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
-        final SimpleStatement statement = session.newSimpleStatement("INSERT INTO simple(id, date, value) VALUES(:id, :date, :value)");
+        final SimpleStatement statement = new SimpleStatement("INSERT INTO simple(id, date, value) VALUES(:id, :date, :value)");
 
         //When
         manager

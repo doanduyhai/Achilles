@@ -43,17 +43,17 @@ public class PreparedStatementGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PreparedStatementGenerator.class);
 
-    public static void generateStaticSelectQuery(Session session, StatementsCache cache, QueryBuilder builder, AbstractEntityProperty<?> entityProperty) {
-        final RegularStatement where = generateSelectQuery(builder, entityProperty, Optional.empty());
+    public static void generateStaticSelectQuery(Session session, StatementsCache cache,  AbstractEntityProperty<?> entityProperty) {
+        final RegularStatement where = generateSelectQuery(entityProperty, Optional.empty());
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, FIND), () -> session.prepare(where));
     }
 
-    public static RegularStatement generateSelectQuery(QueryBuilder builder, AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+    public static RegularStatement generateSelectQuery( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate SELECT query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
         }
 
-        final Select.Selection select = builder.select();
+        final Select.Selection select = QueryBuilder.select();
         final Optional<String> keyspace = entityProperty.getKeyspace();
 
         entityProperty
@@ -94,13 +94,13 @@ public class PreparedStatementGenerator {
         return where;
     }
 
-    public static void generateStaticDeleteQueries(Session session, StatementsCache cache, QueryBuilder builder, AbstractEntityProperty<?> entityProperty) {
+    public static void generateStaticDeleteQueries(Session session, StatementsCache cache,  AbstractEntityProperty<?> entityProperty) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate DELETE queries for entity of type %s", entityProperty.entityClass.getCanonicalName()));
         }
 
-        final Delete.Selection delete = builder.delete();
+        final Delete.Selection delete = QueryBuilder.delete();
         final Optional<String> keyspace = entityProperty.getKeyspace();
         final Delete from;
         if (keyspace.isPresent()) {
@@ -130,26 +130,26 @@ public class PreparedStatementGenerator {
 
 
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, DELETE),
-                () -> session.prepare(generateDeleteByKeys(builder, entityProperty, Optional.empty())));
+                () -> session.prepare(generateDeleteByKeys(entityProperty, Optional.empty())));
 
         if (!entityProperty.isCounter()) {
             cache.putStaticCache(new CacheKey(entityProperty.entityClass, DELETE_IF_EXISTS),
-                    () -> session.prepare(generateDeleteByKeysIfExists(builder, entityProperty, Optional.empty())));
+                    () -> session.prepare(generateDeleteByKeysIfExists(entityProperty, Optional.empty())));
         }
 
         if (entityProperty.isClustered()) {
             cache.putStaticCache(new CacheKey(entityProperty.entityClass, DELETE_BY_PARTITION),
-                    () -> session.prepare(generateDeleteByPartition(builder, entityProperty, Optional.empty())));
+                    () -> session.prepare(generateDeleteByPartition(entityProperty, Optional.empty())));
         }
     }
 
-    public static RegularStatement generateDeleteByKeys(QueryBuilder builder, AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+    public static RegularStatement generateDeleteByKeys( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate DELETE query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
         }
 
-        final Delete.Selection delete = builder.delete();
+        final Delete.Selection delete = QueryBuilder.delete();
         final Optional<String> keyspace = entityProperty.getKeyspace();
         final Delete from;
         if (schemaNameProvider.isPresent()) {
@@ -180,13 +180,13 @@ public class PreparedStatementGenerator {
         return deleteByKeys;
     }
 
-    public static RegularStatement generateDeleteByKeysIfExists(QueryBuilder builder, AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+    public static RegularStatement generateDeleteByKeysIfExists( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate DELETE IF EXISTS query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
         }
 
-        final Delete.Selection delete = builder.delete();
+        final Delete.Selection delete = QueryBuilder.delete();
         final Optional<String> keyspace = entityProperty.getKeyspace();
         final Delete from;
         if (schemaNameProvider.isPresent()) {
@@ -217,13 +217,13 @@ public class PreparedStatementGenerator {
         return deleteByKeysIfExists;
     }
 
-    public static RegularStatement generateDeleteByPartition(QueryBuilder builder, AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+    public static RegularStatement generateDeleteByPartition( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate DELETE BY PARTITION query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
         }
 
-        final Delete.Selection delete = builder.delete();
+        final Delete.Selection delete = QueryBuilder.delete();
         final Optional<String> keyspace = entityProperty.getKeyspace();
         final Delete from;
         if (schemaNameProvider.isPresent()) {
@@ -249,40 +249,40 @@ public class PreparedStatementGenerator {
     }
 
 
-    public static void generateStaticInsertQueries(Session session, StatementsCache cache, QueryBuilder builder, AbstractEntityProperty<?> entityProperty) {
+    public static void generateStaticInsertQueries(Session session, StatementsCache cache,  AbstractEntityProperty<?> entityProperty) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate INSERT queries for entity of type %s", entityProperty.entityClass.getCanonicalName()));
         }
 
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT),
-                () -> session.prepare(generateInsert(builder, entityProperty, Optional.empty())));
+                () -> session.prepare(generateInsert(entityProperty, Optional.empty())));
 
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_IF_NOT_EXISTS),
-                () -> session.prepare(generateInsertIfNotExists(builder, entityProperty, Optional.empty())));
+                () -> session.prepare(generateInsertIfNotExists(entityProperty, Optional.empty())));
     }
 
-    public static RegularStatement generateInsert(QueryBuilder builder, AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+    public static RegularStatement generateInsert( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate INSERT query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
         }
 
-        final Insert insert = getInsertWithTableName(builder, entityProperty, schemaNameProvider);
+        final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
         entityProperty.allColumns.forEach(x -> insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn)));
         return insert.using(ttl(bindMarker("ttl")));
     }
 
-    public static RegularStatement generateInsertIfNotExists(QueryBuilder builder, AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+    public static RegularStatement generateInsertIfNotExists( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate INSERT IF NOT EXISTS query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
         }
 
-        final Insert insert = getInsertWithTableName(builder, entityProperty, schemaNameProvider);
+        final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
         entityProperty.allColumns.forEach(x -> insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn)));
         return insert.ifNotExists().using(ttl(bindMarker("ttl")));
     }
 
-    private static Insert getInsertWithTableName(QueryBuilder builder, AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+    private static Insert getInsertWithTableName( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
 
 
         final Optional<String> keyspace = entityProperty.getKeyspace();
@@ -293,12 +293,12 @@ public class PreparedStatementGenerator {
                 LOGGER.debug(format("Get INSERT query for entity of type %s with schema provider",
                         entityProperty.entityClass.getCanonicalName(), provider));
             }
-            insert = builder.insertInto(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));
+            insert = QueryBuilder.insertInto(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));
         } else {
             if (keyspace.isPresent()) {
-                insert = builder.insertInto(keyspace.get(), entityProperty.getTableName());
+                insert = QueryBuilder.insertInto(keyspace.get(), entityProperty.getTableName());
             } else {
-                insert = builder.insertInto(entityProperty.getTableName());
+                insert = QueryBuilder.insertInto(entityProperty.getTableName());
             }
         }
         return insert;

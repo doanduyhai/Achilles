@@ -182,13 +182,13 @@ public class ScriptExecutor {
                 if (line.startsWith(BATCH_APPLY)) {
                     batch = false;
 
-                    statements.add(session.newSimpleStatement(batchStatement.toString()));
+                    statements.add(new SimpleStatement(batchStatement.toString()));
                     batchStatement = new StringBuilder();
                 }
             } else {
                 statement.append(line);
                 if (line.endsWith(COMMA)) {
-                    statements.add(session.newSimpleStatement(statement.toString()));
+                    statements.add(new SimpleStatement(statement.toString()));
                     statement = new StringBuilder();
                 } else {
                     statement.append(" ");

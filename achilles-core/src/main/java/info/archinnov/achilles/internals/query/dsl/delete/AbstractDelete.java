@@ -35,7 +35,7 @@ public abstract class AbstractDelete implements SchemaNameAware {
     protected final List<Object> encodedValues = new ArrayList<>();
 
     protected AbstractDelete(RuntimeEngine rte) {
-        this.delete = new QueryBuilder(rte.session.getCluster()).delete();
+        this.delete = QueryBuilder.delete();
         this.rte = rte;
     }
 

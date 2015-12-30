@@ -27,7 +27,6 @@ import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 
 public abstract class AbstractUpdate implements SchemaNameAware {
 
-    protected final QueryBuilder builder;
     protected final RuntimeEngine rte;
     protected final Options options = new Options();
     protected final List<Object> boundValues = new ArrayList<>();
@@ -36,7 +35,6 @@ public abstract class AbstractUpdate implements SchemaNameAware {
 
     protected AbstractUpdate(RuntimeEngine rte) {
         this.rte = rte;
-        this.builder = new QueryBuilder(rte.session.getCluster());
     }
 
 
