@@ -48,9 +48,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Row;
+
+import com.datastax.driver.core.*;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -160,9 +159,17 @@ public class TypedQueryTest {
 
     private CompleteBean entity = new CompleteBean();
 
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Configuration driverConfig;
+
+    private CodecRegistry codecRegistry = new CodecRegistry();
+
     @Before
     public void setUp() {
         when(context.getEntityFacade()).thenReturn(entityFacade);
+        when(daoContext.getDriverConfig()).thenReturn(driverConfig);
+        when(driverConfig.getCodecRegistry()).thenReturn(codecRegistry);
+        when(driverConfig.getProtocolOptions().getProtocolVersion()).thenReturn(ProtocolVersion.V2);
     }
 
     @Test

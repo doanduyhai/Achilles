@@ -251,7 +251,7 @@ public class PreparedStatementGenerator {
         } else if (options.hasTimestamp()) {
             whereOptions = where.using(timestamp(bindMarker("timestamp")));
         } else if (options.isIfExists()) {
-            where.onlyIf(IfExistsClause.build());
+            where.ifExists();
         }
 
         return whereOptions;

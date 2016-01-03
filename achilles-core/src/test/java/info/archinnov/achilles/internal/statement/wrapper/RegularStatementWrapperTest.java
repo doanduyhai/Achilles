@@ -103,9 +103,6 @@ public class RegularStatementWrapperTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ColumnDefinitions columnDefinitions;
 
-    @Mock
-    private RowMethodInvoker invoker;
-
     @Captor
     private ArgumentCaptor<Statement> statementCaptor;
 
@@ -183,19 +180,17 @@ public class RegularStatementWrapperTest {
             }
         };
         wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, Optional.of(listener), NO_SERIAL_CONSISTENCY);
-        wrapper.invoker = invoker;
         when(rs.getQueryString()).thenReturn("UPDATE table IF name='John' SET");
         when(resultSet.one()).thenReturn(row);
-        when(row.getBool(LWT_RESULT_COLUMN)).thenReturn(false);
+        when(row.getObject(LWT_RESULT_COLUMN)).thenReturn(false);
         when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 
         when(columnDefinitions.iterator().hasNext()).thenReturn(true, true, false);
         Definition col1 = buildColumnDef("keyspace", "table", "[applied]", DataType.cboolean());
         Definition col2 = buildColumnDef("keyspace", "table", "name", DataType.text());
         when(columnDefinitions.iterator().next()).thenReturn(col1, col2);
-
-        when(invoker.invokeOnRowForType(row, DataType.cboolean().asJavaClass(), "[applied]")).thenReturn(false);
-        when(invoker.invokeOnRowForType(row, DataType.text().asJavaClass(), "name")).thenReturn("Helen");
+        when(row.getObject("[applied]")).thenReturn(false);
+        when(row.getObject("name")).thenReturn("Helen");
 
         //When
         wrapper.checkForLWTSuccess(resultSet);
@@ -211,7 +206,6 @@ public class RegularStatementWrapperTest {
     public void should_notify_listener_on_cas_error() throws Exception {
         //Given
         wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
-        wrapper.invoker = invoker;
         when(rs.getQueryString()).thenReturn("INSERT INTO table IF NOT EXISTS");
         when(resultSet.one()).thenReturn(row);
         when(row.getBool(LWT_RESULT_COLUMN)).thenReturn(false);
@@ -222,8 +216,8 @@ public class RegularStatementWrapperTest {
         Definition col2 = buildColumnDef("keyspace", "table", "id", DataType.bigint());
         when(columnDefinitions.iterator().next()).thenReturn(col1, col2);
 
-        when(invoker.invokeOnRowForType(row, DataType.cboolean().asJavaClass(), "[applied]")).thenReturn(false);
-        when(invoker.invokeOnRowForType(row, DataType.bigint().asJavaClass(), "id")).thenReturn(10L);
+        when(row.getObject("[applied]")).thenReturn(false);
+        when(row.getObject("id")).thenReturn(10L);
 
         AchillesLightWeightTransactionException caughtEx = null;
         //When

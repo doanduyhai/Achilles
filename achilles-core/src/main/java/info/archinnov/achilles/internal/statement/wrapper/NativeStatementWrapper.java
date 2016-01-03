@@ -22,13 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import com.datastax.driver.core.PagingState;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.internal.statement.StatementHelper;
@@ -37,13 +31,18 @@ import info.archinnov.achilles.listener.LWTResultListener;
 public class NativeStatementWrapper extends AbstractStatementWrapper {
 
 
+    private final CodecRegistry codecRegistry;
+    private final ProtocolVersion protocolVersion;
     private Statement statement;
     private PagingState pagingState;
 
     private static final List<ProtocolVersion> SUPPORTED_NATIVE_PROTOCOLS = Arrays.asList(ProtocolVersion.V1, ProtocolVersion.V2, ProtocolVersion.V3);
 
-    public NativeStatementWrapper(Class<?> entityClass, Statement statement, Object[] values, Optional<LWTResultListener> LWTResultListener) {
+    public NativeStatementWrapper(Configuration driverConfiguration, Class<?> entityClass, Statement statement, Object[] values, Optional<LWTResultListener> LWTResultListener) {
         super(entityClass, values);
+
+        this.codecRegistry = driverConfiguration.getCodecRegistry();
+        this.protocolVersion = driverConfiguration.getProtocolOptions().getProtocolVersion();
         this.statement = statement;
         super.lwtResultListener = LWTResultListener;
     }
@@ -92,12 +91,8 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
     public Statement buildParameterizedStatement() {
         if (statement instanceof RegularStatement) {
             final RegularStatement regularStatement = (RegularStatement) statement;
-            boolean statementHasNoBoundValue = true;
 
-            for (ProtocolVersion protocolVersion : SUPPORTED_NATIVE_PROTOCOLS) {
-                statementHasNoBoundValue &= isEmpty(regularStatement.getValues(protocolVersion));
-            }
-
+            boolean statementHasNoBoundValue = isEmpty(regularStatement.getValues(protocolVersion, codecRegistry));
             if (statementHasNoBoundValue && isNotEmpty(values)) {
                 final SimpleStatement statement = new SimpleStatement(getQueryString(), values);
 
@@ -107,8 +102,8 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
                 statement.setDefaultTimestamp(this.statement.getDefaultTimestamp());
                 statement.setRetryPolicy(this.statement.getRetryPolicy());
 
-                if (this.statement.getRoutingKey() != null) {
-                    statement.setRoutingKey(this.statement.getRoutingKey());
+                if (this.statement.getRoutingKey(protocolVersion, codecRegistry) != null) {
+                    statement.setRoutingKey(this.statement.getRoutingKey(protocolVersion, codecRegistry));
                 }
 
                 if (this.statement.getConsistencyLevel() != null) {

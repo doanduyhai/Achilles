@@ -33,6 +33,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.powermock.reflect.Whitebox;
+
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.exceptions.UnavailableException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
@@ -86,8 +88,8 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity = manager.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId(), withConsistency(ONE));
         assertThat(entity.getName()).isEqualTo("changed_name");
 
-        expectedEx.expect(UnavailableException.class);
-        expectedEx.expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
+        expectedEx.expect(NoHostAvailableException.class);
+        expectedEx.expectMessage("Not enough replicas available for query at consistency THREE (3 required but only 1 alive)");
         manager.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
     }
 

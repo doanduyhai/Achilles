@@ -29,16 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import com.datastax.driver.core.querybuilder.IfExistsClause;
+import com.datastax.driver.core.*;
 import info.archinnov.achilles.listener.LWTResultListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+
 import com.datastax.driver.core.querybuilder.Update;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -130,7 +125,7 @@ public class DaoContext {
             ConsistencyLevel writeLevel = overrider.getWriteLevel(context);
             final Pair<Update.Where, Object[]> pair = statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet);
             if (context.getOptions().isIfExists()) {
-                pair.left.onlyIf(IfExistsClause.build());
+                pair.left.ifExists();
             }
 
             context.pushStatement(new RegularStatementWrapper(context.getEntityClass(), pair.left, pair.right, getCQLLevel(writeLevel),
@@ -311,6 +306,10 @@ public class DaoContext {
 
     public Session getSession() {
         return session;
+    }
+
+    public Configuration getDriverConfig() {
+        return session.getCluster().getConfiguration();
     }
 
     void setDynamicPSCache(Cache<StatementCacheKey, PreparedStatement> dynamicPSCache) {

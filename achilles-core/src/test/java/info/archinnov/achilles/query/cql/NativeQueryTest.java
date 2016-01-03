@@ -30,8 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import com.datastax.driver.core.ExecutionInfo;
-import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.*;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.async.RowsWithExecutionInfo;
 import info.archinnov.achilles.internal.persistence.operations.TypedMapIterator;
@@ -43,9 +42,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Row;
+
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -126,12 +123,19 @@ public class NativeQueryTest {
 
     private Object[] boundValues = new Object[]{1};
 
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Configuration driverConfig;
+
+    private CodecRegistry codecRegistry = new CodecRegistry();
 
     @Before
     public void setUp() {
 
         when(configContext.getExecutorService()).thenReturn(executorService);
-        query = new NativeQuery(daoContext, configContext,regularStatement, OptionsBuilder.noOptions(), boundValues);
+        when(daoContext.getDriverConfig()).thenReturn(driverConfig);
+        when(driverConfig.getCodecRegistry()).thenReturn(codecRegistry);
+        when(driverConfig.getProtocolOptions().getProtocolVersion()).thenReturn(ProtocolVersion.V2);
+        query = new NativeQuery(daoContext, configContext, regularStatement, OptionsBuilder.noOptions(), boundValues);
         query.asyncUtils = asyncUtils;
         query.mapper = mapper;
     }
@@ -226,7 +230,7 @@ public class NativeQueryTest {
         when(asyncUtils.transformFutureToEmpty(futureResultSet, executorService)).thenReturn(futureEmpty);
         when(asyncUtils.buildInterruptible(futureEmpty)).thenReturn(achillesFutureEmpty);
         when(regularStatement.getQueryString()).thenReturn("query");
-
+        when(regularStatement.getValues(ProtocolVersion.V2, codecRegistry)).thenReturn(null);
         //When
         final AchillesFuture<Empty> actual = query.asyncExecuteInternal(asyncListeners);
 

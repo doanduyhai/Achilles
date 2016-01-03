@@ -65,23 +65,8 @@ public class NativeQueryMapper {
 					column.getTable(), column.getName());
 		}
 
-		DataType type = column.getType();
-		Class<?> javaClass = type.asJavaClass();
 		String name = column.getName();
-		Object value;
-		if (type.isCollection()) {
-			List<DataType> typeArguments = type.getTypeArguments();
-			if (List.class.isAssignableFrom(javaClass)) {
-				value = row.getList(name, typeArguments.get(0).asJavaClass());
-			} else if (Set.class.isAssignableFrom(javaClass)) {
-				value = row.getSet(name, typeArguments.get(0).asJavaClass());
-			} else {
-				value = row.getMap(name, typeArguments.get(0).asJavaClass(), typeArguments.get(1).asJavaClass());
-			}
-		} else {
-			value = cqlRowInvoker.invokeOnRowForType(row, javaClass, name);
-		}
-        return value;
+		return row.getObject(name);
 	}
 
     public static enum Singleton {

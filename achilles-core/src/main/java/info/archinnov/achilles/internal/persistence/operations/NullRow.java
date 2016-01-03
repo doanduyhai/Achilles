@@ -25,11 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Token;
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.UDTValue;
+
+import com.datastax.driver.core.*;
 import com.google.common.reflect.TypeToken;
 
 public class NullRow implements Row {
@@ -54,8 +51,28 @@ public class NullRow implements Row {
     }
 
     @Override
+    public byte getByte(int i) {
+        return 0;
+    }
+
+    @Override
+    public short getShort(int i) {
+        return 0;
+    }
+
+    @Override
     public boolean getBool(String name) {
         return false;
+    }
+
+    @Override
+    public byte getByte(String name) {
+        return 0;
+    }
+
+    @Override
+    public short getShort(String name) {
+        return 0;
     }
 
     @Override
@@ -74,18 +91,39 @@ public class NullRow implements Row {
     }
 
     @Override
+    public Date getTimestamp(int i) {
+        return null;
+    }
+
+    @Override
     public long getLong(String name) {
         return 0;
     }
 
     @Override
-    public Date getDate(int i) {
+    public Date getTimestamp(String name) {
         return null;
     }
 
     @Override
-    public Date getDate(String name) {
+    public LocalDate getDate(int i) {
         return null;
+    }
+
+    @Override
+    public long getTime(int i) {
+        return 0;
+    }
+
+    @Override
+    public LocalDate
+    getDate(String name) {
+        return null;
+    }
+
+    @Override
+    public long getTime(String name) {
+        return 0;
     }
 
     @Override
@@ -219,6 +257,21 @@ public class NullRow implements Row {
     }
 
     @Override
+    public <T> T get(int i, Class<T> targetClass) {
+        return null;
+    }
+
+    @Override
+    public <T> T get(int i, TypeToken<T> targetType) {
+        return null;
+    }
+
+    @Override
+    public <T> T get(int i, TypeCodec<T> codec) {
+        return null;
+    }
+
+    @Override
     public <K, V> Map<K, V> getMap(String name, Class<K> keysClass, Class<V> valuesClass) {
         return null;
     }
@@ -265,6 +318,21 @@ public class NullRow implements Row {
 
     @Override
     public Object getObject(String name) {
+        return null;
+    }
+
+    @Override
+    public <T> T get(String name, Class<T> targetClass) {
+        return null;
+    }
+
+    @Override
+    public <T> T get(String name, TypeToken<T> targetType) {
+        return null;
+    }
+
+    @Override
+    public <T> T get(String name, TypeCodec<T> codec) {
         return null;
     }
 

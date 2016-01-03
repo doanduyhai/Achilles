@@ -34,6 +34,7 @@ import java.util.List;
 
 import com.datastax.driver.core.ColumnMetadata;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -55,6 +56,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.type.Counter;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class TableUpdaterTest {
 
     @Rule

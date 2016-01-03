@@ -3,7 +3,11 @@ package info.archinnov.achilles.internal.metadata.holder;
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.IndexMetadata;
 import com.datastax.driver.core.TableMetadata;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.table.ColumnMetaDataComparator;
 import info.archinnov.achilles.internal.validation.Validator;
@@ -14,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLType;
+
+import javax.annotation.Nullable;
 
 public class PropertyMetaTableValidator extends PropertyMetaView{
 
@@ -64,7 +70,15 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
 
 
         if (!configContext.isRelaxIndexValidation()) {
-            boolean columnIsIndexed = columnMetadata.getIndex() != null;
+            boolean columnIsIndexed = meta.structure().isIndexed()
+                    ? tableMetaData.getIndex(meta.getIndexProperties().getIndexName()) !=null
+                    : !FluentIterable.from(tableMetaData.getIndexes()).filter(new Predicate<IndexMetadata>() {
+                        @Override
+                        public boolean apply(@Nullable IndexMetadata indexMeta) {
+                            return indexMeta.getTarget().toLowerCase().contains(cqlColumnName);
+                        }
+                     }).isEmpty();
+
             Validator.validateTableFalse((columnIsIndexed ^ meta.structure().isIndexed()),"Column '%s' in the table '%s' is indexed (or not) whereas metadata indicates it is (or not)",cqlColumnName, tableName);
         }
     }

@@ -16,18 +16,9 @@
 
 package com.datastax.driver.core;
 
-
-import com.datastax.driver.core.ColumnMetadata.Raw.Kind;
-
 public class ColumnMetadataBuilder {
 
     public static ColumnMetadata create(TableMetadata tableMeta, String name, DataType type) {
-        ColumnMetadata.Raw raw = new ColumnMetadata.Raw(name, Kind.REGULAR, 0, type, false);
-        return ColumnMetadata.fromRaw(tableMeta,raw);
-    }
-
-    public static ColumnMetadata createStatic(TableMetadata tableMeta, String name, DataType type) {
-        ColumnMetadata.Raw raw = new ColumnMetadata.Raw(name, Kind.STATIC, 0, type, false);
-        return ColumnMetadata.fromRaw(tableMeta,raw);
+        return ColumnMetadata.forAlias(tableMeta, name, type);
     }
 }

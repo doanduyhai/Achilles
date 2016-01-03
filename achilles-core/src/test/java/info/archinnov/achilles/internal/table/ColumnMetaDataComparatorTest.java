@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -31,6 +32,7 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.TableMetadata;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class ColumnMetaDataComparatorTest {
 
     private ColumnMetaDataComparator comparator = new ColumnMetaDataComparator();

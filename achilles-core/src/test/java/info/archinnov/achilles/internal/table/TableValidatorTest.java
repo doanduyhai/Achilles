@@ -48,6 +48,7 @@ import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import info.archinnov.achilles.test.parser.entity.CompoundPK;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -67,6 +68,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.type.Counter;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class TableValidatorTest {
 
     @Rule

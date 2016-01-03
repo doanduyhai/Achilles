@@ -31,6 +31,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.exceptions.UnavailableException;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
@@ -64,8 +65,8 @@ public class ConsistencyLevelIT {
         bean.setId(id);
         bean.setName("name");
 
-        expectedEx.expect(UnavailableException.class);
-        expectedEx.expectMessage("Not enough replica available for query at consistency TWO (2 required but only 1 alive)");
+        expectedEx.expect(NoHostAvailableException.class);
+        expectedEx.expectMessage("Not enough replicas available for query at consistency TWO (2 required but only 1 alive)");
 
         manager.insert(bean);
     }
@@ -76,8 +77,8 @@ public class ConsistencyLevelIT {
 
         manager.insert(bean);
 
-        expectedEx.expect(UnavailableException.class);
-        expectedEx.expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
+        expectedEx.expect(NoHostAvailableException.class);
+        expectedEx.expectMessage("Not enough replicas available for query at consistency THREE (3 required but only 1 alive)");
 
         manager.find(EntityWithWriteOneAndReadThreeConsistency.class, id);
     }
@@ -89,7 +90,7 @@ public class ConsistencyLevelIT {
         try {
             manager.insert(bean);
             manager.find(EntityWithWriteOneAndReadThreeConsistency.class, id);
-        } catch (UnavailableException e) {
+        } catch (NoHostAvailableException e) {
             // Should recover from exception
             exceptionCaught = true;
         }

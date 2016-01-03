@@ -24,7 +24,7 @@ public class ColumnDefinitionBuilder {
 		return new Definition(keyspace, table, name, type);
 	}
 
-	public static ColumnDefinitions buildColumnDefinitions(Definition... defs) {
-		return new ColumnDefinitions(defs);
+	public static ColumnDefinitions buildColumnDefinitions(CodecRegistry codecRegistry, Definition... defs) {
+		return new ColumnDefinitions(defs, codecRegistry);
 	}
 }

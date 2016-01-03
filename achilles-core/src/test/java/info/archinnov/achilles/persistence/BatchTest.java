@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.*;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +44,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import com.datastax.driver.core.ResultSet;
+
 import com.datastax.driver.core.querybuilder.Insert;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.async.AchillesFuture;
@@ -130,6 +130,11 @@ public class BatchTest {
     @Mock
     private NativeQueryValidator validator;
 
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Configuration driverConfig;
+
+    private CodecRegistry codecRegistry = new CodecRegistry();
+
     @Before
     public void setUp() {
         when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
@@ -141,6 +146,9 @@ public class BatchTest {
         batch.entityMetaMap = entityMetaMap;
         batch.contextFactory = contextFactory;
         batch.validator = validator;
+        when(daoContext.getDriverConfig()).thenReturn(driverConfig);
+        when(driverConfig.getCodecRegistry()).thenReturn(codecRegistry);
+        when(driverConfig.getProtocolOptions().getProtocolVersion()).thenReturn(ProtocolVersion.V2);
         Whitebox.setInternalState(batch, BatchingFlushContext.class, flushContext);
 
     }

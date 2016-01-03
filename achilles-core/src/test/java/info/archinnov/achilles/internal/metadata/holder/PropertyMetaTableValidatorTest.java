@@ -18,6 +18,7 @@ import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.type.Counter;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -29,6 +30,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.Arrays;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class PropertyMetaTableValidatorTest {
 
     @Rule

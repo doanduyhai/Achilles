@@ -141,7 +141,7 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(actual).isSameAs(ps);
         verify(idMeta.forStatementGeneration()).generateInsertPrimaryKey(isA(Insert.class), Mockito.eq(false));
-        assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO ks.table(name) VALUES (:name);");
+        assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO ks.table (name) VALUES (:name);");
     }
 
     @Test

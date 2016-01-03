@@ -18,7 +18,6 @@ package info.archinnov.achilles.test.integration.tests;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.column;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.in;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
@@ -69,6 +68,7 @@ public class QueryIT {
             CompleteBean.class.getSimpleName(), TABLE_NAME, ClusteredEntityWithTimeUUID.TABLE_NAME,
             AchillesCounter.ACHILLES_COUNTER_TABLE);
 
+    private CodecRegistry codecRegistry = resource.getNativeSession().getCluster().getConfiguration().getCodecRegistry();
     private PersistenceManager manager = resource.getPersistenceManager();
 
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
@@ -862,7 +862,7 @@ public class QueryIT {
         manager.insert(entity);
 
         final Select.Where select = select().from("Tweet").where(QueryBuilder.eq("id", entity.getId()));
-        final ByteBuffer[] values = select.getValues(ProtocolVersion.V2);
+        final ByteBuffer[] values = select.getValues(ProtocolVersion.V2, codecRegistry);
         final TypedQuery<Tweet> queryBuilder = manager.typedQuery(Tweet.class, select, new Object[]{values});
 
         // When

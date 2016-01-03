@@ -175,25 +175,7 @@ public abstract class AbstractStatementWrapper {
                 TreeMap<String, Object> currentValues = new TreeMap<>();
                 for (Definition columnDef : LWTResult.getColumnDefinitions()) {
                     final String columnDefName = columnDef.getName();
-                    final DataType dataType = columnDef.getType();
-                    final DataType.Name name = dataType.getName();
-
-                    Object columnValue;
-                    switch (name) {
-                        case LIST:
-                            columnValue = LWTResult.getList(columnDefName, dataType.getTypeArguments().get(0).asJavaClass());
-                            break;
-                        case SET:
-                            columnValue = LWTResult.getSet(columnDefName, dataType.getTypeArguments().get(0).asJavaClass());
-                            break;
-                        case MAP:
-                            final List<DataType> typeArguments = dataType.getTypeArguments();
-                            columnValue = LWTResult.getMap(columnDefName, typeArguments.get(0).asJavaClass(), typeArguments.get(1).asJavaClass());
-                            break;
-                        default:
-                            columnValue = invoker.invokeOnRowForType(LWTResult, name.asJavaClass(), columnDefName);
-                    }
-                    currentValues.put(columnDefName, columnValue);
+                    currentValues.put(columnDefName, LWTResult.getObject(columnDefName));
                 }
 
                 Operation operation = UPDATE;
