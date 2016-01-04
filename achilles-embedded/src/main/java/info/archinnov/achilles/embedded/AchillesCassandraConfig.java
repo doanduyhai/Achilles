@@ -53,7 +53,6 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.memtable_allocation_type = Config.MemtableAllocationType.heap_buffers;
         config.trickle_fsync = false;
         config.trickle_fsync_interval_in_kb = 10240;
-        config.listen_address = "127.0.0.1";
         config.start_native_transport = true;
         config.start_rpc = true;
         config.listen_address = "localhost";

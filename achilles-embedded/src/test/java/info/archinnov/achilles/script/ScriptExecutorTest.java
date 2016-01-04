@@ -85,6 +85,94 @@ public class ScriptExecutorTest {
     }
 
     @Test
+    public void should_build_create_function_statements_from_lines_syntax_1() throws Exception {
+        //Given
+        List<String> lines = new ArrayList<>();
+        lines.add("CREATE FUNCTION udf.maxof(val1 int, val2 int)");
+        lines.add(" RETURNS NULL ON NULL INPUT");
+        lines.add(" RETURNS int");
+        lines.add("LANGUAGE java");
+        lines.add("AS $$");
+        lines.add("return Math.max(val1, val2);");
+        lines.add("$$;");
+
+        //When
+        final List<SimpleStatement> statements = scriptExecutor.buildStatements(lines);
+
+        //Then
+        assertThat(statements).hasSize(1);
+        assertThat(statements.get(0).getQueryString()).isEqualTo("CREATE FUNCTION udf.maxof(val1 int, val2 int)  RETURNS NULL ON NULL INPUT  RETURNS int LANGUAGE java AS $$return Math.max(val1, val2);$$;");
+    }
+
+    @Test
+    public void should_build_create_function_statements_from_lines_syntax_2() throws Exception {
+        //Given
+        List<String> lines = new ArrayList<>();
+        lines.add("CREATE FUNCTION udf.maxof(val1 int, val2 int)");
+        lines.add(" RETURNS NULL ON NULL INPUT");
+        lines.add(" RETURNS int");
+        lines.add("LANGUAGE java");
+        lines.add("AS");
+        lines.add("$$");
+        lines.add("return Math.max(val1, val2);");
+        lines.add("$$;");
+
+        //When
+        final List<SimpleStatement> statements = scriptExecutor.buildStatements(lines);
+
+        //Then
+        assertThat(statements).hasSize(1);
+        assertThat(statements.get(0).getQueryString()).isEqualTo("CREATE FUNCTION udf.maxof(val1 int, val2 int)  RETURNS NULL ON NULL INPUT  RETURNS int LANGUAGE java AS $$return Math.max(val1, val2);$$;");
+    }
+
+    @Test
+    public void should_build_create_function_statements_from_lines_syntax_3() throws Exception {
+        //Given
+        List<String> lines = new ArrayList<>();
+        lines.add("CREATE FUNCTION udf.maxof(val1 int, val2 int)");
+        lines.add(" RETURNS NULL ON NULL INPUT");
+        lines.add(" RETURNS int");
+        lines.add("LANGUAGE java");
+        lines.add("AS $$");
+        lines.add("return Math.max(val1, val2);");
+        lines.add("$$");
+        lines.add(";");
+        lines.add("SELECT * FROM zeppelin.table;");
+
+        //When
+        final List<SimpleStatement> statements = scriptExecutor.buildStatements(lines);
+
+        //Then
+        assertThat(statements).hasSize(2);
+        assertThat(statements.get(0).getQueryString()).isEqualTo("CREATE FUNCTION udf.maxof(val1 int, val2 int)  RETURNS NULL ON NULL INPUT  RETURNS int LANGUAGE java AS $$return Math.max(val1, val2);$$ ;");
+        assertThat(statements.get(1).getQueryString()).isEqualTo("SELECT * FROM zeppelin.table;");
+    }
+
+    @Test
+    public void should_build_create_function_statements_from_lines_syntax_4() throws Exception {
+        //Given
+        List<String> lines = new ArrayList<>();
+        lines.add("CREATE FUNCTION udf.maxof(val1 int, val2 int)");
+        lines.add(" RETURNS NULL ON NULL INPUT");
+        lines.add(" RETURNS int");
+        lines.add("LANGUAGE java");
+        lines.add("AS");
+        lines.add("$$");
+        lines.add("return Math.max(val1, val2);");
+        lines.add("$$");
+        lines.add(";");
+        lines.add("SELECT * FROM zeppelin.table;");
+
+        //When
+        final List<SimpleStatement> statements = scriptExecutor.buildStatements(lines);
+
+        //Then
+        assertThat(statements).hasSize(2);
+        assertThat(statements.get(0).getQueryString()).isEqualTo("CREATE FUNCTION udf.maxof(val1 int, val2 int)  RETURNS NULL ON NULL INPUT  RETURNS int LANGUAGE java AS $$return Math.max(val1, val2);$$ ;");
+        assertThat(statements.get(1).getQueryString()).isEqualTo("SELECT * FROM zeppelin.table;");
+    }
+
+    @Test
     public void should_execute_script() throws Exception {
         //When
         scriptExecutor.executeScript("testScript.cql");

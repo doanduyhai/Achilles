@@ -32,6 +32,9 @@ public class ScriptExecutor {
     private static final String BATCH_BEGIN = "BEGIN";
     private static final String BATCH_APPLY = "APPLY";
 
+    private static final String CODE_DELIMITER_START = "^\\s*(?:AS)?\\s*\\$\\$\\s*$";
+    private static final String CODE_DELIMITER_END = "^\\s*\\$\\$\\s*;\\s*$";
+
     private final Session session;
 
     private AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
@@ -126,21 +129,38 @@ public class ScriptExecutor {
         List<SimpleStatement> statements = new ArrayList<>();
         StringBuilder statement = new StringBuilder();
         boolean batch = false;
+        boolean codeBlock = false;
         StringBuilder batchStatement = new StringBuilder();
         for (String line : lines) {
             if (line.trim().startsWith(BATCH_BEGIN)) {
                 batch = true;
             }
+            if (line.trim().matches(CODE_DELIMITER_START)) {
+                if(codeBlock) {
+                    codeBlock = false;
+                } else {
+                    codeBlock = true;
+                }
+            }
+
             if (batch) {
                 batchStatement.append(line);
-                if (line.startsWith(BATCH_APPLY)) {
+                if (line.trim().startsWith(BATCH_APPLY)) {
                     batch = false;
                     statements.add(new SimpleStatement(batchStatement.toString()));
                     batchStatement = new StringBuilder();
                 }
-            } else {
+            } else if(codeBlock) {
                 statement.append(line);
-                if (line.endsWith(COMMA)) {
+                if (line.trim().matches(CODE_DELIMITER_END)) {
+                    codeBlock = false;
+                    statements.add(new SimpleStatement(statement.toString()));
+                    statement = new StringBuilder();
+                }
+            }
+            else {
+                statement.append(line);
+                if (line.trim().endsWith(COMMA)) {
                     statements.add(new SimpleStatement(statement.toString()));
                     statement = new StringBuilder();
                 } else {
