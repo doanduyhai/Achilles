@@ -55,33 +55,32 @@ public class SchemaValidator {
 
     public static <T> void validateColumns(TableMetadata metadata, List<AbstractProperty<T, ?, ?>> properties,
                                            Class<T> entityClass) {
-        properties
-                .stream()
-                .forEach(x -> {
-                    final String cqlColumn = x.fieldInfo.cqlColumn;
-                    final ColumnMetadata columnMeta = metadata.getColumn(cqlColumn);
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(format("Validating column %s for table %s",
-                                cqlColumn, metadata.getName()));
-                    }
 
-                    validateBeanMappingTrue(columnMeta != null,
-                            "Cannot find column '%s' in live schema for entity '%s'", cqlColumn, entityClass);
+        for (AbstractProperty<T, ?, ?> x : properties) {
+            final String cqlColumn = x.fieldInfo.cqlColumn;
+            final ColumnMetadata columnMeta = metadata.getColumn(cqlColumn);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(format("Validating column %s for table %s",
+                        cqlColumn, metadata.getName()));
+            }
 
-                    final DataType runtimeType = columnMeta.getType();
-                    final DataType staticType = x.buildType();
-                    validateBeanMappingTrue(runtimeType.equals(staticType),
-                            "Data type '%s' for column '%s' of entity '%s' does not match type in live schema '%s'",
-                            staticType, cqlColumn, entityClass, runtimeType);
+            validateBeanMappingTrue(columnMeta != null,
+                    "Cannot find column '%s' in live schema for entity '%s'", cqlColumn, entityClass);
 
-                    if (x.fieldInfo.hasIndex()) {
-                        validateIndex(entityClass, x, cqlColumn, metadata.getIndex(x.fieldInfo.indexInfo.name));
-                    }
+            final DataType runtimeType = columnMeta.getType();
+            final DataType staticType = x.buildType();
+            validateBeanMappingTrue(runtimeType.equals(staticType),
+                    "Data type '%s' for column '%s' of entity '%s' does not match type in live schema '%s'",
+                    staticType, cqlColumn, entityClass, runtimeType);
 
-                    if (x.fieldInfo.columnType == ColumnType.STATIC || x.fieldInfo.columnType == ColumnType.STATIC_COUNTER) {
-                        validateBeanMappingTrue(columnMeta.isStatic(), "Column '%s' of entity '%s' should be static", cqlColumn, entityClass);
-                    }
-                });
+            if (x.fieldInfo.hasIndex()) {
+                validateIndex(entityClass, x, cqlColumn, metadata.getIndex(x.fieldInfo.indexInfo.name));
+            }
+
+            if (x.fieldInfo.columnType == ColumnType.STATIC || x.fieldInfo.columnType == ColumnType.STATIC_COUNTER) {
+                validateBeanMappingTrue(columnMeta.isStatic(), "Column '%s' of entity '%s' should be static", cqlColumn, entityClass);
+            }
+        }
     }
 
     private static void validateIndex(Class<?> entityClass, AbstractProperty<?, ?, ?> x, String cqlColumn, IndexMetadata indexMetadata) {
