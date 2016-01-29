@@ -34,10 +34,15 @@ public class TypeValidator {
         } else if (type instanceof ParameterizedTypeName) {
             final ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) type;
             validateAllowedTypes(aptUtils, parentType, parameterizedTypeName.rawType);
-            parameterizedTypeName.typeArguments.forEach(x -> validateAllowedTypes(aptUtils, parentType, x));
+
+            for (TypeName x : parameterizedTypeName.typeArguments) {
+                validateAllowedTypes(aptUtils, parentType, x);
+            }
         } else if (type instanceof WildcardTypeName) {
             final WildcardTypeName wildcardTypeName = (WildcardTypeName) type;
-            wildcardTypeName.upperBounds.forEach(x -> validateAllowedTypes(aptUtils, parentType, x));
+            for (TypeName x : wildcardTypeName.upperBounds) {
+                validateAllowedTypes(aptUtils, parentType, x);
+            }
         } else if (type instanceof ClassName) {
             final ClassName className = (ClassName) type;
             final boolean isValidType = ALLOWED_TYPES.contains(className);

@@ -77,31 +77,32 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
     public void inject(TupleTypeFactory factory) {
         tupleTypeFactory = factory;
         tupleType = buildType();
-        componentsProperty()
-                .stream()
-                .forEach(x -> x.inject(factory));
+
+        for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
+            x.inject(factory);
+        }
     }
 
     @Override
     public void inject(UserTypeFactory factory) {
-        componentsProperty()
-                .stream()
-                .forEach(x -> x.inject(factory));
+        for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
+            x.inject(factory);
+        }
     }
 
     @Override
     public void inject(ObjectMapper jacksonMapper) {
-        componentsProperty()
-                .stream()
-                .forEach(x -> x.inject(jacksonMapper));
+        for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
+            x.inject(jacksonMapper);
+        }
     }
 
 
     @Override
     public void inject(BeanFactory factory) {
-        componentsProperty()
-                .stream()
-                .forEach(x -> x.inject(factory));
+        for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
+            x.inject(factory);
+        }
     }
 
 }

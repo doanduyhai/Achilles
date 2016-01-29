@@ -136,9 +136,9 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .addMethod(buildComputedColumns(parsingResults, rawBeanType))
                 .addMethod(buildCounterColumns(parsingResults, rawBeanType));
 
-        parsingResults
-                .stream()
-                .forEach(x -> builder.addField(x.buildPropertyAsField()));
+        for(TypeParsingResult x: parsingResults) {
+            builder.addField(x.buildPropertyAsField());
+        }
 
         return new EntityMetaSignature(builder.build(), elm.getSimpleName().toString(), typeName, rawBeanType, parsingResults);
     }

@@ -51,7 +51,9 @@ public class LWTHelper {
         }
 
         if (lwtResultListeners.isPresent()) {
-            lwtResultListeners.get().forEach(listener -> listener.onError(lwtResult));
+            for (LWTResultListener listener : lwtResultListeners.get()) {
+                listener.onError(lwtResult);
+            }
         } else {
             throw new AchillesLightWeightTransactionException(lwtResult);
         }

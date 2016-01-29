@@ -181,7 +181,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .stream()
                 .filter(x -> candidateColumns.contains(x.context.columnType))
                 .forEach(x -> buildUpdateColumnMethods(aptUtils, updateColumnsTypeName, x, ReturnType.NEW)
-                        .forEach(builder::addMethod));
+                .forEach(builder::addMethod));
 
         return builder.build();
     }
@@ -205,7 +205,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .stream()
                 .filter(x -> candidateColumns.contains(x.context.columnType))
                 .forEach(x -> buildUpdateColumnMethods(aptUtils, updateColumnsTypeName, x, ReturnType.THIS)
-                        .forEach(builder::addMethod));
+                .forEach(builder::addMethod));
 
         builder.addMethod(MethodSpec.methodBuilder("where")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)

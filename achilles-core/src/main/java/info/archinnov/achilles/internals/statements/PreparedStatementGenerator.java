@@ -35,6 +35,7 @@ import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.internals.cache.CacheKey;
 import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.ComputedProperty;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.type.SchemaNameProvider;
@@ -56,9 +57,9 @@ public class PreparedStatementGenerator {
         final Select.Selection select = QueryBuilder.select();
         final Optional<String> keyspace = entityProperty.getKeyspace();
 
-        entityProperty
-                .allColumns
-                .forEach(x -> select.column(x.fieldInfo.cqlColumn));
+        for (AbstractProperty<?, ?, ?> x : entityProperty.allColumns) {
+            select.column(x.fieldInfo.cqlColumn);
+        }
 
         entityProperty
                 .computedColumns
@@ -89,8 +90,14 @@ public class PreparedStatementGenerator {
 
         final Select.Where where = from.where();
 
-        entityProperty.partitionKeys.forEach(x -> where.and(eq(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn))));
-        entityProperty.clusteringColumns.forEach(x -> where.and(eq(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn))));
+        for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
+            where.and(eq(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn)));
+        }
+
+        for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
+            where.and(eq(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn)));
+        }
+
         return where;
     }
 
@@ -113,21 +120,18 @@ public class PreparedStatementGenerator {
         final Delete.Where deleteByKeysIfExists = from.ifExists().where();
         final Delete.Where deleteByPartition = from.where();
 
-        entityProperty.partitionKeys
-                .forEach(x -> {
-                    final String cqlColumn = x.fieldInfo.cqlColumn;
-                    deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
-                    deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
-                    deleteByPartition.and(eq(cqlColumn, bindMarker(cqlColumn)));
-                });
+        for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
+            final String cqlColumn = x.fieldInfo.cqlColumn;
+            deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
+            deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
+            deleteByPartition.and(eq(cqlColumn, bindMarker(cqlColumn)));
+        }
 
-        entityProperty.clusteringColumns
-                .forEach(x -> {
-                    final String cqlColumn = x.fieldInfo.cqlColumn;
-                    deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
-                    deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
-                });
-
+        for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
+            final String cqlColumn = x.fieldInfo.cqlColumn;
+            deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
+            deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
+        }
 
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, DELETE),
                 () -> session.prepare(generateDeleteByKeys(entityProperty, Optional.empty())));
@@ -152,30 +156,19 @@ public class PreparedStatementGenerator {
         final Delete.Selection delete = QueryBuilder.delete();
         final Optional<String> keyspace = entityProperty.getKeyspace();
         final Delete from;
-        if (schemaNameProvider.isPresent()) {
-            final SchemaNameProvider provider = schemaNameProvider.get();
-            from = delete.from(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));
-        } else {
-            if (keyspace.isPresent()) {
-                from = delete.from(keyspace.get(), entityProperty.getTableName());
-            } else {
-                from = delete.from(entityProperty.getTableName());
-            }
-        }
+        from = lookupSchemaFromProvider(entityProperty, schemaNameProvider, delete, keyspace);
 
         final Delete.Where deleteByKeys = from.where();
 
-        entityProperty.partitionKeys
-                .forEach(x -> {
-                    final String cqlColumn = x.fieldInfo.cqlColumn;
-                    deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
-                });
+        for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
+            final String cqlColumn = x.fieldInfo.cqlColumn;
+            deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
+        }
 
-        entityProperty.clusteringColumns
-                .forEach(x -> {
-                    final String cqlColumn = x.fieldInfo.cqlColumn;
-                    deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
-                });
+        for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
+            final String cqlColumn = x.fieldInfo.cqlColumn;
+            deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
+        }
 
         return deleteByKeys;
     }
@@ -189,33 +182,24 @@ public class PreparedStatementGenerator {
         final Delete.Selection delete = QueryBuilder.delete();
         final Optional<String> keyspace = entityProperty.getKeyspace();
         final Delete from;
-        if (schemaNameProvider.isPresent()) {
-            final SchemaNameProvider provider = schemaNameProvider.get();
-            from = delete.from(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));
-        } else {
-            if (keyspace.isPresent()) {
-                from = delete.from(keyspace.get(), entityProperty.getTableName());
-            } else {
-                from = delete.from(entityProperty.getTableName());
-            }
-        }
+        from = lookupSchemaFromProvider(entityProperty, schemaNameProvider, delete, keyspace);
 
         final Delete.Where deleteByKeysIfExists = from.ifExists().where();
 
-        entityProperty.partitionKeys
-                .forEach(x -> {
-                    final String cqlColumn = x.fieldInfo.cqlColumn;
-                    deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
-                });
+        for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
+            final String cqlColumn = x.fieldInfo.cqlColumn;
+            deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
+        }
 
-        entityProperty.clusteringColumns
-                .forEach(x -> {
-                    final String cqlColumn = x.fieldInfo.cqlColumn;
-                    deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
-                });
+        for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
+            final String cqlColumn = x.fieldInfo.cqlColumn;
+            deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
+        }
 
         return deleteByKeysIfExists;
     }
+
+
 
     public static RegularStatement generateDeleteByPartition( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
 
@@ -226,24 +210,14 @@ public class PreparedStatementGenerator {
         final Delete.Selection delete = QueryBuilder.delete();
         final Optional<String> keyspace = entityProperty.getKeyspace();
         final Delete from;
-        if (schemaNameProvider.isPresent()) {
-            final SchemaNameProvider provider = schemaNameProvider.get();
-            from = delete.from(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));
-        } else {
-            if (keyspace.isPresent()) {
-                from = delete.from(keyspace.get(), entityProperty.getTableName());
-            } else {
-                from = delete.from(entityProperty.getTableName());
-            }
-        }
+        from = lookupSchemaFromProvider(entityProperty, schemaNameProvider, delete, keyspace);
 
         final Delete.Where deleteByPartition = from.where();
 
-        entityProperty.partitionKeys
-                .forEach(x -> {
-                    final String cqlColumn = x.fieldInfo.cqlColumn;
-                    deleteByPartition.and(eq(cqlColumn, bindMarker(cqlColumn)));
-                });
+        for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
+            final String cqlColumn = x.fieldInfo.cqlColumn;
+            deleteByPartition.and(eq(cqlColumn, bindMarker(cqlColumn)));
+        }
 
         return deleteByPartition;
     }
@@ -268,7 +242,11 @@ public class PreparedStatementGenerator {
         }
 
         final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
-        entityProperty.allColumns.forEach(x -> insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn)));
+
+        for (AbstractProperty<?, ?, ?> x : entityProperty.allColumns) {
+            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+        }
+
         return insert.using(ttl(bindMarker("ttl")));
     }
 
@@ -278,7 +256,11 @@ public class PreparedStatementGenerator {
         }
 
         final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
-        entityProperty.allColumns.forEach(x -> insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn)));
+
+        for (AbstractProperty<?, ?, ?> x : entityProperty.allColumns) {
+            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+        }
+
         return insert.ifNotExists().using(ttl(bindMarker("ttl")));
     }
 
@@ -302,5 +284,20 @@ public class PreparedStatementGenerator {
             }
         }
         return insert;
+    }
+
+    private static Delete lookupSchemaFromProvider(AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider, Delete.Selection delete, Optional<String> keyspace) {
+        Delete from;
+        if (schemaNameProvider.isPresent()) {
+            final SchemaNameProvider provider = schemaNameProvider.get();
+            from = delete.from(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));
+        } else {
+            if (keyspace.isPresent()) {
+                from = delete.from(keyspace.get(), entityProperty.getTableName());
+            } else {
+                from = delete.from(entityProperty.getTableName());
+            }
+        }
+        return from;
     }
 }

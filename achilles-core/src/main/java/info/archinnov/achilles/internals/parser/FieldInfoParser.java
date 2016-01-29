@@ -166,9 +166,11 @@ public class FieldInfoParser {
             final Class<?> cqlClass = typedMap.getTyped("cqlClass");
             final ClassName className = ClassName.get(cqlClass);
             final StringJoiner joiner = new StringJoiner(",");
-            targetColumns
-                    .stream()
-                    .forEach(x -> joiner.add("\"" + x + "\""));
+
+            for (String x : targetColumns) {
+                joiner.add("\"" + x + "\"");
+            }
+
             builder.add("new $T($S, $S, $T.asList(new String[]{$L}), $T.class)", COMPUTED_COLUMN_INFO, function, alias, ARRAYS, joiner.toString(), className);
             return Tuple2.of(builder.build(), new ComputedColumnInfo(function, alias, targetColumns, cqlClass));
 

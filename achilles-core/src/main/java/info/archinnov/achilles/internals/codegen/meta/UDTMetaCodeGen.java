@@ -65,9 +65,9 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .addMethod(buildCreateUDTFromBeanT(rawBeanType, parsingResults))
                 .addMethod(buildCreateBeanFromUDT(rawBeanType, parsingResults));
 
-        parsingResults
-                .stream()
-                .forEach(x -> builder.addField(x.buildPropertyAsField()));
+        for (TypeParsingResult x : parsingResults) {
+            builder.addField(x.buildPropertyAsField());
+        }
 
         /**
          * REALLY IMPORTANT, generate the INSTANCE field
@@ -172,10 +172,9 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .returns(JAVA_DRIVER_UDT_VALUE_TYPE)
                 .addStatement("final $T udtValue = userType.newValue()", JAVA_DRIVER_UDT_VALUE_TYPE);
 
-        parsingResults
-                .stream()
-                .forEach(x -> builder
-                        .addStatement("$L.encodeFieldToUdt(instance, udtValue)", x.context.fieldName));
+        for (TypeParsingResult x : parsingResults) {
+            builder.addStatement("$L.encodeFieldToUdt(instance, udtValue)", x.context.fieldName);
+        }
 
         builder.addStatement("return udtValue");
 
@@ -192,10 +191,9 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .returns(rawBeanType)
                 .addStatement("final $T instance = udtFactory.newInstance(udtClass)", rawBeanType);
 
-        parsingResults
-                .stream()
-                .forEach(x -> builder.addStatement("$L.decodeField(udtValue, instance)", x.context.fieldName)
-                );
+        for (TypeParsingResult x : parsingResults) {
+            builder.addStatement("$L.decodeField(udtValue, instance)", x.context.fieldName);
+        }
 
         builder.addStatement("return instance");
 

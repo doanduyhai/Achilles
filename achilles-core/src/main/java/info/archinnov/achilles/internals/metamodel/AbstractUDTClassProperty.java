@@ -113,9 +113,9 @@ public abstract class AbstractUDTClassProperty<A>
             type = SchemaBuilder.createType(udtName).ifNotExists();
         }
 
-        componentsProperty
-                .stream()
-                .forEach(x -> type.addColumn(x.fieldInfo.cqlColumn, x.buildType()));
+        for (AbstractProperty<A, ?, ?> x : componentsProperty) {
+            type.addColumn(x.fieldInfo.cqlColumn, x.buildType());
+        }
 
         return type.getQueryString().replaceFirst("\t+", "") + ";";
     }
@@ -129,23 +129,23 @@ public abstract class AbstractUDTClassProperty<A>
     public void inject(UserTypeFactory factory) {
         userTypeFactory = factory;
         userType = this.buildType();
-        componentsProperty
-                .stream()
-                .forEach(x -> x.inject(factory));
+        for (AbstractProperty<A, ?, ?> x : componentsProperty) {
+            x.inject(factory);
+        }
     }
 
     @Override
     public void inject(TupleTypeFactory factory) {
-        componentsProperty
-                .stream()
-                .forEach(x -> x.inject(factory));
+        for (AbstractProperty<A, ?, ?> x : componentsProperty) {
+            x.inject(factory);
+        }
     }
 
     @Override
-    public void inject(ObjectMapper mapper) {
-        componentsProperty
-                .stream()
-                .forEach(x -> x.inject(mapper));
+    public void inject(ObjectMapper jacksonMapper) {
+        for (AbstractProperty<A, ?, ?> x : componentsProperty) {
+            x.inject(jacksonMapper);
+        }
     }
 
     @Override

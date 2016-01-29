@@ -20,6 +20,7 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import javax.lang.model.element.Modifier;
 
@@ -41,7 +42,7 @@ public class ManagerFactoryCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildConstructor(signatures));
 
-        signatures.forEach(x -> {
+        for(EntityMetaSignature x: signatures) {
             TypeName managerType = ClassName.get(MANAGER_PACKAGE, x.className + MANAGER_SUFFIX);
             final ManagerAndDSLClasses managerAndDSLClasses = ManagerCodeGen.buildManager(aptUtils, x);
             managerClasses.add(managerAndDSLClasses.managerClass);
@@ -60,7 +61,7 @@ public class ManagerFactoryCodeGen {
                     .addField(entityManager)
                     .addMethod(buildManagerFor(x));
 
-        });
+        }
 
         TypeName listOfUdtClassProperties = genericType(LIST, genericType(ABSTRACT_UDT_CLASS_PROPERTY, WILDCARD));
 
@@ -77,11 +78,10 @@ public class ManagerFactoryCodeGen {
                 .returns(listOfUdtClassProperties)
                 .addStatement("final $T list = new $T<>()", listOfUdtClassProperties, TypeUtils.ARRAY_LIST);
 
-        parsingContext
-                .udtTypes
-                .entrySet()
-                .forEach(entry -> getUdtClassPropertiesBuilder.addStatement("list.add($L.INSTANCE)", TypeUtils.UDT_META_PACKAGE
-                        + "." + entry.getValue().name));
+        for(Map.Entry<TypeName, TypeSpec> entry: parsingContext.udtTypes.entrySet()) {
+            getUdtClassPropertiesBuilder.addStatement("list.add($L.INSTANCE)", TypeUtils.UDT_META_PACKAGE
+                    + "." + entry.getValue().name);
+        }
 
         getUdtClassPropertiesBuilder.addStatement("return list");
         return getUdtClassPropertiesBuilder.build();

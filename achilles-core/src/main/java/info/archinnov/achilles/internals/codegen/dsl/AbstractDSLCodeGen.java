@@ -61,26 +61,22 @@ public abstract class AbstractDSLCodeGen {
                                                                                   WhereClauseFor whereClauseFor) {
         final List<ClassSignatureInfo> signatures = new ArrayList<>();
 
-        partitionKeys
-                .stream()
-                .forEach(x -> {
-                    final String className = signature.className + classSignatureParams.whereDslSuffix + "_" + upperCaseFirst(x.fieldName);
-                    final TypeName typeName = ClassName.get(DSL_PACKAGE, className);
-                    signatures.add(ClassSignatureInfo.of(typeName, classSignatureParams.abstractWherePartitionType, className));
-                });
+        for(FieldSignatureInfo x: partitionKeys) {
+            final String className = signature.className + classSignatureParams.whereDslSuffix + "_" + upperCaseFirst(x.fieldName);
+            final TypeName typeName = ClassName.get(DSL_PACKAGE, className);
+            signatures.add(ClassSignatureInfo.of(typeName, classSignatureParams.abstractWherePartitionType, className));
+        }
 
         if (whereClauseFor == WhereClauseFor.NORMAL) {
-            clusteringColumns
-                    .stream()
-                    .forEach(x -> {
-                        final String className = signature.className + classSignatureParams.whereDslSuffix + "_" + upperCaseFirst(x.fieldName);
-                        final TypeName typeName = ClassName.get(DSL_PACKAGE, className);
-                        final TypeName superType = classSignatureParams.abstractEndType.isPresent()
-                                ? classSignatureParams.abstractWhereType
-                                : genericType(classSignatureParams.abstractWhereType, typeName, signature.entityRawClass);
+            for (FieldSignatureInfo x : clusteringColumns) {
+                final String className = signature.className + classSignatureParams.whereDslSuffix + "_" + upperCaseFirst(x.fieldName);
+                final TypeName typeName = ClassName.get(DSL_PACKAGE, className);
+                final TypeName superType = classSignatureParams.abstractEndType.isPresent()
+                        ? classSignatureParams.abstractWhereType
+                        : genericType(classSignatureParams.abstractWhereType, typeName, signature.entityRawClass);
 
-                        signatures.add(ClassSignatureInfo.of(typeName, superType, className));
-                    });
+                signatures.add(ClassSignatureInfo.of(typeName, superType, className));
+            }
         }
 
         final String selectEndClassName = signature.className + classSignatureParams.endDslSuffix;

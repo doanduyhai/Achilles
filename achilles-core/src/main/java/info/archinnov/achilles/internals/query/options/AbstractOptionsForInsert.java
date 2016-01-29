@@ -58,18 +58,18 @@ public abstract class AbstractOptionsForInsert<T extends AbstractOptionsForInser
      * Add a list of LWT result listeners. Example of usage:
      * <pre class="code"><code class="java">
      * LWTResultListener lwtListener = new LWTResultListener() {
-
-     * public void onError(LWTResult lwtResult) {
-
-     * //Get type of LWT operation that fails
-     * LWTResult.Operation operation = lwtResult.operation();
-
-     * // Print out current values
-     * TypedMap currentValues = lwtResult.currentValues();
-     * currentValues
-     * .entrySet()
-     * .forEach(entry -> System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue())));
-     * }
+     *
+     *  public void onError(LWTResult lwtResult) {
+     *
+     *      //Get type of LWT operation that fails
+     *      LWTResult.Operation operation = lwtResult.operation();
+     *
+     *      // Print out current values
+     *      TypedMap currentValues = lwtResult.currentValues();
+     *      currentValues
+     *          .entrySet()
+     *          .forEach(entry -> System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue())));
+     *  }
      * };
      * </code></pre>
      */
@@ -82,18 +82,18 @@ public abstract class AbstractOptionsForInsert<T extends AbstractOptionsForInser
      * Add a single LWT result listeners. Example of usage:
      * <pre class="code"><code class="java">
      * LWTResultListener lwtListener = new LWTResultListener() {
-
-     * public void onError(LWTResult lwtResult) {
-
-     * //Get type of LWT operation that fails
-     * LWTResult.Operation operation = lwtResult.operation();
-
-     * // Print out current values
-     * TypedMap currentValues = lwtResult.currentValues();
-     * currentValues
-     * .entrySet()
-     * .forEach(entry -> System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue())));
-     * }
+     *
+     *  public void onError(LWTResult lwtResult) {
+     *
+     *      //Get type of LWT operation that fails
+     *      LWTResult.Operation operation = lwtResult.operation();
+     *
+     *      // Print out current values
+     *      TypedMap currentValues = lwtResult.currentValues();
+     *          currentValues
+     *          .entrySet()
+     *          .forEach(entry -> System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue())));
+     *       }
      * };
      * </code></pre>
      */

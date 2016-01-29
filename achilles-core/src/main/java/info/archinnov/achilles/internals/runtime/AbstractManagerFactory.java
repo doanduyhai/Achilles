@@ -132,9 +132,10 @@ public abstract class AbstractManagerFactory {
         final Session session = configContext.getSession();
         final List<Class<?>> manageEntities = configContext.getManageEntities().isEmpty() ? entityClasses : configContext.getManageEntities();
         if (configContext.isForceSchemaGeneration()) {
-            getUdtClassProperties()
-                    .stream()
-                    .forEach(x -> generateUDTAtRuntime(session, x));
+
+            for (AbstractUDTClassProperty<?> x : getUdtClassProperties()) {
+                generateUDTAtRuntime(session, x);
+            }
 
             entityProperties
                     .stream()

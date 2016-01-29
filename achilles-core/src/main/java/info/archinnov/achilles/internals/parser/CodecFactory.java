@@ -258,7 +258,10 @@ public class CodecFactory {
             StringJoiner code = new StringJoiner(",",
                     "$T.TYPE_FACTORY_INSTANCE.constructParametricType($T.class,",
                     ")");
-            paramTypeName.typeArguments.forEach(x -> code.add("$L"));
+
+            for (TypeName x : paramTypeName.typeArguments) {
+                code.add("$L");
+            }
 
             final Object[] headTypes = new Object[]{JSON_CODEC, paramTypeName.rawType};
             final Object[] codeBlocks = paramTypeName.typeArguments

@@ -190,7 +190,9 @@ public class TypedQuery<ENTITY> implements SelectAction<ENTITY>, StatementTypeAw
                                 .collect(toList()),
                         rs.getExecutionInfo()))
                 .thenApply(tuple2 -> {
-                    tuple2._1().forEach(entity -> meta.triggerInterceptorsForEvent(Event.POST_LOAD, entity));
+                    for (ENTITY entity : tuple2._1()) {
+                        meta.triggerInterceptorsForEvent(Event.POST_LOAD, entity);
+                    }
                     return tuple2;
                 });
     }

@@ -31,6 +31,7 @@ import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty;
 import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
@@ -67,25 +68,25 @@ public class SchemaCreator {
             table = SchemaBuilder.createTable(tableName).ifNotExists();
         }
 
-        entityProperty.partitionKeys
-                .stream()
-                .forEach(x -> table.addPartitionKey(x.fieldInfo.cqlColumn, x.buildType()));
+        for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
+            table.addPartitionKey(x.fieldInfo.cqlColumn, x.buildType());
+        }
 
-        entityProperty.clusteringColumns
-                .stream()
-                .forEach(x -> table.addClusteringColumn(x.fieldInfo.cqlColumn, x.buildType()));
+        for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
+            table.addClusteringColumn(x.fieldInfo.cqlColumn, x.buildType());
+        }
 
-        entityProperty.staticColumns
-                .stream()
-                .forEach(x -> table.addStaticColumn(x.fieldInfo.cqlColumn, x.buildType()));
+        for (AbstractProperty<?, ?, ?> x : entityProperty.staticColumns) {
+            table.addStaticColumn(x.fieldInfo.cqlColumn, x.buildType());
+        }
 
-        entityProperty.normalColumns
-                .stream()
-                .forEach(x -> table.addColumn(x.fieldInfo.cqlColumn, x.buildType()));
+        for (AbstractProperty<?, ?, ?> x : entityProperty.normalColumns) {
+            table.addColumn(x.fieldInfo.cqlColumn, x.buildType());
+        }
 
-        entityProperty.counterColumns
-                .stream()
-                .forEach(x -> table.addColumn(x.fieldInfo.cqlColumn, x.buildType()));
+        for (AbstractProperty<?, ?, ?> x : entityProperty.counterColumns) {
+            table.addColumn(x.fieldInfo.cqlColumn, x.buildType());
+        }
 
         final Create.Options options = table.withOptions();
 
@@ -128,15 +129,13 @@ public class SchemaCreator {
         final SchemaContext schemaContext = new SchemaContext(keyspace, true, true);
         final List<String> schemas = generateTable_And_Indices(schemaContext, entityProperty);
 
-        schemas.forEach(schema -> {
-
+        for(String schema: schemas) {
             if (ACHILLES_DML_LOGGER.isDebugEnabled()) {
                 ACHILLES_DML_LOGGER.debug(schema);
             }
-
             final ResultSet resultSet = session.execute(schema);
             resultSet.getExecutionInfo().isSchemaInAgreement();
-        });
+        }
     }
 
     public static void generateUDTAtRuntime(final Session session, AbstractUDTClassProperty<?> udtClassProperty) {

@@ -19,6 +19,7 @@ package info.archinnov.achilles.internals.query.raw;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
@@ -45,12 +46,10 @@ public interface TypedMapAware {
     default TypedMap mapRowToTypedMap(Row row) {
         final TypedMap typedMap = new TypedMap();
         if (row != null) {
-            row.getColumnDefinitions()
-                    .asList()
-                    .forEach(def -> {
-                        final String cqlColumn = def.getName();
-                        typedMap.put(cqlColumn, row.getObject(cqlColumn));
-                    });
+            for (ColumnDefinitions.Definition def : row.getColumnDefinitions().asList()) {
+                final String cqlColumn = def.getName();
+                typedMap.put(cqlColumn, row.getObject(cqlColumn));
+            }
         }
         return typedMap;
     }

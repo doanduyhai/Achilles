@@ -390,9 +390,11 @@ public abstract class AbstractEntityProperty<T> implements
                     factory, entityClass.getCanonicalName()));
         }
         beanFactory = factory;
-        allColumns
-                .stream()
-                .forEach(x -> x.inject(factory));
+
+        for (AbstractProperty<T, ?, ?> x : allColumns) {
+            x.inject(factory);
+        }
+
     }
 
     @Override
@@ -401,9 +403,10 @@ public abstract class AbstractEntityProperty<T> implements
             LOGGER.debug(format("Injecting tuple type factory %s into entity meta of %s",
                     factory, entityClass.getCanonicalName()));
         }
-        allColumns
-                .stream()
-                .forEach(x -> x.inject(factory));
+
+        for (AbstractProperty<T, ?, ?> x : allColumns) {
+            x.inject(factory);
+        }
     }
 
     @Override
@@ -412,9 +415,10 @@ public abstract class AbstractEntityProperty<T> implements
             LOGGER.debug(format("Injecting user type factory %s into entity meta of %s",
                     factory, entityClass.getCanonicalName()));
         }
-        allColumns
-                .stream()
-                .forEach(x -> x.inject(factory));
+
+        for (AbstractProperty<T, ?, ?> x : allColumns) {
+            x.inject(factory);
+        }
     }
 
     @Override
@@ -423,8 +427,9 @@ public abstract class AbstractEntityProperty<T> implements
             LOGGER.debug(format("Injecting Jackson Object Mapper instance %s into entity meta of %s",
                     jacksonMapper, entityClass.getCanonicalName()));
         }
-        allColumns
-                .stream()
-                .forEach(x -> x.inject(jacksonMapper));
+
+        for (AbstractProperty<T, ?, ?> x : allColumns) {
+            x.inject(jacksonMapper);
+        }
     }
 }

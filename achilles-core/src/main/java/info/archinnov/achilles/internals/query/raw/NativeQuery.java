@@ -73,18 +73,18 @@ public class NativeQuery implements MutationAction, StatementTypeAware, TypedMap
      * Add a list of LWT result listeners. Example of usage:
      * <pre class="code"><code class="java">
      * LWTResultListener lwtListener = new LWTResultListener() {
-
-     * public void onError(LWTResult lwtResult) {
-
-     * //Get type of LWT operation that fails
-     * LWTResult.Operation operation = lwtResult.operation();
-
-     * // Print out current values
-     * TypedMap currentValues = lwtResult.currentValues();
-     * currentValues
-     * .entrySet()
-     * .forEach(entry -> System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue())));
-     * }
+     *
+     *  public void onError(LWTResult lwtResult) {
+     *
+     *      //Get type of LWT operation that fails
+     *      LWTResult.Operation operation = lwtResult.operation();
+     *
+     *      // Print out current values
+     *      TypedMap currentValues = lwtResult.currentValues();
+     *      currentValues
+     *          .entrySet()
+     *          .forEach(entry -> System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue())));
+     *  }
      * };
      * </code></pre>
      */
@@ -97,18 +97,18 @@ public class NativeQuery implements MutationAction, StatementTypeAware, TypedMap
      * Add a single LWT result listeners. Example of usage:
      * <pre class="code"><code class="java">
      * LWTResultListener lwtListener = new LWTResultListener() {
-
-     * public void onError(LWTResult lwtResult) {
-
-     * //Get type of LWT operation that fails
-     * LWTResult.Operation operation = lwtResult.operation();
-
-     * // Print out current values
-     * TypedMap currentValues = lwtResult.currentValues();
-     * currentValues
-     * .entrySet()
-     * .forEach(entry -> System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue())));
-     * }
+     *
+     *  public void onError(LWTResult lwtResult) {
+     *
+     *      //Get type of LWT operation that fails
+     *      LWTResult.Operation operation = lwtResult.operation();
+     *
+     *      // Print out current values
+     *      TypedMap currentValues = lwtResult.currentValues();
+     *      currentValues
+     *          .entrySet()
+     *          .forEach(entry -> System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue())));
+     *  }
      * };
      * </code></pre>
      */
@@ -121,13 +121,13 @@ public class NativeQuery implements MutationAction, StatementTypeAware, TypedMap
      * Add the given list of async listeners on the {@link com.datastax.driver.core.ResultSet} object.
      * Example of usage:
      * <pre class="code"><code class="java">
-
+     *
      * .withResultSetAsyncListeners(Arrays.asList(resultSet -> {
-     * //Do something with the resultSet object here
+     *      //Do something with the resultSet object here
      * }))
-
+     *
      * </code></pre>
-
+     *
      * Remark: <strong>it is not allowed to consume the ResultSet values. It is strongly advised to read only meta data</strong>
      */
     public NativeQuery withResultSetAsyncListeners(List<Function<ResultSet, ResultSet>> resultSetAsyncListeners) {

@@ -158,14 +158,11 @@ public class BeanValidator {
                 .filter(x -> x.context.columnType == ColumnType.COMPUTED)
                 .forEach(x -> {
                     final ComputedColumnInfo columnInfo = (ComputedColumnInfo) x.context.columnInfo;
-                    columnInfo.functionArgs
-                            .stream()
-                            .forEach(column -> {
-                                aptUtils.validateTrue(fieldNames.contains(column),
-                                        "Target field '%s' in @Computed annotation of field '%s' of class '%s' does not exist",
-                                        column, x.context.fieldName, rawClassType);
-
-                            });
+                    for (String column : columnInfo.functionArgs) {
+                        aptUtils.validateTrue(fieldNames.contains(column),
+                                "Target field '%s' in @Computed annotation of field '%s' of class '%s' does not exist",
+                                column, x.context.fieldName, rawClassType);
+                    }
                 });
     }
 

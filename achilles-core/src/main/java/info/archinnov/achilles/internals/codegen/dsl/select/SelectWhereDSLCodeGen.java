@@ -266,10 +266,10 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                         QUERY_BUILDER, relation, ARRAYS, params, ARRAYS, params, QUERY_BUILDER, COLLECTORS)
                 .addStatement("final $T tupleType = rte.tupleTypeFactory.typeFor($L)", TUPLE_TYPE, dataTypes);
 
-        fieldInfos.forEach(x ->
-                        builder.addParameter(x.typeName, x.fieldName, Modifier.FINAL)
-                                .addStatement("final Object $L_encoded = meta.$L.encodeFromJava($L)", x.fieldName, x.fieldName, x.fieldName)
-        );
+        for(FieldSignatureInfo x: fieldInfos) {
+            builder.addParameter(x.typeName, x.fieldName, Modifier.FINAL)
+                    .addStatement("final Object $L_encoded = meta.$L.encodeFromJava($L)", x.fieldName, x.fieldName, x.fieldName);
+        }
 
 
         builder.addStatement("boundValues.add($L.Tuple$L.of($L))", Tuple.class.getPackage().getName(), fieldInfos.size(), params)
@@ -311,19 +311,19 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.and($T.$L($T.asList($L), $T.asList($L).stream().map($T::bindMarker).collect($T.toList())))",
                         QUERY_BUILDER, relation2, ARRAYS, paramsRelation2AsString, ARRAYS, paramsRelation2AsString, QUERY_BUILDER, COLLECTORS);
 
-        fieldInfos.forEach(x -> {
+        for(FieldSignatureInfo x: fieldInfos) {
             final String relation1Param = x.fieldName + "_" + upperCaseFirst(relation1);
             builder.addParameter(x.typeName, relation1Param, Modifier.FINAL)
                     .addStatement("boundValues.add($L)", relation1Param)
                     .addStatement("encodedValues.add(meta.$L.encodeFromJava($L))", x.fieldName, relation1Param);
-        });
+        }
 
-        fieldInfos.forEach(x -> {
+        for(FieldSignatureInfo x: fieldInfos) {
             final String relation2Param = x.fieldName + "_" + upperCaseFirst(relation2);
             builder.addParameter(x.typeName, relation2Param, Modifier.FINAL)
                     .addStatement("boundValues.add($L)", relation2Param)
                     .addStatement("encodedValues.add(meta.$L.encodeFromJava($L))", x.fieldName, relation2Param);
-        });
+        }
 
         builder.returns(nextType);
 
@@ -369,19 +369,19 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.and($T.$L($T.asList($L), $T.asList($L).stream().map($T::bindMarker).collect($T.toList())))",
                         QUERY_BUILDER, relation2, ARRAYS, paramsRelation2AsString, ARRAYS, paramsRelation2AsString, QUERY_BUILDER, COLLECTORS);
 
-        fieldInfos1.forEach(x -> {
+        for(FieldSignatureInfo x: fieldInfos1) {
             final String relation1Param = x.fieldName + "_" + upperCaseFirst(relation1);
             builder.addParameter(x.typeName, relation1Param, Modifier.FINAL)
                     .addStatement("boundValues.add($L)", relation1Param)
                     .addStatement("encodedValues.add(meta.$L.encodeFromJava($L))", x.fieldName, relation1Param);
-        });
+        }
 
-        fieldInfos2.forEach(x -> {
+        for(FieldSignatureInfo x: fieldInfos2) {
             final String relation2Param = x.fieldName + "_" + upperCaseFirst(relation2);
             builder.addParameter(x.typeName, relation2Param, Modifier.FINAL)
                     .addStatement("boundValues.add($L)", relation2Param)
                     .addStatement("encodedValues.add(meta.$L.encodeFromJava($L))", x.fieldName, relation2Param);
-        });
+        }
 
 
         builder.returns(nextType);
