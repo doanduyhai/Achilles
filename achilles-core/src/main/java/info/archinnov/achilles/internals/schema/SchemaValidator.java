@@ -71,7 +71,7 @@ public class SchemaValidator {
                     final DataType runtimeType = columnMeta.getType();
                     final DataType staticType = x.buildType();
                     validateBeanMappingTrue(runtimeType.equals(staticType),
-                            "Data type '%s' for column '%s' of entity '%s' does not match type in live schema",
+                            "Data type '%s' for column '%s' of entity '%s' does not match type in live schema '%s'",
                             staticType, cqlColumn, entityClass, runtimeType);
 
                     if (x.fieldInfo.hasIndex()) {
