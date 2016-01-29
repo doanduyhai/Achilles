@@ -19,6 +19,7 @@ package info.archinnov.achilles.internals.metamodel;
 import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
 import static info.archinnov.achilles.internals.schema.SchemaValidator.validateDefaultTTL;
 import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.*;
+import static info.archinnov.achilles.validation.Validator.validateNotNull;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
@@ -30,10 +31,7 @@ import java.util.StringJoiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.BiMap;
@@ -321,11 +319,16 @@ public abstract class AbstractEntityProperty<T> implements
         Validator.validateNotBlank(keyspace,
                 "Current keyspace not provided neither in configuration nor on entity '%s' annotation", entityClass.getCanonicalName());
 
-        final TableMetadata tableMetadata = configContext
+        final KeyspaceMetadata keyspaceMetadata = configContext
                 .getSession()
                 .getCluster()
                 .getMetadata()
-                .getKeyspace(keyspace)
+                .getKeyspace(keyspace);
+
+        validateNotNull(keyspaceMetadata,"The keyspace {} defined on entity {} does not exist in Cassandra",
+                keyspace, entityClass.getCanonicalName());
+
+        final TableMetadata tableMetadata = keyspaceMetadata
                 .getTable(getTableName());
 
         validateDefaultTTL(tableMetadata, staticTTL, entityClass);
