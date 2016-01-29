@@ -13,6 +13,10 @@ CREATE TABLE IF NOT EXISTS test.bean_validation(
 		udt frozen<achilles_embedded.my_type>,
 		value text,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.table_with_bytebuffer(
+		id bigint,
+		value blob,
+		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.entity_with_clusterings(
 		id bigint,
 		uuid uuid,
@@ -95,6 +99,14 @@ CREATE TABLE IF NOT EXISTS test.entitywithimplicitfieldparsing(
 		uuid uuid,
 		PRIMARY KEY(id, uuid))
 	WITH CLUSTERING ORDER BY(uuid ASC);
+CREATE TABLE IF NOT EXISTS non_existing.test_table(
+		id bigint,
+		value text,
+		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.non_existing_table(
+		id bigint,
+		value text,
+		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.entitywithsimplepartitionkey(
 		id bigint,
 		value text,
