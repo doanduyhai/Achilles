@@ -19,7 +19,7 @@ import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.internals.entities.EntityWithNonExistingKeyspace;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EntityWithNonExistingKeyspaceIT {
+public class TestEntityWithNonExistingKeyspaceIT {
 
     @Rule
     public ExpectedException expectException = ExpectedException.none();

@@ -67,7 +67,7 @@ public class CassandraEmbeddedServerBuilder {
 
     private String hintsFolder;
 
-    private boolean cleanDataFiles = false;
+    private boolean cleanDataFiles = true;
 
     private boolean cleanConfigFile = true;
 
