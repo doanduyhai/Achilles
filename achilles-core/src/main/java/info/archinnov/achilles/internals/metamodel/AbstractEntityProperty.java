@@ -328,8 +328,13 @@ public abstract class AbstractEntityProperty<T> implements
         validateNotNull(keyspaceMetadata,"The keyspace {} defined on entity {} does not exist in Cassandra",
                 keyspace, entityClass.getCanonicalName());
 
+        final String tableName = getTableName();
+
         final TableMetadata tableMetadata = keyspaceMetadata
-                .getTable(getTableName());
+                .getTable(tableName);
+
+        validateNotNull(tableMetadata,"The table {} defined on entity {} does not exist in Cassandra",
+                tableName, entityClass.getCanonicalName());
 
         validateDefaultTTL(tableMetadata, staticTTL, entityClass);
         validateColumns(tableMetadata, partitionKeys, entityClass);
