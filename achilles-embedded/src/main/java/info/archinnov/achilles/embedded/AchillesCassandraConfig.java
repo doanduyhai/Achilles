@@ -115,7 +115,6 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.commitlog_directory = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER);
         config.saved_caches_directory = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER);
         config.hints_directory = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_HINTS_FOLDER);
-
         return config;
     }
 }
