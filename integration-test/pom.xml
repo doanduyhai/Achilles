@@ -61,6 +61,7 @@
                     <debug>true</debug>
                     <debuglevel>lines</debuglevel>
                     <verbose>true</verbose>
+                    <useIncrementalCompilation>false</useIncrementalCompilation>
                 </configuration>
             </plugin>
             <plugin>

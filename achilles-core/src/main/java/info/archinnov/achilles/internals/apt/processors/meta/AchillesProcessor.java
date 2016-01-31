@@ -18,6 +18,7 @@ package info.archinnov.achilles.internals.apt.processors.meta;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.isAnnotationOfType;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
@@ -32,6 +33,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FileUtils;
 
 import com.google.auto.common.MoreElements;
@@ -74,25 +76,21 @@ public class AchillesProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (!annotations.isEmpty() && !roundEnv.processingOver()) {
 
-            final boolean hasCompileTimeCodecRegistry = annotations
-                    .stream()
-                    .filter(annotation -> isAnnotationOfType(annotation, CodecRegistry.class))
-                    .findFirst().isPresent();
-
-            Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new HashMap<>();
-
-            if (hasCompileTimeCodecRegistry) {
-                aptUtils.printNote("[Achilles] Parsing compile-time codec registry");
-                codecRegistry.putAll(new CodecRegistryParser(aptUtils).parseCodecs(roundEnv));
-            }
+            Map<TypeName, CodecFactory.CodecInfo> codecRegistry = parseCodecRegistry(annotations, roundEnv);
 
             final GlobalParsingContext parsingContext = new GlobalParsingContext(codecRegistry);
 
-            final List<EntityMetaSignature> entityMetas = annotations
+            final List<TypeElement> entityTypes = annotations
                     .stream()
                     .filter(annotation -> isAnnotationOfType(annotation, Entity.class))
                     .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotation).stream())
                     .map(MoreElements::asType)
+                    .collect(toList());
+
+            validateEntityNames(entityTypes);
+
+            final List<EntityMetaSignature> entityMetas = entityTypes
+                    .stream()
                     .map(x -> entityParser.parseEntity(x, parsingContext))
                     .collect(toList());
 
@@ -150,6 +148,38 @@ public class AchillesProcessor extends AbstractProcessor {
 
         }
         return roundEnv.processingOver();
+    }
+
+    private void validateEntityNames(List<TypeElement> entityTypes) {
+        Map<String, String> entities = new HashedMap();
+        for (TypeElement entityType : entityTypes) {
+            final String className = entityType.getSimpleName().toString();
+            final String FQCN = entityType.getQualifiedName().toString();
+            if (entities.containsKey(className)) {
+                final String existingFQCN = entities.get(className);
+                aptUtils.printError("%s and %s both share the same class name, it is forbidden by Achilles",
+                        FQCN, existingFQCN);
+                throw new IllegalStateException(format("%s and %s both share the same class name, it is forbidden by Achilles",
+                        FQCN, existingFQCN));
+            } else {
+                entities.put(className, FQCN);
+            }
+        }
+    }
+
+    private Map<TypeName, CodecFactory.CodecInfo> parseCodecRegistry(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new HashMap<>();
+
+        final boolean hasCompileTimeCodecRegistry = annotations
+                .stream()
+                .filter(annotation -> isAnnotationOfType(annotation, CodecRegistry.class))
+                .findFirst().isPresent();
+        if (hasCompileTimeCodecRegistry) {
+            aptUtils.printNote("[Achilles] Parsing compile-time codec registry");
+            codecRegistry.putAll(new CodecRegistryParser(aptUtils).parseCodecs(roundEnv));
+        }
+
+        return codecRegistry;
     }
 
     @Override
