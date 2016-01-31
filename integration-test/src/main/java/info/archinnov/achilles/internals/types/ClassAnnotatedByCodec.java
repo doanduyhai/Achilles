@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.sample_classes.parser.field;
+package info.archinnov.achilles.internals.types;
 
 import info.archinnov.achilles.annotations.Codec;
+import info.archinnov.achilles.internals.codecs.CodecOnClass;
 
-@Codec(ClassAnnotatedByCodecToString.class)
+@Codec(CodecOnClass.class)
 public class ClassAnnotatedByCodec {
 
+    @Override
+    public String toString() {
+        return "ClassAnnotatedByCodec{}";
+    }
 }

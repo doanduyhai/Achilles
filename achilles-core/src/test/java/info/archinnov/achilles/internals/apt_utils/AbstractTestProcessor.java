@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
+import info.archinnov.achilles.annotations.CodecRegistry;
 import info.archinnov.achilles.internals.sample_classes.TestEntityDecoy;
 
 public abstract class AbstractTestProcessor extends AbstractProcessor {
@@ -51,6 +52,8 @@ public abstract class AbstractTestProcessor extends AbstractProcessor {
     protected AptUtils aptUtils;
     protected AptAssertOK exec;
     protected Class<?> testEntityClass = TestEntityDecoy.class;
+    protected RoundEnvironment env;
+
 
     public void setExec(AptAssertOK exec) {
         this.exec = exec;
@@ -59,7 +62,8 @@ public abstract class AbstractTestProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return Sets.newHashSet(APUnitTest.class.getCanonicalName());
+        return Sets.newHashSet(APUnitTest.class.getCanonicalName(),
+                CodecRegistry.class.getCanonicalName());
     }
 
     @Override
@@ -79,13 +83,16 @@ public abstract class AbstractTestProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        try {
-            exec.assertOk(aptUtils);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            aptUtils.printError(ex.getMessage());
+        if (!roundEnv.processingOver()) {
+            try {
+                env = roundEnv;
+                exec.assertOk(aptUtils);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                aptUtils.printError(ex.getMessage());
+            }
         }
-        return false;
+        return true;
     }
 
     protected void launchTest() {
@@ -149,9 +156,9 @@ public abstract class AbstractTestProcessor extends AbstractProcessor {
 
     protected String readCodeBlockFromFile(String filename) {
         ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource(filename).getFile());
         byte[] encoded = new byte[0];
         try {
+            File file = new File(classLoader.getResource(filename).getFile());
             encoded = Files.readAllBytes(file.toPath());
         } catch (IOException e) {
             e.printStackTrace();

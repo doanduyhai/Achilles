@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,10 @@ import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.sample_classes.parser.field.ClassAnnotatedByCodec;
+import info.archinnov.achilles.internals.sample_classes.codecs.ClassAnnotatedByCodecToString;
+import info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec;
+import info.archinnov.achilles.internals.sample_classes.codecs.StringToLongCodec;
+import info.archinnov.achilles.internals.sample_classes.types.ClassAnnotatedByCodec;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -73,7 +76,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             assertThat(typeAnnotatedByCodecCodecInfo.sourceType.toString()).isEqualTo(ClassAnnotatedByCodec.class.getCanonicalName());
             assertThat(typeAnnotatedByCodecCodecInfo.targetType.toString()).isEqualTo(String.class.getCanonicalName());
             assertThat(typeAnnotatedByCodecCodecInfo.codecCode.toString()).isEqualTo(
-                    "new info.archinnov.achilles.internals.sample_classes.parser.field.ClassAnnotatedByCodecToString()");
+                    "new "+ ClassAnnotatedByCodecToString.class.getCanonicalName() + "()");
         });
         launchTest();
     }
@@ -111,7 +114,8 @@ public class CodecFactoryTest extends AbstractTestProcessor {
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(Integer.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(String.class.getCanonicalName());
-            assertThat(codecInfo.codecCode.toString()).isEqualTo("new info.archinnov.achilles.internals.sample_classes.parser.field.IntToStringCodec()");
+            assertThat(codecInfo.codecCode.toString()).isEqualTo("new " +
+                    IntToStringCodec.class.getCanonicalName() + "()");
         });
         launchTest();
     }
@@ -267,7 +271,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             assertThat(codecInfo.sourceType.toString()).isEqualTo(Integer.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(String.class.getCanonicalName());
             assertThat(codecInfo.codecCode.toString()).isEqualTo(
-                    "new info.archinnov.achilles.internals.sample_classes.parser.field.IntToStringCodec()");
+                    "new " + IntToStringCodec.class.getCanonicalName() + "()");
         });
         launchTest();
     }
@@ -328,7 +332,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             assertThat(codecInfo.sourceType.toString()).isEqualTo(String.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(Long.class.getCanonicalName());
             assertThat(codecInfo.codecCode.toString()).isEqualTo(
-                    "new info.archinnov.achilles.internals.sample_classes.parser.field.StringToLongCodec()");
+                    "new " + StringToLongCodec.class.getCanonicalName() + "()");
         });
         launchTest();
     }
@@ -345,7 +349,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
             codecFactory.createCodec(ClassName.get(Integer.class), tree, context);
         });
-        failTestWithMessage("Codec 'info.archinnov.achilles.internals.sample_classes.parser.field.IntToStringCodec' " +
+        failTestWithMessage("Codec 'info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec' " +
                 "target type 'java.lang.String' should be Long/long because the column is annotated with @Counter");
     }
 
@@ -363,7 +367,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
             codecFactory.createCodec(ClassName.get(Integer.class), tree, context);
         });
-        failTestWithMessage("Codec 'info.archinnov.achilles.internals.sample_classes.parser.field.IntToStringCodec' " +
+        failTestWithMessage("Codec 'info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec' " +
                 "target type 'java.lang.String' should match computed CQL type 'java.lang.Long'");
     }
 

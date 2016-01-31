@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -287,7 +287,7 @@ public class CodecFactory {
         return null;
     }
 
-    protected static final class CodecInfo {
+    public static final class CodecInfo {
 
         final protected CodeBlock codecCode;
         final protected TypeName sourceType;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,28 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.entities;
+package info.archinnov.achilles.internals.types;
 
-import info.archinnov.achilles.annotations.Codec;
+import java.util.Objects;
 
-@Codec(CodecOnClass.class)
-public class ClassAnnotatedByCodec {
+public class IntWrapper {
+
+    public final int val;
+
+    public IntWrapper(int val) {
+        this.val = val;
+    }
 
     @Override
-    public String toString() {
-        return "ClassAnnotatedByCodec{}";
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        IntWrapper that = (IntWrapper) o;
+        return val == that.val;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(val);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,6 +137,11 @@ public class AptUtils {
         return MoreTypes.asTypeElement(typeMirror);
     }
 
+    public static <T extends TypeElement> boolean isAnnotationOfType(T element, Class<? extends Annotation> annotationClass) {
+        return element.getKind() == ElementKind.ANNOTATION_TYPE
+        && element.getQualifiedName().toString().equals(annotationClass.getCanonicalName());
+
+    }
     // INSTANCE METHODS
 
     /**

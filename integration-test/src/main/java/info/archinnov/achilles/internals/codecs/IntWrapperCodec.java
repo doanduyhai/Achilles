@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,30 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.entities;
+package info.archinnov.achilles.internals.codecs;
 
 import info.archinnov.achilles.exception.AchillesTranscodingException;
+import info.archinnov.achilles.internals.types.IntWrapper;
+import info.archinnov.achilles.type.codec.Codec;
 
-public class CodecOnClass implements info.archinnov.achilles.type.codec.Codec<ClassAnnotatedByCodec, String> {
+public class IntWrapperCodec implements Codec<IntWrapper, Integer> {
     @Override
-    public Class<ClassAnnotatedByCodec> sourceType() {
-        return ClassAnnotatedByCodec.class;
+    public Class<IntWrapper> sourceType() {
+        return IntWrapper.class;
     }
 
     @Override
-    public Class<String> targetType() {
-        return String.class;
+    public Class<Integer> targetType() {
+        return Integer.class;
     }
 
     @Override
-    public String encode(ClassAnnotatedByCodec fromJava) throws AchillesTranscodingException {
-        return fromJava.toString();
+    public Integer encode(IntWrapper fromJava) throws AchillesTranscodingException {
+        return fromJava.val;
     }
 
     @Override
-    public ClassAnnotatedByCodec decode(String fromCassandra) throws AchillesTranscodingException {
-        return new ClassAnnotatedByCodec();
+    public IntWrapper decode(Integer fromCassandra) throws AchillesTranscodingException {
+        return new IntWrapper(fromCassandra);
     }
 }

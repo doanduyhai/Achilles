@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import javax.lang.model.element.TypeElement;
 
 import com.squareup.javapoet.TypeName;
 
+import info.archinnov.achilles.internals.parser.CodecFactory;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 
 public class EntityParsingContext {
@@ -35,5 +36,13 @@ public class EntityParsingContext {
         this.globalContext = globalContext;
         this.namingStrategy = namingStrategy;
         this.className = entityType.toString();
+    }
+
+    public boolean hasCodecFor(TypeName typeName) {
+        return globalContext.hasCodecFor(typeName);
+    }
+
+    public CodecFactory.CodecInfo getCodecFor(TypeName typeName) {
+        return globalContext.getCodecFor(typeName);
     }
 }

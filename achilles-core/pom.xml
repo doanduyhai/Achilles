@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2012-2015 DuyHai DOAN
+  ~ Copyright (C) 2012-2016 DuyHai DOAN
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -161,6 +161,7 @@
                                     <includes>
                                         <include>**/TestEntity*.java</include>
                                         <include>**/TestUDT*.java</include>
+                                        <include>**/TestCodecRegistry*.java</include>
                                     </includes>
                                 </resource>
                             </resources>

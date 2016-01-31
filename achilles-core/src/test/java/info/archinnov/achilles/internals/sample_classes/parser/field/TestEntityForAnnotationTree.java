@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.datastax.driver.core.ConsistencyLevel;
 
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
+import info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec;
 import info.archinnov.achilles.type.tuples.Tuple3;
 
 @APUnitTest

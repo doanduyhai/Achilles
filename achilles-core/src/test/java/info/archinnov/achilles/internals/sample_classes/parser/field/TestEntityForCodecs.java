@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,15 @@ import java.util.Map;
 import java.util.Set;
 
 import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.ProtocolVersion;
 
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
+import info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec;
+import info.archinnov.achilles.internals.sample_classes.codecs.StringToLongCodec;
+import info.archinnov.achilles.internals.sample_classes.types.ClassAnnotatedByCodec;
+import info.archinnov.achilles.internals.sample_classes.types.MyBean;
+import info.archinnov.achilles.internals.sample_classes.types.SimpleLongWrapper;
 import info.archinnov.achilles.type.tuples.*;
 
 @APUnitTest
@@ -156,6 +162,14 @@ public class TestEntityForCodecs {
     @Codec(IntToStringCodec.class)
     private Integer counterWithWrongCodec;
 
+    @Column
+    private SimpleLongWrapper longWrapper;
+
+    @Column
+    private MyBean myBean;
+
+    @Column
+    private ProtocolVersion protocolVersion;
 
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
@@ -488,6 +502,30 @@ public class TestEntityForCodecs {
 
     public void setWriteTime(Long writeTime) {
         this.writeTime = writeTime;
+    }
+
+    public SimpleLongWrapper getLongWrapper() {
+        return longWrapper;
+    }
+
+    public void setLongWrapper(SimpleLongWrapper longWrapper) {
+        this.longWrapper = longWrapper;
+    }
+
+    public MyBean getMyBean() {
+        return myBean;
+    }
+
+    public void setMyBean(MyBean myBean) {
+        this.myBean = myBean;
+    }
+
+    public ProtocolVersion getProtocolVersion() {
+        return protocolVersion;
+    }
+
+    public void setProtocolVersion(ProtocolVersion protocolVersion) {
+        this.protocolVersion = protocolVersion;
     }
 }
 

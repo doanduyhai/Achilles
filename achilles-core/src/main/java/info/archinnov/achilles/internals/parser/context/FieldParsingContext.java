@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.parser.CodecFactory;
 
 public class FieldParsingContext {
     public final String fieldName;
@@ -37,6 +38,22 @@ public class FieldParsingContext {
     public final ColumnType columnType;
     public final ColumnInfo columnInfo;
     public boolean buildExtractor;
+
+    public static FieldParsingContext forConfig(String className, String fieldName) {
+        return new FieldParsingContext(className, fieldName);
+    }
+
+    private FieldParsingContext(String className, String fieldName) {
+        this.className = className;
+        this.fieldName = fieldName;
+        this.entityContext = null;
+        this.columnType = null;
+        this.columnInfo = null;
+        this.cqlColumn = null;
+        this.entityRawType = null;
+        this.fieldInfoCode = null;
+        this.buildExtractor = false;
+    }
 
     public FieldParsingContext(EntityParsingContext entityContext, TypeName entityRawType, FieldInfoContext fieldInfoContext) {
         this.entityRawType = entityRawType;
@@ -62,6 +79,8 @@ public class FieldParsingContext {
                 fieldName, cqlColumn, columnType, columnInfo), false);
     }
 
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -82,5 +101,13 @@ public class FieldParsingContext {
 
     public void addUDTMeta(TypeName rawUdtType, TypeSpec typeSpec) {
         entityContext.globalContext.udtTypes.put(rawUdtType, typeSpec);
+    }
+
+    public boolean hasCodecFor(TypeName typeName) {
+        return entityContext.hasCodecFor(typeName);
+    }
+
+    public CodecFactory.CodecInfo getCodecFor(TypeName typeName) {
+        return entityContext.getCodecFor(typeName);
     }
 }

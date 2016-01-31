@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
+import info.archinnov.achilles.internals.parser.CodecFactory.CodecInfo;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
@@ -121,7 +122,7 @@ public class FieldParser {
 
 
     private TypeParsingResult parseComputedType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
-        final CodecFactory.CodecInfo codecInfo = codecFactory.createCodec(sourceType, annotationTree, context);
+        final CodecInfo codecInfo = codecFactory.createCodec(sourceType, annotationTree, context);
         final TypeName rawTargetType = getRawType(codecInfo.targetType);
         final TypedMap computed = extractTypedMap(annotationTree, Computed.class).get();
         final String alias = computed.getTyped("alias");
@@ -147,7 +148,10 @@ public class FieldParser {
     }
 
     private TypeParsingResult parseSimpleType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
-        final CodecFactory.CodecInfo codecInfo = codecFactory.createCodec(sourceType, annotationTree, context);
+        final CodecInfo codecInfo = context.hasCodecFor(sourceType)
+                                ? context.getCodecFor(sourceType)
+                                : codecFactory.createCodec(sourceType, annotationTree, context);
+
         final TypeName rawTargetType = getRawType(codecInfo.targetType);
 
         validateAllowedType(aptUtils, rawTargetType, context);

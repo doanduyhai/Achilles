@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package info.archinnov.achilles.internals.apt.processors.meta;
 
+import static info.archinnov.achilles.internals.apt.AptUtils.isAnnotationOfType;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
@@ -38,14 +38,18 @@ import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Sets;
 import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import info.archinnov.achilles.annotations.CodecRegistry;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryBuilderCodeGen;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryCodeGen;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryCodeGen.ManagersAndDSLClasses;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
+import info.archinnov.achilles.internals.parser.CodecRegistryParser;
+import info.archinnov.achilles.internals.parser.CodecFactory;
 import info.archinnov.achilles.internals.parser.EntityParser;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
@@ -69,9 +73,24 @@ public class AchillesProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (!annotations.isEmpty() && !roundEnv.processingOver()) {
-            final GlobalParsingContext parsingContext = new GlobalParsingContext();
+
+            final boolean hasCompileTimeCodecRegistry = annotations
+                    .stream()
+                    .filter(annotation -> isAnnotationOfType(annotation, CodecRegistry.class))
+                    .findFirst().isPresent();
+
+            Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new HashMap<>();
+
+            if (hasCompileTimeCodecRegistry) {
+                aptUtils.printNote("[Achilles] Parsing compile-time codec registry");
+                codecRegistry.putAll(new CodecRegistryParser(aptUtils).parseCodecs(roundEnv));
+            }
+
+            final GlobalParsingContext parsingContext = new GlobalParsingContext(codecRegistry);
+
             final List<EntityMetaSignature> entityMetas = annotations
                     .stream()
+                    .filter(annotation -> isAnnotationOfType(annotation, Entity.class))
                     .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotation).stream())
                     .map(MoreElements::asType)
                     .map(x -> entityParser.parseEntity(x, parsingContext))
@@ -135,7 +154,8 @@ public class AchillesProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return Sets.newHashSet(Entity.class.getCanonicalName());
+        return Sets.newHashSet(Entity.class.getCanonicalName(),
+                CodecRegistry.class.getCanonicalName());
     }
 
     @Override

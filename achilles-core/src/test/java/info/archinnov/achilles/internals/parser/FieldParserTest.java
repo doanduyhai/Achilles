@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
@@ -28,15 +29,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.truth0.Truth;
 
 import com.datastax.driver.core.UDTValue;
+import com.google.common.collect.Sets;
+import com.google.testing.compile.JavaSourcesSubjectFactory;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
+import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistry;
+import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistryWrong;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
@@ -767,6 +774,103 @@ public class FieldParserTest extends AbstractTestProcessor {
         });
         launchTest();
     }
+
+    @Test
+    public void should_parse_simple_codec_from_registry() throws Exception {
+
+        setExec(aptUtils -> {
+            final Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new CodecRegistryParser(aptUtils).parseCodecs(env);
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
+                    new GlobalParsingContext(codecRegistry));
+
+            //@Column
+            //private SimpleLongWrapper longWrapper;
+            VariableElement elm = findFieldInType(typeElement, "longWrapper");
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.Long");
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_simple_codec_from_registry.txt"));
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForCodecs.class), loadClass(TestCodecRegistry.class)))
+                .processedWith(this)
+                .compilesWithoutError();
+    }
+
+    @Test
+    public void should_parse_json_codec_from_registry() throws Exception {
+
+        setExec(aptUtils -> {
+            final Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new CodecRegistryParser(aptUtils).parseCodecs(env);
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
+                    new GlobalParsingContext(codecRegistry));
+
+            //@Column
+            //private MyBean myBean;
+            VariableElement elm = findFieldInType(typeElement, "myBean");
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_json_codec_from_registry.txt"));
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForCodecs.class), loadClass(TestCodecRegistry.class)))
+                .processedWith(this)
+                .compilesWithoutError();
+    }
+
+    @Test
+    public void should_parse_enumerated_codec_from_registry() throws Exception {
+
+        setExec(aptUtils -> {
+            final Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new CodecRegistryParser(aptUtils).parseCodecs(env);
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
+                    new GlobalParsingContext(codecRegistry));
+
+            //@Column
+            //private ProtocolVersion protocolVersion;
+            VariableElement elm = findFieldInType(typeElement, "protocolVersion");
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_enumerated_codec_from_registry.txt"));
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForCodecs.class), loadClass(TestCodecRegistry.class)))
+                .processedWith(this)
+                .compilesWithoutError();
+    }
+
+    @Test
+    public void should_fail_parsing_codec_from_registry() throws Exception {
+
+        setExec(aptUtils -> new CodecRegistryParser(aptUtils).parseCodecs(env));
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestCodecRegistryWrong.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("There is already a codec for source type info." +
+                        "archinnov.achilles.internals.sample_classes.types.SimpleLongWrapper " +
+                        "in the class " +
+                        "info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistryWrong");
+    }
+
 
     public static class MyCodec implements Codec<List<String>, String>, Serializable {
 

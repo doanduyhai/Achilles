@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS my_ks.entity_complex_types(
 		complex_nesting_map map<text, frozen<map<int, frozen<tuple<text, int, int>>>>>,
 		consistencylevel text,
 		integer text,
+		intwrapper int,
 		json_map text,
 		list_nesting list<frozen<map<int, text>>>,
 		list_udt list<frozen<achilles_embedded.my_type>>,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.entities;
+package info.archinnov.achilles.internals.sample_classes.codecs;
 
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 import info.archinnov.achilles.type.codec.Codec;

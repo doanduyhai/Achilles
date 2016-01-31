@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
 
-import org.eclipse.jdt.internal.compiler.tool.EclipseCompiler;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +40,7 @@ import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.apt_utils.AptAssertOK;
 import info.archinnov.achilles.internals.parser.context.CodecContext;
-import info.archinnov.achilles.internals.sample_classes.parser.field.IntToStringCodec;
+import info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForAnnotationTree;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT;
 import info.archinnov.achilles.type.TypedMap;
@@ -60,8 +59,6 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
          *                                              @Frozen @EmptyCollectionIfNull Integer,
          *                                              @Enumerated(value = Enumerated.Encoding.NAME) Date>>> map;
          */
-
-
         AptAssertOK exec = aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());

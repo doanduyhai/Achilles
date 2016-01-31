@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,29 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.sample_classes.parser.field;
+package info.archinnov.achilles.internals.codecs;
 
 import info.archinnov.achilles.exception.AchillesTranscodingException;
-import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.internals.types.ClassAnnotatedByCodec;
 
-public class StringToLongCodec implements Codec<String, Long> {
+public class CodecOnClass implements info.archinnov.achilles.type.codec.Codec<ClassAnnotatedByCodec, String> {
+    @Override
+    public Class<ClassAnnotatedByCodec> sourceType() {
+        return ClassAnnotatedByCodec.class;
+    }
 
     @Override
-    public Class<String> sourceType() {
+    public Class<String> targetType() {
         return String.class;
     }
 
     @Override
-    public Class<Long> targetType() {
-        return Long.class;
+    public String encode(ClassAnnotatedByCodec fromJava) throws AchillesTranscodingException {
+        return fromJava.toString();
     }
 
     @Override
-    public Long encode(String fromJava) throws AchillesTranscodingException {
-        return Long.parseLong(fromJava);
-    }
-
-    @Override
-    public String decode(Long fromCassandra) throws AchillesTranscodingException {
-        return fromCassandra.toString();
+    public ClassAnnotatedByCodec decode(String fromCassandra) throws AchillesTranscodingException {
+        return new ClassAnnotatedByCodec();
     }
 }

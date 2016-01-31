@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,9 @@ import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.manager.EntityWithComplexTypes_Manager;
-import info.archinnov.achilles.internals.entities.ClassAnnotatedByCodec;
+import info.archinnov.achilles.internals.types.ClassAnnotatedByCodec;
 import info.archinnov.achilles.internals.entities.EntityWithComplexTypes;
+import info.archinnov.achilles.internals.types.IntWrapper;
 import info.archinnov.achilles.internals.entities.TestUDT;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
@@ -114,6 +115,7 @@ public class TestEntityWithComplexTypes {
         entity.setValue("val");
         entity.setWriteTime(1000L);
         entity.setWriteTimeWithCodec("2000");
+        entity.setIntWrapper(new IntWrapper(123));
 
         //When
         manager
@@ -166,6 +168,7 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.getTupleValue("tuple2").get(1, String.class)).isEqualTo("2");
         assertThat(actual.getTupleValue("tuple_nesting")).isEqualTo(nestedTuple2Value);
         assertThat(actual.getString("value")).isEqualTo("val");
+        assertThat(actual.getInt("intwrapper")).isEqualTo(123);
     }
 
     @Test
@@ -212,6 +215,7 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.getValue()).isEqualTo("val");
         assertThat(actual.getWriteTime()).isGreaterThan(0L);
         assertThat(actual.getWriteTimeWithCodec()).isNotNull();
+        assertThat(actual.getIntWrapper()).isEqualTo(new IntWrapper(456));
     }
 
     @Test

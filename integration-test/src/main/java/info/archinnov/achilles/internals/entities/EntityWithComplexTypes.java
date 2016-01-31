@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,11 @@ import java.util.*;
 import com.datastax.driver.core.ConsistencyLevel;
 
 import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.internals.codecs.CodecOnClass;
+import info.archinnov.achilles.internals.codecs.IntToStringCodec;
+import info.archinnov.achilles.internals.codecs.StringToLongCodec;
+import info.archinnov.achilles.internals.types.ClassAnnotatedByCodec;
+import info.archinnov.achilles.internals.types.IntWrapper;
 import info.archinnov.achilles.type.tuples.Tuple1;
 import info.archinnov.achilles.type.tuples.Tuple2;
 import info.archinnov.achilles.type.tuples.Tuple3;
@@ -67,9 +72,8 @@ public class EntityWithComplexTypes {
     @Codec(value = IntToStringCodec.class)
     private Integer integer;
 
-    @Codec(CodecOnClass.class)
     @Column("codec_on_class")
-    private ClassAnnotatedByCodec codecOnClass;
+    private @Codec(CodecOnClass.class) ClassAnnotatedByCodec codecOnClass;
 
     @Column("simple_udt")
     private @Frozen TestUDT simpleUdt;
@@ -122,6 +126,9 @@ public class EntityWithComplexTypes {
     @Column
     @TimeUUID
     private UUID timeuuid;
+
+    @Column
+    private IntWrapper intWrapper;
 
     public Long getId() {
         return id;
@@ -329,5 +336,13 @@ public class EntityWithComplexTypes {
 
     public void setTimeuuid(UUID timeuuid) {
         this.timeuuid = timeuuid;
+    }
+
+    public IntWrapper getIntWrapper() {
+        return intWrapper;
+    }
+
+    public void setIntWrapper(IntWrapper intWrapper) {
+        this.intWrapper = intWrapper;
     }
 }

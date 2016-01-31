@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,30 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.sample_classes.parser.field;
+package info.archinnov.achilles.internals.sample_classes.codecs;
 
 import info.archinnov.achilles.exception.AchillesTranscodingException;
+import info.archinnov.achilles.internals.sample_classes.types.SimpleLongWrapper;
 import info.archinnov.achilles.type.codec.Codec;
 
-public class IntToStringCodec implements Codec<Integer, String> {
-
+public class SimpleLongWrapperCodec implements Codec<SimpleLongWrapper, Long> {
     @Override
-    public Class<String> targetType() {
-        return String.class;
+    public Class<SimpleLongWrapper> sourceType() {
+        return SimpleLongWrapper.class;
     }
 
     @Override
-    public Class<Integer> sourceType() {
-        return Integer.class;
+    public Class<Long> targetType() {
+        return Long.class;
     }
 
     @Override
-    public Integer decode(String fromJava) throws AchillesTranscodingException {
-        return Integer.parseInt(fromJava);
+    public Long encode(SimpleLongWrapper fromJava) throws AchillesTranscodingException {
+        return fromJava.val;
     }
 
     @Override
-    public String encode(Integer fromCassandra) throws AchillesTranscodingException {
-        return fromCassandra.toString();
+    public SimpleLongWrapper decode(Long fromCassandra) throws AchillesTranscodingException {
+        return new SimpleLongWrapper(fromCassandra);
     }
 }

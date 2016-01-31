@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 DuyHai DOAN
+ * Copyright (C) 2012-2016 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,7 @@ package info.archinnov.achilles.internals.strategy.field_filtering;
 import java.util.function.Predicate;
 import javax.lang.model.element.VariableElement;
 
-import info.archinnov.achilles.annotations.ClusteringColumn;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.PartitionKey;
-import info.archinnov.achilles.annotations.Transient;
+import info.archinnov.achilles.annotations.*;
 
 @FunctionalInterface
 public interface FieldFilter extends Predicate<VariableElement> {
@@ -40,6 +37,14 @@ public interface FieldFilter extends Predicate<VariableElement> {
     FieldFilter IMPLICIT_UDT_FIELD_FILTER = elm ->
             (elm.getAnnotation(Column.class) != null
                     && elm.getAnnotation(Transient.class) == null);
+
+    FieldFilter CODEC_RELATED_ANNOTATIONS = elm ->
+            (elm.getAnnotation(Codec.class) != null ||
+                elm.getAnnotation(RuntimeCodec.class) != null ||
+                elm.getAnnotation(DriverCodec.class) != null ||
+                elm.getAnnotation(JSON.class) != null ||
+                elm.getAnnotation(Enumerated.class) != null)
+            && (elm.getAnnotation(Computed.class) == null);
 
     @Override
     boolean test(VariableElement element);
