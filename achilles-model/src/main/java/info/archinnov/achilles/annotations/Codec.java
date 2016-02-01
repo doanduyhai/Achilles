@@ -122,7 +122,7 @@ import java.lang.annotation.*;
  * </p>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.TYPE, ElementType.TYPE_USE})
+@Target({ElementType.FIELD, ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Documented
 public @interface Codec {
 

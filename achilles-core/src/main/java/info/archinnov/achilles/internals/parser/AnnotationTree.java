@@ -82,6 +82,7 @@ public class AnnotationTree {
 
         if (isEclipseCompiler(varElm)) {
             final FieldBinding binding = (FieldBinding)((VariableElementImpl) varElm)._binding;
+
             final List<AnnotationBinding> annotationBindings = Arrays.asList(binding.getAnnotations());
             final Map<Class<? extends Annotation>, TypedMap> annotationInfo = annotationBindings
                 .stream()

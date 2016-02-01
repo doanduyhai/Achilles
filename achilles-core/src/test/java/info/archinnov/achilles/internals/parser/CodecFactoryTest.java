@@ -44,10 +44,8 @@ import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.sample_classes.codecs.ClassAnnotatedByCodecToString;
 import info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec;
 import info.archinnov.achilles.internals.sample_classes.codecs.StringToLongCodec;
-import info.archinnov.achilles.internals.sample_classes.types.ClassAnnotatedByCodec;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -58,28 +56,8 @@ public class CodecFactoryTest extends AbstractTestProcessor {
     @Before
     public void setUp() {
         super.testEntityClass = TestEntityForCodecs.class;
-
     }
 
-    @Test
-    public void should_create_codec_for_type_annotated_by_codec() throws Exception {
-        setExec(aptUtils -> {
-            final CodecFactory codecFactory = new CodecFactory(aptUtils);
-            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForCodecs.class.getCanonicalName());
-            final FieldParsingContext context = getFieldParsingContext(aptUtils, typeElement);
-
-            // private List<ClassAnnotatedByCodec> typeAnnotatedByCodec;
-            final VariableElement typeAnnotatedByCodecElm = findFieldInType(typeElement, "typeAnnotatedByCodec");
-            final AnnotationTree typeAnnotatedByCodecTree = AnnotationTree.buildFrom(aptUtils, typeAnnotatedByCodecElm);
-            final CodecInfo typeAnnotatedByCodecCodecInfo = codecFactory.createCodec(ClassName.get(ClassAnnotatedByCodec.class), typeAnnotatedByCodecTree, context);
-
-            assertThat(typeAnnotatedByCodecCodecInfo.sourceType.toString()).isEqualTo(ClassAnnotatedByCodec.class.getCanonicalName());
-            assertThat(typeAnnotatedByCodecCodecInfo.targetType.toString()).isEqualTo(String.class.getCanonicalName());
-            assertThat(typeAnnotatedByCodecCodecInfo.codecCode.toString()).isEqualTo(
-                    "new "+ ClassAnnotatedByCodecToString.class.getCanonicalName() + "()");
-        });
-        launchTest();
-    }
 
     @Test
     public void should_create_codec_for_json_map() throws Exception {

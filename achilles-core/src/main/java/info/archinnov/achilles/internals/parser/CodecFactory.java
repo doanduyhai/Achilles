@@ -116,7 +116,6 @@ public class CodecFactory {
         final Optional<TypedMap> jsonTransform = extractTypedMap(annotationTree, JSON.class);
         final Optional<TypedMap> enumerated = extractTypedMap(annotationTree, Enumerated.class);
         final Optional<TypedMap> codecFromType = extractTypedMap(annotationTree, Codec.class);
-        final Optional<Codec> codecFromClass = aptUtils.getOptionalCodecFromClass(typeMirror);
         final Optional<TypedMap> computed = extractTypedMap(annotationTree, Computed.class);
         final Optional<TypeName> computedCQLClass = computed
                 .map(x -> x.<Class<?>>getTyped("cqlClass"))
@@ -132,8 +131,6 @@ public class CodecFactory {
             final Tuple2<TypeName, CodeBlock> tuple2 = buildCodecFromType(codecFromType.get(), sourceType, computedCQLClass, isCounter);
             targetType = tuple2._1();
             codec = tuple2._2();
-        } else if (codecFromClass.isPresent()) {
-            final Tuple2<TypeName, CodeBlock> tuple2 = buildCodecFromClass(codecFromClass.get(), sourceType, computedCQLClass, isCounter);
             targetType = tuple2._1();
             codec = tuple2._2();
         } else if (enumerated.isPresent()) {
@@ -158,31 +155,6 @@ public class CodecFactory {
         return new CodecInfo(codec, sourceType, targetType);
     }
 
-
-    private List<TypeName> getCodecTypes(Class<? extends info.archinnov.achilles.type.codec.Codec> codecClass) {
-        List<Type> genericTypes = Arrays.asList(codecClass.getGenericInterfaces());
-
-        final List<TypeName> codecTypes = genericTypes
-                .stream()
-                .filter(x -> x instanceof ParameterizedType)
-                .map(x -> (ParameterizedType) x)
-                .filter(x -> x.getRawType().getTypeName().equals(info.archinnov.achilles.type.codec.Codec.class.getCanonicalName()))
-                .flatMap(x -> Arrays.asList(x.getActualTypeArguments()).stream())
-                .map(TypeName::get)
-                .collect(Collectors.toList());
-
-        return codecTypes;
-    }
-
-    private List<TypeName> getCodecTypes(TypeMirror typeMirror) {
-        return aptUtils.getInterfaces(typeMirror)
-                .stream()
-                .filter(x -> aptUtils.erasure(x).toString().equals(info.archinnov.achilles.type.codec.Codec.class.getCanonicalName()))
-                .flatMap(x -> AptUtils.getTypeArguments(x).stream())
-                .map(TypeName::get)
-                .collect(Collectors.toList());
-    }
-
     private Tuple2<TypeName, CodeBlock> buildCodecFromType(TypedMap annotationInfo, TypeName sourceType,
                                                            Optional<TypeName> cqlClass, boolean isCounter) {
 
@@ -191,42 +163,6 @@ public class CodecFactory {
         CodeBlock codec = CodeBlock.builder().add("new $T()", codecContext.codecType).build();
 
         return new Tuple2<>(codecContext.targetType.box(), codec);
-    }
-
-    private Tuple2<TypeName, CodeBlock> buildCodecFromClass(Codec codecFromClass, TypeName sourceType, Optional<TypeName> cqlClass, boolean isCounter) {
-        List<TypeName> codecTypes;
-        String codecClassName;
-        TypeName codecTypeName;
-        try {
-            final Class<? extends info.archinnov.achilles.type.codec.Codec> codecClass = codecFromClass.value();
-            codecClassName = codecClass.getCanonicalName();
-            codecTypes = getCodecTypes(codecClass);
-            codecTypeName = TypeName.get(codecClass);
-        } catch (MirroredTypeException ex) {
-            final TypeMirror codecTypeMirror = ex.getTypeMirror();
-            codecClassName = codecTypeMirror.toString();
-            codecTypes = getCodecTypes(codecTypeMirror);
-            codecTypeName = TypeName.get(codecTypeMirror);
-        }
-
-        aptUtils.validateTrue(codecTypes.size() == 2, "Codec class '%s' should have 2 parameters: Codec<FROM, TO>", codecClassName);
-        TypeName codecSourceType = codecTypes.get(0);
-        TypeName targetType = codecTypes.get(1);
-        aptUtils.validateTrue(sourceType.equals(codecSourceType), "Codec '%s' source type '%s' should match current object type '%s'",
-                codecClassName, codecSourceType.toString(), sourceType.toString());
-        if (cqlClass.isPresent()) {
-            aptUtils.validateTrue(targetType.equals(cqlClass.get()), "Codec '%s' target type '%s' should match computed CQL type '%s'",
-                    codecClassName, codecSourceType.toString(), sourceType.toString());
-        }
-        if (isCounter) {
-            aptUtils.validateTrue(targetType.box().equals(TypeName.LONG.box()),
-                    "Codec '%s' target type '%s' should be Long/long because the column is annotated with @Counter",
-                    codecClassName, targetType);
-        }
-        validateAllowedTypes(aptUtils, sourceType, targetType);
-        CodeBlock codec = CodeBlock.builder().add("new $T()", codecTypeName).build();
-
-        return new Tuple2<>(targetType, codec);
     }
 
     private Tuple2<TypeName, CodeBlock> buildEnumeratedCodec(TypedMap annotationInfo, TypeName sourceType, String fieldName, String className) {

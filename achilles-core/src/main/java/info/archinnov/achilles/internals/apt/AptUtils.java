@@ -75,14 +75,6 @@ public class AptUtils {
         }
     }
 
-    public Optional<Codec> getOptionalCodecFromClass(TypeMirror typeMirror) {
-        if (isPrimitive(typeMirror) || isArray(typeMirror)) {
-            return Optional.empty();
-        } else {
-            return getAnnotationOnClass(typeMirror, Codec.class);
-        }
-    }
-
     public static boolean isPrimitive(TypeMirror typeMirror) {
         return typeMirror.getKind().isPrimitive();
     }

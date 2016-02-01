@@ -408,27 +408,6 @@ public class FieldParserTest extends AbstractTestProcessor {
     }
 
     @Test
-    public void should_parse_nested_type_with_class_level_codec() throws Exception {
-
-        setExec(aptUtils -> {
-            final FieldParser fieldParser = new FieldParser(aptUtils);
-            final String className = TestEntityForCodecs.class.getCanonicalName();
-            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
-
-            // private List<ClassAnnotatedByCodec> listOfTypeAnnotatedByCodec;
-            VariableElement elm = findFieldInType(typeElement, "listOfTypeAnnotatedByCodec");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
-
-            assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.List<java.lang.String>");
-            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
-                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_nested_type_with_class_level_codec.txt"));
-        });
-        launchTest();
-    }
-
-
-    @Test
     public void should_parse_tuple1() throws Exception {
 
         setExec(aptUtils -> {

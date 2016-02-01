@@ -31,7 +31,6 @@ import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 import info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec;
 import info.archinnov.achilles.internals.sample_classes.codecs.StringToLongCodec;
-import info.archinnov.achilles.internals.sample_classes.types.ClassAnnotatedByCodec;
 import info.archinnov.achilles.internals.sample_classes.types.MyBean;
 import info.archinnov.achilles.internals.sample_classes.types.SimpleLongWrapper;
 import info.archinnov.achilles.type.tuples.*;
@@ -126,9 +125,6 @@ public class TestEntityForCodecs {
 
     private Map<Integer, Tuple2<Integer, String>> nestedTuple;
 
-    private List<ClassAnnotatedByCodec> listOfTypeAnnotatedByCodec;
-    private ClassAnnotatedByCodec typeAnnotatedByCodec;
-
     @EmptyCollectionIfNull
     private Map<@JSON TestUDT,
             @Frozen @EmptyCollectionIfNull Map<Integer,
@@ -170,6 +166,8 @@ public class TestEntityForCodecs {
 
     @Column
     private ProtocolVersion protocolVersion;
+
+
 
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
@@ -350,22 +348,6 @@ public class TestEntityForCodecs {
 
     public void setNestedTuple(Map<Integer, Tuple2<Integer, String>> nestedTuple) {
         this.nestedTuple = nestedTuple;
-    }
-
-    public List<ClassAnnotatedByCodec> getListOfTypeAnnotatedByCodec() {
-        return listOfTypeAnnotatedByCodec;
-    }
-
-    public void setListOfTypeAnnotatedByCodec(List<ClassAnnotatedByCodec> listOfTypeAnnotatedByCodec) {
-        this.listOfTypeAnnotatedByCodec = listOfTypeAnnotatedByCodec;
-    }
-
-    public ClassAnnotatedByCodec getTypeAnnotatedByCodec() {
-        return typeAnnotatedByCodec;
-    }
-
-    public void setTypeAnnotatedByCodec(ClassAnnotatedByCodec typeAnnotatedByCodec) {
-        this.typeAnnotatedByCodec = typeAnnotatedByCodec;
     }
 
     public Map<TestUDT, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>> getMap() {
