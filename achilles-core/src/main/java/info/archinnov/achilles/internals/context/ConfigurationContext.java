@@ -38,6 +38,8 @@ import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.SchemaNameProvider;
+import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.interceptor.Interceptor;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
@@ -86,6 +88,8 @@ public class ConfigurationContext {
     private Optional<SchemaNameProvider> schemaNameProvider = Optional.empty();
 
     private StatementsCache statementsCache;
+
+    private Map<CodecSignature<?,?>, Codec<?, ?>> runtimeCodecs = new HashMap<>();
 
     public boolean isForceSchemaGeneration() {
         return forceSchemaGeneration;
@@ -343,6 +347,10 @@ public class ConfigurationContext {
 
         LOGGER.debug("Injecting global consistency levels");
         entityProperty.inject(Tuple3.of(readConsistency, writeConsistency, serialConsistency));
+
+        LOGGER.debug("Injecting runtime codecs");
+        entityProperty.injectRuntimeCodecs(runtimeCodecs);
+
     }
 
 
@@ -352,5 +360,13 @@ public class ConfigurationContext {
 
     public void setStatementsCache(StatementsCache statementsCache) {
         this.statementsCache = statementsCache;
+    }
+
+    public Map<CodecSignature<?, ?>, Codec<?, ?>> getRuntimeCodecs() {
+        return runtimeCodecs;
+    }
+
+    public void setRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
+        this.runtimeCodecs = runtimeCodecs;
     }
 }

@@ -23,16 +23,12 @@ import static info.archinnov.achilles.validation.Validator.validateNotNull;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.*;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.BiMap;
 
@@ -49,6 +45,8 @@ import info.archinnov.achilles.internals.statements.BoundValuesWrapper;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.type.SchemaNameProvider;
+import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.interceptor.Event;
 import info.archinnov.achilles.type.interceptor.Interceptor;
@@ -61,7 +59,8 @@ public abstract class AbstractEntityProperty<T> implements
         InjectBeanFactory, InjectKeyspace,
         InjectConsistency, InjectInsertStrategy,
         InjectTupleTypeFactory, InjectUserTypeFactory,
-        InjectJacksonMapper, InjectSchemaStrategy {
+        InjectJacksonMapper, InjectSchemaStrategy,
+        InjectRuntimeCodecs {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityProperty.class);
 
@@ -432,4 +431,18 @@ public abstract class AbstractEntityProperty<T> implements
             x.inject(jacksonMapper);
         }
     }
+
+    @Override
+    public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format("Injecting runtime codecs into entity meta of %s",
+                    entityClass.getCanonicalName()));
+        }
+
+        for (AbstractProperty<T, ?, ?> x : allColumns) {
+            x.injectRuntimeCodecs(runtimeCodecs);
+        }
+    }
+
+
 }

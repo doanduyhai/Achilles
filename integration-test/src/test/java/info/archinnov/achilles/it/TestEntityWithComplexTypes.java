@@ -42,9 +42,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 
+import info.archinnov.achilles.annotations.Enumerated;
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.manager.EntityWithComplexTypes_Manager;
+import info.archinnov.achilles.internals.codecs.EncodingOrdinalCodec;
+import info.archinnov.achilles.internals.codecs.ProtocolVersionCodec;
 import info.archinnov.achilles.internals.types.ClassAnnotatedByCodec;
 import info.archinnov.achilles.internals.entities.EntityWithComplexTypes;
 import info.archinnov.achilles.internals.types.IntWrapper;
@@ -52,6 +55,7 @@ import info.archinnov.achilles.internals.entities.TestUDT;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
+import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.tuples.Tuple1;
 import info.archinnov.achilles.type.tuples.Tuple2;
 import info.archinnov.achilles.type.tuples.Tuple3;
@@ -65,12 +69,16 @@ public class TestEntityWithComplexTypes {
             .entityClassesToTruncate(EntityWithComplexTypes.class)
             .truncateBeforeAndAfterTest()
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
-                    .builder(cluster)
-                    .withManagedEntityClasses(EntityWithComplexTypes.class)
-                    .doForceSchemaCreation(true)
-                    .withStatementsCache(statementsCache)
-                    .withDefaultKeyspaceName(DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME)
-                    .build());
+                .builder(cluster)
+                .withManagedEntityClasses(EntityWithComplexTypes.class)
+                .doForceSchemaCreation(true)
+                .withStatementsCache(statementsCache)
+                .withDefaultKeyspaceName(DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME)
+                .withRuntimeCodec(new CodecSignature<>(ProtocolVersion.class, String.class),
+                        new ProtocolVersionCodec())
+                .withRuntimeCodec(new CodecSignature<>(Enumerated.Encoding.class, Integer.class, "encoding_codec"),
+                        new EncodingOrdinalCodec())
+                .build());
 
     private Session session = resource.getNativeSession();
     private ScriptExecutor scriptExecutor = resource.getScriptExecutor();
@@ -116,6 +124,8 @@ public class TestEntityWithComplexTypes {
         entity.setWriteTime(1000L);
         entity.setWriteTimeWithCodec("2000");
         entity.setIntWrapper(new IntWrapper(123));
+        entity.setProtocolVersion(ProtocolVersion.V4);
+        entity.setEncoding(Enumerated.Encoding.ORDINAL);
 
         //When
         manager
@@ -169,6 +179,8 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.getTupleValue("tuple_nesting")).isEqualTo(nestedTuple2Value);
         assertThat(actual.getString("value")).isEqualTo("val");
         assertThat(actual.getInt("intwrapper")).isEqualTo(123);
+        assertThat(actual.getString("protocolversion")).isEqualTo("V4");
+        assertThat(actual.getInt("encoding")).isEqualTo(1);
     }
 
     @Test
@@ -216,6 +228,8 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.getWriteTime()).isGreaterThan(0L);
         assertThat(actual.getWriteTimeWithCodec()).isNotNull();
         assertThat(actual.getIntWrapper()).isEqualTo(new IntWrapper(456));
+        assertThat(actual.getProtocolVersion()).isEqualTo(ProtocolVersion.V2);
+        assertThat(actual.getEncoding()).isEqualTo(Enumerated.Encoding.NAME);
     }
 
     @Test

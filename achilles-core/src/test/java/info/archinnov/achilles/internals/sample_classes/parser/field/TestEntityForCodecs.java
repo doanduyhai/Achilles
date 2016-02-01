@@ -167,7 +167,12 @@ public class TestEntityForCodecs {
     @Column
     private ProtocolVersion protocolVersion;
 
+    @RuntimeCodec(codecName = "protocol_version", cqlClass = String.class)
+    @Column
+    private ProtocolVersion runtimeCodec;
 
+    @Column
+    private Enumerated.Encoding encoding;
 
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
@@ -508,6 +513,22 @@ public class TestEntityForCodecs {
 
     public void setProtocolVersion(ProtocolVersion protocolVersion) {
         this.protocolVersion = protocolVersion;
+    }
+
+    public ProtocolVersion getRuntimeCodec() {
+        return runtimeCodec;
+    }
+
+    public void setRuntimeCodec(ProtocolVersion runtimeCodec) {
+        this.runtimeCodec = runtimeCodec;
+    }
+
+    public Enumerated.Encoding getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(Enumerated.Encoding encoding) {
+        this.encoding = encoding;
     }
 }
 

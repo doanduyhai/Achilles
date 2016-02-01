@@ -58,6 +58,7 @@ import info.archinnov.achilles.internals.runtime.AbstractManagerFactory;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.types.ConfigMap;
+import info.archinnov.achilles.internals.types.RuntimeCodecWrapper;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.tuples.*;
@@ -112,6 +113,7 @@ public class TypeUtils {
     public static final ClassName BYTE_ARRAY_PRIMITIVE_CODEC = ClassName.get(ByteArrayPrimitiveCodec.class);
     public static final ClassName BYTE_ARRAY_CODEC = ClassName.get(ByteArrayCodec.class);
     public static final ClassName FALL_THROUGH_CODEC = ClassName.get(FallThroughCodec.class);
+    public static final ClassName RUNTIME_CODEC_WRAPPER = ClassName.get(RuntimeCodecWrapper.class);
 
     // Meta data
     public static final ClassName COMPUTED_PROPERTY = ClassName.get(ComputedProperty.class);

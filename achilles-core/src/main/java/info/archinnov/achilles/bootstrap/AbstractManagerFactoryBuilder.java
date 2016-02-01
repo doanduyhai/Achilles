@@ -19,6 +19,7 @@ package info.archinnov.achilles.bootstrap;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -37,6 +38,8 @@ import info.archinnov.achilles.internals.runtime.AbstractManagerFactory;
 import info.archinnov.achilles.internals.types.ConfigMap;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.SchemaNameProvider;
+import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.interceptor.Interceptor;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.validation.Validator;
@@ -430,6 +433,79 @@ public abstract class AbstractManagerFactoryBuilder<T extends AbstractManagerFac
      */
     public T withParameter(ConfigurationParameters parameter, Object value) {
         configMap.put(parameter, value);
+        return getThis();
+    }
+
+    /**
+     * Specify a runtime codec to register with Achilles
+     * <br/>
+     * <pre class="code"><code class="java">
+     *
+     *  <strong>final Codec&lt;MyBean, String&gt; beanCodec = new .... // Create your codec with initialization logic here</strong>
+     *  <strong>final Codec&lt;MyEnum, String&gt; enumCodec = new .... // Create your codec with initialization logic here</strong>
+     *
+     *  final CodecSignature&lt;MyBean, String&gt; codecSignature1 = new CodecSignature(MyBean.class, String.class);
+     *  final CodecSignature&lt;MyBean, String&gt; codecSignature2 = new CodecSignature(MyEnum.class, String.class);
+     *
+     *  final Map&lt;CodecSignature&lt;?, ?&gt;, Codec&lt;?, ?&gt;&gt; runtimeCodecs = new HashMap&lt;&gt;();
+     *  runtimeCodecs.put(codecSignature1, beanCodec);
+     *  runtimeCodecs.put(codecSignature2, enumCodec);
+
+     *
+     *  ManagerFactory factory = ManagerFactoryBuilder
+     *                               .builder(cluster)
+     *                               ...
+     *                               <strong>.withRuntimeCodec(codecSignature1, beanCodec)</strong>
+     *                               <strong>.withRuntimeCodec(codecSignature2, enumCodec)</strong>
+     *                               .build();
+     * </code></pre>
+     * <br/>
+     * <br/>
+     * <em>Remark: you can call this method as many time as there are runtime codecs to be registered</em>
+     * @param codecSignature codec signature, defined by sourceType,targetType and optionally codecName
+     * @param codec runtime codec
+     * @return ManagerFactoryBuilder
+     */
+    public <FROM, TO> T withRuntimeCodec(CodecSignature<FROM, TO> codecSignature, Codec<FROM, TO> codec) {
+        if (!configMap.containsKey(RUNTIME_CODECS)) {
+            configMap.put(RUNTIME_CODECS, new HashMap<CodecSignature<?, ?>, Codec<?, ?>>());
+        }
+        configMap.<Map<CodecSignature<?, ?>, Codec<?, ?>>>getTyped(RUNTIME_CODECS).put(codecSignature, codec);
+        return getThis();
+    }
+
+    /**
+     * Specify runtime codecs to register with Achilles
+     * <br/>
+     * <pre class="code"><code class="java">
+     *
+     *  <strong>final Codec&lt;MyBean, String&gt; beanCodec = new .... // Create your codec with initialization logic here</strong>
+     *  <strong>final Codec&lt;MyEnum, String&gt; enumCodec = new .... // Create your codec with initialization logic here</strong>
+     *
+     *  final CodecSignature&lt;MyBean, String&gt; codecSignature1 = new CodecSignature(MyBean.class, String.class);
+     *  final CodecSignature&lt;MyBean, String&gt; codecSignature2 = new CodecSignature(MyEnum.class, String.class);
+     *
+     *  final Map&lt;CodecSignature&lt;?, ?&gt;, Codec&lt;?, ?&gt;&gt; runtimeCodecs = new HashMap&lt;&gt;();
+     *  runtimeCodecs.put(codecSignature1, beanCodec);
+     *  runtimeCodecs.put(codecSignature2, enumCodec);
+     *
+     *  ManagerFactory factory = ManagerFactoryBuilder
+     *                               .builder(cluster)
+     *                               ...
+     *                               <strong>.withRuntimeCodecs(runtimeCodecs)</strong>
+     *                               .build();
+     * </code></pre>
+     * <br/>
+     * <br/>
+     * <em>Remark: you can call this method as many time as there are runtime codecs to be registered</em>
+     * @param runtimeCodecs a map of codec signature and its corresponding codec
+     * @return ManagerFactoryBuilder
+     */
+    public T withRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
+        if (!configMap.containsKey(RUNTIME_CODECS)) {
+            configMap.put(RUNTIME_CODECS, new HashMap<CodecSignature<?, ?>, Codec<?, ?>>());
+        }
+        configMap.<Map<CodecSignature<?, ?>, Codec<?, ?>>>getTyped(RUNTIME_CODECS).putAll(runtimeCodecs);
         return getThis();
     }
 }

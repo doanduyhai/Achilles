@@ -20,6 +20,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -36,6 +37,8 @@ import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
 
@@ -188,5 +191,10 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
     @Override
     public void inject(BeanFactory factory) {
         valueProperty.inject(factory);
+    }
+
+    @Override
+    public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
+        valueProperty.injectRuntimeCodecs(runtimeCodecs);
     }
 }

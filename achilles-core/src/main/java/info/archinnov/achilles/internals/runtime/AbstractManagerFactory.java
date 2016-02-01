@@ -21,6 +21,7 @@ import static info.archinnov.achilles.internals.schema.SchemaCreator.generateUDT
 import static java.lang.String.format;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.annotation.PreDestroy;
 
@@ -37,6 +38,8 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty;
+import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.codec.CodecSignature;
 
 public abstract class AbstractManagerFactory {
 

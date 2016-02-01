@@ -21,6 +21,7 @@ import static info.archinnov.achilles.internals.apt.AptUtils.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateCodec;
 import static info.archinnov.achilles.internals.parser.validator.TypeValidator.validateAllowedTypes;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 import java.lang.reflect.ParameterizedType;
@@ -28,7 +29,6 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -43,6 +43,7 @@ import info.archinnov.achilles.annotations.Enumerated.Encoding;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.context.CodecContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
+import info.archinnov.achilles.internals.parser.context.RuntimeCodecContext;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
@@ -61,7 +62,7 @@ public class CodecFactory {
     }
 
     public static CodecContext buildCodecContext(AptUtils aptUtils, AnnotationMirror codecFromType) {
-        Optional<Class<Codec>> codecClassO = AptUtils.getElementValueClass(codecFromType, "value", false);
+        Optional<Class<Codec>> codecClassO = getElementValueClass(codecFromType, "value", false);
         if (codecClassO.isPresent()) {
             Class<Codec> codecClass = codecClassO.get();
             List<Type> genericTypes = Arrays.asList(codecClass.getGenericInterfaces());
@@ -106,6 +107,12 @@ public class CodecFactory {
         return new CodecContext(TypeName.get(codecType), codecTypes.get(0), codecTypes.get(1));
     }
 
+    public static RuntimeCodecContext buildRuntimeCodecContext(TypeMirror currentType, AnnotationMirror annotation) {
+        final Class<?> targetType = getElementValueClass(annotation, "cqlClass", false).get();
+        final Optional<String> codecName = ofNullable(getElementValue(annotation, "codecName", String.class, false));
+        return new RuntimeCodecContext(TypeName.get(currentType), TypeName.get(targetType), codecName);
+    }
+
     public CodecInfo createCodec(TypeName sourceType, AnnotationTree annotationTree, FieldParsingContext context) {
         final String fieldName = context.fieldName;
         final String className = context.className;
@@ -116,6 +123,7 @@ public class CodecFactory {
         final Optional<TypedMap> jsonTransform = extractTypedMap(annotationTree, JSON.class);
         final Optional<TypedMap> enumerated = extractTypedMap(annotationTree, Enumerated.class);
         final Optional<TypedMap> codecFromType = extractTypedMap(annotationTree, Codec.class);
+        final Optional<TypedMap> runtimeCodec = extractTypedMap(annotationTree, RuntimeCodec.class);
         final Optional<TypedMap> computed = extractTypedMap(annotationTree, Computed.class);
         final Optional<TypeName> computedCQLClass = computed
                 .map(x -> x.<Class<?>>getTyped("cqlClass"))
@@ -128,9 +136,11 @@ public class CodecFactory {
             codec = CodeBlock.builder().add("new $T<>($T.class, $L)", JSON_CODEC, getRawType(sourceType).box(), buildJavaTypeForJackson(sourceType)).build();
             targetType = ClassName.get(String.class);
         } else if (codecFromType.isPresent()) {
-            final Tuple2<TypeName, CodeBlock> tuple2 = buildCodecFromType(codecFromType.get(), sourceType, computedCQLClass, isCounter);
+            final Tuple2<TypeName, CodeBlock> tuple2 = buildCodec(codecFromType.get(), sourceType, computedCQLClass, isCounter);
             targetType = tuple2._1();
             codec = tuple2._2();
+        } else if(runtimeCodec.isPresent()) {
+            final Tuple2<TypeName, CodeBlock> tuple2 = buildRuntimeCodec(runtimeCodec.get(), computedCQLClass, isCounter);
             targetType = tuple2._1();
             codec = tuple2._2();
         } else if (enumerated.isPresent()) {
@@ -155,14 +165,33 @@ public class CodecFactory {
         return new CodecInfo(codec, sourceType, targetType);
     }
 
-    private Tuple2<TypeName, CodeBlock> buildCodecFromType(TypedMap annotationInfo, TypeName sourceType,
-                                                           Optional<TypeName> cqlClass, boolean isCounter) {
+    private Tuple2<TypeName, CodeBlock> buildCodec(TypedMap annotationInfo, TypeName sourceType,
+                                                   Optional<TypeName> computedCQLClass, boolean isCounter) {
 
         final CodecContext codecContext = annotationInfo.getTyped("codecContext");
-        validateCodec(aptUtils, codecContext, sourceType, cqlClass, isCounter);
+        validateCodec(aptUtils, codecContext, sourceType, computedCQLClass, isCounter);
         CodeBlock codec = CodeBlock.builder().add("new $T()", codecContext.codecType).build();
 
         return new Tuple2<>(codecContext.targetType.box(), codec);
+    }
+
+    private Tuple2<TypeName, CodeBlock> buildRuntimeCodec(TypedMap annotationInfo,
+                                                   Optional<TypeName> computedCQLClass, boolean isCounter) {
+
+        final RuntimeCodecContext runtimeCodecContext = annotationInfo.getTyped("runtimeCodecContext");
+        final TypeName sourceType = runtimeCodecContext.sourceType;
+        final TypeName targetType = runtimeCodecContext.targetType;
+
+        validateCodec(aptUtils, runtimeCodecContext, sourceType, computedCQLClass, isCounter);
+
+        final CodeBlock codecNameCode = runtimeCodecContext.codecName.isPresent()
+                 ? CodeBlock.builder().add("$T.<$T>of($S)", OPTIONAL, STRING, runtimeCodecContext.codecName.get()).build()
+                 : CodeBlock.builder().add("$T.<$T>empty()", OPTIONAL, STRING).build();
+
+        CodeBlock codec = CodeBlock.builder().add("new $T<$T,$T>($T.class, $T.class, $L)", RUNTIME_CODEC_WRAPPER,
+                sourceType, targetType, sourceType, targetType, codecNameCode).build();
+
+        return new Tuple2<>(targetType.box(), codec);
     }
 
     private Tuple2<TypeName, CodeBlock> buildEnumeratedCodec(TypedMap annotationInfo, TypeName sourceType, String fieldName, String className) {

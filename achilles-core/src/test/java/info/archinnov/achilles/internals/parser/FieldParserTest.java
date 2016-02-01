@@ -31,18 +31,22 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.truth0.Truth;
 
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.UDTValue;
 import com.google.common.collect.Sets;
 import com.google.testing.compile.JavaSourcesSubjectFactory;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.RuntimeCodec;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistry;
+import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistry2;
 import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistryWrong;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
@@ -755,6 +759,28 @@ public class FieldParserTest extends AbstractTestProcessor {
     }
 
     @Test
+    public void should_parse_runtime_codec() throws Exception {
+
+        setExec(aptUtils -> {
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+
+            //@RuntimeCodec(codecName = "protocol_version", cqlClass = String.class)
+            //@Column
+            //private ProtocolVersion runtimeCodec;
+            VariableElement elm = findFieldInType(typeElement, "runtimeCodec");
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_runtime_codec.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
     public void should_parse_simple_codec_from_registry() throws Exception {
 
         setExec(aptUtils -> {
@@ -831,6 +857,34 @@ public class FieldParserTest extends AbstractTestProcessor {
 
         Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
                 .that(Sets.newHashSet(loadClass(TestEntityForCodecs.class), loadClass(TestCodecRegistry.class)))
+                .processedWith(this)
+                .compilesWithoutError();
+    }
+
+    @Test
+    public void should_parse_runtime_codec_from_registry() throws Exception {
+
+        setExec(aptUtils -> {
+            final Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new CodecRegistryParser(aptUtils).parseCodecs(env);
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
+                    new GlobalParsingContext(codecRegistry));
+
+            //@Column
+            //private Enumerated.Encoding encoding;
+            VariableElement elm = findFieldInType(typeElement, "encoding");
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.Integer");
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_runtime_codec_from_registry.txt"));
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForCodecs.class),
+                        loadClass(TestCodecRegistry.class), loadClass(TestCodecRegistry2.class)))
                 .processedWith(this)
                 .compilesWithoutError();
     }

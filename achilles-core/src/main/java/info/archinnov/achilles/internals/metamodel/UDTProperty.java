@@ -18,6 +18,8 @@ package info.archinnov.achilles.internals.metamodel;
 
 import static java.lang.String.format;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,8 @@ import info.archinnov.achilles.internals.injectable.InjectBeanFactory;
 import info.archinnov.achilles.internals.injectable.InjectKeyspace;
 import info.archinnov.achilles.internals.injectable.InjectUserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
 
@@ -140,5 +144,10 @@ public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue
     @Override
     public void inject(ObjectMapper mapper) {
         udtClassProperty.inject(mapper);
+    }
+
+    @Override
+    public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
+        udtClassProperty.injectRuntimeCodecs(runtimeCodecs);
     }
 }

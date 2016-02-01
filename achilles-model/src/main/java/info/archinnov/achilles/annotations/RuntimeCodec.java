@@ -46,9 +46,11 @@ import java.lang.annotation.*;
  *                              .build();
  *
  * </code></pre>
+ *
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Codec-System#runtime-codec" target="_blank">Runtime Codec</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.TYPE, ElementType.TYPE_USE})
+@Target({ElementType.FIELD, ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Documented
 public @interface RuntimeCodec {
 
@@ -56,7 +58,8 @@ public @interface RuntimeCodec {
      * To help Achilles look up for your codec at bootstrap time and distinguish it from
      * other codecs having same source and target types, you can provide an unique name here
      */
-    String codecName();
+    String codecName() default "";
+
     /**
      * <strong>Mandatory</strong>. To help Achilles determine the CQL type at compile time, you have to specify
      * the target Cassandra Java data type. This type should be a CQL-compatible type.

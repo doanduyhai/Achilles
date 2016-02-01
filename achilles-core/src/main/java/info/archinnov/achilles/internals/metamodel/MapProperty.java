@@ -36,6 +36,8 @@ import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
 
@@ -205,5 +207,11 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
     public void inject(BeanFactory factory) {
         keyProperty.inject(factory);
         valueProperty.inject(factory);
+    }
+
+    @Override
+    public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
+        keyProperty.injectRuntimeCodecs(runtimeCodecs);
+        valueProperty.injectRuntimeCodecs(runtimeCodecs);
     }
 }

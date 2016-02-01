@@ -103,13 +103,14 @@ public class FieldValidator {
 
     public static void validateCompatibleCodecAnnotationsOnField(AptUtils aptUtils, String fieldName, Name className,
                                                                  Frozen frozen, JSON json, Enumerated enumerated, Codec codec,
+                                                                 RuntimeCodec runtimeCodec,
                                                                  Computed computed, Counter counter, TimeUUID timeUUID) {
 
-        checkNoMutuallyExclusiveCodecAnnotations(aptUtils, fieldName, className, asList(json, codec, enumerated, frozen));
+        checkNoMutuallyExclusiveCodecAnnotations(aptUtils, fieldName, className, asList(json, codec, runtimeCodec, enumerated, frozen));
 
         checkNoMutuallyExclusiveCodecAnnotations(aptUtils, fieldName, className, computed, asList(frozen, json, enumerated));
         checkNoMutuallyExclusiveCodecAnnotations(aptUtils, fieldName, className, counter, asList(frozen, json, enumerated, computed));
-        checkNoMutuallyExclusiveCodecAnnotations(aptUtils, fieldName, className, timeUUID, asList(frozen, json, enumerated, codec, computed, counter));
+        checkNoMutuallyExclusiveCodecAnnotations(aptUtils, fieldName, className, timeUUID, asList(frozen, json, enumerated, codec, runtimeCodec, computed, counter));
 
     }
 

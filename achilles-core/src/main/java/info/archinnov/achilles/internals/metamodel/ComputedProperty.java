@@ -18,6 +18,7 @@ package info.archinnov.achilles.internals.metamodel;
 
 import static java.lang.String.format;
 
+import java.util.Map;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -34,7 +35,9 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.types.RuntimeCodecWrapper;
 import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
 
@@ -123,6 +126,13 @@ public class ComputedProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProper
     @Override
     public void inject(BeanFactory factory) {
         // No op
+    }
+
+    @Override
+    public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
+        if (valueCodec instanceof RuntimeCodecWrapper) {
+            ((RuntimeCodecWrapper)valueCodec).inject(runtimeCodecs);
+        }
     }
 
     @Override

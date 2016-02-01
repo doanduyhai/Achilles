@@ -16,7 +16,10 @@
 
 package info.archinnov.achilles.type.codec;
 
+import java.util.Objects;
 import java.util.Optional;
+
+import info.archinnov.achilles.validation.Validator;
 
 /**
  * Class to define a signature for a {@literal @}RuntimeCodec
@@ -47,17 +50,48 @@ import java.util.Optional;
  */
 public class CodecSignature<FROM, TO> {
 
-    private final FROM sourceClass;
-    private final TO targetClass;
-    private Optional<String> name = Optional.empty();
+    private final Class<FROM> sourceClass;
+    private final Class<TO> targetClass;
+    private Optional<String> codecName = Optional.empty();
 
-    public CodecSignature(FROM sourceClass, TO targetClass) {
+    public CodecSignature(Class<FROM> sourceClass, Class<TO> targetClass) {
         this.sourceClass = sourceClass;
         this.targetClass = targetClass;
     }
 
-    public CodecSignature(FROM sourceClass, TO targetClass, Optional<String> name) {
+    public CodecSignature(Class<FROM> sourceClass, Class<TO> targetClass, Optional<String> codecName) {
         this(sourceClass, targetClass);
-        this.name = name;
+        this.codecName = codecName;
+    }
+
+    public CodecSignature(Class<FROM> sourceClass, Class<TO> targetClass, String codecName) {
+        this(sourceClass, targetClass);
+        Validator.validateNotBlank(codecName, "codecName for CodecSignature should not be blank");
+        this.codecName = Optional.of(codecName);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CodecSignature<?, ?> that = (CodecSignature<?, ?>) o;
+        return Objects.equals(sourceClass, that.sourceClass) &&
+                Objects.equals(targetClass, that.targetClass) &&
+                Objects.equals(codecName, that.codecName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sourceClass, targetClass, codecName);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CodecSignature{");
+        sb.append("sourceClass=").append(sourceClass);
+        sb.append(", targetClass=").append(targetClass);
+        sb.append(", codecName=").append(codecName);
+        sb.append('}');
+        return sb.toString();
     }
 }

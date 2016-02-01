@@ -24,15 +24,12 @@ import com.datastax.driver.core.SettableData;
 import com.datastax.driver.core.UDTValue;
 import com.google.common.reflect.TypeToken;
 
-import info.archinnov.achilles.internals.injectable.InjectBeanFactory;
-import info.archinnov.achilles.internals.injectable.InjectJacksonMapper;
-import info.archinnov.achilles.internals.injectable.InjectTupleTypeFactory;
-import info.archinnov.achilles.internals.injectable.InjectUserTypeFactory;
+import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 
 public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
         implements InjectTupleTypeFactory, InjectUserTypeFactory, InjectBeanFactory,
-        InjectJacksonMapper {
+        InjectJacksonMapper, InjectRuntimeCodecs {
     public final FieldInfo<ENTITY, VALUEFROM> fieldInfo;
     public final String fieldName;
     public TypeToken<VALUEFROM> valueFromTypeToken;

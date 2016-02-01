@@ -42,6 +42,8 @@ import info.archinnov.achilles.internals.types.ConfigMap;
 import info.archinnov.achilles.json.DefaultJacksonMapperFactory;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.SchemaNameProvider;
+import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.interceptor.Interceptor;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
@@ -94,6 +96,7 @@ public class ArgumentExtractor {
         configContext.setSession(initSession(cluster, configurationMap));
         configContext.setProvidedSession(initProvidedSession(configurationMap));
         configContext.setStatementsCache(initStatementCache(configurationMap));
+        configContext.setRuntimeCodecs(initRuntimeCodecs(configurationMap));
         return configContext;
     }
 
@@ -272,6 +275,15 @@ public class ArgumentExtractor {
         } else {
             final Integer cacheSize = initPreparedStatementsCacheSize(configMap);
             return new StatementsCache(cacheSize);
+        }
+    }
+
+    private static Map<CodecSignature<?, ?>, Codec<?, ?>> initRuntimeCodecs(final ConfigMap configMap) {
+        LOGGER.trace("Extract or init default runtime codecs");
+        if (configMap.containsKey(RUNTIME_CODECS)) {
+            return configMap.getTyped(RUNTIME_CODECS);
+        } else {
+            return new HashMap<>();
         }
     }
 }

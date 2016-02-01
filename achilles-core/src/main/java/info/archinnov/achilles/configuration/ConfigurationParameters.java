@@ -275,6 +275,8 @@ public enum ConfigurationParameters {
     EXECUTOR_SERVICE("achilles.executor.service"),
     STATEMENTS_CACHE("achilles.statements.cache"),
 
+    RUNTIME_CODECS("achilles.runtime.codecs"),
+
     DEFAULT_EXECUTOR_SERVICE_MIN_THREAD("achilles.executor.service.default.thread.min"),
     DEFAULT_EXECUTOR_SERVICE_MAX_THREAD("achilles.executor.service.default.thread.max"),
     DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE("achilles.executor.service.default.thread.keepalive"),

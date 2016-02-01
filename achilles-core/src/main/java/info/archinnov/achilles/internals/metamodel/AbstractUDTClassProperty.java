@@ -19,6 +19,7 @@ package info.archinnov.achilles.internals.metamodel;
 import static java.lang.String.format;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,13 +38,15 @@ import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
+import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
 
 public abstract class AbstractUDTClassProperty<A>
         implements InjectUserTypeFactory,
         InjectTupleTypeFactory, InjectBeanFactory, InjectKeyspace,
-        InjectJacksonMapper {
+        InjectJacksonMapper, InjectRuntimeCodecs {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractUDTClassProperty.class);
 
@@ -145,6 +148,13 @@ public abstract class AbstractUDTClassProperty<A>
     public void inject(ObjectMapper jacksonMapper) {
         for (AbstractProperty<A, ?, ?> x : componentsProperty) {
             x.inject(jacksonMapper);
+        }
+    }
+
+    @Override
+    public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
+        for (AbstractProperty<A, ?, ?> x : componentsProperty) {
+            x.injectRuntimeCodecs(runtimeCodecs);
         }
     }
 

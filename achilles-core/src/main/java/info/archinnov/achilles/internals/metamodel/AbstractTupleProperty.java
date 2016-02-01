@@ -20,6 +20,7 @@ package info.archinnov.achilles.internals.metamodel;
 import static java.lang.String.format;
 
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,8 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.injectable.InjectTupleTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.tuples.Tuple;
 
@@ -105,4 +108,10 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
         }
     }
 
+    @Override
+    public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
+        for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
+            x.injectRuntimeCodecs(runtimeCodecs);
+        }
+    }
 }

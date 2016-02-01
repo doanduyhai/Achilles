@@ -36,6 +36,7 @@ import org.eclipse.jdt.internal.compiler.impl.StringConstant;
 import org.eclipse.jdt.internal.compiler.lookup.*;
 
 import com.google.auto.common.MoreTypes;
+import com.squareup.javapoet.TypeName;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.SymbolMetadata;
@@ -44,6 +45,7 @@ import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.context.CodecContext;
 import info.archinnov.achilles.internals.parser.context.IndexInfoContext;
+import info.archinnov.achilles.internals.parser.context.RuntimeCodecContext;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.*;
 
@@ -69,11 +71,12 @@ public class AnnotationTree {
         final JSON json = varElm.getAnnotation(JSON.class);
         final Enumerated enumerated = varElm.getAnnotation(Enumerated.class);
         final Codec codec = varElm.getAnnotation(Codec.class);
+        final RuntimeCodec runtimeCodec = varElm.getAnnotation(RuntimeCodec.class);
         final Computed computed = varElm.getAnnotation(Computed.class);
         final Counter counter = varElm.getAnnotation(Counter.class);
         final TimeUUID timeUUID = varElm.getAnnotation(TimeUUID.class);
 
-        validateCompatibleCodecAnnotationsOnField(aptUtils, fieldName, className, frozen, json, enumerated, codec, computed, counter, timeUUID);
+        validateCompatibleCodecAnnotationsOnField(aptUtils, fieldName, className, frozen, json, enumerated, codec, runtimeCodec, computed, counter, timeUUID);
 
         final List<? extends TypeMirror> nestedTypes = currentType.getKind() == TypeKind.DECLARED ?
                 MoreTypes.asDeclared(currentType).getTypeArguments() : Arrays.asList();
@@ -96,12 +99,12 @@ public class AnnotationTree {
                             Counter.class.getCanonicalName().equals(annotationName) ||
                             TimeUUID.class.getCanonicalName().equals(annotationName) ||
                             Codec.class.getCanonicalName().equals(annotationName) ||
+                            RuntimeCodec.class.getCanonicalName().equals(annotationName) ||
                             Index.class.getCanonicalName().equals(annotationName) ||
                             PartitionKey.class.getCanonicalName().equals(annotationName) ||
                             ClusteringColumn.class.getCanonicalName().equals(annotationName);
                 })
-                .map(x -> (AnnotationBinding) x)
-                .map(x -> inspectSupportedAnnotation_Ecj(aptUtils, x))
+                .map(x -> inspectSupportedAnnotation_Ecj(aptUtils, currentType, x))
                 .collect(Collectors.toMap(Tuple2::_1, Tuple2::_2));
 
             final AnnotationTree annotationTree = new AnnotationTree(currentType, annotationInfo, 1);
@@ -123,12 +126,14 @@ public class AnnotationTree {
                                     areSameByClass(x, Counter.class) ||
                                     areSameByClass(x, TimeUUID.class) ||
                                     areSameByClass(x, Codec.class) ||
+                                    areSameByClass(x, RuntimeCodec.class) ||
                                     areSameByClass(x, Index.class) ||
                                     areSameByClass(x, PartitionKey.class) ||
                                     areSameByClass(x, ClusteringColumn.class)
                     )
                     .map(x -> (AnnotationMirror) x)
-                    .collect(Collectors.toMap(x -> toAnnotation_Javac(aptUtils, x), x -> inspectSupportedAnnotation_Javac(aptUtils, x)));
+                    .collect(Collectors.toMap(x -> toAnnotation_Javac(aptUtils, x),
+                            x -> inspectSupportedAnnotation_Javac(aptUtils, currentType, x)));
 
             final AnnotationTree annotationTree = new AnnotationTree(currentType, annotationInfo, 1);
 
@@ -166,7 +171,8 @@ public class AnnotationTree {
             final Map<Class<? extends Annotation>, TypedMap> annotationsInfo = typeAttributes
                     .stream()
                     .filter(x -> x.getPosition().location.size() == depth)
-                    .collect(Collectors.toMap(x -> toAnnotation_Javac(aptUtils, x), x -> inspectSupportedAnnotation_Javac(aptUtils, x)));
+                    .collect(Collectors.toMap(x -> toAnnotation_Javac(aptUtils, x),
+                            x -> inspectSupportedAnnotation_Javac(aptUtils, currentType, x)));
 
             final AnnotationTree newTree = annotationTree.addNext(new AnnotationTree(typeMirror, annotationsInfo, depth + 1));
 
@@ -208,9 +214,7 @@ public class AnnotationTree {
                                                 List<? extends TypeMirror> nestedTypes, List<TypeBinding> typeBindings) {
         final TypeMirror currentType = annotationTree.currentType;
 
-        final boolean hasJson = containsAnnotation(annotationTree, JSON.class);
-
-        if (hasJson) {
+        if (containsAnnotation(annotationTree, JSON.class)) {
             return annotationTree;
         }
 
@@ -225,7 +229,7 @@ public class AnnotationTree {
 
             final Map<Class<? extends Annotation>, TypedMap> annotationsInfo = Arrays.asList(nestedTypeBinding.getTypeAnnotations())
                     .stream()
-                    .map(annotBinding -> inspectSupportedAnnotation_Ecj(aptUtils, annotBinding))
+                    .map(annotBinding -> inspectSupportedAnnotation_Ecj(aptUtils, currentType, annotBinding))
                     .collect(Collectors.toMap(pair -> pair._1(), pair -> pair._2()));
             final AnnotationTree newTree = annotationTree.addNext(new AnnotationTree(typeMirror, annotationsInfo, depth + 1));
             List<TypeBinding> nestedBindings = new ArrayList<>();
@@ -234,23 +238,23 @@ public class AnnotationTree {
             }
             return buildTree_Ecj(aptUtils, newTree, depth + 1, getTypeArguments(typeMirror), nestedBindings);
         }  else if (aptUtils.isAssignableFrom(Tuple2.class, currentType) || aptUtils.isAssignableFrom(Map.class, annotationTree.currentType)) {
-            return buildTreeForTuple_Ecj(aptUtils, annotationTree, depth, 2, nestedTypes, typeBindings);
+            return buildTreeForTuple_Ecj(aptUtils, currentType, annotationTree, depth, 2, nestedTypes, typeBindings);
         } else if (aptUtils.isAssignableFrom(Tuple3.class, currentType)) {
-            return buildTreeForTuple_Ecj(aptUtils, annotationTree, depth, 3, nestedTypes, typeBindings);
+            return buildTreeForTuple_Ecj(aptUtils, currentType, annotationTree, depth, 3, nestedTypes, typeBindings);
         } else if (aptUtils.isAssignableFrom(Tuple4.class, currentType)) {
-            return buildTreeForTuple_Ecj(aptUtils, annotationTree, depth, 4, nestedTypes, typeBindings);
+            return buildTreeForTuple_Ecj(aptUtils, currentType, annotationTree, depth, 4, nestedTypes, typeBindings);
         } else if (aptUtils.isAssignableFrom(Tuple5.class, currentType)) {
-            return buildTreeForTuple_Ecj(aptUtils, annotationTree, depth, 5, nestedTypes, typeBindings);
+            return buildTreeForTuple_Ecj(aptUtils, currentType, annotationTree, depth, 5, nestedTypes, typeBindings);
         } else if (aptUtils.isAssignableFrom(Tuple6.class, currentType)) {
-            return buildTreeForTuple_Ecj(aptUtils, annotationTree, depth, 6, nestedTypes, typeBindings);
+            return buildTreeForTuple_Ecj(aptUtils, currentType, annotationTree, depth, 6, nestedTypes, typeBindings);
         } else if (aptUtils.isAssignableFrom(Tuple7.class, currentType)) {
-            return buildTreeForTuple_Ecj(aptUtils, annotationTree, depth, 7, nestedTypes, typeBindings);
+            return buildTreeForTuple_Ecj(aptUtils, currentType, annotationTree, depth, 7, nestedTypes, typeBindings);
         } else if (aptUtils.isAssignableFrom(Tuple8.class, currentType)) {
-            return buildTreeForTuple_Ecj(aptUtils, annotationTree, depth, 8, nestedTypes, typeBindings);
+            return buildTreeForTuple_Ecj(aptUtils, currentType, annotationTree, depth, 8, nestedTypes, typeBindings);
         } else if (aptUtils.isAssignableFrom(Tuple9.class, currentType)) {
-            return buildTreeForTuple_Ecj(aptUtils, annotationTree, depth, 9, nestedTypes, typeBindings);
+            return buildTreeForTuple_Ecj(aptUtils, currentType, annotationTree, depth, 9, nestedTypes, typeBindings);
         } else if (aptUtils.isAssignableFrom(Tuple10.class, currentType)) {
-            return buildTreeForTuple_Ecj(aptUtils, annotationTree, depth, 10, nestedTypes, typeBindings);
+            return buildTreeForTuple_Ecj(aptUtils, currentType, annotationTree, depth, 10, nestedTypes, typeBindings);
         } else if (aptUtils.getAnnotationOnClass(currentType, UDT.class).isPresent()) {
             return annotationTree;
         } else {
@@ -278,10 +282,12 @@ public class AnnotationTree {
         for (int i = 0; i < cardinality; i++) {
             final TypeMirror typeMirrorN = nestedTypes.get(i);
             final int j = i;
+            final TypeMirror currentType = recursiveTreeN.currentType;
             final Map<Class<? extends Annotation>, TypedMap> annotsN = annotations
                     .stream()
                     .filter(x -> x.getPosition().location.get(depth - 1).arg == j)
-                    .collect(Collectors.toMap(x -> toAnnotation_Javac(aptUtils, x), x -> inspectSupportedAnnotation_Javac(aptUtils, x)));
+                    .collect(Collectors.toMap(x -> toAnnotation_Javac(aptUtils, x),
+                            x -> inspectSupportedAnnotation_Javac(aptUtils, currentType, x)));
 
             newTreeN = recursiveTreeN.addNext(new AnnotationTree(typeMirrorN, annotsN, depth + 1));
             recursiveTreeN = buildTree_Javac(aptUtils, newTreeN, depth + 1, getTypeArguments(typeMirrorN), newTypeAttributes);
@@ -289,7 +295,7 @@ public class AnnotationTree {
         return recursiveTreeN;
     }
 
-    private static AnnotationTree buildTreeForTuple_Ecj(AptUtils aptUtils, AnnotationTree annotationTree,
+    private static AnnotationTree buildTreeForTuple_Ecj(AptUtils aptUtils, TypeMirror currentType, AnnotationTree annotationTree,
                                                         int depth, int cardinality, List<? extends TypeMirror> nestedTypes, List<TypeBinding> typeBindings) {
 
 
@@ -301,7 +307,7 @@ public class AnnotationTree {
             final TypeBinding typeBinding = typeBindings.get(i);
             final Map<Class<? extends Annotation>, TypedMap> annotationsInfo = Arrays.asList(typeBinding.getTypeAnnotations())
                     .stream()
-                    .map(annotBinding -> inspectSupportedAnnotation_Ecj(aptUtils, annotBinding))
+                    .map(annotBinding -> inspectSupportedAnnotation_Ecj(aptUtils, currentType, annotBinding))
                     .collect(Collectors.toMap(pair -> pair._1(), pair -> pair._2()));
             List<TypeBinding> nestedBindings = new ArrayList<>();
             if (typeBinding instanceof ParameterizedTypeBinding) {
@@ -351,7 +357,7 @@ public class AnnotationTree {
         return varElm instanceof VariableElementImpl;
     }
 
-    private static TypedMap inspectSupportedAnnotation_Javac(AptUtils aptUtils, AnnotationMirror annotation) {
+    private static TypedMap inspectSupportedAnnotation_Javac(AptUtils aptUtils, TypeMirror currentType, AnnotationMirror annotation) {
         final TypedMap typedMap = new TypedMap();
         if(areSameByClass(annotation, Enumerated.class)){
             final Enumerated.Encoding encoding = getElementValueEnum(annotation, "value", Enumerated.Encoding.class, true);
@@ -359,6 +365,9 @@ public class AnnotationTree {
         } else if (areSameByClass(annotation, Codec.class)) {
             final CodecContext codecContext = CodecFactory.buildCodecContext(aptUtils, annotation);
             return TypedMap.of("codecContext", codecContext);
+        } else if (areSameByClass(annotation, RuntimeCodec.class)) {
+            final RuntimeCodecContext runtimeCodecContext = CodecFactory.buildRuntimeCodecContext(currentType, annotation);
+            return TypedMap.of("runtimeCodecContext", runtimeCodecContext);
         } else if (areSameByClass(annotation, Computed.class)) {
             final String function = getElementValue(annotation, "function", String.class, false);
             final Optional<Class<Object>> cqlClass = getElementValueClass(annotation, "cqlClass", false);
@@ -405,6 +414,8 @@ public class AnnotationTree {
             return TimeUUID.class;
         } else if (areSameByClass(annotationMirror, Codec.class)) {
             return Codec.class;
+        } else if (areSameByClass(annotationMirror, RuntimeCodec.class)) {
+            return RuntimeCodec.class;
         } else if (areSameByClass(annotationMirror, Index.class)) {
             return Index.class;
         } else if (areSameByClass(annotationMirror, PartitionKey.class)) {
@@ -417,7 +428,9 @@ public class AnnotationTree {
         }
     }
 
-    private static Tuple2<Class<? extends Annotation>, TypedMap> inspectSupportedAnnotation_Ecj(AptUtils aptUtils, AnnotationBinding annotationBinding) {
+    private static Tuple2<Class<? extends Annotation>, TypedMap> inspectSupportedAnnotation_Ecj(AptUtils aptUtils,
+                                                                                                TypeMirror currentType,
+                                                                                                AnnotationBinding annotationBinding) {
         final TypedMap typedMap = new TypedMap();
         final String annotationName = annotationBinding.getAnnotationType().debugName();
         if (JSON.class.getCanonicalName().equals(annotationName)) {
@@ -498,6 +511,35 @@ public class AnnotationTree {
             final CodecContext codecContext = CodecFactory.buildCodecContext(aptUtils, codecClassName.get());
             typedMap.put("codecContext", codecContext);
             return Tuple2.of(Codec.class, typedMap);
+
+        } else if (RuntimeCodec.class.getCanonicalName().equals(annotationName)) {
+
+            final List<ElementValuePair> pairs = Arrays.asList(annotationBinding.getElementValuePairs());
+            final Optional<String> codecName = pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("codecName"))
+                    .findFirst()
+                    .map(x -> (StringConstant) x.getValue())
+                    .map(x -> x.stringValue());
+
+            final String targetTypeName = ((BinaryTypeBinding) pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("cqlClass"))
+                    .findFirst().get()
+                    .getValue()).debugName();
+
+            Class<?> targetType = null;
+            try {
+                targetType = Class.forName(targetTypeName);
+            } catch (ClassNotFoundException e) {
+                aptUtils.printError("Cannot find CQL class %s", targetTypeName);
+            }
+
+            final RuntimeCodecContext runtimeCodecContext = new RuntimeCodecContext(
+                    TypeName.get(currentType), TypeName.get(targetType), codecName);
+            typedMap.put("runtimeCodecContext", runtimeCodecContext);
+            return Tuple2.of(RuntimeCodec.class, typedMap);
+
         } else if (Index.class.getCanonicalName().equals(annotationName)) {
             final List<ElementValuePair> pairs = Arrays.asList(annotationBinding.getElementValuePairs());
             final String name = pairs

@@ -22,6 +22,7 @@ import static info.archinnov.achilles.annotations.Enumerated.Encoding.ORDINAL;
 import java.util.*;
 
 import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.ProtocolVersion;
 
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.codecs.CodecOnClass;
@@ -129,6 +130,12 @@ public class EntityWithComplexTypes {
 
     @Column
     private IntWrapper intWrapper;
+
+    @Column
+    private ProtocolVersion protocolVersion;
+
+    @Column
+    private Enumerated.Encoding encoding;
 
     public Long getId() {
         return id;
@@ -344,5 +351,21 @@ public class EntityWithComplexTypes {
 
     public void setIntWrapper(IntWrapper intWrapper) {
         this.intWrapper = intWrapper;
+    }
+
+    public ProtocolVersion getProtocolVersion() {
+        return protocolVersion;
+    }
+
+    public void setProtocolVersion(ProtocolVersion protocolVersion) {
+        this.protocolVersion = protocolVersion;
+    }
+
+    public Enumerated.Encoding getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(Enumerated.Encoding encoding) {
+        this.encoding = encoding;
     }
 }
