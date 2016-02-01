@@ -188,7 +188,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
         });
         failTestWithMessage("Field 'partitionAndClustering' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
-                "cannot be both partition key AND clustering column");
+                "cannot have both @PartitionKey AND @ClusteringColumn annotations");
     }
 
     @Test
@@ -206,7 +206,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
         });
         failTestWithMessage("Field 'partitionAndStatic' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
-                "cannot be both partition key AND static column");
+                "cannot have both @Static AND @PartitionKey annotations");
     }
 
     @Test
@@ -224,7 +224,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
         });
         failTestWithMessage("Field 'partitionAndComputed' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
-                "cannot be both partition key AND computed column");
+                "cannot have both @Computed AND @PartitionKey annotations");
     }
 
     @Test
@@ -242,7 +242,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
         });
         failTestWithMessage("Field 'clusteringAndStatic' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
-                "cannot be both clustering column AND static column");
+                "cannot have both @Static AND @ClusteringColumn annotations");
     }
 
     @Test
@@ -260,7 +260,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
         });
         failTestWithMessage("Field 'clusteringAndComputed' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
-                "cannot be both clustering column AND computed column");
+                "cannot have both @Computed AND @ClusteringColumn annotations");
     }
 
     @Test
@@ -278,7 +278,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
         });
         failTestWithMessage("Field 'staticAndComputed' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
-                "cannot be both static column AND computed column");
+                "cannot have both @Computed AND @Static annotations");
     }
 
     @Test

@@ -19,16 +19,14 @@ package info.archinnov.achilles.internals.parser.validator;
 import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
 import static info.archinnov.achilles.internals.parser.TypeUtils.ALLOWED_TYPES;
 import static info.archinnov.achilles.internals.parser.validator.TypeValidator.validateAllowedTypes;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.summingInt;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 
-import com.google.auto.common.MoreTypes;
 import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.annotations.*;
@@ -41,56 +39,78 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 
 public class FieldValidator {
 
+    private static void checkNoMutuallyExclusiveAnnotations(AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
+                                                            List<Optional<? extends Annotation>> annotations) {
+        annotations
+            .stream()
+            .filter(annotation -> annotation.isPresent())
+            .forEach(annotation -> {
+                final ArrayList<Optional<? extends Annotation>> shifted = new ArrayList<>(annotations);
+                shifted.remove(annotation);
+                shifted
+                    .stream()
+                    .filter(shiftedAnnotation -> shiftedAnnotation.isPresent())
+                    .forEach(shiftedAnnotation -> {
+                        final String annot1 = "@" + annotation.get().annotationType().getSimpleName();
+                        final String annot2 = "@" + shiftedAnnotation.get().annotationType().getSimpleName();
+                        aptUtils.printError("Field '%s' in class '%s' cannot have both %s AND %s annotations", fieldName, rawEntityClass,
+                                annot1, annot2);
+            });
+        });
+    }
+
+    private static void checkNoMutuallyExclusiveCodecAnnotations(AptUtils aptUtils, String fieldName, Name rawEntityClass,
+                                                            List<? extends Annotation> annotations) {
+        final ArrayList<Annotation> shifted = new ArrayList<>(annotations);
+        final Annotation first = shifted.remove(0);
+        shifted.add(first);
+
+        for(int i=0; i<annotations.size(); i++) {
+            final Annotation annotation = annotations.get(i);
+            final Annotation shiftedAnnotation = shifted.get(i);
+            if (annotation != null && shiftedAnnotation != null) {
+                final String annot1 = "@" + annotation.annotationType().getSimpleName();
+                final String annot2 = "@" + shiftedAnnotation.annotationType().getSimpleName();
+                aptUtils.printError("Cannot have both %s and % annotation on the same field '%s' in class '%s'",
+                        fieldName, rawEntityClass, annot1, annot2);
+            }
+        }
+    }
+
+    private static void checkNoMutuallyExclusiveCodecAnnotations(AptUtils aptUtils, String fieldName, Name rawEntityClass,
+                                                                 Annotation left, List<? extends Annotation> right) {
+        if (left != null) {
+            for(int i=0; i<right.size(); i++) {
+                final Annotation annotation = right.get(i);
+                if (annotation != null) {
+                    final String annot1 = "@" + annotation.getClass().getSimpleName();
+                    final String annot2 = "@" + left.getClass().getSimpleName();
+                    aptUtils.printError("Cannot have both %s and % annotation on the same field '%s' in class '%s'",
+                            fieldName, rawEntityClass, annot1, annot2);
+                }
+            }
+        }
+    }
+
     public static void validateCompatibleColumnAnnotationsOnField(AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
                                                                   Optional<PartitionKey> partitionKey, Optional<ClusteringColumn> clusteringColumn,
                                                                   Optional<Static> staticColumn, Optional<Computed> computed,
                                                                   Optional<Counter> counter) {
 
-        aptUtils.validateFalse(partitionKey.isPresent() && staticColumn.isPresent(),
-                "Field '%s' in class '%s' cannot be both partition key AND static column", fieldName, rawEntityClass);
-        aptUtils.validateFalse(clusteringColumn.isPresent() && staticColumn.isPresent(),
-                "Field '%s' in class '%s' cannot be both clustering column AND static column", fieldName, rawEntityClass);
-        aptUtils.validateFalse(partitionKey.isPresent() && clusteringColumn.isPresent(),
-                "Field '%s' in class '%s' cannot be both partition key AND clustering column", fieldName, rawEntityClass);
-        aptUtils.validateFalse(partitionKey.isPresent() && computed.isPresent(),
-                "Field '%s' in class '%s' cannot be both partition key AND computed column", fieldName, rawEntityClass);
-        aptUtils.validateFalse(clusteringColumn.isPresent() && computed.isPresent(),
-                "Field '%s' in class '%s' cannot be both clustering column AND computed column", fieldName, rawEntityClass);
-        aptUtils.validateFalse(staticColumn.isPresent() && computed.isPresent(),
-                "Field '%s' in class '%s' cannot be both static column AND computed column", fieldName, rawEntityClass);
-
-        aptUtils.validateFalse(partitionKey.isPresent() && counter.isPresent(),
-                "Field '%s' in class '%s' cannot be both partition key AND counter column", fieldName, rawEntityClass);
-        aptUtils.validateFalse(clusteringColumn.isPresent() && counter.isPresent(),
-                "Field '%s' in class '%s' cannot be both clustering column AND counter column", fieldName, rawEntityClass);
-        aptUtils.validateFalse(computed.isPresent() && counter.isPresent(),
-                "Field '%s' in class '%s' cannot be both computed column AND counter column", fieldName, rawEntityClass);
+        checkNoMutuallyExclusiveAnnotations(aptUtils, fieldName, rawEntityClass, asList(partitionKey, clusteringColumn, staticColumn, computed));
+        checkNoMutuallyExclusiveAnnotations(aptUtils, fieldName, rawEntityClass, asList(computed, counter));
     }
 
     public static void validateCompatibleCodecAnnotationsOnField(AptUtils aptUtils, String fieldName, Name className,
-                                                                 Frozen frozen, JSON json, Enumerated enumerated, Codec codec, Computed computed, Counter counter, TimeUUID timeUUID) {
-        aptUtils.validateFalse((json != null) && (codec != null), "Cannot have both @JSON and @Codec annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((enumerated != null) && (codec != null), "Cannot have both @Enumerated and @Codec annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((enumerated != null) && (json != null), "Cannot have both @Enumerated and @JSON annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((frozen != null) && (json != null), "Cannot have both @Frozen and @JSON annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((frozen != null) && (enumerated != null), "Cannot have both @Frozen and @Enumerated annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((frozen != null) && (codec != null), "Cannot have both @Frozen and @Codec annotation on the same field '%s' in class '%s'", fieldName, className);
+                                                                 Frozen frozen, JSON json, Enumerated enumerated, Codec codec,
+                                                                 Computed computed, Counter counter, TimeUUID timeUUID) {
 
-        aptUtils.validateFalse((frozen != null) && (computed != null), "Cannot have both @Frozen and @Computed annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((json != null) && (computed != null), "Cannot have both @JSON and @Computed annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((enumerated != null) && (computed != null), "Cannot have both @Enumerated and @Computed annotation on the same field '%s' in class '%s'", fieldName, className);
+        checkNoMutuallyExclusiveCodecAnnotations(aptUtils, fieldName, className, asList(json, codec, enumerated, frozen));
 
-        aptUtils.validateFalse((frozen != null) && (counter != null), "Cannot have both @Frozen and @Counter annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((json != null) && (counter != null), "Cannot have both @JSON and @Counter annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((enumerated != null) && (counter != null), "Cannot have both @Enumerated and @Counter annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((computed != null) && (counter != null), "Cannot have both @Computed and @Counter annotation on the same field '%s' in class '%s'", fieldName, className);
+        checkNoMutuallyExclusiveCodecAnnotations(aptUtils, fieldName, className, computed, asList(frozen, json, enumerated));
+        checkNoMutuallyExclusiveCodecAnnotations(aptUtils, fieldName, className, counter, asList(frozen, json, enumerated, computed));
+        checkNoMutuallyExclusiveCodecAnnotations(aptUtils, fieldName, className, timeUUID, asList(frozen, json, enumerated, codec, computed, counter));
 
-        aptUtils.validateFalse((frozen != null) && (timeUUID != null), "Cannot have both @Frozen and @TimeUUID annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((json != null) && (timeUUID != null), "Cannot have both @JSON and @TimeUUID annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((enumerated != null) && (timeUUID != null), "Cannot have both @Enumerated and @TimeUUID annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((codec != null) && (timeUUID != null), "Cannot have both @Codec and @TimeUUID annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((computed != null) && (timeUUID != null), "Cannot have both @Computed and @TimeUUID annotation on the same field '%s' in class '%s'", fieldName, className);
-        aptUtils.validateFalse((counter != null) && (timeUUID != null), "Cannot have both @Counter and @TimeUUID annotation on the same field '%s' in class '%s'", fieldName, className);
     }
 
     public static void validateAllowedFrozen(boolean isFrozen, AptUtils aptUtils, VariableElement elm, String fieldName, TypeName rawClass) {
