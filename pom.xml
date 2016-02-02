@@ -109,7 +109,7 @@
         <!--Code Generation-->
         <auto-service.version>1.0-rc2</auto-service.version>
         <auto-common.version>0.4</auto-common.version>
-        <javapoet.version>1.2.0</javapoet.version>
+        <javapoet.version>1.5.1</javapoet.version>
         <eclipse.compiler.version>4.4.2</eclipse.compiler.version>
 
         <!--Tests-->

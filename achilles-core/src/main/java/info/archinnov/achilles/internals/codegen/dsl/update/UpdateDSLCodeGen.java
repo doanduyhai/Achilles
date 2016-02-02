@@ -52,15 +52,12 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .findFirst()
                 .get();
 
-        String updateClassName = signature.className + UPDATE_DSL_SUFFIX;
-        String updateFromClassName = signature.className + UPDATE_FROM_DSL_SUFFIX;
-        TypeName updateFromTypeName = ClassName.get(DSL_PACKAGE, updateFromClassName);
+        String updateClassName = signature.updateClassName();
+        TypeName updateFromTypeName = ClassName.get(DSL_PACKAGE, signature.updateFromReturnType());
 
-        String updateColumnsClassName = signature.className + UPDATE_COLUMNS_DSL_SUFFIX;
-        TypeName updateColumnsTypeName = ClassName.get(DSL_PACKAGE, updateColumnsClassName);
+        TypeName updateColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.updateColumnsReturnType());
 
-        String updateWhereClassName = signature.className + UPDATE_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(firstPartitionKey);
-        TypeName updateWhereTypeName = ClassName.get(DSL_PACKAGE, updateWhereClassName);
+        TypeName updateWhereTypeName = ClassName.get(DSL_PACKAGE, signature.updateWhereReturnType(firstPartitionKey));
 
         final List<ColumnType> candidateColumns = Arrays.asList(NORMAL, STATIC, COUNTER, STATIC_COUNTER);
 
@@ -72,10 +69,10 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addField(buildEntityClassField(signature))
                 .addMethod(buildFromBaseTableMethod(updateFromTypeName))
                 .addMethod(buildFromSchemaProviderMethod(updateFromTypeName))
-                .addType(buildUpdateColumns(aptUtils, signature, updateColumnsClassName, updateColumnsTypeName,
-                        updateWhereTypeName, candidateColumns))
-                .addType(buildUpdateFrom(aptUtils, signature, updateFromClassName, updateColumnsTypeName,
-                        candidateColumns));
+                .addType(buildUpdateColumns(aptUtils, signature, signature.className + UPDATE_COLUMNS_DSL_SUFFIX,
+                        updateColumnsTypeName, updateWhereTypeName, candidateColumns))
+                .addType(buildUpdateFrom(aptUtils, signature, signature.className + UPDATE_FROM_DSL_SUFFIX,
+                        updateColumnsTypeName, candidateColumns));
 
 
         UpdateWhereDSLCodeGen.buildWhereClasses(signature).forEach(builder::addType);
@@ -94,15 +91,12 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .findFirst()
                 .get();
 
-        String updateStaticClassName = signature.className + UPDATE_STATIC_DSL_SUFFIX;
-        String updateStaticFromClassName = signature.className + UPDATE_STATIC_FROM_DSL_SUFFIX;
-        TypeName updateStaticFromTypeName = ClassName.get(DSL_PACKAGE, updateStaticFromClassName);
+        String updateStaticClassName = signature.updateStaticClassName();
+        TypeName updateStaticFromTypeName = ClassName.get(DSL_PACKAGE, signature.updateStaticFromReturnType());
 
-        String updateStaticColumnsClassName = signature.className + UPDATE_STATIC_COLUMNS_DSL_SUFFIX;
-        TypeName updateStaticColumnsTypeName = ClassName.get(DSL_PACKAGE, updateStaticColumnsClassName);
+        TypeName updateStaticColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.updateStaticColumnsReturnType());
 
-        String updateStaticWhereClassName = signature.className + UPDATE_STATIC_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(firstPartitionKey);
-        TypeName updateStaticWhereTypeName = ClassName.get(DSL_PACKAGE, updateStaticWhereClassName);
+        TypeName updateStaticWhereTypeName = ClassName.get(DSL_PACKAGE, signature.updateStaticWhereReturnType(firstPartitionKey));
 
         final List<ColumnType> candidateColumns = Arrays.asList(STATIC, STATIC_COUNTER);
         final TypeSpec.Builder builder = TypeSpec.classBuilder(updateStaticClassName)
@@ -113,9 +107,9 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addField(buildEntityClassField(signature))
                 .addMethod(buildFromBaseTableMethod(updateStaticFromTypeName))
                 .addMethod(buildFromSchemaProviderMethod(updateStaticFromTypeName))
-                .addType(buildUpdateColumns(aptUtils, signature, updateStaticColumnsClassName, updateStaticColumnsTypeName,
-                        updateStaticWhereTypeName, candidateColumns))
-                .addType(buildUpdateFrom(aptUtils, signature, updateStaticFromClassName,
+                .addType(buildUpdateColumns(aptUtils, signature, signature.className + UPDATE_STATIC_COLUMNS_DSL_SUFFIX,
+                        updateStaticColumnsTypeName, updateStaticWhereTypeName, candidateColumns))
+                .addType(buildUpdateFrom(aptUtils, signature, signature.className + UPDATE_STATIC_FROM_DSL_SUFFIX,
                         updateStaticColumnsTypeName, candidateColumns));
 
 
@@ -217,7 +211,8 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
     }
 
-    private static List<MethodSpec> buildUpdateColumnMethods(AptUtils aptUtils, TypeName nextTypeName,
+    private static List<MethodSpec> buildUpdateColumnMethods(AptUtils aptUtils,
+                                                             TypeName nextTypeName,
                                                              TypeParsingResult parsingResult,
                                                              ReturnType returnType) {
 

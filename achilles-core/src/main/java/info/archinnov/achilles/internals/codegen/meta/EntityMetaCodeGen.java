@@ -454,5 +454,113 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                     .filter(x -> x.context.columnType == COUNTER || x.context.columnType == STATIC_COUNTER)
                     .count() > 0;
         }
+
+        public String whereType(String fieldName, String suffix) {
+            return className + suffix + "_" + upperCaseFirst(fieldName);
+        }
+
+        public String endClassName(String suffix) {
+            return className + suffix;
+        }
+
+        public String endReturnType(String dslSuffix, String suffix) {
+            return className + dslSuffix + "." + className + suffix;
+        }
+
+        public String whereReturnType(String fieldName, String dslSuffix, String suffix) {
+            return className + dslSuffix + "." + className + suffix + "_" + upperCaseFirst(fieldName);
+        }
+
+        public String selectClassName() {
+            return className + SELECT_DSL_SUFFIX;
+        }
+
+        public String selectFromReturnType() {
+            return selectClassName() + "." + className + SELECT_FROM_DSL_SUFFIX;
+        }
+
+        public String selectColumnsReturnType() {
+            return selectClassName() + "." + className + SELECT_COLUMNS_DSL_SUFFIX;
+        }
+
+        public String selectWhereReturnType(String fieldName) {
+            return selectClassName() + "." + className + SELECT_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+        }
+
+        public String selectEndReturnType() {
+            return selectClassName() + "." + className + SELECT_END_DSL_SUFFIX;
+        }
+
+
+        public String deleteClassName() {
+            return className + DELETE_DSL_SUFFIX;
+        }
+
+        public String deleteFromReturnType() {
+            return deleteClassName() + "." + className + DELETE_FROM_DSL_SUFFIX;
+        }
+
+        public String deleteColumnsReturnType() {
+            return deleteClassName() + "." + className + DELETE_COLUMNS_DSL_SUFFIX;
+        }
+
+        public String deleteWhereReturnType(String fieldName) {
+            return deleteClassName() + "." + className + DELETE_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+        }
+
+
+
+        public String deleteStaticClassName() {
+            return className + DELETE_STATIC_DSL_SUFFIX;
+        }
+
+        public String deleteStaticFromReturnType() {
+            return deleteStaticClassName() + "." + className + DELETE_STATIC_FROM_DSL_SUFFIX;
+        }
+
+        public String deleteStaticColumnsReturnType() {
+            return deleteStaticClassName() + "." + className + DELETE_STATIC_COLUMNS_DSL_SUFFIX;
+        }
+
+        public String deleteStaticWhereReturnType(String fieldName) {
+            return deleteStaticClassName() + "." + className + DELETE_STATIC_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+        }
+
+        public String updateClassName() {
+            return className + UPDATE_DSL_SUFFIX;
+        }
+
+        public String updateFromReturnType() {
+            return updateClassName() + "." + className + UPDATE_FROM_DSL_SUFFIX;
+        }
+
+        public String updateColumnsReturnType() {
+            return updateClassName() + "." + className + UPDATE_COLUMNS_DSL_SUFFIX;
+        }
+
+        public String updateWhereReturnType(String fieldName) {
+            return updateClassName() + "." + className + UPDATE_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+        }
+
+        public String updateStaticClassName() {
+            return className + UPDATE_STATIC_DSL_SUFFIX;
+        }
+
+        public String updateStaticFromReturnType() {
+            return updateStaticClassName() + "." + className + UPDATE_STATIC_FROM_DSL_SUFFIX;
+        }
+
+        public String updateStaticColumnsReturnType() {
+            return updateStaticClassName() + "." + className + UPDATE_STATIC_COLUMNS_DSL_SUFFIX;
+        }
+
+        public String updateStaticWhereReturnType(String fieldName) {
+            return updateStaticClassName() + "." + className + UPDATE_STATIC_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+        }
+
+        protected static String upperCaseFirst(String fieldName) {
+            return fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+        }
+
     }
 }

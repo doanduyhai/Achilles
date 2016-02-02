@@ -39,7 +39,6 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
 
 
     public static TypeSpec buildSelectClass(EntityMetaSignature signature) {
-        String selectClassName = signature.className + SELECT_DSL_SUFFIX;
 
         final String firstPartitionKey = signature.parsingResults
                 .stream()
@@ -50,12 +49,10 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .findFirst()
                 .get();
 
-        String selectFromClassName = signature.className + SELECT_FROM_DSL_SUFFIX;
-        TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, selectFromClassName);
+        TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, signature.selectFromReturnType());
+        TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsReturnType());
 
-        String selectColumnsClassName = signature.className + SELECT_COLUMNS_DSL_SUFFIX;
-        TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, selectColumnsClassName);
-        final TypeSpec.Builder selectClassBuilder = TypeSpec.classBuilder(selectClassName)
+        final TypeSpec.Builder selectClassBuilder = TypeSpec.classBuilder(signature.selectClassName())
                 .superclass(ABSTRACT_SELECT)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildSelectConstructor(signature))
@@ -100,13 +97,11 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
 
     private static TypeSpec buildSelectColumns(EntityMetaSignature signature) {
 
-        String selectColumnsClassName = signature.className + SELECT_COLUMNS_DSL_SUFFIX;
-        TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, selectColumnsClassName);
+        TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsReturnType());
 
-        String selectFromClassName = signature.className + SELECT_FROM_DSL_SUFFIX;
-        TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, selectFromClassName);
+        TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, signature.selectFromReturnType());
 
-        final TypeSpec.Builder builder = TypeSpec.classBuilder(selectColumnsClassName)
+        final TypeSpec.Builder builder = TypeSpec.classBuilder(signature.className + SELECT_COLUMNS_DSL_SUFFIX)
                 .superclass(ABSTRACT_SELECT_COLUMNS)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
@@ -132,15 +127,11 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
     }
 
     private static TypeSpec buildSelectFrom(EntityMetaSignature signature, String firstPartitionKey) {
-        String selectFromClassName = signature.className + SELECT_FROM_DSL_SUFFIX;
+        TypeName selectWhereTypeName = ClassName.get(DSL_PACKAGE, signature.selectWhereReturnType(firstPartitionKey));
 
-        String selectWhereClassName = signature.className + SELECT_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(firstPartitionKey);
-        TypeName selectWhereTypeName = ClassName.get(DSL_PACKAGE, selectWhereClassName);
+        TypeName selectEndTypeName = ClassName.get(DSL_PACKAGE, signature.selectEndReturnType());
 
-        String selectEndClassName = signature.className + SELECT_END_DSL_SUFFIX;
-        TypeName selectEndTypeName = ClassName.get(DSL_PACKAGE, selectEndClassName);
-
-        return TypeSpec.classBuilder(selectFromClassName)
+        return TypeSpec.classBuilder(signature.className + SELECT_FROM_DSL_SUFFIX)
                 .superclass(ABSTRACT_SELECT_FROM)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()

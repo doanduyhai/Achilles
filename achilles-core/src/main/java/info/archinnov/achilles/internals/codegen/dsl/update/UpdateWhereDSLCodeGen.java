@@ -40,8 +40,9 @@ public class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.parsingResults);
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.parsingResults);
 
-        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(UPDATE_WHERE_DSL_SUFFIX,
-                UPDATE_END_DSL_SUFFIX, ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_END);
+        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(UPDATE_DSL_SUFFIX,
+                UPDATE_WHERE_DSL_SUFFIX, UPDATE_END_DSL_SUFFIX,
+                ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_END);
 
         final List<ClassSignatureInfo> classesSignature =
                 buildClassesSignatureForWhereClause(signature, classSignatureParams, partitionKeys, clusteringCols,
@@ -65,8 +66,9 @@ public class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.parsingResults);
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.parsingResults);
 
-        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(UPDATE_STATIC_WHERE_DSL_SUFFIX,
-                UPDATE_STATIC_END_DSL_SUFFIX, ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_END);
+        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(UPDATE_STATIC_DSL_SUFFIX,
+                UPDATE_STATIC_WHERE_DSL_SUFFIX, UPDATE_STATIC_END_DSL_SUFFIX,
+                ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_END);
 
         final List<ClassSignatureInfo> classesSignature =
                 buildClassesSignatureForWhereClause(signature, classSignatureParams, partitionKeys, clusteringCols,
@@ -97,7 +99,7 @@ public class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildGetOptions())
                 .addMethod(buildGetBoundValuesInternal())
                 .addMethod(buildGetEncodedBoundValuesInternal())
-                .addMethod(buildGetThis(lastSignature.classType));
+                .addMethod(buildGetThis(lastSignature.returnClassType));
 
         buildLWtConditionMethods(signature, lastSignature, hasCounter, builder);
 
@@ -130,8 +132,8 @@ public class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(WHERE_CONSTRUCTOR)
-                .addMethod(buildColumnRelation(EQ, nextSignature.classType, partitionInfo))
-                .addMethod(buildColumnInVarargs(nextSignature.classType, partitionInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo))
+                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo));
 
         return builder.build();
     }
@@ -163,7 +165,7 @@ public class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(WHERE_CONSTRUCTOR)
-                .addMethod(buildColumnRelation(EQ, nextSignature.classType, clusteringColumnInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo));
 
         return builder.build();
     }

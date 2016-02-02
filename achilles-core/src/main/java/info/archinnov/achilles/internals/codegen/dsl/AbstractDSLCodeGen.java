@@ -62,28 +62,36 @@ public abstract class AbstractDSLCodeGen {
         final List<ClassSignatureInfo> signatures = new ArrayList<>();
 
         for(FieldSignatureInfo x: partitionKeys) {
-            final String className = signature.className + classSignatureParams.whereDslSuffix + "_" + upperCaseFirst(x.fieldName);
+            final String className = signature.whereType(x.fieldName, classSignatureParams.whereDslSuffix);
             final TypeName typeName = ClassName.get(DSL_PACKAGE, className);
-            signatures.add(ClassSignatureInfo.of(typeName, classSignatureParams.abstractWherePartitionType, className));
+            final TypeName returnTypeName = ClassName.get(DSL_PACKAGE, signature.whereReturnType(x.fieldName,
+                    classSignatureParams.dslSuffix, classSignatureParams.whereDslSuffix));
+            signatures.add(ClassSignatureInfo.of(typeName, returnTypeName,
+                    classSignatureParams.abstractWherePartitionType, className));
         }
 
         if (whereClauseFor == WhereClauseFor.NORMAL) {
             for (FieldSignatureInfo x : clusteringColumns) {
-                final String className = signature.className + classSignatureParams.whereDslSuffix + "_" + upperCaseFirst(x.fieldName);
+                final String className = signature.whereType(x.fieldName, classSignatureParams.whereDslSuffix);
                 final TypeName typeName = ClassName.get(DSL_PACKAGE, className);
+                final TypeName returnTypeName = ClassName.get(DSL_PACKAGE, signature.whereReturnType(x.fieldName,
+                        classSignatureParams.dslSuffix, classSignatureParams.whereDslSuffix));
                 final TypeName superType = classSignatureParams.abstractEndType.isPresent()
                         ? classSignatureParams.abstractWhereType
-                        : genericType(classSignatureParams.abstractWhereType, typeName, signature.entityRawClass);
+                        : genericType(classSignatureParams.abstractWhereType, returnTypeName, signature.entityRawClass);
 
-                signatures.add(ClassSignatureInfo.of(typeName, superType, className));
+                signatures.add(ClassSignatureInfo.of(typeName, returnTypeName, superType, className));
             }
         }
 
-        final String selectEndClassName = signature.className + classSignatureParams.endDslSuffix;
-        final TypeName selectEndTypeName = ClassName.get(DSL_PACKAGE, selectEndClassName);
+        final String endClassName = signature.endClassName(classSignatureParams.endDslSuffix);
+        final TypeName endTypeName = ClassName.get(DSL_PACKAGE, endClassName);
+        final TypeName endReturnTypeName = ClassName.get(DSL_PACKAGE, signature.endReturnType(classSignatureParams.dslSuffix,
+                classSignatureParams.endDslSuffix));
         final ClassName abstractEndType = classSignatureParams.abstractEndType.orElse(classSignatureParams.abstractWhereType);
 
-        signatures.add(ClassSignatureInfo.of(selectEndTypeName, genericType(abstractEndType, selectEndTypeName, signature.entityRawClass), selectEndClassName));
+        signatures.add(ClassSignatureInfo.of(endTypeName, endReturnTypeName, genericType(abstractEndType, endReturnTypeName, signature.entityRawClass),
+                endClassName));
 
         return signatures;
     }
@@ -300,12 +308,12 @@ public abstract class AbstractDSLCodeGen {
                     .filter(x -> x.context.columnType == ColumnType.NORMAL || x.context.columnType == ColumnType.STATIC)
                     .forEach(x -> {
                         final FieldSignatureInfo fieldSignatureInfo = FieldSignatureInfo.of(x.context.fieldName, x.context.cqlColumn, x.sourceType);
-                        builder.addMethod(buildLWTConditionOnColumn(EQ, fieldSignatureInfo, currentSignature.classType));
-                        builder.addMethod(buildLWTConditionOnColumn(GT, fieldSignatureInfo, currentSignature.classType));
-                        builder.addMethod(buildLWTConditionOnColumn(GTE, fieldSignatureInfo, currentSignature.classType));
-                        builder.addMethod(buildLWTConditionOnColumn(LT, fieldSignatureInfo, currentSignature.classType));
-                        builder.addMethod(buildLWTConditionOnColumn(LTE, fieldSignatureInfo, currentSignature.classType));
-                        builder.addMethod(buildLWTNotEqual(fieldSignatureInfo, currentSignature.classType));
+                        builder.addMethod(buildLWTConditionOnColumn(EQ, fieldSignatureInfo, currentSignature.returnClassType));
+                        builder.addMethod(buildLWTConditionOnColumn(GT, fieldSignatureInfo, currentSignature.returnClassType));
+                        builder.addMethod(buildLWTConditionOnColumn(GTE, fieldSignatureInfo, currentSignature.returnClassType));
+                        builder.addMethod(buildLWTConditionOnColumn(LT, fieldSignatureInfo, currentSignature.returnClassType));
+                        builder.addMethod(buildLWTConditionOnColumn(LTE, fieldSignatureInfo, currentSignature.returnClassType));
+                        builder.addMethod(buildLWTNotEqual(fieldSignatureInfo, currentSignature.returnClassType));
                     });
 
         }
@@ -391,29 +399,34 @@ public abstract class AbstractDSLCodeGen {
 
     public static class ClassSignatureInfo {
         public final TypeName classType;
+        public final TypeName returnClassType;
         public final TypeName superType;
         public final String className;
 
-        private ClassSignatureInfo(TypeName classType, TypeName superType, String className) {
+
+        private ClassSignatureInfo(TypeName classType, TypeName returnClassType, TypeName superType, String className) {
             this.classType = classType;
+            this.returnClassType = returnClassType;
             this.superType = superType;
             this.className = className;
         }
 
-        public static ClassSignatureInfo of(TypeName classType, TypeName superType, String className) {
-            return new ClassSignatureInfo(classType, superType, className);
+        public static ClassSignatureInfo of(TypeName classType, TypeName returnClassType, TypeName superType, String className) {
+            return new ClassSignatureInfo(classType, returnClassType, superType, className);
         }
     }
 
     public static class ClassSignatureParams {
+        public final String dslSuffix;
         public final String whereDslSuffix;
         public final String endDslSuffix;
         public final ClassName abstractWherePartitionType;
         public final ClassName abstractWhereType;
         public final Optional<ClassName> abstractEndType;
 
-        private ClassSignatureParams(String whereDslSuffix, String endDslSuffix, ClassName abstractWherePartitionType,
+        private ClassSignatureParams(String dslSuffix, String whereDslSuffix, String endDslSuffix, ClassName abstractWherePartitionType,
                                      ClassName abstractWhereType) {
+            this.dslSuffix = dslSuffix;
             this.whereDslSuffix = whereDslSuffix;
             this.endDslSuffix = endDslSuffix;
             this.abstractWherePartitionType = abstractWherePartitionType;
@@ -421,8 +434,9 @@ public abstract class AbstractDSLCodeGen {
             this.abstractEndType = Optional.empty();
         }
 
-        private ClassSignatureParams(String whereDslSuffix, String endDslSuffix, ClassName abstractWherePartitionType,
+        private ClassSignatureParams(String dslSuffix, String whereDslSuffix, String endDslSuffix, ClassName abstractWherePartitionType,
                                      ClassName abstractWhereType, ClassName abstractEndType) {
+            this.dslSuffix = dslSuffix;
             this.whereDslSuffix = whereDslSuffix;
             this.endDslSuffix = endDslSuffix;
             this.abstractWherePartitionType = abstractWherePartitionType;
@@ -430,14 +444,14 @@ public abstract class AbstractDSLCodeGen {
             this.abstractEndType = Optional.of(abstractEndType);
         }
 
-        public static ClassSignatureParams of(String whereDslSuffix, String endDslSuffix, ClassName abstractWherePartitionType,
+        public static ClassSignatureParams of(String dslSuffix,String whereDslSuffix, String endDslSuffix, ClassName abstractWherePartitionType,
                                               ClassName abstractWhereType) {
-            return new ClassSignatureParams(whereDslSuffix, endDslSuffix, abstractWherePartitionType, abstractWhereType);
+            return new ClassSignatureParams(dslSuffix, whereDslSuffix, endDslSuffix, abstractWherePartitionType, abstractWhereType);
         }
 
-        public static ClassSignatureParams of(String whereDslSuffix, String endDslSuffix, ClassName abstractWherePartitionType,
+        public static ClassSignatureParams of(String dslSuffix, String whereDslSuffix, String endDslSuffix, ClassName abstractWherePartitionType,
                                               ClassName abstractWhereType, ClassName abstractEndType) {
-            return new ClassSignatureParams(whereDslSuffix, endDslSuffix, abstractWherePartitionType, abstractWhereType, abstractEndType);
+            return new ClassSignatureParams(dslSuffix, whereDslSuffix, endDslSuffix, abstractWherePartitionType, abstractWhereType, abstractEndType);
         }
 
     }

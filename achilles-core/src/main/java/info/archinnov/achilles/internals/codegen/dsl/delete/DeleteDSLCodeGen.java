@@ -43,7 +43,6 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
             (o1, o2) -> o1._2().order.compareTo(o2._2().order);
 
     public static TypeSpec buildDeleteClass(EntityMetaSignature signature) {
-        String deleteClassName = signature.className + DELETE_DSL_SUFFIX;
 
         final String firstPartitionKey = signature.parsingResults
                 .stream()
@@ -54,26 +53,24 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .findFirst()
                 .get();
 
-        String deleteFromClassName = signature.className + DELETE_FROM_DSL_SUFFIX;
-        TypeName deleteFromTypeName = ClassName.get(DSL_PACKAGE, deleteFromClassName);
+        TypeName deleteFromTypeName = ClassName.get(DSL_PACKAGE, signature.deleteFromReturnType());
 
-        String deleteColumnsClassName = signature.className + DELETE_COLUMNS_DSL_SUFFIX;
-        TypeName deleteColumnsTypeName = ClassName.get(DSL_PACKAGE, deleteColumnsClassName);
+        TypeName deleteColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.deleteColumnsReturnType());
 
-        String deleteWhereClassName = signature.className + DELETE_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(firstPartitionKey);
-        TypeName deleteWhereTypeName = ClassName.get(DSL_PACKAGE, deleteWhereClassName);
+        TypeName deleteWhereTypeName = ClassName.get(DSL_PACKAGE, signature.deleteWhereReturnType(firstPartitionKey));
 
         final List<ColumnType> candidateColumns = Arrays.asList(NORMAL, STATIC, COUNTER, STATIC_COUNTER);
 
-        final TypeSpec.Builder builder = TypeSpec.classBuilder(deleteClassName)
+        final TypeSpec.Builder builder = TypeSpec.classBuilder(signature.deleteClassName())
                 .superclass(ABSTRACT_DELETE)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildDeleteConstructor(signature))
                 .addField(buildExactEntityMetaField(signature))
                 .addField(buildEntityClassField(signature))
-                .addType(buildDeleteColumns(signature, deleteColumnsClassName, deleteColumnsTypeName,
-                        deleteFromTypeName, candidateColumns))
-                .addType(buildDeleteFrom(deleteFromClassName, deleteWhereTypeName));
+                .addType(buildDeleteColumns(signature, signature.className + DELETE_COLUMNS_DSL_SUFFIX,
+                        deleteColumnsTypeName, deleteFromTypeName, candidateColumns))
+                .addType(buildDeleteFrom(signature, signature.className + DELETE_FROM_DSL_SUFFIX,
+                        deleteWhereTypeName));
 
         signature.parsingResults
                 .stream()
@@ -90,7 +87,6 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
     }
 
     public static TypeSpec buildDeleteStaticClass(EntityMetaSignature signature) {
-        String deleteStaticClassName = signature.className + DELETE_STATIC_DSL_SUFFIX;
 
         final String firstPartitionKey = signature.parsingResults
                 .stream()
@@ -101,25 +97,23 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .findFirst()
                 .get();
 
-        String deleteStaticFromClassName = signature.className + DELETE_STATIC_FROM_DSL_SUFFIX;
-        TypeName deleteStaticFromTypeName = ClassName.get(DSL_PACKAGE, deleteStaticFromClassName);
+        TypeName deleteStaticFromTypeName = ClassName.get(DSL_PACKAGE, signature.deleteStaticFromReturnType());
 
-        String deleteStaticColumnsClassName = signature.className + DELETE_STATIC_COLUMNS_DSL_SUFFIX;
-        TypeName deleteStaticColumnsTypeName = ClassName.get(DSL_PACKAGE, deleteStaticColumnsClassName);
+        TypeName deleteStaticColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.deleteStaticColumnsReturnType());
 
-        String deleteStaticWhereClassName = signature.className + DELETE_STATIC_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(firstPartitionKey);
-        TypeName deleteStaticWhereTypeName = ClassName.get(DSL_PACKAGE, deleteStaticWhereClassName);
+        TypeName deleteStaticWhereTypeName = ClassName.get(DSL_PACKAGE, signature.deleteStaticWhereReturnType(firstPartitionKey));
 
         final List<ColumnType> candidateColumns = Arrays.asList(STATIC, STATIC_COUNTER);
-        final TypeSpec.Builder builder = TypeSpec.classBuilder(deleteStaticClassName)
+        final TypeSpec.Builder builder = TypeSpec.classBuilder(signature.deleteStaticClassName())
                 .superclass(ABSTRACT_DELETE)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildDeleteConstructor(signature))
                 .addField(buildExactEntityMetaField(signature))
                 .addField(buildEntityClassField(signature))
-                .addType(buildDeleteColumns(signature, deleteStaticColumnsClassName, deleteStaticColumnsTypeName,
-                        deleteStaticFromTypeName, candidateColumns))
-                .addType(buildDeleteFrom(deleteStaticFromClassName, deleteStaticWhereTypeName));
+                .addType(buildDeleteColumns(signature, signature.className + DELETE_STATIC_COLUMNS_DSL_SUFFIX,
+                        deleteStaticColumnsTypeName, deleteStaticFromTypeName, candidateColumns))
+                .addType(buildDeleteFrom(signature, signature.className + DELETE_STATIC_FROM_DSL_SUFFIX,
+                        deleteStaticWhereTypeName));
 
         signature.parsingResults
                 .stream()
@@ -147,12 +141,12 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
     }
 
     private static TypeSpec buildDeleteColumns(EntityMetaSignature signature,
-                                               String deleteColumnsClassName,
+                                               String deleteColumnClass,
                                                TypeName deleteColumnsTypeName,
                                                TypeName deleteFromTypeName,
                                                List<ColumnType> candidateColumns) {
 
-        final TypeSpec.Builder builder = TypeSpec.classBuilder(deleteColumnsClassName)
+        final TypeSpec.Builder builder = TypeSpec.classBuilder(deleteColumnClass)
                 .superclass(ABSTRACT_DELETE_COLUMNS)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
@@ -171,7 +165,8 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    private static TypeSpec buildDeleteFrom(String deleteFromClassName,
+    private static TypeSpec buildDeleteFrom(EntityMetaSignature signature,
+                                            String deleteFromClassName,
                                             TypeName deleteWhereTypeName) {
 
 

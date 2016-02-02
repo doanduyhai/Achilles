@@ -35,8 +35,9 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.parsingResults);
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.parsingResults);
 
-        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(DELETE_WHERE_DSL_SUFFIX,
-                DELETE_END_DSL_SUFFIX, ABSTRACT_DELETE_WHERE_PARTITION, ABSTRACT_DELETE_WHERE, ABSTRACT_DELETE_END);
+        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(DELETE_DSL_SUFFIX,
+                DELETE_WHERE_DSL_SUFFIX, DELETE_END_DSL_SUFFIX,
+                ABSTRACT_DELETE_WHERE_PARTITION, ABSTRACT_DELETE_WHERE, ABSTRACT_DELETE_END);
 
         final List<ClassSignatureInfo> classesSignature =
                 buildClassesSignatureForWhereClause(signature, classSignatureParams, partitionKeys, clusteringCols,
@@ -61,8 +62,9 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
     public static List<TypeSpec> buildWhereClassesForStatic(EntityMetaSignature signature) {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.parsingResults);
 
-        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(DELETE_STATIC_WHERE_DSL_SUFFIX,
-                DELETE_STATIC_END_DSL_SUFFIX, ABSTRACT_DELETE_WHERE_PARTITION, ABSTRACT_DELETE_WHERE, ABSTRACT_DELETE_END);
+        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(DELETE_STATIC_DSL_SUFFIX,
+                DELETE_STATIC_WHERE_DSL_SUFFIX, DELETE_STATIC_END_DSL_SUFFIX,
+                ABSTRACT_DELETE_WHERE_PARTITION, ABSTRACT_DELETE_WHERE, ABSTRACT_DELETE_END);
 
         final List<ClassSignatureInfo> classesSignature =
                 buildClassesSignatureForWhereClause(signature, classSignatureParams, partitionKeys, Arrays.asList(),
@@ -95,7 +97,7 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildGetOptions())
                 .addMethod(buildGetBoundValuesInternal())
                 .addMethod(buildGetEncodedBoundValuesInternal())
-                .addMethod(buildGetThis(lastSignature.classType));
+                .addMethod(buildGetThis(lastSignature.returnClassType));
 
         buildLWtConditionMethods(signature, lastSignature, hasCounter, builder);
 
@@ -135,10 +137,10 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(DELETE_WHERE))
-                .addMethod(buildColumnRelation(EQ, nextSignature.classType, partitionInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo));
 
         if (!hasClusterings) {
-            builder.addMethod(buildColumnInVarargs(nextSignature.classType, partitionInfo));
+            builder.addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo));
         }
 
         return builder.build();
@@ -171,7 +173,7 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(DELETE_WHERE))
-                .addMethod(buildColumnRelation(EQ, nextSignature.classType, clusteringColumnInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo));
 
         return builder.build();
     }

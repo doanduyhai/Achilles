@@ -42,8 +42,9 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         final Optional<FieldSignatureInfo> firstClustering = clusteringCols.stream().limit(1).findFirst();
 
-        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(SELECT_WHERE_DSL_SUFFIX,
-                SELECT_END_DSL_SUFFIX, ABSTRACT_SELECT_WHERE_PARTITION, ABSTRACT_SELECT_WHERE);
+        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(SELECT_DSL_SUFFIX,
+                SELECT_WHERE_DSL_SUFFIX, SELECT_END_DSL_SUFFIX,
+                ABSTRACT_SELECT_WHERE_PARTITION, ABSTRACT_SELECT_WHERE);
 
         final List<ClassSignatureInfo> classesSignature =
                 buildClassesSignatureForWhereClause(signature, classSignatureParams, partitionKeys, clusteringCols,
@@ -75,7 +76,7 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildGetBoundValuesInternal())
                 .addMethod(buildGetEncodedBoundValuesInternal())
                 .addMethod(buildLimit(lastSignature))
-                .addMethod(buildGetThis(lastSignature.classType));
+                .addMethod(buildGetThis(lastSignature.returnClassType));
 
         maybeBuildOrderingBy(lastSignature, firstClustering, builder);
 
@@ -90,7 +91,7 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                     .methodBuilder("orderBy" + upperCaseFirst(fieldSignatureInfo.fieldName) + "Ascending")
                     .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY $L ASC</strong>", fieldSignatureInfo.cqlColum)
                     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                    .returns(lastSignature.classType)
+                    .returns(lastSignature.returnClassType)
                     .addStatement("where.orderBy($T.asc($S))", QUERY_BUILDER, fieldSignatureInfo.cqlColum)
                     .addStatement("return this")
                     .build();
@@ -99,7 +100,7 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                     .methodBuilder("orderBy" + upperCaseFirst(fieldSignatureInfo.fieldName) + "Descending")
                     .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY $L DESC</strong>", fieldSignatureInfo.cqlColum)
                     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                    .returns(lastSignature.classType)
+                    .returns(lastSignature.returnClassType)
                     .addStatement("where.orderBy($T.desc($S))", QUERY_BUILDER, fieldSignatureInfo.cqlColum)
                     .addStatement("return this")
                     .build();
@@ -113,7 +114,7 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>LIMIT :limit</strong>")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(TypeName.INT.box(), "limit", Modifier.FINAL)
-                .returns(lastSignature.classType)
+                .returns(lastSignature.returnClassType)
                 .addStatement("where.limit($T.bindMarker($S))", QUERY_BUILDER, "lim")
                 .addStatement("boundValues.add($N)", "limit")
                 .addStatement("encodedValues.add($N)", "limit")
@@ -143,8 +144,8 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(SELECT_WHERE))
-                .addMethod(buildColumnRelation(EQ, nextSignature.classType, partitionInfo))
-                .addMethod(buildColumnInVarargs(nextSignature.classType, partitionInfo))
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo))
+                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo))
                 .build();
     }
 
@@ -182,7 +183,7 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(SELECT_WHERE))
-                .addMethod(buildGetThis(classSignature.classType))
+                .addMethod(buildGetThis(classSignature.returnClassType))
                 .addMethod(buildGetMetaInternal(signature.entityRawClass))
                 .addMethod(buildGetEntityClass(signature))
                 .addMethod(buildGetRte())
@@ -190,41 +191,41 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildGetBoundValuesInternal())
                 .addMethod(buildGetEncodedBoundValuesInternal())
                 .addMethod(buildLimit(classSignature))
-                .addMethod(buildColumnRelation(EQ, nextSignature.classType, clusteringColumnInfo))
-                .addMethod(buildColumnInVarargs(nextSignature.classType, clusteringColumnInfo))
-                .addMethod(buildColumnRelation(GT, lastSignature.classType, clusteringColumnInfo))
-                .addMethod(buildColumnRelation(GTE, lastSignature.classType, clusteringColumnInfo))
-                .addMethod(buildColumnRelation(LT, lastSignature.classType, clusteringColumnInfo))
-                .addMethod(buildColumnRelation(LTE, lastSignature.classType, clusteringColumnInfo))
-                .addMethod(buildDoubleColumnRelation(GT, LT, lastSignature.classType, clusteringColumnInfo))
-                .addMethod(buildDoubleColumnRelation(GT, LTE, lastSignature.classType, clusteringColumnInfo))
-                .addMethod(buildDoubleColumnRelation(GTE, LT, lastSignature.classType, clusteringColumnInfo))
-                .addMethod(buildDoubleColumnRelation(GTE, LTE, lastSignature.classType, clusteringColumnInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildColumnRelation(GT, lastSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildColumnRelation(GTE, lastSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildColumnRelation(LT, lastSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildColumnRelation(LTE, lastSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildDoubleColumnRelation(GT, LT, lastSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildDoubleColumnRelation(GT, LTE, lastSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildDoubleColumnRelation(GTE, LT, lastSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildDoubleColumnRelation(GTE, LTE, lastSignature.returnClassType, clusteringColumnInfo));
 
 
         // Tuple notation (col1, col2, ..., colN) < (:col1, :col2, ..., :colN)
         for (int i = 2; i <= clusteringCols.size(); i++) {
             final List<FieldSignatureInfo> fieldInfos = clusteringCols.stream().limit(i).collect(toList());
             final List<FieldSignatureInfo> fieldInfosMinusOne = clusteringCols.stream().limit(i - 1).collect(toList());
-            builder.addMethod(buildTuplesColumnRelation(GT, lastSignature.classType, fieldInfos))
-                    .addMethod(buildTuplesColumnRelation(GTE, lastSignature.classType, fieldInfos))
-                    .addMethod(buildTuplesColumnRelation(LT, lastSignature.classType, fieldInfos))
-                    .addMethod(buildTuplesColumnRelation(LTE, lastSignature.classType, fieldInfos))
+            builder.addMethod(buildTuplesColumnRelation(GT, lastSignature.returnClassType, fieldInfos))
+                    .addMethod(buildTuplesColumnRelation(GTE, lastSignature.returnClassType, fieldInfos))
+                    .addMethod(buildTuplesColumnRelation(LT, lastSignature.returnClassType, fieldInfos))
+                    .addMethod(buildTuplesColumnRelation(LTE, lastSignature.returnClassType, fieldInfos))
 
-                    .addMethod(buildSymetricColumnDoubleRelation(GT, LT, lastSignature.classType, fieldInfos))
-                    .addMethod(buildSymetricColumnDoubleRelation(GT, LTE, lastSignature.classType, fieldInfos))
-                    .addMethod(buildSymetricColumnDoubleRelation(GTE, LT, lastSignature.classType, fieldInfos))
-                    .addMethod(buildSymetricColumnDoubleRelation(GTE, LTE, lastSignature.classType, fieldInfos))
+                    .addMethod(buildSymmetricColumnDoubleRelation(GT, LT, lastSignature.returnClassType, fieldInfos))
+                    .addMethod(buildSymmetricColumnDoubleRelation(GT, LTE, lastSignature.returnClassType, fieldInfos))
+                    .addMethod(buildSymmetricColumnDoubleRelation(GTE, LT, lastSignature.returnClassType, fieldInfos))
+                    .addMethod(buildSymmetricColumnDoubleRelation(GTE, LTE, lastSignature.returnClassType, fieldInfos))
 
-                    .addMethod(buildAsymetricColumnDoubleRelation(GT, LT, lastSignature.classType, fieldInfos, fieldInfosMinusOne))
-                    .addMethod(buildAsymetricColumnDoubleRelation(GT, LTE, lastSignature.classType, fieldInfos, fieldInfosMinusOne))
-                    .addMethod(buildAsymetricColumnDoubleRelation(GTE, LT, lastSignature.classType, fieldInfos, fieldInfosMinusOne))
-                    .addMethod(buildAsymetricColumnDoubleRelation(GTE, LTE, lastSignature.classType, fieldInfos, fieldInfosMinusOne))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LT, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LTE, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LT, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LTE, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne))
 
-                    .addMethod(buildAsymetricColumnDoubleRelation(GT, LT, lastSignature.classType, fieldInfosMinusOne, fieldInfos))
-                    .addMethod(buildAsymetricColumnDoubleRelation(GT, LTE, lastSignature.classType, fieldInfosMinusOne, fieldInfos))
-                    .addMethod(buildAsymetricColumnDoubleRelation(GTE, LT, lastSignature.classType, fieldInfosMinusOne, fieldInfos))
-                    .addMethod(buildAsymetricColumnDoubleRelation(GTE, LTE, lastSignature.classType, fieldInfosMinusOne, fieldInfos));
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LT, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LTE, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LT, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LTE, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos));
         }
 
         maybeBuildOrderingBy(classSignature, firstClusteringCol, builder);
@@ -279,7 +280,7 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         return builder.addStatement("return new $T(where)", nextType).build();
     }
 
-    private static MethodSpec buildSymetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos) {
+    private static MethodSpec buildSymmetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos) {
         final String methodName = fieldInfos
                 .stream()
                 .map(x -> x.fieldName)
@@ -330,7 +331,7 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         return builder.addStatement("return new $T(where)", nextType).build();
     }
 
-    private static MethodSpec buildAsymetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos1, List<FieldSignatureInfo> fieldInfos2) {
+    private static MethodSpec buildAsymmetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos1, List<FieldSignatureInfo> fieldInfos2) {
         final String methodName =
                 fieldInfos1
                         .stream()

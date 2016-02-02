@@ -198,8 +198,8 @@ public class ManagerCodeGen {
                                         .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
                                                 "Partition key '%s' should not be null", tuple._1())
                                         .addStatement("keys.add($L)", tuple._1())
-                                        .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))", signature.className + META_SUFFIX,
-                                                tuple._1(), tuple._1(), tuple._1())
+                                        .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
+                                                signature.className + META_SUFFIX, tuple._1(), tuple._1())
                 );
 
         signature.parsingResults
@@ -213,8 +213,8 @@ public class ManagerCodeGen {
                                         .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
                                                 "Partition key '%s' should not be null", tuple._1())
                                         .addStatement("keys.add($L)", tuple._1())
-                                        .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))", signature.className + META_SUFFIX,
-                                                tuple._1(), tuple._1(), tuple._1())
+                                        .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
+                                                signature.className + META_SUFFIX, tuple._1(), tuple._1())
                 );
 
 
@@ -254,8 +254,8 @@ public class ManagerCodeGen {
                                         .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
                                                 "Partition key '%s' should not be null", tuple._1())
                                         .addStatement("keys.add($L)", tuple._1())
-                                        .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))", signature.className + META_SUFFIX,
-                                                tuple._1(), tuple._1(), tuple._1())
+                                        .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
+                                                signature.className + META_SUFFIX, tuple._1(), tuple._1())
                 );
 
         signature.parsingResults
@@ -269,8 +269,8 @@ public class ManagerCodeGen {
                                 .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
                                         "Partition key '%s' should not be null", tuple._1())
                                 .addStatement("keys.add($L)", tuple._1())
-                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))", signature.className + META_SUFFIX,
-                                        tuple._1(), tuple._1(), tuple._1()));
+                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
+                                        signature.className + META_SUFFIX, tuple._1(), tuple._1()));
 
         builder.addJavadoc("@return DeleteWithOptions<$T>", signature.entityRawClass);
 
@@ -317,8 +317,8 @@ public class ManagerCodeGen {
                                 .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
                                         "Partition key '%s' should not be null", tuple._1())
                                 .addStatement("keys.add($L)", tuple._1())
-                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))", signature.className + META_SUFFIX,
-                                        tuple._1(), tuple._1(), tuple._1()));
+                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
+                                        signature.className + META_SUFFIX, tuple._1(), tuple._1()));
 
 
         builder.addJavadoc("@return DeleteByPartitionWithOptions<$T>", signature.entityRawClass);
