@@ -135,6 +135,7 @@
         <felix.version>2.4.0</felix.version>
 
         <clean.data.files>true</clean.data.files>
+        <joda-time.version>2.9.1</joda-time.version>
     </properties>
 
     <modules>
@@ -257,6 +258,18 @@
                         <artifactId>commons-lang</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.datastax.cassandra</groupId>
+                <artifactId>cassandra-driver-extras</artifactId>
+                <version>${datastax.driver.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${joda-time.version}</version>
             </dependency>
 
             <!-- Google Auto -->

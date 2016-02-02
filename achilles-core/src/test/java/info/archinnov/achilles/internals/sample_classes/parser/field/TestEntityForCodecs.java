@@ -174,6 +174,12 @@ public class TestEntityForCodecs {
     @Column
     private Enumerated.Encoding encoding;
 
+    @Column
+    private Map<@JSON Integer, double[]> mapOfDoubleArray;
+
+    @Column
+    private List<@Frozen Map<@Enumerated ProtocolVersion, List<int[]>>> nestedArrays;
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -529,6 +535,22 @@ public class TestEntityForCodecs {
 
     public void setEncoding(Enumerated.Encoding encoding) {
         this.encoding = encoding;
+    }
+
+    public Map<Integer, double[]> getMapOfDoubleArray() {
+        return mapOfDoubleArray;
+    }
+
+    public void setMapOfDoubleArray(Map<Integer, double[]> mapOfDoubleArray) {
+        this.mapOfDoubleArray = mapOfDoubleArray;
+    }
+
+    public List<Map<ProtocolVersion, List<int[]>>> getNestedArrays() {
+        return nestedArrays;
+    }
+
+    public void setNestedArrays(List<Map<ProtocolVersion, List<int[]>>> nestedArrays) {
+        this.nestedArrays = nestedArrays;
     }
 }
 

@@ -81,8 +81,6 @@ public class AnnotationTree {
         final List<? extends TypeMirror> nestedTypes = currentType.getKind() == TypeKind.DECLARED ?
                 MoreTypes.asDeclared(currentType).getTypeArguments() : Arrays.asList();
 
-
-
         if (isEclipseCompiler(varElm)) {
             final FieldBinding binding = (FieldBinding)((VariableElementImpl) varElm)._binding;
 
@@ -161,7 +159,7 @@ public class AnnotationTree {
             return annotationTree;
         }
 
-        if (isPrimitive(currentType) || isArray(currentType) || isAnEnum(currentType)) {
+        if (isPrimitive(currentType) || isArray(currentType) || isAnEnum(currentType) || nestedTypes.size() == 0) {
             return annotationTree;
         } else if (aptUtils.isAssignableFrom(Tuple1.class, currentType) ||
                 aptUtils.isAssignableFrom(List.class, currentType) ||
@@ -263,7 +261,11 @@ public class AnnotationTree {
     }
 
     private static List<? extends TypeMirror> getTypeArguments(TypeMirror typeMirror) {
-        return MoreTypes.asDeclared(typeMirror).getTypeArguments();
+        if (isPrimitive(typeMirror) || isArray(typeMirror)) {
+            return Collections.emptyList();
+        } else {
+            return MoreTypes.asDeclared(typeMirror).getTypeArguments();
+        }
     }
 
     private static AnnotationTree buildTreeForTuple_Javac(AptUtils aptUtils, AnnotationTree annotationTree,

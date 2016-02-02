@@ -27,10 +27,6 @@ public class TypeValidator {
     public static void validateAllowedTypes(AptUtils aptUtils, TypeName parentType, TypeName type) {
         if (type.isPrimitive()) {
             return;
-        } else if (type instanceof ArrayTypeName) {
-            final TypeName componentType = ((ArrayTypeName) type).componentType;
-            final boolean isByteArray = componentType.unbox().toString().equals(byte.class.getCanonicalName());
-            aptUtils.validateTrue(isByteArray, "Type '%s' in '%s' is not a valid type for CQL", type.toString(), parentType.toString());
         } else if (type instanceof ParameterizedTypeName) {
             final ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) type;
             validateAllowedTypes(aptUtils, parentType, parameterizedTypeName.rawType);
@@ -43,9 +39,8 @@ public class TypeValidator {
             for (TypeName x : wildcardTypeName.upperBounds) {
                 validateAllowedTypes(aptUtils, parentType, x);
             }
-        } else if (type instanceof ClassName) {
-            final ClassName className = (ClassName) type;
-            final boolean isValidType = ALLOWED_TYPES.contains(className);
+        } else if (type instanceof ClassName || type instanceof ArrayTypeName) {
+            final boolean isValidType = ALLOWED_TYPES.contains(type);
             aptUtils.validateTrue(isValidType, "Type '%s' in '%s' is not a valid type for CQL", type.toString(), parentType.toString());
         } else {
             aptUtils.printError("Type '%s' in '%s' is not a valid type for CQL", type.toString(), parentType.toString());

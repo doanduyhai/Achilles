@@ -25,10 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -126,6 +123,11 @@ public class TestEntityWithComplexTypes {
         entity.setIntWrapper(new IntWrapper(123));
         entity.setProtocolVersion(ProtocolVersion.V4);
         entity.setEncoding(Enumerated.Encoding.ORDINAL);
+        entity.setDoubleArray(new double[]{1.0, 2.0});
+        entity.setFloatArray(new float[]{3.0f, 4.0f});
+        entity.setIntArray(new int[]{5, 6});
+        entity.setLongArray(new long[]{7L, 8L});
+        entity.setListOfLongArray(Arrays.asList(new long[]{9L, 10L}));
 
         //When
         manager
@@ -181,6 +183,11 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.getInt("intwrapper")).isEqualTo(123);
         assertThat(actual.getString("protocolversion")).isEqualTo("V4");
         assertThat(actual.getInt("encoding")).isEqualTo(1);
+        assertThat(actual.get("doublearray", double[].class)).isEqualTo(new double[]{1.0, 2.0});
+        assertThat(actual.get("floatarray", float[].class)).isEqualTo(new float[]{3.0f, 4.0f});
+        assertThat(actual.get("intarray", int[].class)).isEqualTo(new int[]{5, 6});
+        assertThat(actual.get("longarray", long[].class)).isEqualTo(new long[]{7L, 8L});
+        assertThat(actual.getList("listoflongarray", long[].class)).containsExactly(new long[]{9L, 10L});
     }
 
     @Test
@@ -230,6 +237,11 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.getIntWrapper()).isEqualTo(new IntWrapper(456));
         assertThat(actual.getProtocolVersion()).isEqualTo(ProtocolVersion.V2);
         assertThat(actual.getEncoding()).isEqualTo(Enumerated.Encoding.NAME);
+        assertThat(actual.getDoubleArray()).isEqualTo(new double[]{1.0, 2.0});
+        assertThat(actual.getFloatArray()).isEqualTo(new float[]{3.0f, 4.0f});
+        assertThat(actual.getIntArray()).isEqualTo(new int[]{5, 6});
+        assertThat(actual.getLongArray()).isEqualTo(new long[]{7L, 8L});
+
     }
 
     @Test

@@ -69,9 +69,9 @@ public class FrozenNestedTypeStrategy implements NestedTypesStrategy {
     private AnnotationTree validateNestedType(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
         final AnnotationTree next = annotationTree.next();
         final TypeMirror nextType = next.getCurrentType();
-        if (aptUtils.isCompositeType(nextType) && !containsAnnotation(next, JSON.class)) {
+        if (aptUtils.isCompositeTypeForCassandra(nextType) && !containsAnnotation(next, JSON.class)) {
             aptUtils.validateTrue(containsAnnotation(next, Frozen.class),
-                    "Nested collections and UDT '%s' in field '%s' of class '%s' should be annotated with @Frozen",
+                    "Nested collections/array type/UDT '%s' in field '%s' of class '%s' should be annotated with @Frozen",
                     nextType, fieldName, rawClass);
         }
         return next;

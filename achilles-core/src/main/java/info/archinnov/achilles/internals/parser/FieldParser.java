@@ -128,7 +128,7 @@ public class FieldParser {
         final String alias = computed.getTyped("alias");
 
         CodeBlock extractor = context.buildExtractor
-                ? CodeBlock.builder().add("gettableData$$ -> gettableData$$.$L($S)", DRIVER_GETTABLEDATA_GETTERS.get(rawTargetType), alias).build()
+                ? CodeBlock.builder().add("gettableData$$ -> gettableData$$.$L", TypeUtils.gettableDataGetter(rawTargetType, alias)).build()
                 : NO_GETTER;
 
         CodeBlock typeCode = CodeBlock.builder().add("new $T<$T, $T, $T>($L, $L, $L)",
@@ -168,11 +168,11 @@ public class FieldParser {
         }
 
         CodeBlock gettable = context.buildExtractor
-                ? CodeBlock.builder().add("gettableData$$ -> gettableData$$.$L($S)", DRIVER_GETTABLEDATA_GETTERS.get(rawTargetType), context.cqlColumn).build()
+                ? CodeBlock.builder().add("gettableData$$ -> gettableData$$.$L", TypeUtils.gettableDataGetter(rawTargetType, context.cqlColumn)).build()
                 : NO_GETTER;
 
         CodeBlock settable = context.buildExtractor
-                ? CodeBlock.builder().add("(settableData$$, value$$) -> settableData$$.$L($S, value$$)", DRIVER_SETTABLEDATA_SETTERS.get(rawTargetType), context.cqlColumn).build()
+                ? CodeBlock.builder().add("(settableData$$, value$$) -> settableData$$.$L", TypeUtils.settableDataSetter(rawTargetType, context.cqlColumn)).build()
                 : NO_UDT_SETTER;
 
 

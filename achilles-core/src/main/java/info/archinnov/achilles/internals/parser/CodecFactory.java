@@ -136,15 +136,15 @@ public class CodecFactory {
             codec = CodeBlock.builder().add("new $T<>($T.class, $L)", JSON_CODEC, getRawType(sourceType).box(), buildJavaTypeForJackson(sourceType)).build();
             targetType = ClassName.get(String.class);
         } else if (codecFromType.isPresent()) {
-            final Tuple2<TypeName, CodeBlock> tuple2 = buildCodec(codecFromType.get(), sourceType, computedCQLClass, isCounter);
+            final Tuple2<TypeName, CodeBlock> tuple2 = codecCodeGen(codecFromType.get(), sourceType, computedCQLClass, isCounter);
             targetType = tuple2._1();
             codec = tuple2._2();
         } else if(runtimeCodec.isPresent()) {
-            final Tuple2<TypeName, CodeBlock> tuple2 = buildRuntimeCodec(runtimeCodec.get(), computedCQLClass, isCounter);
+            final Tuple2<TypeName, CodeBlock> tuple2 = runtimeCodecCodeGen(runtimeCodec.get(), computedCQLClass, isCounter);
             targetType = tuple2._1();
             codec = tuple2._2();
         } else if (enumerated.isPresent()) {
-            final Tuple2<TypeName, CodeBlock> tuple2 = buildEnumeratedCodec(enumerated.get(), sourceType, fieldName, className);
+            final Tuple2<TypeName, CodeBlock> tuple2 = enumeratedCodecCodeGen(enumerated.get(), sourceType, fieldName, className);
             codec = tuple2._2();
             targetType = tuple2._1();
         } else if (typeMirror.getKind() == TypeKind.ARRAY && typeMirror.toString().equals("byte[]")) {
@@ -165,8 +165,8 @@ public class CodecFactory {
         return new CodecInfo(codec, sourceType, targetType);
     }
 
-    private Tuple2<TypeName, CodeBlock> buildCodec(TypedMap annotationInfo, TypeName sourceType,
-                                                   Optional<TypeName> computedCQLClass, boolean isCounter) {
+    private Tuple2<TypeName, CodeBlock> codecCodeGen(TypedMap annotationInfo, TypeName sourceType,
+                                                     Optional<TypeName> computedCQLClass, boolean isCounter) {
 
         final CodecContext codecContext = annotationInfo.getTyped("codecContext");
         validateCodec(aptUtils, codecContext, sourceType, computedCQLClass, isCounter);
@@ -175,8 +175,8 @@ public class CodecFactory {
         return new Tuple2<>(codecContext.targetType.box(), codec);
     }
 
-    private Tuple2<TypeName, CodeBlock> buildRuntimeCodec(TypedMap annotationInfo,
-                                                   Optional<TypeName> computedCQLClass, boolean isCounter) {
+    private Tuple2<TypeName, CodeBlock> runtimeCodecCodeGen(TypedMap annotationInfo,
+                                                            Optional<TypeName> computedCQLClass, boolean isCounter) {
 
         final RuntimeCodecContext runtimeCodecContext = annotationInfo.getTyped("runtimeCodecContext");
         final TypeName sourceType = runtimeCodecContext.sourceType;
@@ -194,7 +194,7 @@ public class CodecFactory {
         return new Tuple2<>(targetType.box(), codec);
     }
 
-    private Tuple2<TypeName, CodeBlock> buildEnumeratedCodec(TypedMap annotationInfo, TypeName sourceType, String fieldName, String className) {
+    private Tuple2<TypeName, CodeBlock> enumeratedCodecCodeGen(TypedMap annotationInfo, TypeName sourceType, String fieldName, String className) {
 
         final Object value = annotationInfo.getTyped("value");
         aptUtils.validateTrue(isAnEnum(value), "The type '%s' on field '%s' in class '%s' is not a java.lang.Enum type",

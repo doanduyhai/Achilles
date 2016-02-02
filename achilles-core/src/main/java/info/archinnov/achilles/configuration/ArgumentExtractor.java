@@ -28,8 +28,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.extras.codecs.arrays.DoubleArrayCodec;
+import com.datastax.driver.extras.codecs.arrays.FloatArrayCodec;
+import com.datastax.driver.extras.codecs.arrays.IntArrayCodec;
+import com.datastax.driver.extras.codecs.arrays.LongArrayCodec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
@@ -70,6 +75,11 @@ public class ArgumentExtractor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ArgumentExtractor.class);
 
     public static ConfigurationContext initConfigContext(Cluster cluster, ConfigMap configurationMap) {
+        LOGGER.trace("Add Java Driver extra codecs");
+        final CodecRegistry codecRegistry = cluster.getConfiguration().getCodecRegistry();
+        codecRegistry.register(DoubleArrayCodec.instance, FloatArrayCodec.instance,
+                IntArrayCodec.instance, LongArrayCodec.instance);
+
         LOGGER.trace("Build ConfigurationContext from configuration map");
 
         ConfigurationContext configContext = new ConfigurationContext();

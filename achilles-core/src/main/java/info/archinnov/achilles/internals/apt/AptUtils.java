@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.*;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -439,7 +440,7 @@ public class AptUtils {
         }
     }
 
-    public boolean isCompositeType(TypeMirror typeMirror) {
+    public boolean isCompositeTypeForCassandra(TypeMirror typeMirror) {
         final TypeMirror type = this.erasure(typeMirror);
         return this.isAssignableFrom(List.class, type)
                 || this.isAssignableFrom(Set.class, type)

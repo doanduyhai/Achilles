@@ -116,7 +116,7 @@ public class FieldValidator {
 
     public static void validateAllowedFrozen(boolean isFrozen, AptUtils aptUtils, VariableElement elm, String fieldName, TypeName rawClass) {
         if (isFrozen) {
-            aptUtils.validateTrue(aptUtils.isCompositeType(elm.asType()),
+            aptUtils.validateTrue(aptUtils.isCompositeTypeForCassandra(elm.asType()),
                     "@Frozen annotation on field '%s' of class '%s' is only allowed for collections and UDT",
                     fieldName, rawClass);
         }

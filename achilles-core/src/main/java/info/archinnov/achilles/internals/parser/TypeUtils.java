@@ -256,8 +256,8 @@ public class TypeUtils {
     public static final ClassName TYPE_TOKEN = ClassName.get(TypeToken.class);
 
     public static final List<TypeName> ALLOWED_TYPES = new ArrayList<>();
-    public static final Map<TypeName, String> DRIVER_GETTABLEDATA_GETTERS = new HashMap<>();
-    public static final Map<TypeName, String> DRIVER_SETTABLEDATA_SETTERS = new HashMap<>();
+    private static final Map<TypeName, String> DRIVER_GETTABLEDATA_GETTERS = new HashMap<>();
+    private static final Map<TypeName, String> DRIVER_SETTABLEDATA_SETTERS = new HashMap<>();
     public static final Map<TypeName, String> DRIVER_TYPES_MAPPING = new HashMap<>();
 
 
@@ -268,12 +268,21 @@ public class TypeUtils {
         ALLOWED_TYPES.add(TypeName.get(byte[].class));
         ALLOWED_TYPES.add(TypeName.get(Byte[].class));
         ALLOWED_TYPES.add(TypeName.get(ByteBuffer.class));
+        ALLOWED_TYPES.add(TypeName.get(double[].class));
+        ALLOWED_TYPES.add(TypeName.get(float[].class));
+        ALLOWED_TYPES.add(TypeName.get(int[].class));
+        ALLOWED_TYPES.add(TypeName.get(long[].class));
 
         DRIVER_TYPES_MAPPING.put(TypeName.get(byte.class), "tinyint()");
         DRIVER_TYPES_MAPPING.put(TypeName.get(Byte.class), "tinyint()");
         DRIVER_TYPES_MAPPING.put(TypeName.get(byte[].class), "blob()");
         DRIVER_TYPES_MAPPING.put(TypeName.get(Byte[].class), "blob()");
         DRIVER_TYPES_MAPPING.put(TypeName.get(ByteBuffer.class), "blob()");
+
+        DRIVER_TYPES_MAPPING.put(TypeName.get(double[].class), "frozenList(DataType.cdouble())");
+        DRIVER_TYPES_MAPPING.put(TypeName.get(float[].class), "frozenList(DataType.cfloat())");
+        DRIVER_TYPES_MAPPING.put(TypeName.get(int[].class), "frozenList(DataType.cint())");
+        DRIVER_TYPES_MAPPING.put(TypeName.get(long[].class), "frozenList(DataType.bigint())");
 
         DRIVER_GETTABLEDATA_GETTERS.put(PRIMITIVE_BYTE, "getByte");
         DRIVER_GETTABLEDATA_GETTERS.put(OBJECT_BYTE, "getByte");
@@ -434,6 +443,22 @@ public class TypeUtils {
 
         // Drive UDTValue
         ALLOWED_TYPES.add(TypeName.get(UDTValue.class));
+    }
+
+    public static String gettableDataGetter(TypeName typeName, String cqlColumn) {
+        if (typeName instanceof ArrayTypeName) {
+            return "get(\""+cqlColumn+"\", "+typeName.toString()+".class)";
+        } else {
+            return DRIVER_GETTABLEDATA_GETTERS.get(typeName)+"(\""+cqlColumn+"\")";
+        }
+    }
+
+    public static String settableDataSetter(TypeName typeName, String cqlColumn) {
+        if (typeName instanceof ArrayTypeName) {
+            return "set(\""+cqlColumn+"\", value$, "+typeName.toString()+".class)";
+        } else {
+            return DRIVER_SETTABLEDATA_SETTERS.get(typeName)+"(\""+cqlColumn+"\", value$)";
+        }
     }
 
     public static ParameterizedTypeName genericType(ClassName baseType, TypeName... argTypes) {

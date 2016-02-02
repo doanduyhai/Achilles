@@ -105,7 +105,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
             strategy.validate(aptUtils, annotationTree, "listList", rawClass);
         });
-        failTestWithMessage("Nested collections and UDT " +
+        failTestWithMessage("collections/array type/UDT " +
                 "'java.util.List<java.lang.String>' " +
                 "in field 'listList' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
@@ -125,7 +125,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
             strategy.validate(aptUtils, annotationTree, "listUdt", rawClass);
         });
-        failTestWithMessage("Nested collections and UDT " +
+        failTestWithMessage("collections/array type/UDT " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT' " +
                 "in field 'listUdt' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
@@ -177,7 +177,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
             strategy.validate(aptUtils, annotationTree, "listUdtValue", rawClass);
         });
-        failTestWithMessage("Nested collections and UDT " +
+        failTestWithMessage("collections/array type/UDT " +
                 "'com.datastax.driver.core.UDTValue' " +
                 "in field 'listUdtValue' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
@@ -197,7 +197,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
             strategy.validate(aptUtils, annotationTree, "mapList", rawClass);
         });
-        failTestWithMessage("Nested collections and UDT " +
+        failTestWithMessage("collections/array type/UDT " +
                 "'java.util.List<java.lang.String>' " +
                 "in field 'mapList' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
@@ -217,7 +217,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
             strategy.validate(aptUtils, annotationTree, "mapUdt", rawClass);
         });
-        failTestWithMessage("Nested collections and UDT " +
+        failTestWithMessage("collections/array type/UDT " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT' " +
                 "in field 'mapUdt' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
@@ -269,7 +269,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
             strategy.validate(aptUtils, annotationTree, "mapUDTValue", rawClass);
         });
-        failTestWithMessage("Nested collections and UDT " +
+        failTestWithMessage("collections/array type/UDT " +
                 "'com.datastax.driver.core.UDTValue' " +
                 "in field 'mapUDTValue' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +

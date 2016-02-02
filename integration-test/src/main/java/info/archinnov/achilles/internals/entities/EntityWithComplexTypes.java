@@ -137,6 +137,22 @@ public class EntityWithComplexTypes {
     @Column
     private Enumerated.Encoding encoding;
 
+    @Column
+    private double[] doubleArray;
+
+    @Column
+    private float[] floatArray;
+
+    @Column
+    private int[] intArray;
+
+    @Column
+    private long[] longArray;
+
+    @Column
+    private List<long[]> listOfLongArray;
+
+
     public Long getId() {
         return id;
     }
@@ -367,5 +383,45 @@ public class EntityWithComplexTypes {
 
     public void setEncoding(Enumerated.Encoding encoding) {
         this.encoding = encoding;
+    }
+
+    public double[] getDoubleArray() {
+        return doubleArray;
+    }
+
+    public void setDoubleArray(double[] doubleArray) {
+        this.doubleArray = doubleArray;
+    }
+
+    public float[] getFloatArray() {
+        return floatArray;
+    }
+
+    public void setFloatArray(float[] floatArray) {
+        this.floatArray = floatArray;
+    }
+
+    public int[] getIntArray() {
+        return intArray;
+    }
+
+    public void setIntArray(int[] intArray) {
+        this.intArray = intArray;
+    }
+
+    public long[] getLongArray() {
+        return longArray;
+    }
+
+    public void setLongArray(long[] longArray) {
+        this.longArray = longArray;
+    }
+
+    public List<long[]> getListOfLongArray() {
+        return listOfLongArray;
+    }
+
+    public void setListOfLongArray(List<long[]> listOfLongArray) {
+        this.listOfLongArray = listOfLongArray;
     }
 }
