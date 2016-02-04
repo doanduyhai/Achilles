@@ -20,6 +20,7 @@ import static java.lang.String.format;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -171,5 +172,23 @@ public abstract class AbstractUDTClassProperty<A>
         sb.append(", keyspace='").append(keyspace).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractUDTClassProperty<?> that = (AbstractUDTClassProperty<?>) o;
+        return Objects.equals(staticKeyspace, that.staticKeyspace) &&
+                Objects.equals(staticNamingStrategy, that.staticNamingStrategy) &&
+                Objects.equals(staticUdtName, that.staticUdtName) &&
+                Objects.equals(udtClass, that.udtClass) &&
+                Objects.equals(udtName, that.udtName) &&
+                Objects.equals(keyspace, that.keyspace);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(staticKeyspace, staticNamingStrategy, staticUdtName, udtClass, udtName, keyspace);
     }
 }

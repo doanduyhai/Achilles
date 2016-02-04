@@ -59,7 +59,6 @@ public class TestEntityWithStaticAnnotations {
                     .withDefaultKeyspaceName("my_static_keyspace")
                     .doForceSchemaCreation(true)
                     .withStatementsCache(statementsCache)
-                    .withDefaultKeyspaceName(DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME)
                     .build());
 
     private Session session = resource.getNativeSession();

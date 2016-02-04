@@ -38,6 +38,7 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty;
+import info.archinnov.achilles.internals.metamodel.UDTProperty;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 
@@ -137,7 +138,16 @@ public abstract class AbstractManagerFactory {
         if (configContext.isForceSchemaGeneration()) {
 
             for (AbstractUDTClassProperty<?> x : getUdtClassProperties()) {
-                generateUDTAtRuntime(session, x);
+                final long udtCountForClass = entityProperties
+                        .stream()
+                        .filter(entityProperty -> manageEntities.contains(entityProperty.entityClass))
+                        .flatMap(entityProperty -> entityProperty.allColumns.stream())
+                        .filter(property -> property instanceof UDTProperty)
+                        .filter(property -> ((UDTProperty) property).udtClassProperty.equals(x))
+                        .count();
+
+                if(udtCountForClass>0)
+                    generateUDTAtRuntime(session, x);
             }
 
             entityProperties
