@@ -35,7 +35,7 @@ public class EntityWithStaticAnnotations {
     @Column("value")
     private String stringValue;
 
-    @Column(value = "overriden")
+    @Column(value = "\"overRiden\"")
     private String overridenName;
 
     public EntityWithStaticAnnotations() {

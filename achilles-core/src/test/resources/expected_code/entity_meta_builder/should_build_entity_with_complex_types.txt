@@ -84,7 +84,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, Long, Long> id = new SimpleProperty<TestEntityWithComplexTypes, Long, Long>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getId(), (TestEntityWithComplexTypes entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.getLong("id"), (settableData$, value$) -> settableData$.setLong("id", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+  public static final SimpleProperty<TestEntityWithComplexTypes, Long, Long> id = new SimpleProperty<TestEntityWithComplexTypes, Long, Long>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getId(), (TestEntityWithComplexTypes entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
    * Meta class for 'value' property <br/>
@@ -95,7 +95,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, String, String> value = new SimpleProperty<TestEntityWithComplexTypes, String, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getValue(), (TestEntityWithComplexTypes entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("value"), (settableData$, value$) -> settableData$.setString("value", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+  public static final SimpleProperty<TestEntityWithComplexTypes, String, String> value = new SimpleProperty<TestEntityWithComplexTypes, String, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getValue(), (TestEntityWithComplexTypes entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("value", java.lang.String.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**
    * Meta class for 'consistencyLevel' property <br/>
@@ -106,7 +106,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String> consistencyLevel = new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getConsistencyLevel(), (TestEntityWithComplexTypes entity$, ConsistencyLevel value$) -> entity$.setConsistencyLevel(value$), "consistencyLevel", "consistencylevel", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("consistencylevel"), (settableData$, value$) -> settableData$.setString("consistencylevel", value$), new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new EnumNameCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class));
+  public static final SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String> consistencyLevel = new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getConsistencyLevel(), (TestEntityWithComplexTypes entity$, ConsistencyLevel value$) -> entity$.setConsistencyLevel(value$), "consistencyLevel", "consistencylevel", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("consistencylevel", java.lang.String.class), (settableData$, value$) -> settableData$.set("consistencylevel", value$, java.lang.String.class), new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new EnumNameCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class));
 
   /**
    * Meta class for 'time' property <br/>
@@ -117,7 +117,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, Date, String> time = new SimpleProperty<TestEntityWithComplexTypes, Date, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTime(), (TestEntityWithComplexTypes entity$, Date value$) -> entity$.setTime(value$), "time", "time", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("time"), (settableData$, value$) -> settableData$.setString("time", value$), new TypeToken<Date>(){}, new TypeToken<String>(){}, new JSONCodec<>(Date.class, SimpleType.construct(Date.class)));
+  public static final SimpleProperty<TestEntityWithComplexTypes, Date, String> time = new SimpleProperty<TestEntityWithComplexTypes, Date, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTime(), (TestEntityWithComplexTypes entity$, Date value$) -> entity$.setTime(value$), "time", "time", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("time", java.lang.String.class), (settableData$, value$) -> settableData$.set("time", value$, java.lang.String.class), new TypeToken<Date>(){}, new TypeToken<String>(){}, new JSONCodec<>(Date.class, SimpleType.construct(Date.class)));
 
   /**
    * Meta class for 'primitiveBoolean' property <br/>
@@ -128,7 +128,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean> primitiveBoolean = new SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.isPrimitiveBoolean(), (TestEntityWithComplexTypes entity$, Boolean value$) -> entity$.setPrimitiveBoolean(value$), "primitiveBoolean", "primitiveboolean", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.cboolean(), gettableData$ -> gettableData$.getBool("primitiveboolean"), (settableData$, value$) -> settableData$.setBool("primitiveboolean", value$), new TypeToken<Boolean>(){}, new TypeToken<Boolean>(){}, new FallThroughCodec<>(Boolean.class));
+  public static final SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean> primitiveBoolean = new SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.isPrimitiveBoolean(), (TestEntityWithComplexTypes entity$, Boolean value$) -> entity$.setPrimitiveBoolean(value$), "primitiveBoolean", "primitiveboolean", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.cboolean(), gettableData$ -> gettableData$.get("primitiveboolean", boolean.class), (settableData$, value$) -> settableData$.set("primitiveboolean", value$, boolean.class), new TypeToken<Boolean>(){}, new TypeToken<Boolean>(){}, new FallThroughCodec<>(Boolean.class));
 
   /**
    * Meta class for 'objectBoolean' property <br/>
@@ -139,7 +139,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean> objectBoolean = new SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectBoolean(), (TestEntityWithComplexTypes entity$, Boolean value$) -> entity$.setObjectBoolean(value$), "objectBoolean", "objectboolean", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.cboolean(), gettableData$ -> gettableData$.getBool("objectboolean"), (settableData$, value$) -> settableData$.setBool("objectboolean", value$), new TypeToken<Boolean>(){}, new TypeToken<Boolean>(){}, new FallThroughCodec<>(Boolean.class));
+  public static final SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean> objectBoolean = new SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectBoolean(), (TestEntityWithComplexTypes entity$, Boolean value$) -> entity$.setObjectBoolean(value$), "objectBoolean", "objectboolean", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.cboolean(), gettableData$ -> gettableData$.get("objectboolean", java.lang.Boolean.class), (settableData$, value$) -> settableData$.set("objectboolean", value$, java.lang.Boolean.class), new TypeToken<Boolean>(){}, new TypeToken<Boolean>(){}, new FallThroughCodec<>(Boolean.class));
 
   /**
    * Meta class for 'primitiveByte' property <br/>
@@ -150,7 +150,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, Byte, Byte> primitiveByte = new SimpleProperty<TestEntityWithComplexTypes, Byte, Byte>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getPrimitiveByte(), (TestEntityWithComplexTypes entity$, Byte value$) -> entity$.setPrimitiveByte(value$), "primitiveByte", "primitivebyte", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.tinyint(), gettableData$ -> gettableData$.getByte("primitivebyte"), (settableData$, value$) -> settableData$.setByte("primitivebyte", value$), new TypeToken<Byte>(){}, new TypeToken<Byte>(){}, new FallThroughCodec<>(Byte.class));
+  public static final SimpleProperty<TestEntityWithComplexTypes, Byte, Byte> primitiveByte = new SimpleProperty<TestEntityWithComplexTypes, Byte, Byte>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getPrimitiveByte(), (TestEntityWithComplexTypes entity$, Byte value$) -> entity$.setPrimitiveByte(value$), "primitiveByte", "primitivebyte", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.tinyint(), gettableData$ -> gettableData$.get("primitivebyte", byte.class), (settableData$, value$) -> settableData$.set("primitivebyte", value$, byte.class), new TypeToken<Byte>(){}, new TypeToken<Byte>(){}, new FallThroughCodec<>(Byte.class));
 
   /**
    * Meta class for 'objectByte' property <br/>
@@ -161,7 +161,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, Byte, Byte> objectByte = new SimpleProperty<TestEntityWithComplexTypes, Byte, Byte>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectByte(), (TestEntityWithComplexTypes entity$, Byte value$) -> entity$.setObjectByte(value$), "objectByte", "objectbyte", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.tinyint(), gettableData$ -> gettableData$.getByte("objectbyte"), (settableData$, value$) -> settableData$.setByte("objectbyte", value$), new TypeToken<Byte>(){}, new TypeToken<Byte>(){}, new FallThroughCodec<>(Byte.class));
+  public static final SimpleProperty<TestEntityWithComplexTypes, Byte, Byte> objectByte = new SimpleProperty<TestEntityWithComplexTypes, Byte, Byte>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectByte(), (TestEntityWithComplexTypes entity$, Byte value$) -> entity$.setObjectByte(value$), "objectByte", "objectbyte", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.tinyint(), gettableData$ -> gettableData$.get("objectbyte", java.lang.Byte.class), (settableData$, value$) -> settableData$.set("objectbyte", value$, java.lang.Byte.class), new TypeToken<Byte>(){}, new TypeToken<Byte>(){}, new FallThroughCodec<>(Byte.class));
 
   /**
    * Meta class for 'primitiveByteArray' property <br/>
@@ -172,7 +172,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, byte[], ByteBuffer> primitiveByteArray = new SimpleProperty<TestEntityWithComplexTypes, byte[], ByteBuffer>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getPrimitiveByteArray(), (TestEntityWithComplexTypes entity$, byte[] value$) -> entity$.setPrimitiveByteArray(value$), "primitiveByteArray", "primitivebytearray", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.blob(), gettableData$ -> gettableData$.getBytes("primitivebytearray"), (settableData$, value$) -> settableData$.setBytes("primitivebytearray", value$), new TypeToken<byte[]>(){}, new TypeToken<ByteBuffer>(){}, new ByteArrayPrimitiveCodec());
+  public static final SimpleProperty<TestEntityWithComplexTypes, byte[], ByteBuffer> primitiveByteArray = new SimpleProperty<TestEntityWithComplexTypes, byte[], ByteBuffer>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getPrimitiveByteArray(), (TestEntityWithComplexTypes entity$, byte[] value$) -> entity$.setPrimitiveByteArray(value$), "primitiveByteArray", "primitivebytearray", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.blob(), gettableData$ -> gettableData$.get("primitivebytearray", java.nio.ByteBuffer.class), (settableData$, value$) -> settableData$.set("primitivebytearray", value$, java.nio.ByteBuffer.class), new TypeToken<byte[]>(){}, new TypeToken<ByteBuffer>(){}, new ByteArrayPrimitiveCodec());
 
   /**
    * Meta class for 'objectByteArray' property <br/>
@@ -183,7 +183,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, Byte[], ByteBuffer> objectByteArray = new SimpleProperty<TestEntityWithComplexTypes, Byte[], ByteBuffer>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectByteArray(), (TestEntityWithComplexTypes entity$, Byte[] value$) -> entity$.setObjectByteArray(value$), "objectByteArray", "objectbytearray", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.blob(), gettableData$ -> gettableData$.getBytes("objectbytearray"), (settableData$, value$) -> settableData$.setBytes("objectbytearray", value$), new TypeToken<Byte[]>(){}, new TypeToken<ByteBuffer>(){}, new ByteArrayCodec());
+  public static final SimpleProperty<TestEntityWithComplexTypes, Byte[], ByteBuffer> objectByteArray = new SimpleProperty<TestEntityWithComplexTypes, Byte[], ByteBuffer>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectByteArray(), (TestEntityWithComplexTypes entity$, Byte[] value$) -> entity$.setObjectByteArray(value$), "objectByteArray", "objectbytearray", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.blob(), gettableData$ -> gettableData$.get("objectbytearray", java.nio.ByteBuffer.class), (settableData$, value$) -> settableData$.set("objectbytearray", value$, java.nio.ByteBuffer.class), new TypeToken<Byte[]>(){}, new TypeToken<ByteBuffer>(){}, new ByteArrayCodec());
 
   /**
    * Meta class for 'integer' property <br/>
@@ -194,7 +194,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, Integer, String> integer = new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getInteger(), (TestEntityWithComplexTypes entity$, Integer value$) -> entity$.setInteger(value$), "integer", "integer", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("integer"), (settableData$, value$) -> settableData$.setString("integer", value$), new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec());
+  public static final SimpleProperty<TestEntityWithComplexTypes, Integer, String> integer = new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getInteger(), (TestEntityWithComplexTypes entity$, Integer value$) -> entity$.setInteger(value$), "integer", "integer", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("integer", java.lang.String.class), (settableData$, value$) -> settableData$.set("integer", value$, java.lang.String.class), new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec());
 
   /**
    * Meta class for 'simpleUdt' property <br/>
@@ -254,7 +254,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, Map<Integer, List<Integer>>, String> jsonMap = new SimpleProperty<TestEntityWithComplexTypes, Map<Integer, List<Integer>>, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getJsonMap(), (TestEntityWithComplexTypes entity$, Map<Integer, List<Integer>> value$) -> entity$.setJsonMap(value$), "jsonMap", "jsonmap", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("jsonmap"), (settableData$, value$) -> settableData$.setString("jsonmap", value$), new TypeToken<Map<Integer, List<Integer>>>(){}, new TypeToken<String>(){}, new JSONCodec<>(Map.class, JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(Map.class,SimpleType.construct(Integer.class),JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(List.class,SimpleType.construct(Integer.class)))));
+  public static final SimpleProperty<TestEntityWithComplexTypes, Map<Integer, List<Integer>>, String> jsonMap = new SimpleProperty<TestEntityWithComplexTypes, Map<Integer, List<Integer>>, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getJsonMap(), (TestEntityWithComplexTypes entity$, Map<Integer, List<Integer>> value$) -> entity$.setJsonMap(value$), "jsonMap", "jsonmap", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("jsonmap", java.lang.String.class), (settableData$, value$) -> settableData$.set("jsonmap", value$, java.lang.String.class), new TypeToken<Map<Integer, List<Integer>>>(){}, new TypeToken<String>(){}, new JSONCodec<>(Map.class, JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(Map.class,SimpleType.construct(Integer.class),JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(List.class,SimpleType.construct(Integer.class)))));
 
   /**
    * Meta class for 'mapWithNestedJson' property <br/>
@@ -348,7 +348,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  public static final ComputedProperty<TestEntityWithComplexTypes, Long, Long> writeTime = new ComputedProperty<TestEntityWithComplexTypes, Long, Long>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getWriteTime(), (TestEntityWithComplexTypes entity$, Long value$) -> entity$.setWriteTime(value$), "writeTime", "writetime", ColumnType.COMPUTED, new ComputedColumnInfo("writetime", "write_time", Arrays.asList(new String[]{"value"}), Long.class), IndexInfo.noIndex()), gettableData$ -> gettableData$.getLong("write_time"), new FallThroughCodec<>(Long.class));
+  public static final ComputedProperty<TestEntityWithComplexTypes, Long, Long> writeTime = new ComputedProperty<TestEntityWithComplexTypes, Long, Long>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getWriteTime(), (TestEntityWithComplexTypes entity$, Long value$) -> entity$.setWriteTime(value$), "writeTime", "writetime", ColumnType.COMPUTED, new ComputedColumnInfo("writetime", "write_time", Arrays.asList(new String[]{"value"}), Long.class), IndexInfo.noIndex()), gettableData$ -> gettableData$.get("write_time", java.lang.Long.class), new FallThroughCodec<>(Long.class));
 
   /**
    * Meta class for 'writeTimeWithCodec' property <br/>
@@ -358,7 +358,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  public static final ComputedProperty<TestEntityWithComplexTypes, String, Long> writeTimeWithCodec = new ComputedProperty<TestEntityWithComplexTypes, String, Long>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getWriteTimeWithCodec(), (TestEntityWithComplexTypes entity$, String value$) -> entity$.setWriteTimeWithCodec(value$), "writeTimeWithCodec", "writetimewithcodec", ColumnType.COMPUTED, new ComputedColumnInfo("writetime", "write_time_2", Arrays.asList(new String[]{"value"}), Long.class), IndexInfo.noIndex()), gettableData$ -> gettableData$.getLong("write_time_2"), new StringToLongCodec());
+  public static final ComputedProperty<TestEntityWithComplexTypes, String, Long> writeTimeWithCodec = new ComputedProperty<TestEntityWithComplexTypes, String, Long>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getWriteTimeWithCodec(), (TestEntityWithComplexTypes entity$, String value$) -> entity$.setWriteTimeWithCodec(value$), "writeTimeWithCodec", "writetimewithcodec", ColumnType.COMPUTED, new ComputedColumnInfo("writetime", "write_time_2", Arrays.asList(new String[]{"value"}), Long.class), IndexInfo.noIndex()), gettableData$ -> gettableData$.get("write_time_2", java.lang.Long.class), new StringToLongCodec());
 
   /**
    * Meta class for 'timeuuid' property <br/>
@@ -369,7 +369,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexTypes, UUID, UUID> timeuuid = new SimpleProperty<TestEntityWithComplexTypes, UUID, UUID>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTimeuuid(), (TestEntityWithComplexTypes entity$, UUID value$) -> entity$.setTimeuuid(value$), "timeuuid", "timeuuid", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.timeuuid(), gettableData$ -> gettableData$.getUUID("timeuuid"), (settableData$, value$) -> settableData$.setUUID("timeuuid", value$), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
+  public static final SimpleProperty<TestEntityWithComplexTypes, UUID, UUID> timeuuid = new SimpleProperty<TestEntityWithComplexTypes, UUID, UUID>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTimeuuid(), (TestEntityWithComplexTypes entity$, UUID value$) -> entity$.setTimeuuid(value$), "timeuuid", "timeuuid", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.timeuuid(), gettableData$ -> gettableData$.get("timeuuid", java.util.UUID.class), (settableData$, value$) -> settableData$.set("timeuuid", value$, java.util.UUID.class), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
 
   @Override
   protected Class<TestEntityWithComplexTypes> getEntityClass() {

@@ -54,7 +54,7 @@ public final class TestEntityWithCounterColumn_AchillesMeta extends AbstractEnti
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithCounterColumn, Long, Long> id = new SimpleProperty<TestEntityWithCounterColumn, Long, Long>(new FieldInfo<>((TestEntityWithCounterColumn entity$) -> entity$.getId(), (TestEntityWithCounterColumn entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.getLong("id"), (settableData$, value$) -> settableData$.setLong("id", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+  public static final SimpleProperty<TestEntityWithCounterColumn, Long, Long> id = new SimpleProperty<TestEntityWithCounterColumn, Long, Long>(new FieldInfo<>((TestEntityWithCounterColumn entity$) -> entity$.getId(), (TestEntityWithCounterColumn entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
    * Meta class for 'count' property <br/>
@@ -65,7 +65,7 @@ public final class TestEntityWithCounterColumn_AchillesMeta extends AbstractEnti
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithCounterColumn, Long, Long> count = new SimpleProperty<TestEntityWithCounterColumn, Long, Long>(new FieldInfo<>((TestEntityWithCounterColumn entity$) -> entity$.getCount(), (TestEntityWithCounterColumn entity$, Long value$) -> entity$.setCount(value$), "count", "count", ColumnType.COUNTER, new ColumnInfo(false), IndexInfo.noIndex()), DataType.counter(), gettableData$ -> gettableData$.getLong("count"), (settableData$, value$) -> settableData$.setLong("count", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+  public static final SimpleProperty<TestEntityWithCounterColumn, Long, Long> count = new SimpleProperty<TestEntityWithCounterColumn, Long, Long>(new FieldInfo<>((TestEntityWithCounterColumn entity$) -> entity$.getCount(), (TestEntityWithCounterColumn entity$, Long value$) -> entity$.setCount(value$), "count", "count", ColumnType.COUNTER, new ColumnInfo(false), IndexInfo.noIndex()), DataType.counter(), gettableData$ -> gettableData$.get("count", java.lang.Long.class), (settableData$, value$) -> settableData$.set("count", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   @Override
   protected Class<TestEntityWithCounterColumn> getEntityClass() {

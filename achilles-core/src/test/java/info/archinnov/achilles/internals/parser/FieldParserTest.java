@@ -944,6 +944,26 @@ public class FieldParserTest extends AbstractTestProcessor {
                         "info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistryWrong");
     }
 
+    @Test
+    public void should_parse_field_with_case_sensitive_overriden_name() throws Exception {
+        setExec(aptUtils -> {
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+
+            // @Column("\"overRiden\"")
+            // private String overridenName;
+            VariableElement elm = findFieldInType(typeElement, "overridenName");
+
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo(String.class.getCanonicalName());
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_field_with_case_sensitive_overriden_name.txt"));
+        });
+        launchTest();
+    }
 
     public static class MyCodec implements Codec<List<String>, String>, Serializable {
 

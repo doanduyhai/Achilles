@@ -57,7 +57,7 @@ public final class TestEntityWithStaticCounterColumn_AchillesMeta extends Abstra
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithStaticCounterColumn, Long, Long> id = new SimpleProperty<TestEntityWithStaticCounterColumn, Long, Long>(new FieldInfo<>((TestEntityWithStaticCounterColumn entity$) -> entity$.getId(), (TestEntityWithStaticCounterColumn entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.getLong("id"), (settableData$, value$) -> settableData$.setLong("id", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+  public static final SimpleProperty<TestEntityWithStaticCounterColumn, Long, Long> id = new SimpleProperty<TestEntityWithStaticCounterColumn, Long, Long>(new FieldInfo<>((TestEntityWithStaticCounterColumn entity$) -> entity$.getId(), (TestEntityWithStaticCounterColumn entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
    * Meta class for 'uuid' property <br/>
@@ -68,7 +68,7 @@ public final class TestEntityWithStaticCounterColumn_AchillesMeta extends Abstra
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithStaticCounterColumn, UUID, UUID> uuid = new SimpleProperty<TestEntityWithStaticCounterColumn, UUID, UUID>(new FieldInfo<>((TestEntityWithStaticCounterColumn entity$) -> entity$.getUuid(), (TestEntityWithStaticCounterColumn entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.getUUID("uuid"), (settableData$, value$) -> settableData$.setUUID("uuid", value$), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
+  public static final SimpleProperty<TestEntityWithStaticCounterColumn, UUID, UUID> uuid = new SimpleProperty<TestEntityWithStaticCounterColumn, UUID, UUID>(new FieldInfo<>((TestEntityWithStaticCounterColumn entity$) -> entity$.getUuid(), (TestEntityWithStaticCounterColumn entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.get("uuid", java.util.UUID.class), (settableData$, value$) -> settableData$.set("uuid", value$, java.util.UUID.class), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
 
   /**
    * Meta class for 'count' property <br/>
@@ -79,7 +79,7 @@ public final class TestEntityWithStaticCounterColumn_AchillesMeta extends Abstra
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithStaticCounterColumn, Long, Long> count = new SimpleProperty<TestEntityWithStaticCounterColumn, Long, Long>(new FieldInfo<>((TestEntityWithStaticCounterColumn entity$) -> entity$.getCount(), (TestEntityWithStaticCounterColumn entity$, Long value$) -> entity$.setCount(value$), "count", "count", ColumnType.STATIC_COUNTER, new ColumnInfo(false), IndexInfo.noIndex()), DataType.counter(), gettableData$ -> gettableData$.getLong("count"), (settableData$, value$) -> settableData$.setLong("count", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+  public static final SimpleProperty<TestEntityWithStaticCounterColumn, Long, Long> count = new SimpleProperty<TestEntityWithStaticCounterColumn, Long, Long>(new FieldInfo<>((TestEntityWithStaticCounterColumn entity$) -> entity$.getCount(), (TestEntityWithStaticCounterColumn entity$, Long value$) -> entity$.setCount(value$), "count", "count", ColumnType.STATIC_COUNTER, new ColumnInfo(false), IndexInfo.noIndex()), DataType.counter(), gettableData$ -> gettableData$.get("count", java.lang.Long.class), (settableData$, value$) -> settableData$.set("count", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   @Override
   protected Class<TestEntityWithStaticCounterColumn> getEntityClass() {

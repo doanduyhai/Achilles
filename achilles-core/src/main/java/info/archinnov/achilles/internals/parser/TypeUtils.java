@@ -256,8 +256,6 @@ public class TypeUtils {
     public static final ClassName TYPE_TOKEN = ClassName.get(TypeToken.class);
 
     public static final List<TypeName> ALLOWED_TYPES = new ArrayList<>();
-    private static final Map<TypeName, String> DRIVER_GETTABLEDATA_GETTERS = new HashMap<>();
-    private static final Map<TypeName, String> DRIVER_SETTABLEDATA_SETTERS = new HashMap<>();
     public static final Map<TypeName, String> DRIVER_TYPES_MAPPING = new HashMap<>();
 
 
@@ -284,18 +282,6 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(TypeName.get(int[].class), "frozenList(DataType.cint())");
         DRIVER_TYPES_MAPPING.put(TypeName.get(long[].class), "frozenList(DataType.bigint())");
 
-        DRIVER_GETTABLEDATA_GETTERS.put(PRIMITIVE_BYTE, "getByte");
-        DRIVER_GETTABLEDATA_GETTERS.put(OBJECT_BYTE, "getByte");
-        DRIVER_GETTABLEDATA_GETTERS.put(PRIMITIVE_BYTE_ARRAY, "getBytes");
-        DRIVER_GETTABLEDATA_GETTERS.put(OBJECT_BYTE_ARRAY, "getBytes");
-        DRIVER_GETTABLEDATA_GETTERS.put(BYTE_BUFFER, "getBytes");
-
-        DRIVER_SETTABLEDATA_SETTERS.put(PRIMITIVE_BYTE, "setByte");
-        DRIVER_SETTABLEDATA_SETTERS.put(OBJECT_BYTE, "setByte");
-        DRIVER_SETTABLEDATA_SETTERS.put(PRIMITIVE_BYTE_ARRAY, "setBytes");
-        DRIVER_SETTABLEDATA_SETTERS.put(OBJECT_BYTE_ARRAY, "setBytes");
-        DRIVER_SETTABLEDATA_SETTERS.put(BYTE_BUFFER, "setBytes");
-
         // Boolean
         ALLOWED_TYPES.add(TypeName.get(boolean.class));
         ALLOWED_TYPES.add(TypeName.get(Boolean.class));
@@ -303,23 +289,13 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(TypeName.get(boolean.class), "cboolean()");
         DRIVER_TYPES_MAPPING.put(TypeName.get(Boolean.class), "cboolean()");
 
-        DRIVER_GETTABLEDATA_GETTERS.put(PRIMITIVE_BOOL, "getBool");
-        DRIVER_GETTABLEDATA_GETTERS.put(OBJECT_BOOL, "getBool");
-
-        DRIVER_SETTABLEDATA_SETTERS.put(PRIMITIVE_BOOL, "setBool");
-        DRIVER_SETTABLEDATA_SETTERS.put(OBJECT_BOOL, "setBool");
-
         // Datetime
         ALLOWED_TYPES.add(TypeName.get(Date.class));
-        DRIVER_GETTABLEDATA_GETTERS.put(DATE, "getTimestamp");
-        DRIVER_SETTABLEDATA_SETTERS.put(DATE, "setTimestamp");
 
         DRIVER_TYPES_MAPPING.put(TypeName.get(Date.class), "timestamp()");
 
         // Date
         ALLOWED_TYPES.add(TypeName.get(LocalDate.class));
-        DRIVER_GETTABLEDATA_GETTERS.put(LOCAL_DATE, "getDate");
-        DRIVER_SETTABLEDATA_SETTERS.put(LOCAL_DATE, "setDate");
 
         DRIVER_TYPES_MAPPING.put(TypeName.get(LocalDate.class), "date()");
 
@@ -330,24 +306,12 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(TypeName.get(short.class), "smallint()");
         DRIVER_TYPES_MAPPING.put(TypeName.get(Short.class), "smallint()");
 
-        DRIVER_GETTABLEDATA_GETTERS.put(PRIMITIVE_SHORT, "getShort");
-        DRIVER_GETTABLEDATA_GETTERS.put(OBJECT_SHORT, "getShort");
-
-        DRIVER_SETTABLEDATA_SETTERS.put(PRIMITIVE_SHORT, "setShort");
-        DRIVER_SETTABLEDATA_SETTERS.put(OBJECT_SHORT, "setShort");
-
         // Double
         ALLOWED_TYPES.add(TypeName.get(double.class));
         ALLOWED_TYPES.add(TypeName.get(Double.class));
 
         DRIVER_TYPES_MAPPING.put(TypeName.get(double.class), "cdouble()");
         DRIVER_TYPES_MAPPING.put(TypeName.get(Double.class), "cdouble()");
-
-        DRIVER_GETTABLEDATA_GETTERS.put(PRIMITIVE_DOUBLE, "getDouble");
-        DRIVER_GETTABLEDATA_GETTERS.put(OBJECT_DOUBLE, "getDouble");
-
-        DRIVER_SETTABLEDATA_SETTERS.put(PRIMITIVE_DOUBLE, "setDouble");
-        DRIVER_SETTABLEDATA_SETTERS.put(OBJECT_DOUBLE, "setDouble");
 
         // Float
         ALLOWED_TYPES.add(TypeName.get(BigDecimal.class));
@@ -358,21 +322,10 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(TypeName.get(float.class), "cfloat()");
         DRIVER_TYPES_MAPPING.put(TypeName.get(Float.class), "cfloat()");
 
-        DRIVER_GETTABLEDATA_GETTERS.put(BIG_DECIMAL, "getDecimal");
-        DRIVER_GETTABLEDATA_GETTERS.put(PRIMITIVE_FLOAT, "getFloat");
-        DRIVER_GETTABLEDATA_GETTERS.put(OBJECT_FLOAT, "getFloat");
-
-        DRIVER_SETTABLEDATA_SETTERS.put(BIG_DECIMAL, "setDecimal");
-        DRIVER_SETTABLEDATA_SETTERS.put(PRIMITIVE_FLOAT, "setFloat");
-        DRIVER_SETTABLEDATA_SETTERS.put(OBJECT_FLOAT, "setFloat");
-
         // InetAddress
         ALLOWED_TYPES.add(TypeName.get(InetAddress.class));
 
         DRIVER_TYPES_MAPPING.put(TypeName.get(InetAddress.class), "inet()");
-
-        DRIVER_GETTABLEDATA_GETTERS.put(INET, "getInet");
-        DRIVER_SETTABLEDATA_SETTERS.put(INET, "setInet");
 
         // Integer
         ALLOWED_TYPES.add(TypeName.get(int.class));
@@ -383,14 +336,6 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(TypeName.get(Integer.class), "cint()");
         DRIVER_TYPES_MAPPING.put(TypeName.get(BigInteger.class), "varint()");
 
-        DRIVER_GETTABLEDATA_GETTERS.put(PRIMITIVE_INT, "getInt");
-        DRIVER_GETTABLEDATA_GETTERS.put(OBJECT_INT, "getInt");
-        DRIVER_GETTABLEDATA_GETTERS.put(BIGINT, "getVarint");
-
-        DRIVER_SETTABLEDATA_SETTERS.put(PRIMITIVE_INT, "setInt");
-        DRIVER_SETTABLEDATA_SETTERS.put(OBJECT_INT, "setInt");
-        DRIVER_SETTABLEDATA_SETTERS.put(BIGINT, "setVarint");
-
         // Long
         ALLOWED_TYPES.add(TypeName.get(long.class));
         ALLOWED_TYPES.add(TypeName.get(Long.class));
@@ -398,27 +343,15 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(TypeName.get(long.class), "bigint()");
         DRIVER_TYPES_MAPPING.put(TypeName.get(Long.class), "bigint()");
 
-        DRIVER_GETTABLEDATA_GETTERS.put(PRIMITIVE_LONG, "getLong");
-        DRIVER_GETTABLEDATA_GETTERS.put(OBJECT_LONG, "getLong");
-
-        DRIVER_SETTABLEDATA_SETTERS.put(PRIMITIVE_LONG, "setLong");
-        DRIVER_SETTABLEDATA_SETTERS.put(OBJECT_LONG, "setLong");
-
         // String
         ALLOWED_TYPES.add(TypeName.get(String.class));
 
         DRIVER_TYPES_MAPPING.put(TypeName.get(String.class), "text()");
 
-        DRIVER_GETTABLEDATA_GETTERS.put(STRING, "getString");
-        DRIVER_SETTABLEDATA_SETTERS.put(STRING, "setString");
-
         // UUID
         ALLOWED_TYPES.add(TypeName.get(UUID.class));
 
         DRIVER_TYPES_MAPPING.put(TypeName.get(UUID.class), "uuid()");
-
-        DRIVER_GETTABLEDATA_GETTERS.put(UUID, "getUUID");
-        DRIVER_SETTABLEDATA_SETTERS.put(UUID, "setUUID");
 
         // Tuples
         ALLOWED_TYPES.add(TypeName.get(Tuple1.class));
@@ -446,19 +379,11 @@ public class TypeUtils {
     }
 
     public static String gettableDataGetter(TypeName typeName, String cqlColumn) {
-        if (typeName instanceof ArrayTypeName) {
-            return "get(\""+cqlColumn+"\", "+typeName.toString()+".class)";
-        } else {
-            return DRIVER_GETTABLEDATA_GETTERS.get(typeName)+"(\""+cqlColumn+"\")";
-        }
+        return "get(\""+escapeDoubleQuotes(cqlColumn)+"\", "+typeName.toString()+".class)";
     }
 
     public static String settableDataSetter(TypeName typeName, String cqlColumn) {
-        if (typeName instanceof ArrayTypeName) {
-            return "set(\""+cqlColumn+"\", value$, "+typeName.toString()+".class)";
-        } else {
-            return DRIVER_SETTABLEDATA_SETTERS.get(typeName)+"(\""+cqlColumn+"\", value$)";
-        }
+        return "set(\""+escapeDoubleQuotes(cqlColumn)+"\", value$, "+typeName.toString()+".class)";
     }
 
     public static ParameterizedTypeName genericType(ClassName baseType, TypeName... argTypes) {
@@ -467,5 +392,13 @@ public class TypeUtils {
 
     public static ParameterizedTypeName classTypeOf(TypeName classType) {
         return ParameterizedTypeName.get(CLASS, classType);
+    }
+
+    private static String escapeDoubleQuotes(String cqlColumn) {
+        if (cqlColumn.startsWith("\"") && cqlColumn.endsWith("\"")) {
+            return cqlColumn.replaceAll("\"", "\\\\\"");
+        } else {
+            return cqlColumn;
+        }
     }
 }

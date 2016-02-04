@@ -56,7 +56,7 @@ public final class TestEntityWithComputedColumn_AchillesMeta extends AbstractEnt
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComputedColumn, Long, Long> id = new SimpleProperty<TestEntityWithComputedColumn, Long, Long>(new FieldInfo<>((TestEntityWithComputedColumn entity$) -> entity$.getId(), (TestEntityWithComputedColumn entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.getLong("id"), (settableData$, value$) -> settableData$.setLong("id", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+  public static final SimpleProperty<TestEntityWithComputedColumn, Long, Long> id = new SimpleProperty<TestEntityWithComputedColumn, Long, Long>(new FieldInfo<>((TestEntityWithComputedColumn entity$) -> entity$.getId(), (TestEntityWithComputedColumn entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
    * Meta class for 'writetime' property <br/>
@@ -66,7 +66,7 @@ public final class TestEntityWithComputedColumn_AchillesMeta extends AbstractEnt
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  public static final ComputedProperty<TestEntityWithComputedColumn, Long, Long> writetime = new ComputedProperty<TestEntityWithComputedColumn, Long, Long>(new FieldInfo<>((TestEntityWithComputedColumn entity$) -> entity$.getWritetime(), (TestEntityWithComputedColumn entity$, Long value$) -> entity$.setWritetime(value$), "writetime", "writetime", ColumnType.COMPUTED, new ComputedColumnInfo("writetime", "writetime", Arrays.asList(new String[]{"value"}), Long.class), IndexInfo.noIndex()), gettableData$ -> gettableData$.getLong("writetime"), new FallThroughCodec<>(Long.class));
+  public static final ComputedProperty<TestEntityWithComputedColumn, Long, Long> writetime = new ComputedProperty<TestEntityWithComputedColumn, Long, Long>(new FieldInfo<>((TestEntityWithComputedColumn entity$) -> entity$.getWritetime(), (TestEntityWithComputedColumn entity$, Long value$) -> entity$.setWritetime(value$), "writetime", "writetime", ColumnType.COMPUTED, new ComputedColumnInfo("writetime", "writetime", Arrays.asList(new String[]{"value"}), Long.class), IndexInfo.noIndex()), gettableData$ -> gettableData$.get("writetime", java.lang.Long.class), new FallThroughCodec<>(Long.class));
 
   /**
    * Meta class for 'value' property <br/>
@@ -77,7 +77,7 @@ public final class TestEntityWithComputedColumn_AchillesMeta extends AbstractEnt
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComputedColumn, String, String> value = new SimpleProperty<TestEntityWithComputedColumn, String, String>(new FieldInfo<>((TestEntityWithComputedColumn entity$) -> entity$.getValue(), (TestEntityWithComputedColumn entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("value"), (settableData$, value$) -> settableData$.setString("value", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+  public static final SimpleProperty<TestEntityWithComputedColumn, String, String> value = new SimpleProperty<TestEntityWithComputedColumn, String, String>(new FieldInfo<>((TestEntityWithComputedColumn entity$) -> entity$.getValue(), (TestEntityWithComputedColumn entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("value", java.lang.String.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   @Override
   protected Class<TestEntityWithComputedColumn> getEntityClass() {

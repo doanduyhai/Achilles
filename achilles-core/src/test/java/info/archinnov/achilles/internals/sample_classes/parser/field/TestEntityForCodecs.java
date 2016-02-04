@@ -180,6 +180,9 @@ public class TestEntityForCodecs {
     @Column
     private List<@Frozen Map<@Enumerated ProtocolVersion, List<int[]>>> nestedArrays;
 
+    @Column("\"overRiden\"")
+    private String overridenName;
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -551,6 +554,14 @@ public class TestEntityForCodecs {
 
     public void setNestedArrays(List<Map<ProtocolVersion, List<int[]>>> nestedArrays) {
         this.nestedArrays = nestedArrays;
+    }
+
+    public String getOverridenName() {
+        return overridenName;
+    }
+
+    public void setOverridenName(String overridenName) {
+        this.overridenName = overridenName;
     }
 }
 

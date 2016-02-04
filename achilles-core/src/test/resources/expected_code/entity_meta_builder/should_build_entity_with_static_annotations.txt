@@ -54,7 +54,7 @@ public final class TestEntityWithStaticAnnotations_AchillesMeta extends Abstract
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithStaticAnnotations, Long, Long> partitionKey = new SimpleProperty<TestEntityWithStaticAnnotations, Long, Long>(new FieldInfo<>((TestEntityWithStaticAnnotations entity$) -> entity$.getPartitionKey(), (TestEntityWithStaticAnnotations entity$, Long value$) -> entity$.setPartitionKey(value$), "partitionKey", "partition_key", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.getLong("partition_key"), (settableData$, value$) -> settableData$.setLong("partition_key", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+  public static final SimpleProperty<TestEntityWithStaticAnnotations, Long, Long> partitionKey = new SimpleProperty<TestEntityWithStaticAnnotations, Long, Long>(new FieldInfo<>((TestEntityWithStaticAnnotations entity$) -> entity$.getPartitionKey(), (TestEntityWithStaticAnnotations entity$, Long value$) -> entity$.setPartitionKey(value$), "partitionKey", "partition_key", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("partition_key", java.lang.Long.class), (settableData$, value$) -> settableData$.set("partition_key", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
    * Meta class for 'stringValue' property <br/>
@@ -65,7 +65,7 @@ public final class TestEntityWithStaticAnnotations_AchillesMeta extends Abstract
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithStaticAnnotations, String, String> stringValue = new SimpleProperty<TestEntityWithStaticAnnotations, String, String>(new FieldInfo<>((TestEntityWithStaticAnnotations entity$) -> entity$.getStringValue(), (TestEntityWithStaticAnnotations entity$, String value$) -> entity$.setStringValue(value$), "stringValue", "string_value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("string_value"), (settableData$, value$) -> settableData$.setString("string_value", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+  public static final SimpleProperty<TestEntityWithStaticAnnotations, String, String> stringValue = new SimpleProperty<TestEntityWithStaticAnnotations, String, String>(new FieldInfo<>((TestEntityWithStaticAnnotations entity$) -> entity$.getStringValue(), (TestEntityWithStaticAnnotations entity$, String value$) -> entity$.setStringValue(value$), "stringValue", "string_value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("string_value", java.lang.String.class), (settableData$, value$) -> settableData$.set("string_value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**
    * Meta class for 'overridenName' property <br/>
@@ -76,7 +76,7 @@ public final class TestEntityWithStaticAnnotations_AchillesMeta extends Abstract
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithStaticAnnotations, String, String> overridenName = new SimpleProperty<TestEntityWithStaticAnnotations, String, String>(new FieldInfo<>((TestEntityWithStaticAnnotations entity$) -> entity$.getOverridenName(), (TestEntityWithStaticAnnotations entity$, String value$) -> entity$.setOverridenName(value$), "overridenName", "overriden", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("overriden"), (settableData$, value$) -> settableData$.setString("overriden", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+  public static final SimpleProperty<TestEntityWithStaticAnnotations, String, String> overridenName = new SimpleProperty<TestEntityWithStaticAnnotations, String, String>(new FieldInfo<>((TestEntityWithStaticAnnotations entity$) -> entity$.getOverridenName(), (TestEntityWithStaticAnnotations entity$, String value$) -> entity$.setOverridenName(value$), "overridenName", "overriden", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("overriden", java.lang.String.class), (settableData$, value$) -> settableData$.set("overriden", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   @Override
   protected Class<TestEntityWithStaticAnnotations> getEntityClass() {

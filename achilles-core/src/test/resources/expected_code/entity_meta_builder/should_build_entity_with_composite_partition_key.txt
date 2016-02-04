@@ -55,7 +55,7 @@ public final class TestEntityWithCompositePartitionKey_AchillesMeta extends Abst
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithCompositePartitionKey, Long, Long> id = new SimpleProperty<TestEntityWithCompositePartitionKey, Long, Long>(new FieldInfo<>((TestEntityWithCompositePartitionKey entity$) -> entity$.getId(), (TestEntityWithCompositePartitionKey entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.getLong("id"), (settableData$, value$) -> settableData$.setLong("id", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+  public static final SimpleProperty<TestEntityWithCompositePartitionKey, Long, Long> id = new SimpleProperty<TestEntityWithCompositePartitionKey, Long, Long>(new FieldInfo<>((TestEntityWithCompositePartitionKey entity$) -> entity$.getId(), (TestEntityWithCompositePartitionKey entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
    * Meta class for 'uuid' property <br/>
@@ -66,7 +66,7 @@ public final class TestEntityWithCompositePartitionKey_AchillesMeta extends Abst
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithCompositePartitionKey, UUID, UUID> uuid = new SimpleProperty<TestEntityWithCompositePartitionKey, UUID, UUID>(new FieldInfo<>((TestEntityWithCompositePartitionKey entity$) -> entity$.getUuid(), (TestEntityWithCompositePartitionKey entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.PARTITION, new PartitionKeyInfo(2, false), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.getUUID("uuid"), (settableData$, value$) -> settableData$.setUUID("uuid", value$), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
+  public static final SimpleProperty<TestEntityWithCompositePartitionKey, UUID, UUID> uuid = new SimpleProperty<TestEntityWithCompositePartitionKey, UUID, UUID>(new FieldInfo<>((TestEntityWithCompositePartitionKey entity$) -> entity$.getUuid(), (TestEntityWithCompositePartitionKey entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.PARTITION, new PartitionKeyInfo(2, false), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.get("uuid", java.util.UUID.class), (settableData$, value$) -> settableData$.set("uuid", value$, java.util.UUID.class), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
 
   /**
    * Meta class for 'value' property <br/>
@@ -77,7 +77,7 @@ public final class TestEntityWithCompositePartitionKey_AchillesMeta extends Abst
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithCompositePartitionKey, String, String> value = new SimpleProperty<TestEntityWithCompositePartitionKey, String, String>(new FieldInfo<>((TestEntityWithCompositePartitionKey entity$) -> entity$.getValue(), (TestEntityWithCompositePartitionKey entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("value"), (settableData$, value$) -> settableData$.setString("value", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+  public static final SimpleProperty<TestEntityWithCompositePartitionKey, String, String> value = new SimpleProperty<TestEntityWithCompositePartitionKey, String, String>(new FieldInfo<>((TestEntityWithCompositePartitionKey entity$) -> entity$.getValue(), (TestEntityWithCompositePartitionKey entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("value", java.lang.String.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   @Override
   protected Class<TestEntityWithCompositePartitionKey> getEntityClass() {

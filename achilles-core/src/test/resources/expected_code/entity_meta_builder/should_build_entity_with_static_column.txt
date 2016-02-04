@@ -57,7 +57,7 @@ public final class TestEntityWithStaticColumn_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithStaticColumn, Long, Long> id = new SimpleProperty<TestEntityWithStaticColumn, Long, Long>(new FieldInfo<>((TestEntityWithStaticColumn entity$) -> entity$.getId(), (TestEntityWithStaticColumn entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.getLong("id"), (settableData$, value$) -> settableData$.setLong("id", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+  public static final SimpleProperty<TestEntityWithStaticColumn, Long, Long> id = new SimpleProperty<TestEntityWithStaticColumn, Long, Long>(new FieldInfo<>((TestEntityWithStaticColumn entity$) -> entity$.getId(), (TestEntityWithStaticColumn entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
    * Meta class for 'uuid' property <br/>
@@ -68,7 +68,7 @@ public final class TestEntityWithStaticColumn_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithStaticColumn, UUID, UUID> uuid = new SimpleProperty<TestEntityWithStaticColumn, UUID, UUID>(new FieldInfo<>((TestEntityWithStaticColumn entity$) -> entity$.getUuid(), (TestEntityWithStaticColumn entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.getUUID("uuid"), (settableData$, value$) -> settableData$.setUUID("uuid", value$), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
+  public static final SimpleProperty<TestEntityWithStaticColumn, UUID, UUID> uuid = new SimpleProperty<TestEntityWithStaticColumn, UUID, UUID>(new FieldInfo<>((TestEntityWithStaticColumn entity$) -> entity$.getUuid(), (TestEntityWithStaticColumn entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.get("uuid", java.util.UUID.class), (settableData$, value$) -> settableData$.set("uuid", value$, java.util.UUID.class), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
 
   /**
    * Meta class for 'staticCol' property <br/>
@@ -79,7 +79,7 @@ public final class TestEntityWithStaticColumn_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithStaticColumn, String, String> staticCol = new SimpleProperty<TestEntityWithStaticColumn, String, String>(new FieldInfo<>((TestEntityWithStaticColumn entity$) -> entity$.getStaticCol(), (TestEntityWithStaticColumn entity$, String value$) -> entity$.setStaticCol(value$), "staticCol", "staticcol", ColumnType.STATIC, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("staticcol"), (settableData$, value$) -> settableData$.setString("staticcol", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+  public static final SimpleProperty<TestEntityWithStaticColumn, String, String> staticCol = new SimpleProperty<TestEntityWithStaticColumn, String, String>(new FieldInfo<>((TestEntityWithStaticColumn entity$) -> entity$.getStaticCol(), (TestEntityWithStaticColumn entity$, String value$) -> entity$.setStaticCol(value$), "staticCol", "staticcol", ColumnType.STATIC, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("staticcol", java.lang.String.class), (settableData$, value$) -> settableData$.set("staticcol", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**
    * Meta class for 'value' property <br/>
@@ -90,7 +90,7 @@ public final class TestEntityWithStaticColumn_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithStaticColumn, String, String> value = new SimpleProperty<TestEntityWithStaticColumn, String, String>(new FieldInfo<>((TestEntityWithStaticColumn entity$) -> entity$.getValue(), (TestEntityWithStaticColumn entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.getString("value"), (settableData$, value$) -> settableData$.setString("value", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+  public static final SimpleProperty<TestEntityWithStaticColumn, String, String> value = new SimpleProperty<TestEntityWithStaticColumn, String, String>(new FieldInfo<>((TestEntityWithStaticColumn entity$) -> entity$.getValue(), (TestEntityWithStaticColumn entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("value", java.lang.String.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   @Override
   protected Class<TestEntityWithStaticColumn> getEntityClass() {

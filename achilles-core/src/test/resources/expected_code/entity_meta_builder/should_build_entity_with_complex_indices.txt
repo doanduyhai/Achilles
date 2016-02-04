@@ -60,7 +60,7 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexIndices, Long, Long> id = new SimpleProperty<TestEntityWithComplexIndices, Long, Long>(new FieldInfo<>((TestEntityWithComplexIndices entity$) -> entity$.getId(), (TestEntityWithComplexIndices entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.getLong("id"), (settableData$, value$) -> settableData$.setLong("id", value$), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+  public static final SimpleProperty<TestEntityWithComplexIndices, Long, Long> id = new SimpleProperty<TestEntityWithComplexIndices, Long, Long>(new FieldInfo<>((TestEntityWithComplexIndices entity$) -> entity$.getId(), (TestEntityWithComplexIndices entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
    * Meta class for 'simpleIndex' property <br/>
@@ -71,7 +71,7 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
    * </ul>
    */
   @SuppressWarnings("serial")
-  public static final SimpleProperty<TestEntityWithComplexIndices, String, String> simpleIndex = new SimpleProperty<TestEntityWithComplexIndices, String, String>(new FieldInfo<>((TestEntityWithComplexIndices entity$) -> entity$.getSimpleIndex(), (TestEntityWithComplexIndices entity$, String value$) -> entity$.setSimpleIndex(value$), "simpleIndex", "simpleindex", ColumnType.NORMAL, new ColumnInfo(false), new IndexInfo(IndexType.NORMAL, "simpleindex_index", "", "")), DataType.text(), gettableData$ -> gettableData$.getString("simpleindex"), (settableData$, value$) -> settableData$.setString("simpleindex", value$), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+  public static final SimpleProperty<TestEntityWithComplexIndices, String, String> simpleIndex = new SimpleProperty<TestEntityWithComplexIndices, String, String>(new FieldInfo<>((TestEntityWithComplexIndices entity$) -> entity$.getSimpleIndex(), (TestEntityWithComplexIndices entity$, String value$) -> entity$.setSimpleIndex(value$), "simpleIndex", "simpleindex", ColumnType.NORMAL, new ColumnInfo(false), new IndexInfo(IndexType.NORMAL, "simpleindex_index", "", "")), DataType.text(), gettableData$ -> gettableData$.get("simpleindex", java.lang.String.class), (settableData$, value$) -> settableData$.set("simpleindex", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**
    * Meta class for 'collectionIndex' property <br/>

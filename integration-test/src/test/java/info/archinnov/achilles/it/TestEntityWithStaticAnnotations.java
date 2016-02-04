@@ -86,7 +86,7 @@ public class TestEntityWithStaticAnnotations {
 
         assertThat(actual).isNotNull();
         assertThat(actual.getString("value")).isEqualTo("new_val");
-        assertThat(actual.getString("overriden")).isEqualTo("overriden_val");
+        assertThat(actual.getString("\"overRiden\"")).isEqualTo("overriden_val");
 
         logAsserter.assertConsistencyLevels(LOCAL_ONE);
     }
