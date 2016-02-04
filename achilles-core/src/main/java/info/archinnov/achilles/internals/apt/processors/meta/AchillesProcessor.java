@@ -61,6 +61,7 @@ public class AchillesProcessor extends AbstractProcessor {
 
     protected AptUtils aptUtils;
     protected EntityParser entityParser;
+    private boolean processed = false;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -74,8 +75,7 @@ public class AchillesProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        if (!annotations.isEmpty() && !roundEnv.processingOver()) {
-
+        if (!this.processed) {
             Map<TypeName, CodecFactory.CodecInfo> codecRegistry = parseCodecRegistry(annotations, roundEnv);
 
             final GlobalParsingContext parsingContext = new GlobalParsingContext(codecRegistry);
@@ -144,10 +144,12 @@ public class AchillesProcessor extends AbstractProcessor {
             } catch (Throwable throwable) {
                 aptUtils.printError("Fail generating source file : %s", throwable.getMessage(), throwable);
                 throwable.printStackTrace();
+            } finally {
+                this.processed = true;
             }
 
         }
-        return roundEnv.processingOver();
+        return true;
     }
 
     private void validateEntityNames(List<TypeElement> entityTypes) {
