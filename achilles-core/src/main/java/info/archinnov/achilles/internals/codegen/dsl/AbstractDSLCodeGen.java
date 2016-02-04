@@ -108,12 +108,12 @@ public abstract class AbstractDSLCodeGen {
     protected static MethodSpec buildColumnRelation(String relation, TypeName nextType, FieldSignatureInfo fieldInfo) {
         final String methodName = fieldInfo.fieldName + "_" + upperCaseFirst(relation);
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fieldInfo.cqlColum, relationNameToSymbol(relation))
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fieldInfo.cqlColumn, relationToSymbolForJavaDoc(relation))
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(fieldInfo.typeName, fieldInfo.fieldName)
                 .addStatement("where.and($T.$L($S, $T.bindMarker($S)))",
-                        QUERY_BUILDER, relation, fieldInfo.cqlColum, QUERY_BUILDER, methodName)
+                        QUERY_BUILDER, relation, fieldInfo.cqlColumn, QUERY_BUILDER, methodName)
                 .addStatement("boundValues.add($N)", fieldInfo.fieldName)
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, fieldInfo.fieldName)
                 .returns(nextType);
@@ -125,7 +125,7 @@ public abstract class AbstractDSLCodeGen {
         final String methodName = fieldInfo.fieldName + "_IN";
         final String param = fieldInfo.fieldName;
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L IN ?</strong>", fieldInfo.cqlColum)
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L IN ?</strong>", fieldInfo.cqlColumn)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(ArrayTypeName.of(fieldInfo.typeName), fieldInfo.fieldName)
@@ -133,7 +133,7 @@ public abstract class AbstractDSLCodeGen {
                 .addStatement("$T.validateTrue($T.isNotEmpty($L), \"Varargs for field '%s' should not be null/empty\", $S)",
                         VALIDATOR, ARRAYS_UTILS, fieldInfo.fieldName, fieldInfo.fieldName)
                 .addStatement("where.and($T.in($S,$T.bindMarker($S)))",
-                        QUERY_BUILDER, fieldInfo.cqlColum, QUERY_BUILDER, fieldInfo.cqlColum)
+                        QUERY_BUILDER, fieldInfo.cqlColumn, QUERY_BUILDER, fieldInfo.cqlColumn)
                 .addStatement("final $T varargs = $T.<Object>asList((Object[])$L)", LIST_OBJECT, ARRAYS, param)
                 .addStatement("final $T encodedVarargs = $T.<$T>stream(($T[])$L).map(x -> meta.$L.encodeFromJava(x)).collect($T.toList())",
                         LIST_OBJECT, ARRAYS, fieldInfo.typeName, fieldInfo.typeName, fieldInfo.fieldName, fieldInfo.fieldName, COLLECTORS)
@@ -322,14 +322,14 @@ public abstract class AbstractDSLCodeGen {
     private static MethodSpec buildLWTConditionOnColumn(String relation, FieldSignatureInfo fieldSignatureInfo, TypeName currentType) {
         String methodName = "if" + upperCaseFirst(fieldSignatureInfo.fieldName) + "_" + upperCaseFirst(relation);
         return MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate an ... <strong>IF $L $L ?</strong>", fieldSignatureInfo.fieldName, relationNameToSymbol(relation))
+                .addJavadoc("Generate an ... <strong>IF $L $L ?</strong>", fieldSignatureInfo.fieldName, relationToSymbolForJavaDoc(relation))
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(fieldSignatureInfo.typeName, fieldSignatureInfo.fieldName, Modifier.FINAL)
                 .addStatement("boundValues.add($N)", fieldSignatureInfo.fieldName)
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldSignatureInfo.fieldName, fieldSignatureInfo.fieldName)
                 .addStatement("where.onlyIf($T.$L($S, $T.bindMarker($S)))",
-                        QUERY_BUILDER, relation, fieldSignatureInfo.cqlColum, QUERY_BUILDER, fieldSignatureInfo.cqlColum)
+                        QUERY_BUILDER, relation, fieldSignatureInfo.cqlColumn, QUERY_BUILDER, fieldSignatureInfo.cqlColumn)
                 .addStatement("return this")
                 .returns(currentType)
                 .build();
@@ -346,14 +346,14 @@ public abstract class AbstractDSLCodeGen {
                 .addStatement("boundValues.add($N)", fieldSignatureInfo.fieldName)
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldSignatureInfo.fieldName, fieldSignatureInfo.fieldName)
                 .addStatement("where.onlyIf($T.of($S, $T.bindMarker($S)))",
-                        NOT_EQ, fieldSignatureInfo.cqlColum, QUERY_BUILDER, fieldSignatureInfo.cqlColum)
+                        NOT_EQ, fieldSignatureInfo.cqlColumn, QUERY_BUILDER, fieldSignatureInfo.cqlColumn)
                 .addStatement("return this")
                 .returns(currentType)
                 .build();
 
     }
 
-    protected static String relationNameToSymbol(String relation) {
+    protected static String relationToSymbolForJavaDoc(String relation) {
         switch (relation) {
             case EQ:
                 return "=";
@@ -371,6 +371,10 @@ public abstract class AbstractDSLCodeGen {
         }
     }
 
+    protected static String formatColumnTuplesForJavadoc(String columnTuples) {
+        return "(" + columnTuples.replaceAll("\"","") + ")";
+    }
+
     public enum ReturnType {
         NEW,
         THIS
@@ -383,17 +387,17 @@ public abstract class AbstractDSLCodeGen {
 
     public static class FieldSignatureInfo {
         public final String fieldName;
-        public final String cqlColum;
+        public final String cqlColumn;
         public final TypeName typeName;
 
-        private FieldSignatureInfo(String fieldName, String cqlColum, TypeName typeName) {
+        private FieldSignatureInfo(String fieldName, String cqlColumn, TypeName typeName) {
             this.fieldName = fieldName;
-            this.cqlColum = cqlColum;
+            this.cqlColumn = cqlColumn;
             this.typeName = typeName;
         }
 
-        public static FieldSignatureInfo of(String fieldName, String cqlColum, TypeName typeName) {
-            return new FieldSignatureInfo(fieldName, cqlColum, typeName);
+        public static FieldSignatureInfo of(String fieldName, String cqlColumn, TypeName typeName) {
+            return new FieldSignatureInfo(fieldName, cqlColumn, typeName);
         }
     }
 

@@ -89,19 +89,19 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
             final FieldSignatureInfo fieldSignatureInfo = firstClustering.get();
             final MethodSpec orderByAsc = MethodSpec
                     .methodBuilder("orderBy" + upperCaseFirst(fieldSignatureInfo.fieldName) + "Ascending")
-                    .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY $L ASC</strong>", fieldSignatureInfo.cqlColum)
+                    .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY $L ASC</strong>", fieldSignatureInfo.cqlColumn)
                     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                     .returns(lastSignature.returnClassType)
-                    .addStatement("where.orderBy($T.asc($S))", QUERY_BUILDER, fieldSignatureInfo.cqlColum)
+                    .addStatement("where.orderBy($T.asc($S))", QUERY_BUILDER, fieldSignatureInfo.cqlColumn)
                     .addStatement("return this")
                     .build();
 
             final MethodSpec orderByDesc = MethodSpec
                     .methodBuilder("orderBy" + upperCaseFirst(fieldSignatureInfo.fieldName) + "Descending")
-                    .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY $L DESC</strong>", fieldSignatureInfo.cqlColum)
+                    .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY $L DESC</strong>", fieldSignatureInfo.cqlColumn)
                     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                     .returns(lastSignature.returnClassType)
-                    .addStatement("where.orderBy($T.desc($S))", QUERY_BUILDER, fieldSignatureInfo.cqlColum)
+                    .addStatement("where.orderBy($T.desc($S))", QUERY_BUILDER, fieldSignatureInfo.cqlColumn)
                     .addStatement("return this")
                     .build();
 
@@ -252,7 +252,7 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         fieldInfos
                 .stream()
-                .map(x -> x.cqlColum)
+                .map(x -> x.cqlColumn)
                 .forEach(x -> paramsJoiner.add("\"" + x + "\""));
 
         final String params = paramsJoiner.toString();
@@ -260,7 +260,8 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         final String encodedValues = encodedValuesJoiner.toString();
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", params, relation)
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>",
+                        formatColumnTuplesForJavadoc(params), relationToSymbolForJavaDoc(relation))
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("where.and($T.$L($T.asList($L), $T.asList($L).stream().map($T::bindMarker).collect($T.toList())))",
@@ -293,7 +294,7 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         fieldInfos
                 .stream()
-                .map(x -> x.cqlColum)
+                .map(x -> x.cqlColumn)
                 .forEach(x -> {
                     paramsJoinerRelation1AsString.add("\"" + x + "\"");
                     paramsJoinerRelation2AsString.add("\"" + x + "\"");
@@ -304,7 +305,8 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ? AND $L $L ?</strong>",
-                        paramsRelation1AsString, relation1, paramsJoinerRelation2AsString, relation2)
+                        formatColumnTuplesForJavadoc(paramsRelation1AsString), relationToSymbolForJavaDoc(relation1),
+                        formatColumnTuplesForJavadoc(paramsRelation2AsString), relationToSymbolForJavaDoc(relation2))
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("where.and($T.$L($T.asList($L), $T.asList($L).stream().map($T::bindMarker).collect($T.toList())))",
@@ -349,12 +351,12 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         fieldInfos1
                 .stream()
-                .map(x -> x.cqlColum)
+                .map(x -> x.cqlColumn)
                 .forEach(x -> paramsJoinerRelation1AsString.add("\"" + x + "\""));
 
         fieldInfos2
                 .stream()
-                .map(x -> x.cqlColum)
+                .map(x -> x.cqlColumn)
                 .forEach(x -> paramsJoinerRelation2AsString.add("\"" + x + "\""));
 
         final String paramsRelation1AsString = paramsJoinerRelation1AsString.toString();
@@ -362,7 +364,8 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ? AND $L $L ?</strong>",
-                        paramsRelation1AsString, relation1, paramsJoinerRelation2AsString, relation2)
+                        formatColumnTuplesForJavadoc(paramsRelation1AsString), relationToSymbolForJavaDoc(relation1),
+                        formatColumnTuplesForJavadoc(paramsRelation2AsString), relationToSymbolForJavaDoc(relation2))
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("where.and($T.$L($T.asList($L), $T.asList($L).stream().map($T::bindMarker).collect($T.toList())))",
@@ -395,21 +398,21 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         final String methodName = fieldInfo.fieldName + "_" + upperCaseFirst(relation1) + "_And_" + upperCaseFirst(relation2);
         final String param1 = fieldInfo.fieldName + "_" + upperCaseFirst(relation1);
         final String param2 = fieldInfo.fieldName + "_" + upperCaseFirst(relation2);
-        final String column1 = fieldInfo.cqlColum + "_" + upperCaseFirst(relation2);
-        final String column2 = fieldInfo.cqlColum + "_" + upperCaseFirst(relation2);
+        final String column1 = fieldInfo.cqlColumn + "_" + upperCaseFirst(relation2);
+        final String column2 = fieldInfo.cqlColumn + "_" + upperCaseFirst(relation2);
 
         return MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ? AND $L $L ?</strong>",
-                        fieldInfo.cqlColum, relationNameToSymbol(relation1),
-                        fieldInfo.cqlColum, relationNameToSymbol(relation2))
+                        fieldInfo.cqlColumn, relationToSymbolForJavaDoc(relation1),
+                        fieldInfo.cqlColumn, relationToSymbolForJavaDoc(relation2))
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(fieldInfo.typeName, param1)
                 .addParameter(fieldInfo.typeName, param2)
                 .addStatement("where.and($T.$L($S,$T.bindMarker($S)))",
-                        QUERY_BUILDER, relation1, fieldInfo.cqlColum, QUERY_BUILDER, column1)
+                        QUERY_BUILDER, relation1, fieldInfo.cqlColumn, QUERY_BUILDER, column1)
                 .addStatement("where.and($T.$L($S,$T.bindMarker($S)))",
-                        QUERY_BUILDER, relation2, fieldInfo.cqlColum, QUERY_BUILDER, column2)
+                        QUERY_BUILDER, relation2, fieldInfo.cqlColumn, QUERY_BUILDER, column2)
                 .addStatement("boundValues.add($L)", param1)
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, param1)
                 .addStatement("boundValues.add($L)", param2)
