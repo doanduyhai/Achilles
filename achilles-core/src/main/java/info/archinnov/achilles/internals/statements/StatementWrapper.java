@@ -103,6 +103,8 @@ public interface StatementWrapper {
             case LIST:
             case SET:
             case MAP:
+            case TUPLE:
+            case CUSTOM:
                 return row.getObject(index);
             default:
                 return row.get(index, toJavaType(typeName));

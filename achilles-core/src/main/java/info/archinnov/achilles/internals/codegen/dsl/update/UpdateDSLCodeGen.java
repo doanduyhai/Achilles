@@ -219,7 +219,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         final ColumnType columnType = parsingResult.context.columnType;
         final boolean isCounterColumn = columnType == COUNTER || columnType == STATIC_COUNTER;
 
-        final TypeName rawTargetType = aptUtils.getRawType(parsingResult.targetType);
+        final TypeName rawTargetType = getRawType(parsingResult.targetType);
 
         if (rawTargetType.equals(LIST)) {
             return buildMethodsForListUpdate(aptUtils, nextTypeName, parsingResult, returnType);

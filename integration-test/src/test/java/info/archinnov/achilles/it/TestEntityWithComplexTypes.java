@@ -25,6 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.*;
+import java.time.LocalDate;
 import java.util.*;
 
 import org.apache.commons.lang3.RandomUtils;
@@ -90,7 +92,10 @@ public class TestEntityWithComplexTypes {
         udt.setName("name");
         udt.setMap(ImmutableMap.of(1, "1"));
         UUID timeuuid = UUIDs.timeBased();
-
+        java.time.Instant jdkInstant = Instant.now();
+        java.time.LocalDate jdkLocalDate = java.time.LocalDate.now();
+        java.time.LocalTime jdkLocalTime = java.time.LocalTime.now();
+        java.time.ZonedDateTime jdkZonedDateTime = java.time.ZonedDateTime.now();
 
         final EntityWithComplexTypes entity = new EntityWithComplexTypes();
         entity.setId(id);
@@ -128,6 +133,10 @@ public class TestEntityWithComplexTypes {
         entity.setIntArray(new int[]{5, 6});
         entity.setLongArray(new long[]{7L, 8L});
         entity.setListOfLongArray(Arrays.asList(new long[]{9L, 10L}));
+        entity.setJdkInstant(jdkInstant);
+        entity.setJdkLocalDate(jdkLocalDate);
+        entity.setJdkLocalTime(jdkLocalTime);
+        entity.setJdkZonedDateTime(jdkZonedDateTime);
 
         //When
         manager
@@ -188,6 +197,10 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.get("intarray", int[].class)).isEqualTo(new int[]{5, 6});
         assertThat(actual.get("longarray", long[].class)).isEqualTo(new long[]{7L, 8L});
         assertThat(actual.getList("listoflongarray", long[].class)).containsExactly(new long[]{9L, 10L});
+        assertThat(actual.get("jdkinstant", java.time.Instant.class)).isNotNull();
+        assertThat(actual.get("jdklocaldate", java.time.LocalDate.class)).isNotNull();
+        assertThat(actual.get("jdklocaltime", java.time.LocalTime.class)).isNotNull();
+        assertThat(actual.get("jdkzoneddatetime", java.time.ZonedDateTime.class)).isNotNull();
     }
 
     @Test
@@ -241,6 +254,10 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.getFloatArray()).isEqualTo(new float[]{3.0f, 4.0f});
         assertThat(actual.getIntArray()).isEqualTo(new int[]{5, 6});
         assertThat(actual.getLongArray()).isEqualTo(new long[]{7L, 8L});
+        assertThat(actual.getJdkInstant()).isNotNull();
+        assertThat(actual.getJdkLocalDate()).isNotNull();
+        assertThat(actual.getJdkLocalTime()).isNotNull();
+        assertThat(actual.getJdkZonedDateTime()).isNotNull();
 
     }
 

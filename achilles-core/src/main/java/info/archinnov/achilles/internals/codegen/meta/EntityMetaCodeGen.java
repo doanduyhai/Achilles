@@ -18,7 +18,7 @@ package info.archinnov.achilles.internals.codegen.meta;
 
 import static com.squareup.javapoet.TypeName.BOOLEAN;
 import static com.squareup.javapoet.TypeName.INT;
-import static info.archinnov.achilles.internals.apt.AptUtils.getRawType;
+import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.parser.validator.BeanValidator.*;

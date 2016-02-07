@@ -18,15 +18,19 @@ package info.archinnov.achilles.internals.parser.context;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.FIELD_INFO;
 
-import java.util.Objects;
+import java.util.*;
+
+import javax.lang.model.element.TypeElement;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import info.archinnov.achilles.annotations.Enumerated.Encoding;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.parser.CodecFactory;
+import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 
 public class FieldParsingContext {
     public final String fieldName;
@@ -39,14 +43,14 @@ public class FieldParsingContext {
     public final ColumnInfo columnInfo;
     public boolean buildExtractor;
 
-    public static FieldParsingContext forConfig(String className, String fieldName) {
-        return new FieldParsingContext(className, fieldName);
+    public static FieldParsingContext forConfig(GlobalParsingContext parsingContext, TypeElement typeElement, TypeName typeName, String className, String fieldName) {
+        return new FieldParsingContext(parsingContext, typeElement, typeName, className, fieldName);
     }
 
-    private FieldParsingContext(String className, String fieldName) {
+    private FieldParsingContext(GlobalParsingContext parsingContext, TypeElement typeElement, TypeName typeName, String className, String fieldName) {
         this.className = className;
         this.fieldName = fieldName;
-        this.entityContext = null;
+        this.entityContext = new EntityParsingContext(typeElement, typeName, new LowerCaseNaming(), parsingContext);
         this.columnType = null;
         this.columnInfo = null;
         this.cqlColumn = null;

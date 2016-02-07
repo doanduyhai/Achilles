@@ -20,12 +20,14 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.datastax.driver.core.*;
+import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.querybuilder.*;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import com.google.common.collect.BiMap;
@@ -214,30 +216,9 @@ public class TypeUtils {
     public static final ClassName LIST = ClassName.get(List.class);
     public static final ClassName SET = ClassName.get(Set.class);
     public static final ClassName MAP = ClassName.get(Map.class);
-    public static final TypeName PRIMITIVE_BYTE = TypeName.BYTE;
-    public static final TypeName OBJECT_BYTE = TypeName.BYTE.box();
-    public static final TypeName PRIMITIVE_BYTE_ARRAY = ArrayTypeName.of(PRIMITIVE_BYTE);
-    public static final TypeName OBJECT_BYTE_ARRAY = ArrayTypeName.of(OBJECT_BYTE);
     public static final TypeName BYTE_BUFFER = ClassName.get(ByteBuffer.class);
-    public static final TypeName PRIMITIVE_BOOL = TypeName.BOOLEAN;
-    public static final TypeName OBJECT_BOOL = TypeName.BOOLEAN.box();
-    public static final TypeName DATE = ClassName.get(Date.class);
-    public static final TypeName LOCAL_DATE = ClassName.get(LocalDate.class);
-    public static final TypeName PRIMITIVE_SHORT = TypeName.SHORT;
-    public static final TypeName OBJECT_SHORT = TypeName.SHORT.box();
-    public static final TypeName PRIMITIVE_DOUBLE = TypeName.DOUBLE;
-    public static final TypeName OBJECT_DOUBLE = TypeName.DOUBLE.box();
-    public static final TypeName PRIMITIVE_FLOAT = TypeName.FLOAT;
-    public static final TypeName OBJECT_FLOAT = TypeName.FLOAT.box();
-    public static final TypeName BIG_DECIMAL = ClassName.get(BigDecimal.class);
-    public static final TypeName PRIMITIVE_LONG = TypeName.LONG;
-
-    public static final TypeName OBJECT_LONG = TypeName.LONG.box();
-    public static final TypeName INET = ClassName.get(InetAddress.class);
     public static final TypeName STRING = ClassName.get(String.class);
-    public static final TypeName PRIMITIVE_INT = TypeName.INT;
-    public static final TypeName OBJECT_INT = TypeName.INT.box();
-    public static final TypeName BIGINT = ClassName.get(BigInteger.class);
+    public static final TypeName OBJECT_INT = ClassName.get(Integer.class);
 
     public static final TypeName UUID = ClassName.get(UUID.class);
     public static final TypeName TUPLE_TYPE = ClassName.get(TupleType.class);
@@ -258,6 +239,8 @@ public class TypeUtils {
     public static final List<TypeName> ALLOWED_TYPES = new ArrayList<>();
     public static final Map<TypeName, String> DRIVER_TYPES_MAPPING = new HashMap<>();
 
+    // Java 8 Types
+    public static final TypeName JDK_ZONED_DATE_TIME = ClassName.get(ZonedDateTime.class);
 
     static {
         // Bytes
@@ -376,6 +359,21 @@ public class TypeUtils {
 
         // Drive UDTValue
         ALLOWED_TYPES.add(TypeName.get(UDTValue.class));
+
+        //Java 8 types
+        ALLOWED_TYPES.add(TypeName.get(Instant.class));
+        ALLOWED_TYPES.add(TypeName.get(java.time.LocalDate.class));
+        ALLOWED_TYPES.add(TypeName.get(LocalTime.class));
+        ALLOWED_TYPES.add(TypeName.get(ZonedDateTime.class));
+
+        DRIVER_TYPES_MAPPING.put(TypeName.get(Instant.class), "timestamp()");
+        DRIVER_TYPES_MAPPING.put(TypeName.get(java.time.LocalDate.class), "date()");
+        DRIVER_TYPES_MAPPING.put(TypeName.get(LocalTime.class), "time()");
+        DRIVER_TYPES_MAPPING.put(TypeName.get(ZonedDateTime.class),
+            "com.datastax.driver.core.TupleType.of(com.datastax.driver.core.ProtocolVersion.NEWEST_SUPPORTED, " +
+                    "new com.datastax.driver.core.CodecRegistry(), " +
+                    "com.datastax.driver.core.DataType.timestamp(), " +
+                    "com.datastax.driver.core.DataType.varchar())");
     }
 
     public static String gettableDataGetter(TypeName typeName, String cqlColumn) {
@@ -384,6 +382,15 @@ public class TypeUtils {
 
     public static String settableDataSetter(TypeName typeName, String cqlColumn) {
         return "set(\""+escapeDoubleQuotes(cqlColumn)+"\", value$, "+typeName.toString()+".class)";
+    }
+
+    public static CodeBlock buildDataTypeFor(TypeName typeName) {
+        final String dataType = DRIVER_TYPES_MAPPING.get(typeName);
+        if (typeName.equals(JDK_ZONED_DATE_TIME)) {
+            return CodeBlock.builder().add(dataType).build();
+        } else {
+            return CodeBlock.builder().add("$T.$L", DATATYPE, dataType).build();
+        }
     }
 
     public static ParameterizedTypeName genericType(ClassName baseType, TypeName... argTypes) {
@@ -399,6 +406,14 @@ public class TypeUtils {
             return cqlColumn.replaceAll("\"", "\\\\\"");
         } else {
             return cqlColumn;
+        }
+    }
+
+    public static TypeName getRawType(TypeName typeName) {
+        if (typeName instanceof ParameterizedTypeName) {
+            return ((ParameterizedTypeName) typeName).rawType;
+        } else {
+            return typeName;
         }
     }
 }

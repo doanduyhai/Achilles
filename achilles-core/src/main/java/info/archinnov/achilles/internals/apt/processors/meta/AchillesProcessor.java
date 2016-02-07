@@ -76,9 +76,8 @@ public class AchillesProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (!this.processed) {
-            Map<TypeName, CodecFactory.CodecInfo> codecRegistry = parseCodecRegistry(annotations, roundEnv);
-
-            final GlobalParsingContext parsingContext = new GlobalParsingContext(codecRegistry);
+            final GlobalParsingContext parsingContext = new GlobalParsingContext();
+            parseCodecRegistry(parsingContext, annotations, roundEnv);
 
             final List<TypeElement> entityTypes = annotations
                     .stream()
@@ -169,19 +168,15 @@ public class AchillesProcessor extends AbstractProcessor {
         }
     }
 
-    private Map<TypeName, CodecFactory.CodecInfo> parseCodecRegistry(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new HashMap<>();
-
+    private void parseCodecRegistry(GlobalParsingContext parsingContext, Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         final boolean hasCompileTimeCodecRegistry = annotations
                 .stream()
                 .filter(annotation -> isAnnotationOfType(annotation, CodecRegistry.class))
                 .findFirst().isPresent();
         if (hasCompileTimeCodecRegistry) {
             aptUtils.printNote("[Achilles] Parsing compile-time codec registry");
-            codecRegistry.putAll(new CodecRegistryParser(aptUtils).parseCodecs(roundEnv));
+            new CodecRegistryParser(aptUtils).parseCodecs(roundEnv, parsingContext);
         }
-
-        return codecRegistry;
     }
 
     @Override

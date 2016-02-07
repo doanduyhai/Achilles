@@ -16,7 +16,7 @@
 
 package info.archinnov.achilles.internals.parser;
 
-import static info.archinnov.achilles.internals.apt.AptUtils.getRawType;
+import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +30,7 @@ import info.archinnov.achilles.annotations.CodecRegistry;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.CodecFactory.CodecInfo;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter;
 
 public class CodecRegistryParser extends AbstractBeanParser{
@@ -41,7 +42,7 @@ public class CodecRegistryParser extends AbstractBeanParser{
         codecFactory = new CodecFactory(aptUtils);
     }
 
-    public Map<TypeName, CodecInfo> parseCodecs(RoundEnvironment roundEnv) {
+    public void parseCodecs(RoundEnvironment roundEnv, GlobalParsingContext parsingContext) {
         Map<TypeName, CodecInfo> map = new HashMap<>();
         roundEnv.getElementsAnnotatedWith(CodecRegistry.class)
             .stream()
@@ -52,7 +53,7 @@ public class CodecRegistryParser extends AbstractBeanParser{
                     final TypeName typeName = getRawType(TypeName.get(varElm.asType()));
                     final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, varElm);
                     final FieldParsingContext fieldParsingContext = FieldParsingContext
-                            .forConfig(className, varElm.getSimpleName().toString());
+                            .forConfig(parsingContext, typeElm, typeName, className, varElm.getSimpleName().toString());
 
                     final CodecInfo codec = codecFactory.createCodec(typeName, annotationTree, fieldParsingContext);
                     if (map.containsKey(codec.sourceType)) {
@@ -63,7 +64,7 @@ public class CodecRegistryParser extends AbstractBeanParser{
                     }
                 });
             });
-        return map;
+        parsingContext.codecRegistry.putAll(map);
     }
 
 }

@@ -32,7 +32,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import com.datastax.driver.core.GettableData;
-import com.google.auto.common.MoreTypes;
 import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.annotations.*;
@@ -157,14 +156,14 @@ public class FieldParser {
         validateAllowedType(aptUtils, rawTargetType, context);
         validateCounter(aptUtils, rawTargetType, annotationTree.getAnnotations().keySet(), context);
 
-        final String dataType;
+        final CodeBlock dataType;
 
         if (containsAnnotation(annotationTree, TimeUUID.class)) {
-            dataType = "timeuuid()";
+            dataType = CodeBlock.builder().add("$T.timeuuid()", DATATYPE).build();
         } else if (containsAnnotation(annotationTree, Counter.class)) {
-            dataType = "counter()";
+            dataType = CodeBlock.builder().add("$T.counter()", DATATYPE).build();
         } else {
-            dataType = DRIVER_TYPES_MAPPING.get(rawTargetType);
+            dataType = TypeUtils.buildDataTypeFor(rawTargetType);
         }
 
         CodeBlock gettable = context.buildExtractor
@@ -176,13 +175,13 @@ public class FieldParser {
                 : NO_UDT_SETTER;
 
 
-        CodeBlock typeCode = CodeBlock.builder().add("new $T<$T, $T, $T>($L, $T.$L, $L, $L, new $T(){}, new $T(){}, $L)",
+        CodeBlock typeCode = CodeBlock.builder().add("new $T<$T, $T, $T>($L, $L, $L, $L, new $T(){}, new $T(){}, $L)",
                 SIMPLE_PROPERTY,
                 context.entityRawType,
                 sourceType.box(),
                 codecInfo.targetType.box(),
                 context.fieldInfoCode,
-                DATATYPE, dataType,
+                dataType,
                 gettable,
                 settable,
                 genericType(TYPE_TOKEN, sourceType.box()),

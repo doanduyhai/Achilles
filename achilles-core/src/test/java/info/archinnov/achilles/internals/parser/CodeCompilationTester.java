@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internals.parser;
 
+
 import com.datastax.driver.core.DataType;
 import com.google.common.reflect.TypeToken;
 
@@ -44,4 +45,19 @@ public class CodeCompilationTester {
                 (settableData$, value$) -> settableData$.set("\"overRiden\"", value$, java.lang.String.class),
                 new TypeToken<java.lang.String>(){}, new TypeToken<java.lang.String>(){},
                 new FallThroughCodec<>(java.lang.String.class));
+
+
+    /** * Meta class for 'jdkInstant' property <br/> * The meta class exposes some useful methods: <ul> *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li> *    <li>encodeField: extract the current property value from the given info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs instance and encode to CQL java compatible type </li> *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li> * </ul> */
+    @java.lang.SuppressWarnings("serial")
+    public static final SimpleProperty<TestEntityForCodecs, java.time.Instant, java.time.Instant> jdkInstant =
+    new SimpleProperty<>(
+        new FieldInfo<>((TestEntityForCodecs entity$) -> entity$.getJdkInstant(),
+            (TestEntityForCodecs entity$, java.time.Instant value$) -> entity$.setJdkInstant(value$),
+            "jdkInstant", "jdk_instant", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()),
+        DataType.timestamp(), gettableData$ -> gettableData$.get("jdk_instant", java.time.Instant.class),
+        (settableData$, value$) -> settableData$.set("jdk_instant", value$, java.time.Instant.class),
+        new TypeToken<java.time.Instant>(){}, new TypeToken<java.time.Instant>(){},
+        new FallThroughCodec<>(java.time.Instant.class));
+
+
 }

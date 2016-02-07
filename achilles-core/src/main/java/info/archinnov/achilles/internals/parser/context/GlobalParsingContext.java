@@ -45,10 +45,6 @@ public class GlobalParsingContext {
 
     public final Map<TypeName, CodecInfo> codecRegistry = new HashMap<>();
 
-    public GlobalParsingContext(Map<TypeName, CodecInfo> codecRegistry) {
-        this.codecRegistry.putAll(codecRegistry);
-    }
-
     public GlobalParsingContext(InsertStrategy insertStrategy, NamingStrategy namingStrategy,
                                 FieldFilter fieldFilter, FieldFilter udtFieldFilter, NestedTypesStrategy nestedTypesStrategy) {
         this.insertStrategy = insertStrategy;

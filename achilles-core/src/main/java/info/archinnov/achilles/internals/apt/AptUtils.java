@@ -68,14 +68,6 @@ public class AptUtils {
         this.filer = filer;
     }
 
-    public static TypeName getRawType(TypeName typeName) {
-        if (typeName instanceof ParameterizedTypeName) {
-            return ((ParameterizedTypeName) typeName).rawType;
-        } else {
-            return typeName;
-        }
-    }
-
     public static boolean isPrimitive(TypeMirror typeMirror) {
         return typeMirror.getKind().isPrimitive();
     }

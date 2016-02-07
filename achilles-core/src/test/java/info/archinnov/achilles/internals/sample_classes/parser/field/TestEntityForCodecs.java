@@ -19,6 +19,10 @@ package info.archinnov.achilles.internals.sample_classes.parser.field;
 import static info.archinnov.achilles.annotations.Enumerated.Encoding.NAME;
 import static info.archinnov.achilles.annotations.Enumerated.Encoding.ORDINAL;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -182,6 +186,18 @@ public class TestEntityForCodecs {
 
     @Column("\"overRiden\"")
     private String overridenName;
+
+    @Column
+    private Instant jdkInstant;
+
+    @Column
+    private java.time.LocalDate jdkLocalDate;
+
+    @Column
+    private java.time.LocalTime jdkLocalTime;
+
+    @Column
+    private ZonedDateTime jdkZonedDateTime;
 
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
@@ -562,6 +578,38 @@ public class TestEntityForCodecs {
 
     public void setOverridenName(String overridenName) {
         this.overridenName = overridenName;
+    }
+
+    public Instant getJdkInstant() {
+        return jdkInstant;
+    }
+
+    public void setJdkInstant(Instant jdkInstant) {
+        this.jdkInstant = jdkInstant;
+    }
+
+    public LocalDate getJdkLocalDate() {
+        return jdkLocalDate;
+    }
+
+    public void setJdkLocalDate(LocalDate jdkLocalDate) {
+        this.jdkLocalDate = jdkLocalDate;
+    }
+
+    public LocalTime getJdkLocalTime() {
+        return jdkLocalTime;
+    }
+
+    public void setJdkLocalTime(LocalTime jdkLocalTime) {
+        this.jdkLocalTime = jdkLocalTime;
+    }
+
+    public ZonedDateTime getJdkZonedDateTime() {
+        return jdkZonedDateTime;
+    }
+
+    public void setJdkZonedDateTime(ZonedDateTime jdkZonedDateTime) {
+        this.jdkZonedDateTime = jdkZonedDateTime;
     }
 }
 

@@ -20,8 +20,11 @@ import static info.archinnov.achilles.internals.apt.AptUtils.findFieldInType;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
@@ -31,15 +34,11 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.truth0.Truth;
 
-import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.UDTValue;
 import com.google.common.collect.Sets;
 import com.google.testing.compile.JavaSourcesSubjectFactory;
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.TypeName;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.RuntimeCodec;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
@@ -824,12 +823,13 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_simple_codec_from_registry() throws Exception {
 
         setExec(aptUtils -> {
-            final Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new CodecRegistryParser(aptUtils).parseCodecs(env);
+            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
             final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
-                    new GlobalParsingContext(codecRegistry));
+                    globalContext);
 
             //@Column
             //private SimpleLongWrapper longWrapper;
@@ -851,12 +851,13 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_json_codec_from_registry() throws Exception {
 
         setExec(aptUtils -> {
-            final Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new CodecRegistryParser(aptUtils).parseCodecs(env);
+            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
             final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
-                    new GlobalParsingContext(codecRegistry));
+                    globalContext);
 
             //@Column
             //private MyBean myBean;
@@ -878,12 +879,13 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_enumerated_codec_from_registry() throws Exception {
 
         setExec(aptUtils -> {
-            final Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new CodecRegistryParser(aptUtils).parseCodecs(env);
+            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
             final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
-                    new GlobalParsingContext(codecRegistry));
+                    globalContext);
 
             //@Column
             //private ProtocolVersion protocolVersion;
@@ -905,12 +907,13 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_runtime_codec_from_registry() throws Exception {
 
         setExec(aptUtils -> {
-            final Map<TypeName, CodecFactory.CodecInfo> codecRegistry = new CodecRegistryParser(aptUtils).parseCodecs(env);
+            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
             final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
-                    new GlobalParsingContext(codecRegistry));
+                    globalContext);
 
             //@Column
             //private Enumerated.Encoding encoding;
@@ -932,7 +935,10 @@ public class FieldParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_parsing_codec_from_registry() throws Exception {
 
-        setExec(aptUtils -> new CodecRegistryParser(aptUtils).parseCodecs(env));
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
+        });
 
         Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
                 .that(Sets.newHashSet(loadClass(TestCodecRegistryWrong.class)))
@@ -961,6 +967,90 @@ public class FieldParserTest extends AbstractTestProcessor {
             assertThat(parsingResult.targetType.toString()).isEqualTo(String.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
                     .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_field_with_case_sensitive_overriden_name.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
+    public void should_parse_jdk8_instant() throws Exception {
+        setExec(aptUtils -> {
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+
+            // @Column
+            // private Instant jdkInstant;
+            VariableElement elm = findFieldInType(typeElement, "jdkInstant");
+
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo(Instant.class.getCanonicalName());
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_jdk8_instant.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
+    public void should_parse_jdk8_local_date() throws Exception {
+        setExec(aptUtils -> {
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+
+            // @Column
+            // private java.time.LocalDate jdkLocalDate;
+            VariableElement elm = findFieldInType(typeElement, "jdkLocalDate");
+
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo(LocalDate.class.getCanonicalName());
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_jdk8_local_date.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
+    public void should_parse_jdk8_local_time() throws Exception {
+        setExec(aptUtils -> {
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+
+            // @Column
+            // private java.time.LocalTime jdkLocalTime;
+            VariableElement elm = findFieldInType(typeElement, "jdkLocalTime");
+
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo(LocalTime.class.getCanonicalName());
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_jdk8_local_time.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
+    public void should_parse_jdk8_zoned_date_time() throws Exception {
+        setExec(aptUtils -> {
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+
+            // @Column
+            // private ZonedDateTime jdkZonedDateTime;
+            VariableElement elm = findFieldInType(typeElement, "jdkZonedDateTime");
+
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo(ZonedDateTime.class.getCanonicalName());
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_jdk8_zoned_date_time.txt"));
         });
         launchTest();
     }

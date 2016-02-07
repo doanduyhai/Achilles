@@ -122,8 +122,8 @@ public class FieldValidator {
         }
     }
 
-    public static void validateAllowedType(AptUtils aptUtils, TypeName rawTargetType, /* List<AnnotationMirror> annotations,  TypeMirror currentTypeMirror, */ FieldParsingContext context) {
-        aptUtils.validateTrue(ALLOWED_TYPES.contains(rawTargetType), //|| hasTransformation,
+    public static void validateAllowedType(AptUtils aptUtils, TypeName rawTargetType, FieldParsingContext context) {
+        aptUtils.validateTrue(ALLOWED_TYPES.contains(rawTargetType),
                 "Impossible to parse type '%s' from field '%s' of class '%s'. It should be a supported type",
                 rawTargetType.toString(), context.fieldName, context.className);
     }

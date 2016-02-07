@@ -19,6 +19,10 @@ package info.archinnov.achilles.internals.entities;
 import static info.archinnov.achilles.annotations.Enumerated.Encoding.NAME;
 import static info.archinnov.achilles.annotations.Enumerated.Encoding.ORDINAL;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import com.datastax.driver.core.ConsistencyLevel;
@@ -152,6 +156,17 @@ public class EntityWithComplexTypes {
     @Column
     private List<long[]> listOfLongArray;
 
+    @Column
+    private Instant jdkInstant;
+
+    @Column
+    private LocalDate jdkLocalDate;
+
+    @Column
+    private LocalTime jdkLocalTime;
+
+    @Column
+    private ZonedDateTime jdkZonedDateTime;
 
     public Long getId() {
         return id;
@@ -423,5 +438,37 @@ public class EntityWithComplexTypes {
 
     public void setListOfLongArray(List<long[]> listOfLongArray) {
         this.listOfLongArray = listOfLongArray;
+    }
+
+    public Instant getJdkInstant() {
+        return jdkInstant;
+    }
+
+    public void setJdkInstant(Instant jdkInstant) {
+        this.jdkInstant = jdkInstant;
+    }
+
+    public LocalDate getJdkLocalDate() {
+        return jdkLocalDate;
+    }
+
+    public void setJdkLocalDate(LocalDate jdkLocalDate) {
+        this.jdkLocalDate = jdkLocalDate;
+    }
+
+    public LocalTime getJdkLocalTime() {
+        return jdkLocalTime;
+    }
+
+    public void setJdkLocalTime(LocalTime jdkLocalTime) {
+        this.jdkLocalTime = jdkLocalTime;
+    }
+
+    public ZonedDateTime getJdkZonedDateTime() {
+        return jdkZonedDateTime;
+    }
+
+    public void setJdkZonedDateTime(ZonedDateTime jdkZonedDateTime) {
+        this.jdkZonedDateTime = jdkZonedDateTime;
     }
 }

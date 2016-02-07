@@ -75,11 +75,6 @@ public class ArgumentExtractor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ArgumentExtractor.class);
 
     public static ConfigurationContext initConfigContext(Cluster cluster, ConfigMap configurationMap) {
-        LOGGER.trace("Add Java Driver extra codecs");
-        final CodecRegistry codecRegistry = cluster.getConfiguration().getCodecRegistry();
-        codecRegistry.register(DoubleArrayCodec.instance, FloatArrayCodec.instance,
-                IntArrayCodec.instance, LongArrayCodec.instance);
-
         LOGGER.trace("Build ConfigurationContext from configuration map");
 
         ConfigurationContext configContext = new ConfigurationContext();

@@ -16,7 +16,7 @@
 
 package info.archinnov.achilles.internals.parser;
 
-import static info.archinnov.achilles.internals.apt.AptUtils.getRawType;
+import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.parser.validator.BeanValidator.validateHasPublicConstructor;
 import static info.archinnov.achilles.internals.parser.validator.BeanValidator.validateIsAConcreteNonFinalClass;

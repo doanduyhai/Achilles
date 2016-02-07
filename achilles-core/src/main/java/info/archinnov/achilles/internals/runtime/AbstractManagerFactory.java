@@ -28,10 +28,15 @@ import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.*;
+import com.datastax.driver.extras.codecs.arrays.DoubleArrayCodec;
+import com.datastax.driver.extras.codecs.arrays.FloatArrayCodec;
+import com.datastax.driver.extras.codecs.arrays.IntArrayCodec;
+import com.datastax.driver.extras.codecs.arrays.LongArrayCodec;
+import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
+import com.datastax.driver.extras.codecs.jdk8.LocalDateCodec;
+import com.datastax.driver.extras.codecs.jdk8.LocalTimeCodec;
+import com.datastax.driver.extras.codecs.jdk8.ZonedDateTimeCodec;
 
 import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
@@ -39,8 +44,6 @@ import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty;
 import info.archinnov.achilles.internals.metamodel.UDTProperty;
-import info.archinnov.achilles.type.codec.Codec;
-import info.archinnov.achilles.type.codec.CodecSignature;
 
 public abstract class AbstractManagerFactory {
 
@@ -103,10 +106,25 @@ public abstract class AbstractManagerFactory {
     }
 
     protected void bootstrap() {
+        addNativeCodecs();
         injectDependencies();
         createSchema();
         validateSchema();
         prepareStaticStatements();
+    }
+
+    protected void addNativeCodecs() {
+        LOGGER.trace("Add Java Driver extra codecs");
+        final Configuration configuration = cluster.getConfiguration();
+        final TupleType zonedDateTimeType = TupleType.of(configuration.getProtocolOptions().getProtocolVersion(), configuration.getCodecRegistry(),
+                DataType.timestamp(), DataType.varchar());
+
+        final CodecRegistry codecRegistry = configuration.getCodecRegistry();
+        codecRegistry.register(DoubleArrayCodec.instance, FloatArrayCodec.instance,
+                IntArrayCodec.instance, LongArrayCodec.instance,
+                InstantCodec.instance, LocalDateCodec.instance,
+                LocalTimeCodec.instance, new ZonedDateTimeCodec(zonedDateTimeType));
+
     }
 
     protected void injectDependencies() {
