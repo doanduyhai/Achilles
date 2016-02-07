@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS test.entity_complex_types(
 		primitive_byte tinyint,
 		primitive_byte_array blob,
 		protocolversion text,
+		protocolversionasordinal int,
 		simple_udt frozen<achilles_embedded.my_type>,
 		time text,
 		timeuuid timeuuid,

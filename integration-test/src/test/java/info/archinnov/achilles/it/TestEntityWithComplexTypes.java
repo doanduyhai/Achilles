@@ -137,6 +137,7 @@ public class TestEntityWithComplexTypes {
         entity.setJdkLocalDate(jdkLocalDate);
         entity.setJdkLocalTime(jdkLocalTime);
         entity.setJdkZonedDateTime(jdkZonedDateTime);
+        entity.setProtocolVersionAsOrdinal(ProtocolVersion.V2);
 
         //When
         manager
@@ -201,6 +202,7 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.get("jdklocaldate", java.time.LocalDate.class)).isNotNull();
         assertThat(actual.get("jdklocaltime", java.time.LocalTime.class)).isNotNull();
         assertThat(actual.get("jdkzoneddatetime", java.time.ZonedDateTime.class)).isNotNull();
+        assertThat(actual.getInt("protocolversionasordinal")).isEqualTo(1);
     }
 
     @Test
@@ -258,6 +260,7 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.getJdkLocalDate()).isNotNull();
         assertThat(actual.getJdkLocalTime()).isNotNull();
         assertThat(actual.getJdkZonedDateTime()).isNotNull();
+        assertThat(actual.getProtocolVersionAsOrdinal()).isEqualTo(ProtocolVersion.V3);
 
     }
 

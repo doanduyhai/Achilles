@@ -29,6 +29,7 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ProtocolVersion;
 
 import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.annotations.Enumerated.Encoding;
 import info.archinnov.achilles.internals.codecs.CodecOnClass;
 import info.archinnov.achilles.internals.codecs.IntToStringCodec;
 import info.archinnov.achilles.internals.codecs.StringToLongCodec;
@@ -139,7 +140,7 @@ public class EntityWithComplexTypes {
     private ProtocolVersion protocolVersion;
 
     @Column
-    private Enumerated.Encoding encoding;
+    private Encoding encoding;
 
     @Column
     private double[] doubleArray;
@@ -167,6 +168,10 @@ public class EntityWithComplexTypes {
 
     @Column
     private ZonedDateTime jdkZonedDateTime;
+
+    @Enumerated(Encoding.ORDINAL)
+    @Column
+    private ProtocolVersion protocolVersionAsOrdinal;
 
     public Long getId() {
         return id;
@@ -392,11 +397,11 @@ public class EntityWithComplexTypes {
         this.protocolVersion = protocolVersion;
     }
 
-    public Enumerated.Encoding getEncoding() {
+    public Encoding getEncoding() {
         return encoding;
     }
 
-    public void setEncoding(Enumerated.Encoding encoding) {
+    public void setEncoding(Encoding encoding) {
         this.encoding = encoding;
     }
 
@@ -470,5 +475,13 @@ public class EntityWithComplexTypes {
 
     public void setJdkZonedDateTime(ZonedDateTime jdkZonedDateTime) {
         this.jdkZonedDateTime = jdkZonedDateTime;
+    }
+
+    public ProtocolVersion getProtocolVersionAsOrdinal() {
+        return protocolVersionAsOrdinal;
+    }
+
+    public void setProtocolVersionAsOrdinal(ProtocolVersion protocolVersionAsOrdinal) {
+        this.protocolVersionAsOrdinal = protocolVersionAsOrdinal;
     }
 }

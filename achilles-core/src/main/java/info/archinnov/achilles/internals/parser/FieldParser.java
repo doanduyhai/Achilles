@@ -22,10 +22,7 @@ import static info.archinnov.achilles.internals.parser.validator.FieldValidator.
 import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateCounter;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -121,7 +118,7 @@ public class FieldParser {
 
 
     private TypeParsingResult parseComputedType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
-        final CodecInfo codecInfo = codecFactory.createCodec(sourceType, annotationTree, context);
+        final CodecInfo codecInfo = codecFactory.createCodec(sourceType, annotationTree, context, Optional.empty());
         final TypeName rawTargetType = getRawType(codecInfo.targetType);
         final TypedMap computed = extractTypedMap(annotationTree, Computed.class).get();
         final String alias = computed.getTyped("alias");
@@ -147,9 +144,7 @@ public class FieldParser {
     }
 
     private TypeParsingResult parseSimpleType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
-        final CodecInfo codecInfo = context.hasCodecFor(sourceType)
-                                ? context.getCodecFor(sourceType)
-                                : codecFactory.createCodec(sourceType, annotationTree, context);
+        CodecInfo codecInfo = buildOrGetCodecFromRegistry(annotationTree, context, sourceType);
 
         final TypeName rawTargetType = getRawType(codecInfo.targetType);
 
@@ -543,6 +538,10 @@ public class FieldParser {
         final ParameterizedTypeName propertyType = genericType(TUPLE10_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5, sourceType6, sourceType7, sourceType8, sourceType9, sourceType10);
         return new TypeParsingResult(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+    }
+
+    private CodecInfo buildOrGetCodecFromRegistry(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
+        return codecFactory.createCodec(sourceType, annotationTree, context, Optional.ofNullable(context.getCodecFor(sourceType))) ;
     }
 
     public static class TypeParsingResult {

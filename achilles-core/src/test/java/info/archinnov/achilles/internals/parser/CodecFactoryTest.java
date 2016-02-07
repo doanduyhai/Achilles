@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
@@ -69,7 +70,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // @JSON private Map<@JSON Integer, List<Integer>> jsonMap;
             final VariableElement elm = findFieldInType(typeElement, "jsonMap");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Map.class), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Map.class), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(Map.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(String.class.getCanonicalName());
@@ -88,7 +89,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // @Codec(IntToStringCodec.class) private Integer integer;
             final VariableElement elm = findFieldInType(typeElement, "integer");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Integer.class), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Integer.class), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(Integer.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(String.class.getCanonicalName());
@@ -108,7 +109,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // private byte[] objectByteArray;
             final VariableElement elm = findFieldInType(typeElement, "objectByteArray");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ArrayTypeName.of(ClassName.get(Byte.class)), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ArrayTypeName.of(ClassName.get(Byte.class)), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(Byte[].class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(ByteBuffer.class.getCanonicalName());
@@ -127,7 +128,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // private byte[] primitiveByteArray;
             final VariableElement elm = findFieldInType(typeElement, "primitiveByteArray");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ArrayTypeName.of(TypeName.BYTE), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ArrayTypeName.of(TypeName.BYTE), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(byte[].class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(ByteBuffer.class.getCanonicalName());
@@ -146,7 +147,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // private Byte objectByte
             final VariableElement elm = findFieldInType(typeElement, "objectByte");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Byte.class), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Byte.class), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(Byte.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(Byte.class.getCanonicalName());
@@ -165,7 +166,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // private byte primitiveByte
             final VariableElement elm = findFieldInType(typeElement, "primitiveByte");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(TypeName.BYTE, tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(TypeName.BYTE, tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(byte.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(byte.class.getCanonicalName());
@@ -184,7 +185,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // private String value
             final VariableElement elm = findFieldInType(typeElement, "value");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(String.class), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(String.class), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(String.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(String.class.getCanonicalName());
@@ -203,7 +204,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // private @JSON Date time
             final VariableElement elm = findFieldInType(typeElement, "time");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Date.class), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Date.class), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(Date.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(String.class.getCanonicalName());
@@ -222,7 +223,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // @Enumerated(value = NAME) private ConsistencyLevel consistencyLevel
             final VariableElement elm = findFieldInType(typeElement, "consistencyLevel");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(ConsistencyLevel.class), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(ConsistencyLevel.class), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(ConsistencyLevel.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(String.class.getCanonicalName());
@@ -244,7 +245,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // private Integer writeTimeAsInt;
             final VariableElement elm = findFieldInType(typeElement, "writeTimeAsInt");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Integer.class), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Integer.class), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(Integer.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(String.class.getCanonicalName());
@@ -265,7 +266,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // private Long writeTime;
             final VariableElement elm = findFieldInType(typeElement, "writeTime");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Long.class), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Long.class), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(Long.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(Long.class.getCanonicalName());
@@ -285,7 +286,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // @Counter private Long counter;
             final VariableElement elm = findFieldInType(typeElement, "counter");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Long.class), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(Long.class), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(Long.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(Long.class.getCanonicalName());
@@ -305,7 +306,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // @Counter @Codec(StringToLongCodec.class) private String counterWithCodec;
             final VariableElement elm = findFieldInType(typeElement, "counterWithCodec");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(String.class), tree, context);
+            final CodecInfo codecInfo = codecFactory.createCodec(ClassName.get(String.class), tree, context, Optional.empty());
 
             assertThat(codecInfo.sourceType.toString()).isEqualTo(String.class.getCanonicalName());
             assertThat(codecInfo.targetType.toString()).isEqualTo(Long.class.getCanonicalName());
@@ -325,7 +326,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // @Counter @Codec(IntToStringCodec.class) private Integer counterWithWrongCodec;
             final VariableElement elm = findFieldInType(typeElement, "counterWithWrongCodec");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            codecFactory.createCodec(ClassName.get(Integer.class), tree, context);
+            codecFactory.createCodec(ClassName.get(Integer.class), tree, context, Optional.empty());
         });
         failTestWithMessage("Codec 'info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec' " +
                 "target type 'java.lang.String' should be Long/long because the column is annotated with @Counter");
@@ -343,7 +344,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // private Integer writeTimeAsLong;
             final VariableElement elm = findFieldInType(typeElement, "writeTimeAsLong");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            codecFactory.createCodec(ClassName.get(Integer.class), tree, context);
+            codecFactory.createCodec(ClassName.get(Integer.class), tree, context, Optional.empty());
         });
         failTestWithMessage("Codec 'info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec' " +
                 "target type 'java.lang.String' should match computed CQL type 'java.lang.Long'");
@@ -360,7 +361,7 @@ public class CodecFactoryTest extends AbstractTestProcessor {
             // private Integer writeTimeNotMatchingComputed;
             final VariableElement elm = findFieldInType(typeElement, "writeTimeNotMatchingComputed");
             final AnnotationTree tree = AnnotationTree.buildFrom(aptUtils, elm);
-            codecFactory.createCodec(ClassName.get(Integer.class), tree, context);
+            codecFactory.createCodec(ClassName.get(Integer.class), tree, context, Optional.empty());
         });
         failTestWithMessage("CQL class 'java.lang.Long' of @Computed field 'field' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs' " +

@@ -113,7 +113,7 @@ public class CodecFactory {
         return new RuntimeCodecContext(TypeName.get(currentType), TypeName.get(targetType), codecName);
     }
 
-    public CodecInfo createCodec(TypeName sourceType, AnnotationTree annotationTree, FieldParsingContext context) {
+    public CodecInfo createCodec(TypeName sourceType, AnnotationTree annotationTree, FieldParsingContext context, Optional<CodecInfo> codecFromRegistry) {
         final String fieldName = context.fieldName;
         final String className = context.className;
 
@@ -135,34 +135,50 @@ public class CodecFactory {
         if (jsonTransform.isPresent()) {
             codec = CodeBlock.builder().add("new $T<>($T.class, $L)", JSON_CODEC, getRawType(sourceType).box(), buildJavaTypeForJackson(sourceType)).build();
             targetType = ClassName.get(String.class);
+            return new CodecInfo(codec, sourceType, targetType);
         } else if (codecFromType.isPresent()) {
             final Tuple2<TypeName, CodeBlock> tuple2 = codecCodeGen(codecFromType.get(), sourceType, computedCQLClass, isCounter);
             targetType = tuple2._1();
             codec = tuple2._2();
+            return new CodecInfo(codec, sourceType, targetType);
         } else if(runtimeCodec.isPresent()) {
             final Tuple2<TypeName, CodeBlock> tuple2 = runtimeCodecCodeGen(runtimeCodec.get(), computedCQLClass, isCounter);
             targetType = tuple2._1();
             codec = tuple2._2();
+            return new CodecInfo(codec, sourceType, targetType);
         } else if (enumerated.isPresent()) {
             final Tuple2<TypeName, CodeBlock> tuple2 = enumeratedCodecCodeGen(enumerated.get(), sourceType, fieldName, className);
             codec = tuple2._2();
             targetType = tuple2._1();
+            return new CodecInfo(codec, sourceType, targetType);
         } else if (typeMirror.getKind() == TypeKind.ARRAY && typeMirror.toString().equals("byte[]")) {
-            codec = CodeBlock.builder().add("new $T()", BYTE_ARRAY_PRIMITIVE_CODEC).build();
-            targetType = BYTE_BUFFER;
-        } else if (typeMirror.getKind() == TypeKind.ARRAY && typeMirror.toString().equals("java.lang.Byte[]")) {
-            codec = CodeBlock.builder().add("new $T()", BYTE_ARRAY_CODEC).build();
-            targetType = BYTE_BUFFER;
-        } else {
-            if (computedCQLClass.isPresent()) {
-                aptUtils.validateTrue(sourceType.equals(computedCQLClass.get()),
-                        "CQL class '%s' of @Computed field '%s' of class '%s' should be same as field class '%s'",
-                        computedCQLClass.get(), fieldName, className, sourceType);
+            if (codecFromRegistry.isPresent()) {
+                return codecFromRegistry.get();
+            } else {
+                codec = CodeBlock.builder().add("new $T()", BYTE_ARRAY_PRIMITIVE_CODEC).build();
+                return new CodecInfo(codec, sourceType, BYTE_BUFFER);
             }
-            validateAllowedTypes(aptUtils, sourceType, sourceType);
-            codec = CodeBlock.builder().add("new $T<>($T.class)", FALL_THROUGH_CODEC, getRawType(sourceType).box()).build();
+        } else if (typeMirror.getKind() == TypeKind.ARRAY && typeMirror.toString().equals("java.lang.Byte[]")) {
+            if (codecFromRegistry.isPresent()) {
+                return codecFromRegistry.get();
+            } else {
+                codec = CodeBlock.builder().add("new $T()", BYTE_ARRAY_CODEC).build();
+                return new CodecInfo(codec, sourceType, BYTE_BUFFER);
+            }
+        } else {
+            if (codecFromRegistry.isPresent()) {
+                return codecFromRegistry.get();
+            } else {
+                if (computedCQLClass.isPresent()) {
+                    aptUtils.validateTrue(sourceType.equals(computedCQLClass.get()),
+                            "CQL class '%s' of @Computed field '%s' of class '%s' should be same as field class '%s'",
+                            computedCQLClass.get(), fieldName, className, sourceType);
+                }
+                validateAllowedTypes(aptUtils, sourceType, sourceType);
+                codec = CodeBlock.builder().add("new $T<>($T.class)", FALL_THROUGH_CODEC, getRawType(sourceType).box()).build();
+                return new CodecInfo(codec, sourceType, targetType);
+            }
         }
-        return new CodecInfo(codec, sourceType, targetType);
     }
 
     private Tuple2<TypeName, CodeBlock> codecCodeGen(TypedMap annotationInfo, TypeName sourceType,

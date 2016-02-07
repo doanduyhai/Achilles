@@ -32,6 +32,7 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ProtocolVersion;
 
 import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.annotations.Enumerated.Encoding;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 import info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec;
 import info.archinnov.achilles.internals.sample_classes.codecs.StringToLongCodec;
@@ -176,7 +177,11 @@ public class TestEntityForCodecs {
     private ProtocolVersion runtimeCodec;
 
     @Column
-    private Enumerated.Encoding encoding;
+    @Enumerated(Encoding.ORDINAL)
+    private ProtocolVersion protocolVersionAsOrdinal;
+
+    @Column
+    private Encoding encoding;
 
     @Column
     private Map<@JSON Integer, double[]> mapOfDoubleArray;
@@ -548,11 +553,11 @@ public class TestEntityForCodecs {
         this.runtimeCodec = runtimeCodec;
     }
 
-    public Enumerated.Encoding getEncoding() {
+    public Encoding getEncoding() {
         return encoding;
     }
 
-    public void setEncoding(Enumerated.Encoding encoding) {
+    public void setEncoding(Encoding encoding) {
         this.encoding = encoding;
     }
 
@@ -610,6 +615,14 @@ public class TestEntityForCodecs {
 
     public void setJdkZonedDateTime(ZonedDateTime jdkZonedDateTime) {
         this.jdkZonedDateTime = jdkZonedDateTime;
+    }
+
+    public ProtocolVersion getProtocolVersionAsOrdinal() {
+        return protocolVersionAsOrdinal;
+    }
+
+    public void setProtocolVersionAsOrdinal(ProtocolVersion protocolVersionAsOrdinal) {
+        this.protocolVersionAsOrdinal = protocolVersionAsOrdinal;
     }
 }
 

@@ -20,6 +20,7 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.processing.RoundEnvironment;
 
@@ -55,7 +56,7 @@ public class CodecRegistryParser extends AbstractBeanParser{
                     final FieldParsingContext fieldParsingContext = FieldParsingContext
                             .forConfig(parsingContext, typeElm, typeName, className, varElm.getSimpleName().toString());
 
-                    final CodecInfo codec = codecFactory.createCodec(typeName, annotationTree, fieldParsingContext);
+                    final CodecInfo codec = codecFactory.createCodec(typeName, annotationTree, fieldParsingContext, Optional.empty());
                     if (map.containsKey(codec.sourceType)) {
                         aptUtils.printError("There is already a codec for source type %s in the class %s",
                                 codec.sourceType, className);

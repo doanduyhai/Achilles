@@ -10,7 +10,8 @@ INSERT INTO achilles_embedded.entity_complex_types(id, codec_on_class, complex_n
 	doublearray, floatarray,
 	intarray, longarray,
 	jdkinstant, jdklocaldate,
-	jdklocaltime, jdkzoneddatetime)
+	jdklocaltime, jdkzoneddatetime,
+	protocolversionasordinal)
 VALUES(${id}, 'ClassAnnotatedByCodec', {'{"list":["list"],"map":{"1":"1"},"name":"name"}': {1:('1', 2, 5)}},
 	'EACH_QUORUM', '123', '{"1":[1,2,3]}', [{1: 'one'}],
 	[{name: 'name', list: ['list'], map: {'1':'1'}}],
@@ -21,4 +22,5 @@ VALUES(${id}, 'ClassAnnotatedByCodec', {'{"list":["list"],"map":{"1":"1"},"name"
 	(1, ['1']), 'val', 456, 'V2', 0,
 	[1.0, 2.0], [3.0, 4.0], [5, 6], [7, 8],
 	'2016-01-01 01:01:01+0000', '2016-01-01',
-	'01:01:00', ('2016-01-01 01:01:01', 'GMT'));
+	'01:01:00', ('2016-01-01 01:01:01', 'GMT'),
+	2);
