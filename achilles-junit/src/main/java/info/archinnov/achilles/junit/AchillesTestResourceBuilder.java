@@ -18,12 +18,11 @@ package info.archinnov.achilles.junit;
 
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SCRIPT_LOCATIONS;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SCRIPT_TEMPLATES;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiFunction;
 
 import com.datastax.driver.core.Cluster;
@@ -32,6 +31,7 @@ import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.runtime.AbstractManagerFactory;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.type.TypedMap;
+import info.archinnov.achilles.validation.Validator;
 
 /**
  * Builder class to create an instance of {@link AchillesTestResource}
@@ -60,6 +60,7 @@ public class AchillesTestResourceBuilder {
     private Optional<String> keyspace = Optional.empty();
     private TypedMap cassandraParams = new TypedMap();
     private List<String> scriptLocations = new ArrayList<>();
+    private Map<String, Map<String, Object>> scriptTemplates = new HashMap<>();
     private List<String> tablesToTruncate = new ArrayList<>();
 
     private AchillesTestResourceBuilder() {
@@ -98,6 +99,44 @@ public class AchillesTestResourceBuilder {
      */
     public AchillesTestResourceBuilder withScript(String scriptLocation) {
         scriptLocations.add(scriptLocation);
+        return this;
+    }
+
+    /**
+     * Load an CQL script template in the class path, inject the values into the template
+     * to produce the final script and execute it upon initialization
+     * of the embedded Cassandra server
+
+     * <br/>
+
+     * Call this method as many times as there are CQL templates to be executed.
+     * <br/>
+     * Example:
+     * <br/>
+     * <pre class="code"><code class="java">
+
+     * Map&lt;String, Object&gt; map1 = new HashMap&lt;&gt;();
+
+     * map1.put("id", 100L);
+     * map1.put("date", new Date());
+     * ...
+
+     * AchillesTestResourceBuilder
+     * .forJunit()
+     * .withScriptTemplate("script1.cql", map1)
+     * .withScriptTemplate("script2.cql", map2)
+     * ...
+     * .build();
+     * </code></pre>
+     *
+     * @param scriptTemplateLocation location of the CQL script in the <strong>class path</strong>
+     * @param values                 values to inject into the template.
+     * @return AchillesTestResourceBuilder
+     */
+    public AchillesTestResourceBuilder withScriptTemplate(String scriptTemplateLocation, Map<String, Object> values) {
+        Validator.validateNotBlank(scriptTemplateLocation, "The script template should not be blank while executing AchillesTestResourceBuilder.withScriptTemplate()");
+        Validator.validateNotEmpty(values, "The template values should not be empty while executing AchillesTestResourceBuilder.withScriptTemplate()");
+        scriptTemplates.put(scriptTemplateLocation.trim(), values);
         return this;
     }
 
@@ -178,6 +217,7 @@ public class AchillesTestResourceBuilder {
 
     private TypedMap buildCassandraParams() {
         cassandraParams.put(SCRIPT_LOCATIONS, scriptLocations);
+        cassandraParams.put(SCRIPT_TEMPLATES, scriptTemplates);
         return cassandraParams;
     }
 }
