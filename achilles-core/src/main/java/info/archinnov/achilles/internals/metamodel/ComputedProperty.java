@@ -61,6 +61,11 @@ public class ComputedProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProper
     }
 
     @Override
+    boolean isOptional() {
+        return false;
+    }
+
+    @Override
     public void encodeToSettable(VALUETO valueto, SettableData<?> settableData) {
         throw new UnsupportedOperationException(format("Cannot set computed value to field '%s'", fieldInfo.fieldName));
     }

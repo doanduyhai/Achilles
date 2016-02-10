@@ -17,10 +17,14 @@
 package info.archinnov.achilles.internals.parser;
 
 
+import java.util.Optional;
+
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.ProtocolVersion;
 import com.google.common.reflect.TypeToken;
 
 import info.archinnov.achilles.internals.codec.FallThroughCodec;
+import info.archinnov.achilles.internals.metamodel.JdkOptionalProperty;
 import info.archinnov.achilles.internals.metamodel.SimpleProperty;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
@@ -58,6 +62,13 @@ public class CodeCompilationTester {
         (settableData$, value$) -> settableData$.set("jdk_instant", value$, java.time.Instant.class),
         new TypeToken<java.time.Instant>(){}, new TypeToken<java.time.Instant>(){},
         new FallThroughCodec<>(java.time.Instant.class));
+
+    public static final JdkOptionalProperty<TestEntityForCodecs, ProtocolVersion, java.lang.String> optionalProtocolVersion =
+    new JdkOptionalProperty<>(new FieldInfo<>((TestEntityForCodecs entity$) -> entity$.getOptionalProtocolVersion(),
+    (TestEntityForCodecs entity$, java.util.Optional<ProtocolVersion> value$) -> entity$.setOptionalProtocolVersion(value$),
+    "optionalProtocolVersion", "optional_protocol_version", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()),
+    new SimpleProperty<>(FieldInfo.<TestEntityForCodecs, ProtocolVersion> of("optionalProtocolVersion", "optional_protocol_version"),
+    DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new com.google.common.reflect.TypeToken<ProtocolVersion>(){}, new com.google.common.reflect.TypeToken<java.lang.String>(){}, new info.archinnov.achilles.internals.codec.EnumNameCodec<>(java.util.Arrays.asList(ProtocolVersion.values()), ProtocolVersion.class)));
 
 
 }

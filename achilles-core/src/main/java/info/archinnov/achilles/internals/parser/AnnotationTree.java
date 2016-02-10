@@ -163,7 +163,8 @@ public class AnnotationTree {
             return annotationTree;
         } else if (aptUtils.isAssignableFrom(Tuple1.class, currentType) ||
                 aptUtils.isAssignableFrom(List.class, currentType) ||
-                aptUtils.isAssignableFrom(Set.class, currentType)) {
+                aptUtils.isAssignableFrom(Set.class, currentType) ||
+                aptUtils.isAssignableFrom(java.util.Optional.class, currentType)) {
 
             final TypeMirror typeMirror = nestedTypes.get(0);
             final Map<Class<? extends Annotation>, TypedMap> annotationsInfo = typeAttributes
@@ -220,7 +221,8 @@ public class AnnotationTree {
             return annotationTree;
         } else if (aptUtils.isAssignableFrom(Tuple1.class, currentType) ||
                 aptUtils.isAssignableFrom(List.class, currentType) ||
-                aptUtils.isAssignableFrom(Set.class, currentType)) {
+                aptUtils.isAssignableFrom(Set.class, currentType) ||
+                aptUtils.isAssignableFrom(java.util.Optional.class, currentType)) {
 
             final TypeMirror typeMirror = nestedTypes.get(0);
             final TypeBinding nestedTypeBinding = typeBindings.get(0);

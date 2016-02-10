@@ -138,6 +138,10 @@ public class TestEntityWithComplexTypes {
         entity.setJdkLocalTime(jdkLocalTime);
         entity.setJdkZonedDateTime(jdkZonedDateTime);
         entity.setProtocolVersionAsOrdinal(ProtocolVersion.V2);
+        entity.setOptionalString(Optional.empty());
+        entity.setOptionalProtocolVersion(Optional.of(ProtocolVersion.V3));
+        entity.setOptionalEncodingAsOrdinal(Optional.of(ProtocolVersion.V2));
+        entity.setListOfOptional(Arrays.asList(Optional.of("1"), Optional.of("2")));
 
         //When
         manager
@@ -203,6 +207,10 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.get("jdklocaltime", java.time.LocalTime.class)).isNotNull();
         assertThat(actual.get("jdkzoneddatetime", java.time.ZonedDateTime.class)).isNotNull();
         assertThat(actual.getInt("protocolversionasordinal")).isEqualTo(1);
+        assertThat(actual.isNull("optionalstring")).isTrue();
+        assertThat(actual.getString("optionalprotocolversion")).isEqualTo("V3");
+        assertThat(actual.getInt("optionalencodingasordinal")).isEqualTo(1);
+        assertThat(actual.getList("listofoptional", String.class)).containsExactly("1", "2");
     }
 
     @Test
@@ -261,6 +269,10 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.getJdkLocalTime()).isNotNull();
         assertThat(actual.getJdkZonedDateTime()).isNotNull();
         assertThat(actual.getProtocolVersionAsOrdinal()).isEqualTo(ProtocolVersion.V3);
+        assertThat(actual.getOptionalString()).isEqualTo(Optional.empty());
+        assertThat(actual.getOptionalProtocolVersion()).isEqualTo(Optional.of(ProtocolVersion.V3));
+        assertThat(actual.getOptionalEncodingAsOrdinal()).isEqualTo(Optional.of(ProtocolVersion.V2));
+        assertThat(actual.getListOfOptional()).isEqualTo(Arrays.asList(Optional.of("1"), Optional.of("2")));
 
     }
 

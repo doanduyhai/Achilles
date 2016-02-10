@@ -65,20 +65,22 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
     abstract VALUETO encodeFromRawInternal(Object o);
 
     public VALUEFROM decodeFromGettable(GettableData gettableData) {
-        if (gettableData.isNull(getColumnForSelect())) return null;
+        if (gettableData.isNull(getColumnForSelect()) && !isOptional()) return null;
         return decodeFromGettableInternal(gettableData);
     }
 
     abstract VALUEFROM decodeFromGettableInternal(GettableData gettableData);
 
     public VALUEFROM decodeFromRaw(Object o) {
-        if (o == null) return null;
+        if (o == null && !isOptional()) return null;
         return decodeFromRawInternal(o);
     }
 
     abstract VALUEFROM decodeFromRawInternal(Object o);
 
     public abstract DataType buildType();
+
+    abstract boolean isOptional();
 
     public VALUETO encodeField(ENTITY entity) {
         return encodeFromJava(getJavaValue(entity));

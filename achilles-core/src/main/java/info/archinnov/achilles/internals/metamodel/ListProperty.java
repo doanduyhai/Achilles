@@ -76,6 +76,11 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
+    boolean isOptional() {
+        return false;
+    }
+
+    @Override
     public void encodeToSettable(List<VALUETO> valueTos, SettableData<?> settableData) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode list '%s' value %s to settable object %s",

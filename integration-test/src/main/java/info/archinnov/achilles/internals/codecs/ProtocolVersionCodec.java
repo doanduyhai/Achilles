@@ -16,6 +16,8 @@
 
 package info.archinnov.achilles.internals.codecs;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.datastax.driver.core.ProtocolVersion;
 
 import info.archinnov.achilles.exception.AchillesTranscodingException;
@@ -35,11 +37,19 @@ public class ProtocolVersionCodec implements Codec<ProtocolVersion, String> {
 
     @Override
     public String encode(ProtocolVersion fromJava) throws AchillesTranscodingException {
-        return fromJava.name();
+        if (fromJava != null) {
+            return fromJava.name();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public ProtocolVersion decode(String fromCassandra) throws AchillesTranscodingException {
-        return ProtocolVersion.valueOf(fromCassandra);
+        if (StringUtils.isEmpty(fromCassandra)) {
+            return null;
+        } else {
+            return ProtocolVersion.valueOf(fromCassandra);
+        }
     }
 }

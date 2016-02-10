@@ -57,6 +57,11 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
     @Override
     public abstract TupleType buildType();
 
+    @Override
+    boolean isOptional() {
+        return false;
+    }
+
     protected abstract List<AbstractProperty<ENTITY, ?, ?>> componentsProperty();
 
     @Override

@@ -965,6 +965,122 @@ public class FieldParserTest extends AbstractTestProcessor {
     }
 
     @Test
+    public void should_parse_optional_string() throws Exception {
+
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
+                    globalContext);
+
+            // @Column
+            // private Optional<String> optionalString;
+            VariableElement elm = findFieldInType(typeElement, "optionalString");
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_optional_string.txt"));
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForCodecs.class),
+                        loadClass(TestCodecRegistry.class), loadClass(TestCodecRegistry2.class)))
+                .processedWith(this)
+                .compilesWithoutError();
+    }
+
+    @Test
+    public void should_parse_optional_protocol_version_from_codec_registry() throws Exception {
+
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
+                    globalContext);
+
+            // @Column
+            // private Optional<ProtocolVersion> optionalProtocolVersion;
+            VariableElement elm = findFieldInType(typeElement, "optionalProtocolVersion");
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_optional_protocol_version_from_codec_registry.txt"));
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForCodecs.class),
+                        loadClass(TestCodecRegistry.class), loadClass(TestCodecRegistry2.class)))
+                .processedWith(this)
+                .compilesWithoutError();
+    }
+
+    @Test
+    public void should_parse_optional_protocol_version_from_inline_codec() throws Exception {
+
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
+                    globalContext);
+
+            // @Column
+            // private Optional<@Enumerated(Encoding.ORDINAL) ProtocolVersion> optionalEncodingAsOrdinal;
+            VariableElement elm = findFieldInType(typeElement, "optionalEncodingAsOrdinal");
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.Integer");
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_optional_protocol_version_from_inline_codec.txt"));
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForCodecs.class),
+                        loadClass(TestCodecRegistry.class), loadClass(TestCodecRegistry2.class)))
+                .processedWith(this)
+                .compilesWithoutError();
+    }
+
+    @Test
+    public void should_parse_list_optional_string() throws Exception {
+
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy,
+                    globalContext);
+
+            // @Column
+            // private List<Optional<String>> listOfOptional;
+            VariableElement elm = findFieldInType(typeElement, "listOfOptional");
+            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.List<java.lang.String>");
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_list_optional_string.txt"));
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForCodecs.class),
+                        loadClass(TestCodecRegistry.class), loadClass(TestCodecRegistry2.class)))
+                .processedWith(this)
+                .compilesWithoutError();
+    }
+
+    @Test
     public void should_fail_parsing_codec_from_registry() throws Exception {
 
         setExec(aptUtils -> {

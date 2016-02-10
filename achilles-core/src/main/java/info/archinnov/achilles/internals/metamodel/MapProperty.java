@@ -83,6 +83,11 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
     }
 
     @Override
+    boolean isOptional() {
+        return false;
+    }
+
+    @Override
     public void encodeToSettable(Map<KEYTO, VALUETO> mapTo, SettableData<?> settableData) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' map value %s to settable object %s",

@@ -124,6 +124,7 @@ public class TypeUtils {
     public static final ClassName SET_PROPERTY = ClassName.get(SetProperty.class);
     public static final ClassName MAP_PROPERTY = ClassName.get(MapProperty.class);
     public static final ClassName UDT_PROPERTY = ClassName.get(UDTProperty.class);
+    public static final ClassName JDK_OPTIONAL_PROPERTY = ClassName.get(JdkOptionalProperty.class);
     public static final ClassName TUPLE1_PROPERTY = ClassName.get(Tuple1Property.class);
     public static final ClassName TUPLE2_PROPERTY = ClassName.get(Tuple2Property.class);
     public static final ClassName TUPLE3_PROPERTY = ClassName.get(Tuple3Property.class);
@@ -365,6 +366,10 @@ public class TypeUtils {
         ALLOWED_TYPES.add(TypeName.get(java.time.LocalDate.class));
         ALLOWED_TYPES.add(TypeName.get(LocalTime.class));
         ALLOWED_TYPES.add(TypeName.get(ZonedDateTime.class));
+
+        // Optional
+        ALLOWED_TYPES.add(TypeName.get(java.util.Optional.class));
+
 
         DRIVER_TYPES_MAPPING.put(TypeName.get(Instant.class), "timestamp()");
         DRIVER_TYPES_MAPPING.put(TypeName.get(java.time.LocalDate.class), "date()");

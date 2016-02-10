@@ -109,6 +109,8 @@ public class FieldParser {
             return parseSet(annotationTree, context, annotationsInfo, typeArguments);
         } else if (aptUtils.isAssignableFrom(Map.class, currentTypeMirror)) {
             return parseMap(annotationTree, context, annotationsInfo, typeArguments);
+        } else if (aptUtils.isAssignableFrom(java.util.Optional.class, currentTypeMirror)) {
+            return parseOptional(annotationTree, context);
         } else if (isUDT) {
             return udtParser.parseUDT(annotationTree, context, this);
         } else {
@@ -187,6 +189,19 @@ public class FieldParser {
 
         return new TypeParsingResult(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
                 sourceType, codecInfo.targetType, propertyType, typeCode);
+    }
+
+    protected TypeParsingResult parseOptional(AnnotationTree annotationTree, FieldParsingContext context) {
+        final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
+        final TypeMirror typeMirror1 = AptUtils.getTypeArguments(annotationTree.getCurrentType()).get(0);
+        final TypeName sourceType1 = TypeName.get(typeMirror1);
+        final TypeParsingResult parsingResult = parseType(annotationTree.next(), context.forOptionalType(context.entityRawType, sourceType1), sourceType1);
+        final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L)",
+                JDK_OPTIONAL_PROPERTY,
+                context.fieldInfoCode,
+                parsingResult.typeCode).build();
+        final ParameterizedTypeName propertyType = genericType(JDK_OPTIONAL_PROPERTY, context.entityRawType, sourceType1, parsingResult.targetType);
+        return new TypeParsingResult(context, parsingResult.annotationTree, sourceType, parsingResult.targetType, propertyType, codeBlock);
     }
 
     private TypeParsingResult parseMap(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {

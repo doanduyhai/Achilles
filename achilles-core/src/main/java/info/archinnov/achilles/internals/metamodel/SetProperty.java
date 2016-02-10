@@ -70,6 +70,11 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
         this.valueProperty = valueProperty;
     }
 
+    @Override
+    boolean isOptional() {
+        return false;
+    }
+
     public VALUETO encodeSingleElement(VALUEFROM javaValue) {
         return valueProperty.encodeFromRaw(javaValue);
     }

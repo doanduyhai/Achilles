@@ -23,10 +23,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ProtocolVersion;
@@ -203,6 +200,18 @@ public class TestEntityForCodecs {
 
     @Column
     private ZonedDateTime jdkZonedDateTime;
+
+    @Column
+    private Optional<String> optionalString;
+
+    @Column
+    private Optional<ProtocolVersion> optionalProtocolVersion;
+
+    @Column
+    private Optional<@Enumerated(Encoding.ORDINAL) ProtocolVersion> optionalEncodingAsOrdinal;
+
+    @Column
+    private List<Optional<String>> listOfOptional;
 
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
@@ -623,6 +632,38 @@ public class TestEntityForCodecs {
 
     public void setProtocolVersionAsOrdinal(ProtocolVersion protocolVersionAsOrdinal) {
         this.protocolVersionAsOrdinal = protocolVersionAsOrdinal;
+    }
+
+    public Optional<String> getOptionalString() {
+        return optionalString;
+    }
+
+    public void setOptionalString(Optional<String> optionalString) {
+        this.optionalString = optionalString;
+    }
+
+    public Optional<ProtocolVersion> getOptionalProtocolVersion() {
+        return optionalProtocolVersion;
+    }
+
+    public void setOptionalProtocolVersion(Optional<ProtocolVersion> optionalProtocolVersion) {
+        this.optionalProtocolVersion = optionalProtocolVersion;
+    }
+
+    public Optional<ProtocolVersion> getOptionalEncodingAsOrdinal() {
+        return optionalEncodingAsOrdinal;
+    }
+
+    public void setOptionalEncodingAsOrdinal(Optional<ProtocolVersion> optionalEncodingAsOrdinal) {
+        this.optionalEncodingAsOrdinal = optionalEncodingAsOrdinal;
+    }
+
+    public List<Optional<String>> getListOfOptional() {
+        return listOfOptional;
+    }
+
+    public void setListOfOptional(List<Optional<String>> listOfOptional) {
+        this.listOfOptional = listOfOptional;
     }
 }
 

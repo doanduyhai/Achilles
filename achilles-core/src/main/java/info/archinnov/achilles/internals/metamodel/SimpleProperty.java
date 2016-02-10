@@ -65,6 +65,11 @@ public class SimpleProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProperty
     }
 
     @Override
+    boolean isOptional() {
+        return false;
+    }
+
+    @Override
     public void encodeToSettable(VALUETO valueTo, SettableData<?> settableData) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' value %s to settable object %s",

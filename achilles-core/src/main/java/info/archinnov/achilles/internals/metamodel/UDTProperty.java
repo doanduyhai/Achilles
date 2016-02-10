@@ -57,6 +57,11 @@ public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue
     }
 
     @Override
+    boolean isOptional() {
+        return false;
+    }
+
+    @Override
     public void encodeToSettable(UDTValue udt, SettableData<?> settableData) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' UDT value %s to settable object %s",

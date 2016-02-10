@@ -83,6 +83,14 @@ public class FieldParsingContext {
                 fieldName, cqlColumn, columnType, columnInfo), false);
     }
 
+    public FieldParsingContext forOptionalType(TypeName entityType, TypeName nestedType) {
+        return new FieldParsingContext(entityContext, entityRawType, new FieldInfoContext(
+                CodeBlock.builder().add("$T.<$T, $T> of($S, $S)", FIELD_INFO, entityType, nestedType,
+                        fieldName, cqlColumn).build(),
+                fieldName, cqlColumn, columnType, columnInfo), true);
+    }
+
+
 
 
     @Override
