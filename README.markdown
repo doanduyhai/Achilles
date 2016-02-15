@@ -17,10 +17,13 @@
 - Tight integration with JUnit for productive TDD programming
 - Support for Bean Validation (JSR-303)
 - Support for **Lightweight Transaction** with dedicated listener interface 
+- Support for **Materialized View** 
 - Flexible naming strategy & insert strategy
 - Runtime **Schema Name Provider** for multi-tenant environments
 - Full compatibility with Java 8 **CompletableFuture**
 
+> **Warning: Achilles versions 3.x are no longer maintained, only bug-fixes are supported, please migrate to
+version 4.x and follow the [Migration From 3.x Guide]**
 
 ## Installation #
 
@@ -37,7 +40,12 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
 		<tr>
-			<td>4.0.1</td>
+			<td>4.1.0</td>
+			<td>3.0.0</td>
+			<td>3.3</td>
+		</tr>		
+		<tr>
+			<td>4.0.1 (limited to Cassandra 2.2.3 features)</td>
 			<td>3.0.0-alpha5</td>
 			<td>2.2.3</td>
 		</tr>		
@@ -56,7 +64,7 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 
 > Warning: thre will be no new features for branches older than **4.x.x**. Those branches are
 only supported for bug fixes. New features will **not** be back-ported. Please upgrade to the
-latest version of **Achilles** to benefit from new features 
+latest version of **Achilles** to benefit from new features
 
  To use **Achilles**, just add the following dependency in your **pom.xml**:
 
@@ -68,7 +76,25 @@ latest version of **Achilles** to benefit from new features
 	</dependency>
 ```
 
->Warning: Achilles 4.x requires a JDK 8 to work. It is recommended to use JDK 8 update 45 or later
+ Do not forget to deactivate _incremental compilation_ and use _Java 8_ in your **pom.xml** file
+ 
+```xml
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <useIncrementalCompilation>false</useIncrementalCompilation>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>        
+```
+            
+> Achilles 4.x requires a JDK 8 to work. It is recommended to use JDK 8 update 45 or later
 
 For unit-testing with embedded Cassandra, add this dependency with **test** scope:
 
@@ -89,7 +115,7 @@ For unit-testing with embedded Cassandra, add this dependency with **test** scop
  3. Jackson core, annotations, databind & module jaxb annotations 2.3.3
  4. Google Auto Common 0.4
  5. Google Auto Service 1.0-rc2
- 6. Java Poet 1.2.0 
+ 6. Java Poet 1.5.1 
  7. Guava 18.0
  8. slf4j-api 1.7.2
  9. commons-io 2.4
@@ -126,7 +152,7 @@ For unit-testing with embedded Cassandra, add this dependency with **test** scop
  For any question, bug encountered, you can use the **[mailing list]**
 
 ## License
-Copyright 2012-2015 DuyHai DOAN
+Copyright 2012-2016 DuyHai DOAN
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this application except in compliance with the License. You may obtain a copy of the License at
 
@@ -134,13 +160,14 @@ http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
+[Migration From 3.x Guide]: https://github.com/doanduyhai/Achilles/wiki/Migration-Guide
 [IDE Configuration]: https://github.com/doanduyhai/Achilles/wiki/IDE-configuration
 [5 minutes tutorial]: https://github.com/doanduyhai/Achilles/wiki/5-minutes-Tutorial
 [Quick Reference]: https://github.com/doanduyhai/Achilles/wiki/Quick-Reference
 [Twitter Demo]: https://github.com/doanduyhai/Achilles-Twitter-Demo
 [KillrChat]: https://github.com/doanduyhai/Achilles/wiki/Advanced-Tutorial:-KillrChat
+[Migration Guide]: https://github.com/doanduyhai/Achilles/wiki/Migration-Guide
 [Wiki]: https://github.com/doanduyhai/Achilles/wiki
 [Documentation]: https://github.com/doanduyhai/Achilles/tree/master/documentation/versions
 [Datastax Java Driver]: https://github.com/datastax/java-driver
 [mailing list]: https://groups.google.com/forum/?hl=fr#!forum/cassandra-achilles
-
