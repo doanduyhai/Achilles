@@ -27,10 +27,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.IndexMetadata;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.*;
 
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
@@ -40,7 +37,7 @@ public class SchemaValidator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SchemaValidator.class);
 
-    public static void validateDefaultTTL(TableMetadata metadata, Optional<Integer> staticTTL, Class<?> entityClass) {
+    public static void validateDefaultTTL(AbstractTableMetadata metadata, Optional<Integer> staticTTL, Class<?> entityClass) {
         if (staticTTL.isPresent()) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(format("Validating table %s default TTL value",
@@ -53,7 +50,7 @@ public class SchemaValidator {
         }
     }
 
-    public static <T> void validateColumns(TableMetadata metadata, List<AbstractProperty<T, ?, ?>> properties,
+    public static <T> void validateColumns(AbstractTableMetadata metadata, List<AbstractProperty<T, ?, ?>> properties,
                                            Class<T> entityClass) {
 
         for (AbstractProperty<T, ?, ?> x : properties) {
@@ -74,7 +71,8 @@ public class SchemaValidator {
                     staticType, cqlColumn, entityClass, runtimeType);
 
             if (x.fieldInfo.hasIndex()) {
-                validateIndex(entityClass, x, cqlColumn, metadata.getIndex(x.fieldInfo.indexInfo.name));
+                final TableMetadata tableMetadata = (TableMetadata) metadata;
+                validateIndex(entityClass, x, cqlColumn, tableMetadata.getIndex(x.fieldInfo.indexInfo.name));
             }
 
             if (x.fieldInfo.columnType == ColumnType.STATIC || x.fieldInfo.columnType == ColumnType.STATIC_COUNTER) {

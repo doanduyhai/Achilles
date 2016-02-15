@@ -34,6 +34,8 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
 import org.eclipse.jdt.internal.compiler.apt.model.DeclaredTypeImpl;
+import org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl;
+import org.eclipse.jdt.internal.compiler.apt.model.VariableElementImpl;
 
 import com.datastax.driver.core.UDTValue;
 import com.google.auto.common.MoreElements;
@@ -122,7 +124,7 @@ public class AptUtils {
         return MoreTypes.asTypeElement(typeMirror);
     }
 
-    public static <T extends TypeElement> boolean isAnnotationOfType(T element, Class<? extends Annotation> annotationClass) {
+    public static boolean isAnnotationOfType(TypeElement element, Class<? extends Annotation> annotationClass) {
         return element.getKind() == ElementKind.ANNOTATION_TYPE
         && element.getQualifiedName().toString().equals(annotationClass.getCanonicalName());
 
@@ -304,6 +306,28 @@ public class AptUtils {
         return null;
     }
 
+
+    public static boolean isJavaCompiler(VariableElement varElm) {
+        return varElm instanceof Symbol.VarSymbol;
+    }
+
+    public static boolean isJavaCompiler(TypeElement varElm) {
+        return varElm instanceof Symbol.ClassSymbol;
+    }
+
+    public static boolean isEclipseCompiler(VariableElement varElm) {
+        return varElm instanceof VariableElementImpl;
+    }
+
+    public static boolean isEclipseCompiler(TypeElement varElm) {
+        return varElm instanceof TypeElementImpl;
+    }
+
+    /**
+     *
+     * INSTANCE METHODS
+     *
+     */
 
     public <T extends Annotation> Optional<T> getAnnotationOnClass(TypeMirror typeMirror, Class<T> annotationClass) {
         if (typeMirror.getKind() == TypeKind.DECLARED) {

@@ -151,7 +151,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("final String currentKeyspace = meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName())",
                         "unknown_keyspace_for_")
-                .addStatement("final $T where = $T.update(currentKeyspace, meta.getTableName()).where()", UPDATE_WHERE, QUERY_BUILDER)
+                .addStatement("final $T where = $T.update(currentKeyspace, meta.getTableOrViewName()).where()", UPDATE_WHERE, QUERY_BUILDER)
                 .addStatement("return new $T(where)", updateFromTypeName)
                 .returns(updateFromTypeName)
                 .build();

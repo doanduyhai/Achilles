@@ -377,17 +377,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   }
 
   @Override
-  protected Optional<String> getStaticKeyspace() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected Optional<String> getStaticTableName() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected String getDerivedTableName() {
+  protected String getDerivedTableOrViewName() {
     return "testentitywithcomplextypes";
   }
 
@@ -423,12 +413,47 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   }
 
   @Override
+  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getPartitionKeys() {
+    return Arrays.asList(id);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getClusteringColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getNormalColumns() {
+    return Arrays.asList(complexNestingMap,consistencyLevel,integer,jsonMap,listNesting,listUdt,mapUdt,mapWithNestedJson,objectBoolean,objectByte,objectByteArray,okSet,primitiveBoolean,primitiveByte,primitiveByteArray,simpleUdt,time,timeuuid,tuple1,tuple2,tupleNesting,value);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getComputedColumns() {
+    return Arrays.asList(writeTime,writeTimeWithCodec);
+  }
+
+  @Override
   protected boolean isCounterTable() {
     return false;
   }
 
   @Override
-  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+  protected Optional<String> getStaticKeyspace() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<String> getStaticTableOrViewName() {
     return Optional.empty();
   }
 
@@ -453,33 +478,8 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   }
 
   @Override
-  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getPartitionKeys() {
-    return Arrays.asList(id);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getClusteringColumns() {
-    return Arrays.asList();
-  }
-
-  @Override
   protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getStaticColumns() {
     return Arrays.asList();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getNormalColumns() {
-    return Arrays.asList(complexNestingMap,consistencyLevel,integer,jsonMap,listNesting,listUdt,mapUdt,mapWithNestedJson,objectBoolean,objectByte,objectByteArray,okSet,primitiveBoolean,primitiveByte,primitiveByteArray,simpleUdt,time,timeuuid,tuple1,tuple2,tupleNesting,value);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getComputedColumns() {
-    return Arrays.asList(writeTime,writeTimeWithCodec);
   }
 
   @Override

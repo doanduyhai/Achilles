@@ -18,6 +18,7 @@ package info.archinnov.achilles.internals.apt.processors.meta;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.isAnnotationOfType;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static info.archinnov.achilles.internals.parser.validator.BeanValidator.validateViewsAgainstBaseTable;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
@@ -40,20 +41,20 @@ import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Sets;
 import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.annotations.CodecRegistry;
 import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.MaterializedView;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryBuilderCodeGen;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryCodeGen;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryCodeGen.ManagersAndDSLClasses;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.parser.CodecRegistryParser;
-import info.archinnov.achilles.internals.parser.CodecFactory;
 import info.archinnov.achilles.internals.parser.EntityParser;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
+import info.archinnov.achilles.internals.utils.ListHelper;
 
 
 @AutoService(Processor.class)
@@ -76,32 +77,54 @@ public class AchillesProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (!this.processed) {
-            final GlobalParsingContext parsingContext = new GlobalParsingContext();
-            parseCodecRegistry(parsingContext, annotations, roundEnv);
+            final GlobalParsingContext parsingContext = parseCodecRegistry(annotations, roundEnv);
 
-            final List<TypeElement> entityTypes = annotations
+            final List<TypeElement> tableTypes = annotations
                     .stream()
                     .filter(annotation -> isAnnotationOfType(annotation, Entity.class))
                     .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotation).stream())
                     .map(MoreElements::asType)
                     .collect(toList());
 
-            validateEntityNames(entityTypes);
+            final List<TypeElement> viewTypes = annotations
+                    .stream()
+                    .filter(annotation -> isAnnotationOfType(annotation, MaterializedView.class))
+                    .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotation).stream())
+                    .map(MoreElements::asType)
+                    .collect(toList());
 
-            final List<EntityMetaSignature> entityMetas = entityTypes
+            final List<TypeElement> types = ListHelper.appendAll(tableTypes, viewTypes);
+
+            validateEntityNames(types);
+
+            final List<EntityMetaSignature> tableSignatures = tableTypes
                     .stream()
                     .map(x -> entityParser.parseEntity(x, parsingContext))
                     .collect(toList());
 
+            final List<EntityMetaSignature> viewSignatures = viewTypes
+                    .stream()
+                    .map(x -> entityParser.parseView(x, parsingContext))
+                    .collect(toList());
+
+            final List<EntityMetaSignature> tableAndViewSignatures = ListHelper.appendAll(tableSignatures, viewSignatures);
+
+            validateViewsAgainstBaseTable(aptUtils, viewSignatures, tableSignatures);
+
             final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance();
-            final ManagersAndDSLClasses managersAndDSLClasses = ManagerFactoryCodeGen.buildInstance(aptUtils, entityMetas, parsingContext);
+            final ManagersAndDSLClasses managersAndDSLClasses = ManagerFactoryCodeGen.buildInstance(aptUtils, tableAndViewSignatures, parsingContext);
 
             try {
-                final FileObject resource = aptUtils.filer.getResource(StandardLocation.SOURCE_OUTPUT, GENERATED_PACKAGE, MANAGER_FACTORY_BUILDER_CLASS);
-                final File generatedSourceFolder = new File(resource.toUri().getRawPath().replaceAll("(.+/info/archinnov/achilles/generated/).+", "$1"));
+                aptUtils.printNote("[Achilles] Reading previously generated source files (if exist)");
+                try {
+                    final FileObject resource = aptUtils.filer.getResource(StandardLocation.SOURCE_OUTPUT, GENERATED_PACKAGE, MANAGER_FACTORY_BUILDER_CLASS);
+                    final File generatedSourceFolder = new File(resource.toUri().getRawPath().replaceAll("(.+/info/archinnov/achilles/generated/).+", "$1"));
+                    aptUtils.printNote("[Achilles] Cleaning previously generated source files");
+                    FileUtils.deleteDirectory(generatedSourceFolder);
+                } catch (IOException ioe) {
+                    aptUtils.printNote("[Achilles] No previously generated source files found, proceed to code generation");
+                }
 
-                aptUtils.printNote("[Achilles] Cleaning previously generated source files");
-                FileUtils.deleteDirectory(generatedSourceFolder);
 
                 aptUtils.printNote("[Achilles] Generating ManagerFactoryBuilder");
                 JavaFile.builder(GENERATED_PACKAGE, managerFactoryBuilder)
@@ -118,7 +141,7 @@ public class AchillesProcessor extends AbstractProcessor {
                 }
 
                 aptUtils.printNote("[Achilles] Generating entity meta classes");
-                for (EntityMetaSignature signature : entityMetas) {
+                for (EntityMetaSignature signature : tableAndViewSignatures) {
                     JavaFile.builder(ENTITY_META_PACKAGE, signature.sourceCode)
                             .build().writeTo(aptUtils.filer);
                 }
@@ -149,6 +172,12 @@ public class AchillesProcessor extends AbstractProcessor {
 
         }
         return true;
+    }
+
+    private GlobalParsingContext parseCodecRegistry(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        final GlobalParsingContext parsingContext = new GlobalParsingContext();
+        parseCodecRegistry(parsingContext, annotations, roundEnv);
+        return parsingContext;
     }
 
     private void validateEntityNames(List<TypeElement> entityTypes) {
@@ -182,6 +211,7 @@ public class AchillesProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         return Sets.newHashSet(Entity.class.getCanonicalName(),
+                MaterializedView.class.getCanonicalName(),
                 CodecRegistry.class.getCanonicalName());
     }
 

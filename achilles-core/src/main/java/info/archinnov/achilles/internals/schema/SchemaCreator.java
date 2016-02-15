@@ -18,9 +18,7 @@ package info.archinnov.achilles.internals.schema;
 
 import static java.lang.String.format;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +31,7 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractViewProperty;
 import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.types.OverridingOptional;
@@ -55,7 +54,7 @@ public class SchemaCreator {
         final StringBuilder builder = new StringBuilder();
         final Optional<String> keyspace = Optional.ofNullable(context.keyspace.orElse(entityProperty.staticKeyspace.orElse(null)));
         final Create table;
-        final String tableName = entityProperty.getTableName();
+        final String tableName = entityProperty.getTableOrViewName();
         final Optional<String> staticKeyspace = entityProperty.getKeyspace();
         final Optional<String> overridenKeyspace = OverridingOptional
                 .from(staticKeyspace)
@@ -117,6 +116,84 @@ public class SchemaCreator {
         return schemas;
     }
 
+    public static List<String> generateView(SchemaContext context, AbstractViewProperty<?> viewProperty) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format("Generating materialized view for entity of type %s",
+                    viewProperty.entityClass.getCanonicalName()));
+        }
+
+        final Optional<String> keyspace = Optional.ofNullable(context.keyspace.orElse(viewProperty.staticKeyspace.orElse(null)));
+        final StringBuilder viewScript = new StringBuilder();
+        final String viewName = viewProperty.getTableOrViewName();
+        final Optional<String> staticKeyspace = viewProperty.getKeyspace();
+        final Optional<String> overridenKeyspace = OverridingOptional
+                .from(staticKeyspace)
+                .andThen(keyspace)
+                .getOptional();
+
+        final AbstractEntityProperty<?> baseClassProperty = viewProperty.getBaseClassProperty();
+        final String baseTableName;
+        if (overridenKeyspace.isPresent()) {
+            viewScript.append("CREATE MATERIALIZED VIEW IF NOT EXISTS ")
+                    .append(overridenKeyspace.get()).append(".").append(viewName)
+                    .append("\n")
+                    .append("AS SELECT ");
+            baseTableName = overridenKeyspace.get() + "." + baseClassProperty.getTableOrViewName();
+        } else {
+            viewScript.append("CREATE MATERIALIZED VIEW IF NOT EXISTS ")
+                    .append(viewName)
+                    .append("\n")
+                    .append("AS SELECT ");
+            baseTableName = baseClassProperty.getTableOrViewName();
+        }
+
+
+        final StringJoiner columns = new StringJoiner(",");
+        viewProperty.allColumns.forEach(x -> columns.add(x.fieldInfo.cqlColumn));
+
+        viewScript.append(columns.toString()).append("\n");
+        viewScript.append("FROM ").append(baseTableName).append("\n");
+
+        final List<AbstractProperty<?, ?, ?>> viewPksProperty = new ArrayList<>(viewProperty.partitionKeys);
+        viewPksProperty.addAll(viewProperty.clusteringColumns);
+
+        final StringJoiner whereClause = new StringJoiner(" AND ");
+        viewPksProperty.forEach(x -> whereClause.add(x.fieldInfo.cqlColumn + " IS NOT NULL"));
+
+        viewScript.append("WHERE ").append(whereClause).append("\n");
+
+        final StringJoiner partitionKeys = new StringJoiner(",", "(", ")");
+        final StringJoiner clusteringColumns = new StringJoiner(",");
+
+        viewProperty.partitionKeys.forEach(x -> partitionKeys.add(x.fieldInfo.cqlColumn));
+        viewProperty.clusteringColumns.forEach(x -> clusteringColumns.add(x.fieldInfo.cqlColumn));
+
+
+        viewScript.append("PRIMARY KEY")
+                .append("(")
+                    .append(partitionKeys).append(",").append(clusteringColumns)
+                .append(")");
+
+        if (viewProperty.clusteringColumns.size() > 0) {
+            StringJoiner clusteringOrder = new StringJoiner(",");
+            viewProperty.clusteringColumns
+                    .stream()
+                    .forEach(x -> clusteringOrder.add(x.fieldInfo.cqlColumn +
+                            " " +
+                            ((ClusteringColumnInfo) x.fieldInfo.columnInfo).clusteringOrder.name()));
+
+
+            viewScript.append("\n")
+                    .append("WITH CLUSTERING ORDER BY")
+                    .append("(")
+                    .append(clusteringOrder)
+                    .append(")");
+        }
+
+
+        return Arrays.asList(viewScript.append(";").toString());
+    }
+
     public static void generateSchemaAtRuntime(final Session session, AbstractEntityProperty<?> entityProperty) {
 
         if (LOGGER.isDebugEnabled()) {
@@ -127,7 +204,13 @@ public class SchemaCreator {
 
         final String keyspace = entityProperty.getKeyspace().orElse(session.getLoggedKeyspace());
         final SchemaContext schemaContext = new SchemaContext(keyspace, true, true);
-        final List<String> schemas = generateTable_And_Indices(schemaContext, entityProperty);
+        final List<String> schemas;
+        if (entityProperty.isTable()) {
+            schemas = generateTable_And_Indices(schemaContext, entityProperty);
+        } else {
+            schemas = generateView(schemaContext, (AbstractViewProperty) entityProperty);
+        }
+
 
         for(String schema: schemas) {
             if (ACHILLES_DML_LOGGER.isDebugEnabled()) {

@@ -36,7 +36,7 @@ public class TypedQueryValidator {
                     queryString));
         }
 
-        String tableName = meta.getTableName().toLowerCase();
+        String tableName = meta.getTableOrViewName().toLowerCase();
 
         final Pattern pattern = Pattern.compile(".* from " + OPTIONAL_KEYSPACE_PREFIX + tableName + "(?: )?.*");
         validateTrue(pattern.matcher(queryString).matches(), "The typed query [%s] should contain the table name '%s' if the entity type is '%s'", queryString, tableName,

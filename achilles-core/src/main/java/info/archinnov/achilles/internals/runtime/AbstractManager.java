@@ -65,7 +65,7 @@ public abstract class AbstractManager<ENTITY> {
 
         validateNotNull(row, "Row object should not be null");
         final String tableName = row.getColumnDefinitions().asList().get(0).getTable();
-        final String entityTableName = meta_internal.getTableName();
+        final String entityTableName = meta_internal.getTableOrViewName();
         validateTableTrue(entityTableName.equals(tableName),
                 "CQL row is from table '%s', it cannot be mapped to entity '%s' associated to table '%s'",
                 tableName, entityClass.getCanonicalName(), entityTableName);
@@ -161,6 +161,11 @@ public abstract class AbstractManager<ENTITY> {
                     boundStatement.preparedStatement().getQueryString()));
         }
 
+        if (meta_internal.isView()) {
+            validateTrue(isSelectStatement(boundStatement), "Statement provided for the materialized view '%s' should be an SELECT statement",
+                    meta_internal.entityClass.getCanonicalName());
+        }
+
         return new NativeQuery(meta_internal, rte, boundStatement, new Object[0]);
     }
 
@@ -169,6 +174,11 @@ public abstract class AbstractManager<ENTITY> {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Create native query : %s",
                     preparedStatement.getQueryString()));
+        }
+
+        if (meta_internal.isView()) {
+            validateTrue(isSelectStatement(preparedStatement), "Statement provided for the materialized view '%s' should be an SELECT statement",
+                    meta_internal.entityClass.getCanonicalName());
         }
 
         validateNotEmpty(encodedBoundValues, "Encoded values provided for native query should not be empty");
@@ -180,6 +190,11 @@ public abstract class AbstractManager<ENTITY> {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Create native query : %s",
                     regularStatement.getQueryString()));
+        }
+
+        if (meta_internal.isView()) {
+            validateTrue(isSelectStatement(regularStatement), "Statement provided for the materialized view '%s' should be an SELECT statement",
+                    meta_internal.entityClass.getCanonicalName());
         }
 
         final PreparedStatement preparedStatement = rte.prepareDynamicQuery(regularStatement);

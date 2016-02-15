@@ -44,6 +44,7 @@ import info.archinnov.achilles.internals.schema.SchemaCreator;
 import info.archinnov.achilles.internals.statements.BoundValuesWrapper;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.types.OverridingOptional;
+import info.archinnov.achilles.internals.utils.ListHelper;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
@@ -67,8 +68,8 @@ public abstract class AbstractEntityProperty<T> implements
     public final Logger entityLogger;
     public final Class<T> entityClass;
     public final Optional<String> staticKeyspace;
-    public final Optional<String> staticTableName;
-    public final String derivedTableName;
+    public final Optional<String> staticTableOrViewName;
+    public final String derivedTableOrViewName;
     public final BiMap<String, String> fieldNameToCqlColumn;
     public final boolean counterTable;
     public final Optional<ConsistencyLevel> staticReadConsistency;
@@ -99,8 +100,8 @@ public abstract class AbstractEntityProperty<T> implements
         entityClass = getEntityClass();
         entityLogger = LoggerFactory.getLogger(entityClass);
         staticKeyspace = getStaticKeyspace();
-        staticTableName = getStaticTableName();
-        derivedTableName = getDerivedTableName();
+        staticTableOrViewName = getStaticTableOrViewName();
+        derivedTableOrViewName = getDerivedTableOrViewName();
         fieldNameToCqlColumn = fieldNameToCqlColumn();
         counterTable = isCounterTable();
         staticReadConsistency = getStaticReadConsistency();
@@ -123,9 +124,9 @@ public abstract class AbstractEntityProperty<T> implements
 
     protected abstract Optional<String> getStaticKeyspace();
 
-    protected abstract Optional<String> getStaticTableName();
+    protected abstract Optional<String> getStaticTableOrViewName();
 
-    protected abstract String getDerivedTableName();
+    protected abstract String getDerivedTableOrViewName();
 
     protected abstract BiMap<String, String> fieldNameToCqlColumn();
 
@@ -154,6 +155,10 @@ public abstract class AbstractEntityProperty<T> implements
     protected abstract List<AbstractProperty<T, ?, ?>> getComputedColumns();
 
     protected abstract List<AbstractProperty<T, ?, ?>> getCounterColumns();
+
+    protected EntityType getType() {
+        return EntityType.TABLE;
+    }
 
     public ConsistencyLevel readConsistency(Optional<ConsistencyLevel> runtimeConsistency) {
         final ConsistencyLevel consistencyLevel = OverridingOptional
@@ -251,11 +256,11 @@ public abstract class AbstractEntityProperty<T> implements
         return keyspace;
     }
 
-    public String getTableName() {
+    public String getTableOrViewName() {
         final String tableName = OverridingOptional
-                .from(staticTableName)
+                .from(staticTableOrViewName)
                 .andThen(schemaStrategy.map(x -> x.tableNameFor(entityClass)))
-                .defaultValue(derivedTableName)
+                .defaultValue(derivedTableOrViewName)
                 .get();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Determine runtime table name for entity of type %s : %s",
@@ -277,24 +282,13 @@ public abstract class AbstractEntityProperty<T> implements
     }
 
     protected List<AbstractProperty<T, ?, ?>> getAllColumns() {
-        List<AbstractProperty<T, ?, ?>> allColumns = new ArrayList<>();
-        allColumns.addAll(partitionKeys);
-        allColumns.addAll(staticColumns);
-        allColumns.addAll(clusteringColumns);
-        allColumns.addAll(normalColumns);
-        allColumns.addAll(counterColumns);
-        return allColumns;
+        return ListHelper.appendAll(partitionKeys, staticColumns,
+                clusteringColumns, normalColumns, counterColumns);
     }
 
     protected List<AbstractProperty<T, ?, ?>> getAllColumnsWithComputed() {
-        List<AbstractProperty<T, ?, ?>> allColumns = new ArrayList<>();
-        allColumns.addAll(partitionKeys);
-        allColumns.addAll(staticColumns);
-        allColumns.addAll(clusteringColumns);
-        allColumns.addAll(normalColumns);
-        allColumns.addAll(counterColumns);
-        allColumns.addAll(computedColumns);
-        return allColumns;
+        return ListHelper.appendAll(partitionKeys, staticColumns,
+                clusteringColumns, normalColumns, counterColumns, computedColumns);
     }
 
     public String generateSchema(SchemaContext context) {
@@ -327,7 +321,7 @@ public abstract class AbstractEntityProperty<T> implements
         validateNotNull(keyspaceMetadata,"The keyspace {} defined on entity {} does not exist in Cassandra",
                 keyspace, entityClass.getCanonicalName());
 
-        final String tableName = getTableName();
+        final String tableName = getTableOrViewName();
 
         final TableMetadata tableMetadata = keyspaceMetadata
                 .getTable(tableName);
@@ -444,5 +438,15 @@ public abstract class AbstractEntityProperty<T> implements
         }
     }
 
+    public boolean isTable() {
+        return true;
+    }
 
+    public boolean isView() {
+        return false;
+    }
+
+    public enum EntityType {
+        TABLE, VIEW
+    }
 }

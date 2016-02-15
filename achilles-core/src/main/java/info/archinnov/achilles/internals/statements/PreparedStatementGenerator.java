@@ -82,9 +82,9 @@ public class PreparedStatementGenerator {
             from = select.from(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));
         } else {
             if (keyspace.isPresent()) {
-                from = select.from(keyspace.get(), entityProperty.getTableName());
+                from = select.from(keyspace.get(), entityProperty.getTableOrViewName());
             } else {
-                from = select.from(entityProperty.getTableName());
+                from = select.from(entityProperty.getTableOrViewName());
             }
         }
 
@@ -111,9 +111,9 @@ public class PreparedStatementGenerator {
         final Optional<String> keyspace = entityProperty.getKeyspace();
         final Delete from;
         if (keyspace.isPresent()) {
-            from = delete.from(keyspace.get(), entityProperty.getTableName());
+            from = delete.from(keyspace.get(), entityProperty.getTableOrViewName());
         } else {
-            from = delete.from(entityProperty.getTableName());
+            from = delete.from(entityProperty.getTableOrViewName());
         }
 
         final Delete.Where deleteByKeys = from.where();
@@ -278,9 +278,9 @@ public class PreparedStatementGenerator {
             insert = QueryBuilder.insertInto(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));
         } else {
             if (keyspace.isPresent()) {
-                insert = QueryBuilder.insertInto(keyspace.get(), entityProperty.getTableName());
+                insert = QueryBuilder.insertInto(keyspace.get(), entityProperty.getTableOrViewName());
             } else {
-                insert = QueryBuilder.insertInto(entityProperty.getTableName());
+                insert = QueryBuilder.insertInto(entityProperty.getTableOrViewName());
             }
         }
         return insert;
@@ -293,9 +293,9 @@ public class PreparedStatementGenerator {
             from = delete.from(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));
         } else {
             if (keyspace.isPresent()) {
-                from = delete.from(keyspace.get(), entityProperty.getTableName());
+                from = delete.from(keyspace.get(), entityProperty.getTableOrViewName());
             } else {
-                from = delete.from(entityProperty.getTableName());
+                from = delete.from(entityProperty.getTableOrViewName());
             }
         }
         return from;

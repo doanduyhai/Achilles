@@ -22,6 +22,7 @@ import javax.lang.model.element.TypeElement;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
 import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
@@ -40,7 +41,13 @@ public class EntityParser extends AbstractBeanParser {
     public EntityMetaSignature parseEntity(TypeElement elm, GlobalParsingContext globalParsingContext) {
 
         final List<TypeParsingResult> parsingResults = parseFields(elm, fieldParser, globalParsingContext);
-        return entityMetaCodeGen.buildEntityMeta(elm, globalParsingContext, parsingResults);
+        return entityMetaCodeGen.buildEntityMeta(EntityType.TABLE, elm, globalParsingContext, parsingResults);
+    }
+
+    public EntityMetaSignature parseView(TypeElement elm, GlobalParsingContext globalParsingContext) {
+
+        final List<TypeParsingResult> parsingResults = parseFields(elm, fieldParser, globalParsingContext);
+        return entityMetaCodeGen.buildEntityMeta(EntityType.VIEW, elm, globalParsingContext, parsingResults);
     }
 
 

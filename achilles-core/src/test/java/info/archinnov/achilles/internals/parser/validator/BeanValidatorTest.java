@@ -16,6 +16,13 @@
 
 package info.archinnov.achilles.internals.parser.validator;
 
+import static info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer.getTypeParsingResults;
+import static info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType.TABLE;
+import static info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType.VIEW;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Arrays;
+import java.util.List;
 import javax.lang.model.element.TypeElement;
 
 import org.junit.Test;
@@ -24,15 +31,25 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
+import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
+import info.archinnov.achilles.internals.sample_classes.parser.entity.*;
 import info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityAsAbstract;
 import info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityAsFinal;
 import info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityAsInterface;
 import info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithNoPublicConstructor;
+import info.archinnov.achilles.internals.sample_classes.parser.view.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BeanValidatorTest extends AbstractTestProcessor {
+    private static final GlobalParsingContext context = new GlobalParsingContext();
 
     @Test
     public void should_fail_validating_an_interface() throws Exception {
@@ -73,5 +90,110 @@ public class BeanValidatorTest extends AbstractTestProcessor {
             BeanValidator.validateHasPublicConstructor(aptUtils, typeName, typeElement);
         });
         failTestWithMessage("Bean type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithNoPublicConstructor' should have a public constructor", TestEntityWithNoPublicConstructor.class);
+    }
+
+    @Test
+    public void should_validate_view_against_base_table() throws Exception {
+        setExec(aptUtils -> {
+            final TypeElement typeElementBase = aptUtils.elementUtils.getTypeElement(TestEntitySensor.class.getCanonicalName());
+            final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorByType.class.getCanonicalName());
+
+            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
+            final EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
+            final EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+
+            BeanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
+        });
+        launchTest(TestViewSensorByType.class);
+    }
+
+    @Test
+    public void should_fail_validating_view_without_base_entity() throws Exception {
+        setExec(aptUtils -> {
+            final TypeElement typeElementBase = aptUtils.elementUtils.getTypeElement(TestEntityAsChild.class.getCanonicalName());
+            final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorByType.class.getCanonicalName());
+
+            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
+            final EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
+            final EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+
+            BeanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
+        });
+        failTestWithMessage("Cannot find base entity class 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntitySensor' for view class 'info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorByType'", TestViewSensorByType.class);
+    }
+
+    @Test
+    public void should_fail_validating_view_because_column_not_in_base() throws Exception {
+        setExec(aptUtils -> {
+            final TypeElement typeElementBase = aptUtils.elementUtils.getTypeElement(TestEntityWithCompositePartitionKey.class.getCanonicalName());
+            final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorByType.class.getCanonicalName());
+
+            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
+            final EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
+            final EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+
+            BeanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
+        });
+        failTestWithMessage("Cannot find base entity class 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntitySensor' for view class 'info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorByType'", TestViewSensorByType.class);
+    }
+
+    @Test
+    public void should_fail_validating_view_because_column_not_correct_type() throws Exception {
+        setExec(aptUtils -> {
+            final TypeElement typeElementBase = aptUtils.elementUtils.getTypeElement(TestEntitySensor.class.getCanonicalName());
+            final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorWithColumnNotMatchBase.class.getCanonicalName());
+
+            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
+            final EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
+            final EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+
+            BeanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
+        });
+        failTestWithMessage("Cannot find any match in base table for field '{fieldName='value', cqlColumn='value', sourceType=java.lang.Long, targetType=java.lang.Long}' in view class 'info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorWithColumnNotMatchBase'", TestEntitySensor.class);
+    }
+
+    @Test
+    public void should_fail_validating_view_because_missing_base_pk() throws Exception {
+        setExec(aptUtils -> {
+            final TypeElement typeElementBase = aptUtils.elementUtils.getTypeElement(TestEntitySensor.class.getCanonicalName());
+            final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorWithMissingPK.class.getCanonicalName());
+
+            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
+            final EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
+            final EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+
+            BeanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
+        });
+        failTestWithMessage("Primary key column '{fieldName='date', cqlColumn='date', sourceType=java.util.Date, targetType=java.util.Date}' in base class info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntitySensor is not found in view class 'info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorWithMissingPK' as primary key column", TestEntitySensor.class);
+    }
+
+    @Test
+    public void should_fail_validating_view_because_missing_base_collection() throws Exception {
+        setExec(aptUtils -> {
+            final TypeElement typeElementBase = aptUtils.elementUtils.getTypeElement(TestEntitySensorWithCollection.class.getCanonicalName());
+            final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorWithMissingCollection.class.getCanonicalName());
+
+            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
+            final EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
+            final EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+
+            BeanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
+        });
+        failTestWithMessage("Collection/UDT column '{fieldName='values', cqlColumn='values', sourceType=java.util.List<java.lang.Double>, targetType=java.util.List<java.lang.Double>}' in base class info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntitySensorWithCollection is not found in view class 'info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorWithMissingCollection'. It should be included in the view", TestEntitySensorWithCollection.class);
+    }
+
+    @Test
+    public void should_fail_validating_view_because_more_than_1_non_pk() throws Exception {
+        setExec(aptUtils -> {
+            final TypeElement typeElementBase = aptUtils.elementUtils.getTypeElement(TestEntitySensor.class.getCanonicalName());
+            final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorWithMultipleNonPK.class.getCanonicalName());
+
+            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
+            final EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
+            final EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+
+            BeanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
+        });
+        failTestWithMessage("There should be maximum 1 column in the view info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorWithMultipleNonPK primary key that is NOT a primary column of the base class 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntitySensor'. We have [{fieldName='type', cqlColumn='type', sourceType=java.lang.String, targetType=java.lang.String}, {fieldName='value', cqlColumn='value', sourceType=java.lang.Double, targetType=java.lang.Double}]", TestEntitySensor.class);
     }
 }

@@ -135,17 +135,7 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
   }
 
   @Override
-  protected Optional<String> getStaticKeyspace() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected Optional<String> getStaticTableName() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected String getDerivedTableName() {
+  protected String getDerivedTableOrViewName() {
     return "testentitywithcomplexindices";
   }
 
@@ -162,12 +152,47 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
   }
 
   @Override
+  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexIndices, ?, ?>> getPartitionKeys() {
+    return Arrays.asList(id);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexIndices, ?, ?>> getClusteringColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexIndices, ?, ?>> getNormalColumns() {
+    return Arrays.asList(collectionIndex,fullIndexOnCollection,indexOnMapEntry,indexOnMapKey,simpleIndex);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexIndices, ?, ?>> getComputedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
   protected boolean isCounterTable() {
     return false;
   }
 
   @Override
-  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+  protected Optional<String> getStaticKeyspace() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<String> getStaticTableOrViewName() {
     return Optional.empty();
   }
 
@@ -192,32 +217,7 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
   }
 
   @Override
-  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithComplexIndices, ?, ?>> getPartitionKeys() {
-    return Arrays.asList(id);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithComplexIndices, ?, ?>> getClusteringColumns() {
-    return Arrays.asList();
-  }
-
-  @Override
   protected List<AbstractProperty<TestEntityWithComplexIndices, ?, ?>> getStaticColumns() {
-    return Arrays.asList();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithComplexIndices, ?, ?>> getNormalColumns() {
-    return Arrays.asList(collectionIndex,fullIndexOnCollection,indexOnMapEntry,indexOnMapKey,simpleIndex);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithComplexIndices, ?, ?>> getComputedColumns() {
     return Arrays.asList();
   }
 

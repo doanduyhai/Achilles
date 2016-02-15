@@ -25,10 +25,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl;
 import org.eclipse.jdt.internal.compiler.apt.model.VariableElementImpl;
 import org.eclipse.jdt.internal.compiler.impl.BooleanConstant;
 import org.eclipse.jdt.internal.compiler.impl.IntConstant;
@@ -36,6 +38,7 @@ import org.eclipse.jdt.internal.compiler.impl.StringConstant;
 import org.eclipse.jdt.internal.compiler.lookup.*;
 
 import com.google.auto.common.MoreTypes;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
@@ -353,14 +356,6 @@ public class AnnotationTree {
         return this.depth;
     }
 
-    private static boolean isJavaCompiler(VariableElement varElm) {
-        return varElm instanceof Symbol.VarSymbol;
-    }
-
-    private static boolean isEclipseCompiler(VariableElement varElm) {
-        return varElm instanceof VariableElementImpl;
-    }
-
     private static TypedMap inspectSupportedAnnotation_Javac(AptUtils aptUtils, TypeMirror currentType, AnnotationMirror annotation) {
         final TypedMap typedMap = new TypedMap();
         if(areSameByClass(annotation, Enumerated.class)){
@@ -470,7 +465,7 @@ public class AnnotationTree {
                     .findFirst().get()
                     .getValue()).stringValue();
 
-            final String cqlClassName = ((BinaryTypeBinding) pairs
+            final String cqlClassName = ((ReferenceBinding) pairs
                     .stream()
                     .filter(pair -> new String(pair.getName()).equals("cqlClass"))
                     .findFirst().get()
@@ -507,10 +502,13 @@ public class AnnotationTree {
                     .stream()
                     .filter(pair -> new String(pair.getName()).equals("value"))
                     .map(pair -> pair.getValue())
-                    .filter(value -> value instanceof BinaryTypeBinding)
-                    .map(value -> ((BinaryTypeBinding) value).debugName())
+                    .filter(value -> value instanceof ReferenceBinding)
+                    .map(value -> ((ReferenceBinding)value).debugName())
                     .findFirst();
-            aptUtils.validateTrue(codecClassName.isPresent(), "Cannot find codec class on '%s' ", Codec.class.getCanonicalName());
+            aptUtils.validateTrue(codecClassName.isPresent(),
+                    "Cannot find codec class on '%s' for type '%s",
+                    Codec.class.getCanonicalName(),
+                    currentType);
 
             final CodecContext codecContext = CodecFactory.buildCodecContext(aptUtils, codecClassName.get());
             typedMap.put("codecContext", codecContext);
@@ -526,7 +524,7 @@ public class AnnotationTree {
                     .map(x -> (StringConstant) x.getValue())
                     .map(x -> x.stringValue());
 
-            final String targetTypeName = ((BinaryTypeBinding) pairs
+            final String targetTypeName = ((ReferenceBinding) pairs
                     .stream()
                     .filter(pair -> new String(pair.getName()).equals("cqlClass"))
                     .findFirst().get()
@@ -564,9 +562,7 @@ public class AnnotationTree {
                     .map(pair -> ((StringConstant) pair.getValue()).stringValue())
                     .findFirst().orElse("");
 
-            typedMap.put("name", name);
-            typedMap.put("indexClassName", indexClassName);
-            typedMap.put("indexOptions", indexOptions);
+            typedMap.put("indexInfoContext", new IndexInfoContext(name, indexClassName, indexOptions));
             return Tuple2.of(Index.class, typedMap);
         } else if (PartitionKey.class.getCanonicalName().equals(annotationName)) {
             final List<ElementValuePair> pairs = Arrays.asList(annotationBinding.getElementValuePairs());
@@ -597,5 +593,51 @@ public class AnnotationTree {
             aptUtils.printError("Unsupported annotation : " + annotationName);
             throw new IllegalArgumentException("Unsupported annotation : " + annotationName.toString());
         }
+    }
+
+    public static Optional<TypeName> findOptionalViewBaseClass(AptUtils aptUtils, TypeElement elm) {
+        if (AptUtils.isJavaCompiler(elm)) {
+            return findOptionalViewBaseClass_Javac(aptUtils, elm);
+        } else if (AptUtils.isEclipseCompiler(elm)) {
+            return findOptionalViewBaseClass_Ecj(elm);
+        } else {
+            aptUtils.printError("Unknown compiler, only standard Java compiler and Eclipse ECJ compiler are supported");
+            return Optional.empty();
+        }
+    }
+
+    private static Optional<TypeName> findOptionalViewBaseClass_Javac(AptUtils aptUtils, TypeElement elm) {
+        Optional<TypeName> viewBaseClass = elm.getAnnotationMirrors()
+                .stream()
+                .filter(x -> areSameByClass(x, MaterializedView.class))
+                .findFirst()
+                .flatMap(view -> aptUtils.getElementValueClass(view, "baseEntity", false))
+                .map(ClassName::get);
+
+        if (viewBaseClass.isPresent()) {
+            return viewBaseClass;
+        } else {
+            return elm.getAnnotationMirrors()
+                    .stream()
+                    .filter(x -> areSameByClass(x, MaterializedView.class))
+                    .findFirst()
+                    .map(view -> aptUtils.getElementValueClassName(view, "baseEntity", false).toString())
+                    .map(baseClassName ->aptUtils.elementUtils.getTypeElement(baseClassName).asType())
+                    .map(ClassName::get);
+        }
+    }
+
+    private static Optional<TypeName> findOptionalViewBaseClass_Ecj(TypeElement elm) {
+        return Arrays.asList(((TypeElementImpl) elm)._binding.getAnnotations())
+                .stream()
+                .filter(annotBinding -> MaterializedView.class.getCanonicalName().equals(annotBinding.getAnnotationType().debugName()))
+                .flatMap(viewAnnot -> Arrays.asList(viewAnnot.getElementValuePairs()).stream())
+                .filter(pair -> new String(pair.getName()).equals("baseEntity"))
+                .filter(pair -> pair.getValue() instanceof ReferenceBinding)
+                .map(pair -> (ReferenceBinding)pair.getValue())
+                .map(x -> x.debugName())
+                .map(ClassName::bestGuess)
+                .map(x -> (TypeName)x)
+                .findFirst();
     }
 }

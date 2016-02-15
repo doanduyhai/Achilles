@@ -7,6 +7,13 @@ CREATE TABLE IF NOT EXISTS test.entity_child(
 		child_value text,
 		value text,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.sensor(
+		sensor_id bigint,
+		date bigint,
+		type text,
+		value double,
+		PRIMARY KEY(sensor_id, date))
+	WITH CLUSTERING ORDER BY(date ASC);
 CREATE TABLE IF NOT EXISTS test.bean_validation(
 		id bigint,
 		list list<text>,

@@ -17,20 +17,29 @@
 package info.archinnov.achilles.internals.parser.validator;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
+import org.apache.commons.collections.CollectionUtils;
+
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.internals.apt.AptUtils;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
+import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public class BeanValidator {
@@ -101,6 +110,16 @@ public class BeanValidator {
         }
     }
 
+    public static void validateNoStaticColumnsForView(AptUtils aptUtils, TypeName rawClassType, List<TypeParsingResult> parsingResults) {
+        final boolean hasStatic = parsingResults
+                .stream()
+                .filter(x -> (x.context.columnType == ColumnType.STATIC || x.context.columnType == ColumnType.STATIC_COUNTER))
+                .count() > 0;
+
+
+        aptUtils.validateFalse(hasStatic, "The class '%s' cannot have static columns because it is a materialized view", rawClassType);
+    }
+
     public static void validateHasPartitionKey(AptUtils aptUtils, TypeName rawClassType, List<TypeParsingResult> parsingResults) {
         final boolean hasPartitionKey = parsingResults
                 .stream()
@@ -164,6 +183,74 @@ public class BeanValidator {
                                 column, x.context.fieldName, rawClassType);
                     }
                 });
+    }
+
+    public static void validateViewsAgainstBaseTable(AptUtils aptUtils, List<EntityMetaSignature> viewSignatures, List<EntityMetaSignature> entitySignatures) {
+
+        final Map<TypeName, List<TypeParsingResult>> entitySignaturesMap = entitySignatures
+                .stream()
+                .collect(toMap(meta -> meta.entityRawClass, meta -> meta.parsingResults));
+
+        for (EntityMetaSignature view : viewSignatures) {
+            final TypeName viewBaseClass = view.viewBaseClass.get();
+            final List<TypeParsingResult> entityParsingResults = entitySignaturesMap.get(viewBaseClass);
+            aptUtils.validateTrue(entityParsingResults != null,
+                "Cannot find base entity class '%s' for view class '%s'", viewBaseClass, view.entityRawClass);
+
+            // Validate all view columns are in base and have correct name & types
+            for (TypeParsingResult vpr : view.parsingResults) {
+                final long count = entityParsingResults.stream().filter(epr -> epr.equalsTo(vpr)).count();
+                aptUtils.validateTrue(count == 1, "Cannot find any match in base table for field '%s' in view class '%s'",
+                  vpr.toStringForViewCheck(), view.entityRawClass);
+            }
+
+            final List<TypeParsingResult> viewPKColumns = view.parsingResults
+                    .stream()
+                    .filter(vpr -> vpr.context.columnType == ColumnType.PARTITION || vpr.context.columnType == ColumnType.CLUSTERING)
+                    .collect(toList());
+
+            final List<TypeParsingResult> basePKColumns = entityParsingResults
+                    .stream()
+                    .filter(vpr -> vpr.context.columnType == ColumnType.PARTITION || vpr.context.columnType == ColumnType.CLUSTERING)
+                    .collect(toList());
+
+            final List<TypeParsingResult> baseCollectionColumns = entityParsingResults
+                    .stream()
+                    .filter(vpr -> vpr.targetType instanceof ParameterizedTypeName)
+                    .filter(vpr -> {
+                        final ClassName rawType = ((ParameterizedTypeName) vpr.targetType).rawType;
+                        return rawType.equals(TypeUtils.LIST) || rawType.equals(TypeUtils.SET) ||
+                                rawType.equals(TypeUtils.MAP) || rawType.equals(TypeUtils.JAVA_DRIVER_UDT_VALUE_TYPE);
+                    })
+                    .collect(toList());
+
+
+            // Validate all base PK columns are in view PK columns
+            for (TypeParsingResult epr : basePKColumns) {
+                final long count = viewPKColumns.stream().filter(vpr -> vpr.equalsTo(epr)).count();
+                aptUtils.validateTrue(count == 1, "Primary key column '%s' in base class %s is not found in view class '%s' as primary key column",
+                        epr.toStringForViewCheck(), epr.context.entityRawType, view.entityRawClass);
+            }
+
+            // Validate collections in base should be in view
+            for (TypeParsingResult epr : baseCollectionColumns) {
+                final long count = view.parsingResults.stream().filter(vpr -> vpr.equalsTo(epr)).count();
+                aptUtils.validateTrue(count == 1, "Collection/UDT column '%s' in base class %s is not found in view class '%s'. It should be included in the view",
+                        epr.toStringForViewCheck(), epr.context.entityRawType, view.entityRawClass);
+            }
+
+            // Validate max 1 non-PK column from base in view PK
+            final List<TypeParsingResult> viewPKColumnNotInBase = new ArrayList<>();
+            for (TypeParsingResult vpr : viewPKColumns) {
+                final long count = basePKColumns.stream().filter(epr -> epr.equalsTo(vpr)).count();
+                if(count == 0) viewPKColumnNotInBase.add(vpr);
+            }
+            aptUtils.validateTrue(viewPKColumnNotInBase.size() <= 1, "There should be maximum 1 column in the view %s primary key " +
+                "that is NOT a primary column of the base class '%s'. We have %s", view.entityRawClass, viewBaseClass,
+                    viewPKColumnNotInBase.stream().map(x -> x.toStringForViewCheck()).collect(toList()));
+
+        }
+
     }
 
 }

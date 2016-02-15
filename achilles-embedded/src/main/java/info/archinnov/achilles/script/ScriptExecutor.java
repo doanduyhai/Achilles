@@ -1,26 +1,14 @@
-/*
- * Copyright (C) 2012-2016 DuyHai DOAN
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package info.archinnov.achilles.script;
 
-import static info.archinnov.achilles.internals.statement.StatementHelper.isDMLStatement;
-import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DDL_SCRIPT;
-import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DML_STATEMENT;
-import static org.apache.commons.lang3.StringUtils.isNoneBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
+import com.google.common.util.concurrent.MoreExecutors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.*;
@@ -29,34 +17,33 @@ import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
-import com.google.common.util.concurrent.MoreExecutors;
+import static info.archinnov.achilles.internals.statement.StatementHelper.isDMLStatement;
+import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DDL_SCRIPT;
+import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DML_STATEMENT;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import info.archinnov.achilles.internals.futures.FutureUtils;
 import info.archinnov.achilles.validation.Validator;
 
 /**
- * Facility class to execute a CQL script file, CQL script templates or plain CQL statements
+ * Facility class to execute a CQL script file or a plain CQL statement
  */
 public class ScriptExecutor {
 
     private static final Logger DML_LOGGER = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
     private static final Logger DDL_LOGGER = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
-    private static final String COMMA = ";";
 
+    private static final String COMMA = ";";
     private static final String BATCH_BEGIN = "BEGIN";
     private static final String BATCH_APPLY = "APPLY";
+
+    private static final String CODE_DELIMITER_START = "^\\s*(?:AS)?\\s*\\$\\$\\s*$";
+    private static final String CODE_DELIMITER_END = "^\\s*\\$\\$\\s*;\\s*$";
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([a-z][a-zA-Z0-9_]*)\\}");
+
     private static final Map<String, Object> EMPTY_MAP = new HashMap<>();
 
     private final ExecutorService sameThreadExecutor = MoreExecutors.newDirectExecutorService();
-
     private final Session session;
 
     public ScriptExecutor(Session session) {
@@ -91,12 +78,13 @@ public class ScriptExecutor {
         }
     }
 
-
     /**
      * Execute a plain CQL string statement
+     * @param statement
+     *      plain CQL string statement
      *
-     * @param statement plain CQL string statement
      * @return the resultSet
+     *
      */
     public ResultSet execute(String statement) {
         return session.execute(statement);
@@ -104,9 +92,11 @@ public class ScriptExecutor {
 
     /**
      * Execute a CQL statement
+     * @param statement
+     *      CQL statement
      *
-     * @param statement CQL statement
      * @return the resultSet
+     *
      */
     public ResultSet execute(Statement statement) {
         return session.execute(statement);
@@ -155,7 +145,7 @@ public class ScriptExecutor {
 
     private String maybeReplaceVariables(Scanner scanner, Map<String, Object> variables) {
         String nextLine = scanner.nextLine().trim();
-        if (isNoneBlank(nextLine) && !variables.isEmpty()) {
+        if (isNotBlank(nextLine) && !variables.isEmpty()) {
             final Matcher matcher = VARIABLE_PATTERN.matcher(nextLine);
             while (matcher.find()) {
                 final String group = matcher.group(1);
@@ -168,33 +158,48 @@ public class ScriptExecutor {
         return nextLine;
     }
 
-    protected List<SimpleStatement> buildStatements(List<String> lines) {
+protected List<SimpleStatement> buildStatements(List<String> lines) {
         List<SimpleStatement> statements = new ArrayList<>();
         StringBuilder statement = new StringBuilder();
         boolean batch = false;
+        boolean codeBlock = false;
         StringBuilder batchStatement = new StringBuilder();
         for (String line : lines) {
             if (line.trim().startsWith(BATCH_BEGIN)) {
                 batch = true;
             }
+            if (line.trim().matches(CODE_DELIMITER_START)) {
+                if(codeBlock) {
+                    codeBlock = false;
+                } else {
+                    codeBlock = true;
+                }
+            }
+
             if (batch) {
                 batchStatement.append(line);
-                if (line.startsWith(BATCH_APPLY)) {
+                if (line.trim().startsWith(BATCH_APPLY)) {
                     batch = false;
-
                     statements.add(new SimpleStatement(batchStatement.toString()));
                     batchStatement = new StringBuilder();
                 }
-            } else {
+            } else if(codeBlock) {
                 statement.append(line);
-                if (line.endsWith(COMMA)) {
+                if (line.trim().matches(CODE_DELIMITER_END)) {
+                    codeBlock = false;
+                    statements.add(new SimpleStatement(statement.toString()));
+                    statement = new StringBuilder();
+                }
+            }
+            else {
+                statement.append(line);
+                if (line.trim().endsWith(COMMA)) {
                     statements.add(new SimpleStatement(statement.toString()));
                     statement = new StringBuilder();
                 } else {
                     statement.append(" ");
                 }
             }
-
         }
         return statements;
     }

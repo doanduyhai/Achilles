@@ -99,17 +99,7 @@ public final class TestEntityWithClusteringColumns_AchillesMeta extends Abstract
   }
 
   @Override
-  protected Optional<String> getStaticKeyspace() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected Optional<String> getStaticTableName() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected String getDerivedTableName() {
+  protected String getDerivedTableOrViewName() {
     return "testentitywithclusteringcolumns";
   }
 
@@ -124,12 +114,47 @@ public final class TestEntityWithClusteringColumns_AchillesMeta extends Abstract
   }
 
   @Override
+  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getPartitionKeys() {
+    return Arrays.asList(id);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getClusteringColumns() {
+    return Arrays.asList(uuid,date);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getNormalColumns() {
+    return Arrays.asList(value);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getComputedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
   protected boolean isCounterTable() {
     return false;
   }
 
   @Override
-  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+  protected Optional<String> getStaticKeyspace() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<String> getStaticTableOrViewName() {
     return Optional.empty();
   }
 
@@ -154,32 +179,7 @@ public final class TestEntityWithClusteringColumns_AchillesMeta extends Abstract
   }
 
   @Override
-  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getPartitionKeys() {
-    return Arrays.asList(id);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getClusteringColumns() {
-    return Arrays.asList(uuid,date);
-  }
-
-  @Override
   protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getStaticColumns() {
-    return Arrays.asList();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getNormalColumns() {
-    return Arrays.asList(value);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithClusteringColumns, ?, ?>> getComputedColumns() {
     return Arrays.asList();
   }
 

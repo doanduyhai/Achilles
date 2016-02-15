@@ -240,4 +240,19 @@ public class TestSchemaGenerator extends AbstractTestUtil {
         assertThat(actual.trim()).isEqualTo(readCodeBlockFromFile(
                 "schema/should_build_schema_for_entity_with_clustering_columns.cql"));
     }
+
+    @Test
+    public void should_build_schema_for_view() throws Exception {
+        //Given
+        final ViewSensorByType_AchillesMeta meta = new ViewSensorByType_AchillesMeta();
+        final EntitySensor_AchillesMeta baseTableMeta = new EntitySensor_AchillesMeta();
+        meta.setBaseClassProperty(baseTableMeta);
+
+        //When
+        final String actual = meta.generateSchema(context);
+
+        //Then
+        assertThat(actual.trim()).isEqualTo(readCodeBlockFromFile(
+                "schema/should_build_schema_for_view.cql"));
+    }
 }

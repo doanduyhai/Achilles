@@ -34,7 +34,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -48,6 +50,7 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractViewProperty;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
@@ -58,9 +61,9 @@ public class SchemaGenerator {
     private static final CodecRegistry CODEC_REGISTRY = new CodecRegistry();
     private static final TupleTypeFactory TUPLE_TYPE_FACTORY = new TupleTypeFactory(NEWEST_SUPPORTED, CODEC_REGISTRY);
     private static final UserTypeFactory USER_TYPE_FACTORY = new UserTypeFactory(NEWEST_SUPPORTED, CODEC_REGISTRY);
-    private static final Comparator<Tuple2<String, Class<AbstractEntityProperty>>> BY_NAME_ENTITY_CLASS_SORTER =
+    private static final Comparator<Tuple2<String, Class<AbstractEntityProperty<?>>>> BY_NAME_ENTITY_CLASS_SORTER =
             (o1, o2) -> o1._1().compareTo(o2._1());
-    private static final Comparator<Tuple2<String, Class<AbstractUDTClassProperty>>> BY_NAME_UDT_CLASS_SORTER =
+    private static final Comparator<Tuple2<String, Class<AbstractUDTClassProperty<?>>>> BY_NAME_UDT_CLASS_SORTER =
             (o1, o2) -> o1._1().compareTo(o2._1());
     private Optional<String> keyspace = Optional.empty();
     private boolean createIndex = true;
@@ -148,46 +151,67 @@ public class SchemaGenerator {
         Reflections reflections = new Reflections(newHashSet(ENTITY_META_PACKAGE, UDT_META_PACKAGE), this.getClass().getClassLoader());
         StringBuilder builder = new StringBuilder();
 
-        final List<Class<AbstractEntityProperty>> entityMetas = reflections
+        final List<AbstractEntityProperty<?>> entityMetas = reflections
                 .getSubTypesOf(AbstractEntityProperty.class)
                 .stream()
-                .map(x -> Tuple2.of(x.getCanonicalName(), (Class<AbstractEntityProperty>) x))
+                .map(x -> Tuple2.of(x.getCanonicalName(), (Class<AbstractEntityProperty<?>>) x))
                 .sorted(BY_NAME_ENTITY_CLASS_SORTER)
                 .map(x -> x._2())
+                .map(SchemaGenerator::newInstanceForEntityProperty)
+                .filter(x -> x != null)
                 .collect(toList());
 
         LOGGER.info(format("Found %s entity meta classes", entityMetas.size()));
-        try {
-            //Generate UDT BEFORE tables
-            if (context.createUdt) {
-                LOGGER.info(format("Generating schema for UDT"));
-                final List<Class<AbstractUDTClassProperty>> udtMetas = reflections
-                        .getSubTypesOf(AbstractUDTClassProperty.class)
-                        .stream()
-                        .map(x -> Tuple2.of(x.getCanonicalName(), (Class<AbstractUDTClassProperty>) x))
-                        .sorted(BY_NAME_UDT_CLASS_SORTER)
-                        .map(x -> x._2())
-                        .collect(toList());
 
-                LOGGER.info(format("Found %s udt classes", udtMetas.size()));
+        //Generate UDT BEFORE tables
+        if (context.createUdt) {
+            LOGGER.info(format("Generating schema for UDT"));
+            final List<AbstractUDTClassProperty<?>> udtMetas = reflections
+                    .getSubTypesOf(AbstractUDTClassProperty.class)
+                    .stream()
+                    .map(x -> Tuple2.of(x.getCanonicalName(), (Class<AbstractUDTClassProperty<?>>) x))
+                    .sorted(BY_NAME_UDT_CLASS_SORTER)
+                    .map(x -> x._2())
+                    .map(SchemaGenerator::newInstanceForUDTProperty)
+                    .filter(x -> x != null)
+                    .collect(toList());
 
-                for (Class<? extends AbstractUDTClassProperty> clazz : udtMetas) {
-                    final AbstractUDTClassProperty instance = clazz.newInstance();
-                    instance.inject(USER_TYPE_FACTORY);
-                    instance.inject(TUPLE_TYPE_FACTORY);
-                    builder.append(instance.generateSchema(context));
-                }
+            LOGGER.info(format("Found %s udt classes", udtMetas.size()));
 
-            }
-            for (Class<? extends AbstractEntityProperty> clazz : entityMetas) {
-                final AbstractEntityProperty instance = clazz.newInstance();
+            for (AbstractUDTClassProperty<?> instance : udtMetas) {
                 instance.inject(USER_TYPE_FACTORY);
                 instance.inject(TUPLE_TYPE_FACTORY);
                 builder.append(instance.generateSchema(context));
             }
-        } catch (InstantiationException | IllegalAccessException ex) {
-            throw new AchillesException("Cannot instantiate meta class : " + ex.getMessage(), ex);
+
         }
+
+        final long viewCount = entityMetas
+                .stream()
+                .filter(AbstractEntityProperty::isView)
+                .count();
+
+
+        //Inject base table property into view property
+        if (viewCount > 0) {
+            final Map<Class<?>, AbstractEntityProperty<?>> entityPropertiesMap = entityMetas
+                    .stream()
+                    .filter(AbstractEntityProperty::isTable)
+                    .collect(Collectors.toMap(x -> x.entityClass, x -> x));
+
+            entityMetas
+                    .stream()
+                    .filter(AbstractEntityProperty::isView)
+                    .map(x -> (AbstractViewProperty<?>)x)
+                    .forEach(x -> x.setBaseClassProperty(entityPropertiesMap.get(x.getBaseEntityClass())));
+        }
+
+        for (AbstractEntityProperty<?> instance : entityMetas) {
+            instance.inject(USER_TYPE_FACTORY);
+            instance.inject(TUPLE_TYPE_FACTORY);
+            builder.append(instance.generateSchema(context));
+        }
+
         return builder.toString();
     }
 
@@ -207,5 +231,23 @@ public class SchemaGenerator {
 
     public void generateTo(File file) throws IOException {
         generateTo(file.toPath());
+    }
+
+    public static AbstractEntityProperty<?> newInstanceForEntityProperty(Class<? extends AbstractEntityProperty<?>> clazz) {
+        try {
+            return clazz.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static AbstractUDTClassProperty<?> newInstanceForUDTProperty(Class<? extends AbstractUDTClassProperty<?>> clazz) {
+        try {
+            return clazz.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

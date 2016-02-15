@@ -190,6 +190,7 @@ public class TypeUtils {
     public static final ClassName MANAGER_FACTORY = ClassName.get(GENERATED_PACKAGE, MANAGER_FACTORY_CLASS);
     public static final ClassName ABSTRACT_MANAGER = ClassName.get(AbstractManager.class);
     public static final ClassName ABSTRACT_ENTITY_PROPERTY = ClassName.get(AbstractEntityProperty.class);
+    public static final ClassName ABSTRACT_VIEW_PROPERTY = ClassName.get(AbstractViewProperty.class);
     public static final ClassName RUNTIME_ENGINE = ClassName.get(RuntimeEngine.class);
     public static final ClassName INSERT_WITH_OPTIONS = ClassName.get(InsertWithOptions.class);
     public static final ClassName FIND_WITH_OPTIONS = ClassName.get(FindWithOptions.class);

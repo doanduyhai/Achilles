@@ -61,37 +61,43 @@ public class ManagerCodeGen {
         // CRUD
         final TypeSpec.Builder crudClass = TypeSpec.classBuilder(signature.className + CRUD_SUFFIX)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildFind(signature))
-                .addMethod(buildDeleteInstance(signature))
-                .addMethod(buildDeleteByKeys(signature));
+                .addMethod(buildFind(signature));
 
-        if (signature.hasClustering()) {
-            crudClass.addMethod(buildDeleteByPartition(signature));
-        }
+        // API for table
+        if (signature.isTable()) {
+            crudClass.addMethod(buildDeleteInstance(signature))
+                    .addMethod(buildDeleteByKeys(signature));
 
-        if (!signature.isCounterEntity()) {
-            crudClass.addMethod(buildInsert(signature));
+            if (!signature.isCounterEntity()) {
+                crudClass.addMethod(buildInsert(signature));
+            }
+
+            if (signature.hasClustering()) {
+                crudClass.addMethod(buildDeleteByPartition(signature));
+            }
         }
 
         // DSL
         final TypeSpec.Builder dslClass = TypeSpec.classBuilder(signature.className + DSL_SUFFIX)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildSelectMethod(signature))
-                .addMethod(buildDeleteMethod(signature))
-                .addMethod(buildUpdateMethod(signature));
+                .addMethod(buildSelectMethod(signature));
 
+        if (signature.isTable()) {
+            dslClass.addMethod(buildDeleteMethod(signature))
+                    .addMethod(buildUpdateMethod(signature));
+
+            classes.add(DeleteDSLCodeGen.buildDeleteClass(signature));
+            classes.add(UpdateDSLCodeGen.buildUpdateClass(aptUtils, signature));
+
+            if (signature.hasStatic()) {
+                classes.add(DeleteDSLCodeGen.buildDeleteStaticClass(signature));
+                classes.add(UpdateDSLCodeGen.buildUpdateStaticClass(aptUtils, signature));
+                dslClass.addMethod(buildDeleteStaticMethod(signature));
+                dslClass.addMethod(buildUpdateStaticMethod(signature));
+            }
+        }
 
         classes.add(SelectDSLCodeGen.buildSelectClass(signature));
-        classes.add(DeleteDSLCodeGen.buildDeleteClass(signature));
-        classes.add(UpdateDSLCodeGen.buildUpdateClass(aptUtils, signature));
-
-        if (signature.hasStatic()) {
-            classes.add(DeleteDSLCodeGen.buildDeleteStaticClass(signature));
-            classes.add(UpdateDSLCodeGen.buildUpdateStaticClass(aptUtils, signature));
-            dslClass.addMethod(buildDeleteStaticMethod(signature));
-            dslClass.addMethod(buildUpdateStaticMethod(signature));
-
-        }
 
         // Query
         final TypeSpec.Builder queryClass = TypeSpec.classBuilder(signature.className + QUERY_SUFFIX)
@@ -121,36 +127,46 @@ public class ManagerCodeGen {
 
     private static MethodSpec buildCRUD(EntityMetaSignature signature) {
         TypeName crudClass = ClassName.get(MANAGER_PACKAGE, signature.className + MANAGER_SUFFIX, signature.className + CRUD_SUFFIX);
-        return MethodSpec.methodBuilder("crud")
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("crud")
                 .addJavadoc("Provide CRUD operations: <br/> \n")
                 .addJavadoc("<ul>\n")
-                .addJavadoc("   <li>INSERT</li>\n")
-                .addJavadoc("   <li>INSERT IF NOT EXISTS</li>\n")
-                .addJavadoc("   <li>FIND BY ID</li>\n")
-                .addJavadoc("   <li>DELETE BY ID</li>\n")
-                .addJavadoc("   <li>DELETE BY ID IF NOT EXISTS</li>\n")
-                .addJavadoc("   <li>DELETE BY PARTITION</li>\n")
-                .addJavadoc("</ul>\n")
+                .addJavadoc("   <li>FIND BY ID</li>\n");
+
+        if (signature.isTable()) {
+            builder.addJavadoc("   <li>INSERT</li>\n")
+                    .addJavadoc("   <li>INSERT IF NOT EXISTS</li>\n")
+                    .addJavadoc("   <li>DELETE BY ID</li>\n")
+                    .addJavadoc("   <li>DELETE BY ID IF NOT EXISTS</li>\n")
+                    .addJavadoc("   <li>DELETE BY PARTITION</li>\n");
+        }
+
+        builder.addJavadoc("</ul>\n")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("return new $T()", crudClass)
-                .returns(crudClass)
-                .build();
+                .returns(crudClass);
+
+        return builder.build();
     }
 
     private static MethodSpec buildDSL(EntityMetaSignature signature) {
         TypeName dslClass = ClassName.get(MANAGER_PACKAGE, signature.className + MANAGER_SUFFIX, signature.className + DSL_SUFFIX);
-        return MethodSpec.methodBuilder("dsl")
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("dsl")
                 .addJavadoc("Provide DSL methods: <br/>\n")
                 .addJavadoc("<ul>\n")
                 .addJavadoc("   <li>SELECT</li>\n")
-                .addJavadoc("   <li>ITERATION ON SELECT</li>\n")
-                .addJavadoc("   <li>UPDATE</li>\n")
-                .addJavadoc("   <li>DELETE</li>\n")
-                .addJavadoc("</ul>\n")
+                .addJavadoc("   <li>ITERATION ON SELECT</li>\n");
+
+        if (signature.isTable()) {
+            builder.addJavadoc("   <li>UPDATE</li>\n")
+                    .addJavadoc("   <li>DELETE</li>\n");
+        }
+
+        builder.addJavadoc("</ul>\n")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("return new $T()", dslClass)
-                .returns(dslClass)
-                .build();
+                .returns(dslClass);
+
+        return builder.build();
     }
 
     private static MethodSpec buildQuery(EntityMetaSignature signature) {

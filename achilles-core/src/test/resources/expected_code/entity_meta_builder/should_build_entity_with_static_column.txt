@@ -98,17 +98,7 @@ public final class TestEntityWithStaticColumn_AchillesMeta extends AbstractEntit
   }
 
   @Override
-  protected Optional<String> getStaticKeyspace() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected Optional<String> getStaticTableName() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected String getDerivedTableName() {
+  protected String getDerivedTableOrViewName() {
     return "testentitywithstaticcolumn";
   }
 
@@ -123,12 +113,47 @@ public final class TestEntityWithStaticColumn_AchillesMeta extends AbstractEntit
   }
 
   @Override
+  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithStaticColumn, ?, ?>> getPartitionKeys() {
+    return Arrays.asList(id);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithStaticColumn, ?, ?>> getClusteringColumns() {
+    return Arrays.asList(uuid);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithStaticColumn, ?, ?>> getNormalColumns() {
+    return Arrays.asList(value);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithStaticColumn, ?, ?>> getComputedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
   protected boolean isCounterTable() {
     return false;
   }
 
   @Override
-  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+  protected Optional<String> getStaticKeyspace() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<String> getStaticTableOrViewName() {
     return Optional.empty();
   }
 
@@ -153,33 +178,8 @@ public final class TestEntityWithStaticColumn_AchillesMeta extends AbstractEntit
   }
 
   @Override
-  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithStaticColumn, ?, ?>> getPartitionKeys() {
-    return Arrays.asList(id);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithStaticColumn, ?, ?>> getClusteringColumns() {
-    return Arrays.asList(uuid);
-  }
-
-  @Override
   protected List<AbstractProperty<TestEntityWithStaticColumn, ?, ?>> getStaticColumns() {
     return Arrays.asList(staticCol);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithStaticColumn, ?, ?>> getNormalColumns() {
-    return Arrays.asList(value);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithStaticColumn, ?, ?>> getComputedColumns() {
-    return Arrays.asList();
   }
 
   @Override

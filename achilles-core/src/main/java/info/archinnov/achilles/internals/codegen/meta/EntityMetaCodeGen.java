@@ -27,10 +27,7 @@ import static info.archinnov.achilles.internals.strategy.naming.InternalNamingSt
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
@@ -40,12 +37,11 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Row;
 import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Strategy;
-import info.archinnov.achilles.annotations.TTL;
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
 import info.archinnov.achilles.internals.metamodel.columns.*;
+import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
@@ -67,17 +63,36 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         this.aptUtils = aptUtils;
     }
 
-    public EntityMetaSignature buildEntityMeta(TypeElement elm, GlobalParsingContext globalParsingContext, List<TypeParsingResult> parsingResults) {
+    public EntityMetaSignature buildEntityMeta(EntityType entityType, TypeElement elm, GlobalParsingContext globalParsingContext, List<TypeParsingResult> parsingResults) {
         final TypeName rawClassTypeName = getRawType(TypeName.get(elm.asType()));
         final Optional<Consistency> consistency = aptUtils.getAnnotationOnClass(elm, Consistency.class);
         final Optional<TTL> ttl = aptUtils.getAnnotationOnClass(elm, TTL.class);
         final Optional<Strategy> strategy = aptUtils.getAnnotationOnClass(elm, Strategy.class);
+        final Optional<Entity> entityAnnot = aptUtils.getAnnotationOnClass(elm, Entity.class);
+
+        final Optional<TypeName> viewBaseClass = AnnotationTree.findOptionalViewBaseClass(aptUtils, elm);
+
+        aptUtils.validateFalse(entityAnnot.isPresent() && viewBaseClass.isPresent(),
+            "Cannot have both @Entity and @MaterializedView on the class '%s'", rawClassTypeName);
+
+        if (entityType == EntityType.VIEW) {
+            aptUtils.validateTrue(viewBaseClass.isPresent(),"Missing @MaterializedView annotation on entity class '%s'", rawClassTypeName);
+        }
 
         validateIsAConcreteNonFinalClass(aptUtils, elm);
         validateHasPublicConstructor(aptUtils, rawClassTypeName, elm);
         validateNoDuplicateNames(aptUtils, rawClassTypeName, parsingResults);
         validateHasPartitionKey(aptUtils, rawClassTypeName, parsingResults);
-        validateStaticColumns(aptUtils, rawClassTypeName, parsingResults);
+
+        final boolean isCounter = BeanValidator.isCounterTable(aptUtils, rawClassTypeName, parsingResults);
+
+        if (entityType == EntityType.TABLE) {
+            validateStaticColumns(aptUtils, rawClassTypeName, parsingResults);
+        } else if (entityType == EntityType.VIEW) {
+            validateNoStaticColumnsForView(aptUtils, rawClassTypeName, parsingResults);
+            aptUtils.validateFalse(isCounter, "The class '%s' cannot have counter columns because it is a materialized view", rawClassTypeName);
+        }
+
         validateComputed(aptUtils, rawClassTypeName, parsingResults);
         validateCqlColumnNotReservedWords(aptUtils, rawClassTypeName, parsingResults);
 
@@ -93,7 +108,6 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .map(x -> Tuple2.of(x.context.fieldName, (KeyColumnInfo) x.context.columnInfo))
                 .collect(toList()), "@ClusteringColumn");
 
-        final boolean isCounter = BeanValidator.isCounterTable(aptUtils, rawClassTypeName, parsingResults);
 
         final TypeName rawBeanType = TypeName.get(aptUtils.erasure(elm));
 
@@ -104,43 +118,56 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .addJavadoc("Meta class of all entities of type $T<br/>\n", rawBeanType)
                 .addJavadoc("The meta class is responsible for<br/>\n")
                 .addJavadoc("<ul>\n")
-                .addJavadoc("   <li>determining runtime consistency levels (read/write,serial)<li/>\n")
-                .addJavadoc("   <li>determining runtime insert strategy<li/>\n")
-                .addJavadoc("   <li>trigger event interceptors (if any)<li/>\n")
-                .addJavadoc("   <li>map a $T back to an instance of $T<li/>\n", ClassName.get(Row.class), rawBeanType)
-                .addJavadoc("   <li>determine runtime keyspace name using static annotations and runtime SchemaNameProvider (if any)<li/>\n")
-                .addJavadoc("   <li>determine runtime table name using static annotations and runtime SchemaNameProvider (if any)<li/>\n")
-                .addJavadoc("   <li>generate schema during bootstrap<li/>\n")
-                .addJavadoc("   <li>validate schema during bootstrap<li/>\n")
-                .addJavadoc("   <li>expose all property meta classes for encoding/decoding purpose on unitary columns<li/>\n")
-                .addJavadoc("<ul/>\n")
-                .superclass(genericType(ABSTRACT_ENTITY_PROPERTY, rawBeanType))
-                .addAnnotation(ACHILLES_META_ANNOT)
+                .addJavadoc("   <li>determining runtime consistency levels (read/write,serial)<li/>\n");
+
+        if (entityType == EntityType.TABLE) {
+            builder.addJavadoc("   <li>determining runtime insert strategy<li/>\n");
+        }
+
+        builder.addJavadoc("   <li>trigger event interceptors (if any)<li/>\n")
+               .addJavadoc("   <li>map a $T back to an instance of $T<li/>\n", ClassName.get(Row.class), rawBeanType)
+               .addJavadoc("   <li>determine runtime keyspace name using static annotations and runtime SchemaNameProvider (if any)<li/>\n")
+               .addJavadoc("   <li>determine runtime table name using static annotations and runtime SchemaNameProvider (if any)<li/>\n")
+               .addJavadoc("   <li>generate schema during bootstrap<li/>\n")
+               .addJavadoc("   <li>validate schema during bootstrap<li/>\n")
+               .addJavadoc("   <li>expose all property meta classes for encoding/decoding purpose on unitary columns<li/>\n")
+               .addJavadoc("<ul/>\n");
+
+        builder.addAnnotation(ACHILLES_META_ANNOT)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildEntityClass(rawClassTypeName))
-                .addMethod(buildStaticKeyspace(elm))
-                .addMethod(buildStaticTableName(elm))
                 .addMethod(buildDerivedTableName(elm, globalParsingContext.namingStrategy))
                 .addMethod(buildFieldNameToCqlColumn(parsingResults))
-                .addMethod(buildIsCounterTable(isCounter))
                 .addMethod(buildGetStaticReadConsistency(consistency))
-                .addMethod(buildGetStaticWriteConsistency(consistency))
-                .addMethod(buildGetStaticSerialConsistency(consistency))
-                .addMethod(buildGetStaticTTL(ttl))
-                .addMethod(buildGetStaticInsertStrategy(strategy))
                 .addMethod(buildGetStaticNamingStrategy(strategy))
                 .addMethod(buildPartitionKeys(parsingResults, rawBeanType))
                 .addMethod(buildClusteringColumns(parsingResults, rawBeanType))
-                .addMethod(buildStaticColumns(parsingResults, rawBeanType))
                 .addMethod(buildNormalColumns(parsingResults, rawBeanType))
-                .addMethod(buildComputedColumns(parsingResults, rawBeanType))
-                .addMethod(buildCounterColumns(parsingResults, rawBeanType));
+                .addMethod(buildComputedColumns(parsingResults, rawBeanType));
+
+        if (entityType == EntityType.TABLE) {
+            builder.superclass(genericType(ABSTRACT_ENTITY_PROPERTY, rawBeanType))
+                    .addMethod(buildIsCounterTable(isCounter))
+                    .addMethod(buildStaticKeyspace(aptUtils.getAnnotationOnClass(elm, Entity.class).get().keyspace()))
+                    .addMethod(buildStaticTableOrViewName(aptUtils.getAnnotationOnClass(elm, Entity.class).get().table()))
+                    .addMethod(buildGetStaticWriteConsistency(consistency))
+                    .addMethod(buildGetStaticSerialConsistency(consistency))
+                    .addMethod(buildGetStaticTTL(ttl))
+                    .addMethod(buildGetStaticInsertStrategy(strategy))
+                    .addMethod(buildStaticColumns(parsingResults, rawBeanType))
+                    .addMethod(buildCounterColumns(parsingResults, rawBeanType));
+        } else if (entityType == EntityType.VIEW) {
+            builder.superclass(genericType(ABSTRACT_VIEW_PROPERTY, rawBeanType))
+                    .addMethod(buildStaticKeyspace(aptUtils.getAnnotationOnClass(elm, MaterializedView.class).get().keyspace()))
+                    .addMethod(buildStaticTableOrViewName(aptUtils.getAnnotationOnClass(elm, MaterializedView.class).get().view()))
+                    .addMethod(buildGetBaseEntityClass(viewBaseClass.get()));
+        }
 
         for(TypeParsingResult x: parsingResults) {
             builder.addField(x.buildPropertyAsField());
         }
 
-        return new EntityMetaSignature(builder.build(), elm.getSimpleName().toString(), typeName, rawBeanType, parsingResults);
+        return new EntityMetaSignature(entityType, builder.build(), elm.getSimpleName().toString(), typeName, rawBeanType, viewBaseClass, parsingResults);
     }
 
     private MethodSpec buildFieldNameToCqlColumn(List<TypeParsingResult> parsingResults) {
@@ -168,10 +195,9 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .build();
     }
 
-    private MethodSpec buildStaticKeyspace(TypeElement elm) {
-        final Entity entity = aptUtils.getAnnotationOnClass(elm, Entity.class).get();
+    private MethodSpec buildStaticKeyspace(String staticValue) {
 
-        final Optional<String> keyspace = Optional.ofNullable(isBlank(entity.keyspace()) ? null : entity.keyspace());
+        final Optional<String> keyspace = Optional.ofNullable(isBlank(staticValue) ? null : staticValue);
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("getStaticKeyspace")
                 .addAnnotation(Override.class)
@@ -190,7 +216,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
 
         final String tableName = inferNamingStrategy(strategy, defaultStrategy).apply(elm.getSimpleName().toString());
 
-        return MethodSpec.methodBuilder("getDerivedTableName")
+        return MethodSpec.methodBuilder("getDerivedTableOrViewName")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
                 .returns(String.class)
@@ -199,14 +225,12 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
 
     }
 
-    private MethodSpec buildStaticTableName(TypeElement elm) {
-        final Entity entity = aptUtils.getAnnotationOnClass(elm, Entity.class).get();
-
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder("getStaticTableName")
+    private MethodSpec buildStaticTableOrViewName(String staticValue) {
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("getStaticTableOrViewName")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
                 .returns(genericType(OPTIONAL, STRING));
-        final Optional<String> tableName = Optional.ofNullable(StringUtils.isBlank(entity.table()) ? null : entity.table());
+        final Optional<String> tableName = Optional.ofNullable(StringUtils.isBlank(staticValue) ? null : staticValue);
 
         if (tableName.isPresent()) {
             return builder.addStatement("return $T.of($S)", OPTIONAL, tableName.get()).build();
@@ -420,6 +444,15 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         }
     }
 
+    private MethodSpec buildGetBaseEntityClass(TypeName baseEntityRawType) {
+        return MethodSpec.methodBuilder("getBaseEntityClass")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(genericType(CLASS, WILDCARD))
+                .addStatement("return $T.class", baseEntityRawType)
+                .build();
+    }
+
     private ParameterizedTypeName propertyListType(TypeName rawClassType) {
         return genericType(LIST, genericType(ABSTRACT_PROPERTY, rawClassType, WILDCARD, WILDCARD));
     }
@@ -431,12 +464,16 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         public final TypeName entityRawClass;
         public final String fieldName;
         public final List<TypeParsingResult> parsingResults;
+        public final EntityType entityType;
+        public final Optional<TypeName> viewBaseClass;
 
-        public EntityMetaSignature(TypeSpec sourceCode, String className, TypeName typeName, TypeName entityRawClass, List<TypeParsingResult> parsingResults) {
+        public EntityMetaSignature(EntityType entityType, TypeSpec sourceCode, String className, TypeName typeName, TypeName entityRawClass, Optional<TypeName> viewBaseClass, List<TypeParsingResult> parsingResults) {
+            this.entityType = entityType;
             this.sourceCode = sourceCode;
             this.className = className;
             this.typeName = typeName;
             this.entityRawClass = entityRawClass;
+            this.viewBaseClass = viewBaseClass;
             this.parsingResults = parsingResults;
             this.fieldName = className.substring(0, 1).toLowerCase() + className.substring(1);
         }
@@ -453,6 +490,14 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
             return parsingResults.stream()
                     .filter(x -> x.context.columnType == COUNTER || x.context.columnType == STATIC_COUNTER)
                     .count() > 0;
+        }
+
+        public boolean isTable() {
+            return entityType == EntityType.TABLE;
+        }
+
+        public boolean isView() {
+            return entityType == EntityType.VIEW;
         }
 
         public String whereType(String fieldName, String suffix) {
@@ -561,6 +606,5 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         protected static String upperCaseFirst(String fieldName) {
             return fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
         }
-
     }
 }

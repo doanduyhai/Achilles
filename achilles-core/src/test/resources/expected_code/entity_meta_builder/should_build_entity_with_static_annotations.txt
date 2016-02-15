@@ -84,17 +84,7 @@ public final class TestEntityWithStaticAnnotations_AchillesMeta extends Abstract
   }
 
   @Override
-  protected Optional<String> getStaticKeyspace() {
-    return Optional.of("my_ks");
-  }
-
-  @Override
-  protected Optional<String> getStaticTableName() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected String getDerivedTableName() {
+  protected String getDerivedTableOrViewName() {
     return "test_entity_with_static_annotations";
   }
 
@@ -108,13 +98,48 @@ public final class TestEntityWithStaticAnnotations_AchillesMeta extends Abstract
   }
 
   @Override
+  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+    return Optional.of(ConsistencyLevel.LOCAL_ONE);
+  }
+
+  @Override
+  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+    return Optional.of(new info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming());
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithStaticAnnotations, ?, ?>> getPartitionKeys() {
+    return Arrays.asList(partitionKey);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithStaticAnnotations, ?, ?>> getClusteringColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithStaticAnnotations, ?, ?>> getNormalColumns() {
+    return Arrays.asList(overridenName,stringValue);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithStaticAnnotations, ?, ?>> getComputedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
   protected boolean isCounterTable() {
     return false;
   }
 
   @Override
-  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
-    return Optional.of(ConsistencyLevel.LOCAL_ONE);
+  protected Optional<String> getStaticKeyspace() {
+    return Optional.of("my_ks");
+  }
+
+  @Override
+  protected Optional<String> getStaticTableOrViewName() {
+    return Optional.empty();
   }
 
   @Override
@@ -138,32 +163,7 @@ public final class TestEntityWithStaticAnnotations_AchillesMeta extends Abstract
   }
 
   @Override
-  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
-    return Optional.of(new info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming());
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithStaticAnnotations, ?, ?>> getPartitionKeys() {
-    return Arrays.asList(partitionKey);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithStaticAnnotations, ?, ?>> getClusteringColumns() {
-    return Arrays.asList();
-  }
-
-  @Override
   protected List<AbstractProperty<TestEntityWithStaticAnnotations, ?, ?>> getStaticColumns() {
-    return Arrays.asList();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithStaticAnnotations, ?, ?>> getNormalColumns() {
-    return Arrays.asList(overridenName,stringValue);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithStaticAnnotations, ?, ?>> getComputedColumns() {
     return Arrays.asList();
   }
 

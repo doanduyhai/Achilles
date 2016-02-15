@@ -84,17 +84,7 @@ public final class TestEntityAsChild_AchillesMeta extends AbstractEntityProperty
   }
 
   @Override
-  protected Optional<String> getStaticKeyspace() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected Optional<String> getStaticTableName() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected String getDerivedTableName() {
+  protected String getDerivedTableOrViewName() {
     return "testentityaschild";
   }
 
@@ -108,12 +98,47 @@ public final class TestEntityAsChild_AchillesMeta extends AbstractEntityProperty
   }
 
   @Override
+  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getPartitionKeys() {
+    return Arrays.asList(id);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getClusteringColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getNormalColumns() {
+    return Arrays.asList(anotherValue,value);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getComputedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
   protected boolean isCounterTable() {
     return false;
   }
 
   @Override
-  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+  protected Optional<String> getStaticKeyspace() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<String> getStaticTableOrViewName() {
     return Optional.empty();
   }
 
@@ -138,32 +163,7 @@ public final class TestEntityAsChild_AchillesMeta extends AbstractEntityProperty
   }
 
   @Override
-  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getPartitionKeys() {
-    return Arrays.asList(id);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getClusteringColumns() {
-    return Arrays.asList();
-  }
-
-  @Override
   protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getStaticColumns() {
-    return Arrays.asList();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getNormalColumns() {
-    return Arrays.asList(anotherValue,value);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityAsChild, ?, ?>> getComputedColumns() {
     return Arrays.asList();
   }
 

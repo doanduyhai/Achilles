@@ -619,6 +619,22 @@ public class FieldParser {
         public int hashCode() {
             return Objects.hash(context);
         }
+
+        public String toStringForViewCheck() {
+            final StringBuilder sb = new StringBuilder("{");
+            sb.append(context.toStringForViewCheck());
+            sb.append(", sourceType=").append(sourceType);
+            sb.append(", targetType=").append(targetType);
+            sb.append("}");
+            return sb.toString();
+        }
+
+        public boolean equalsTo(TypeParsingResult o) {
+            if (this == o) return true;
+            return this.context.equalsTo(o.context) &&
+                    Objects.equals(this.sourceType, o.sourceType) &&
+                    Objects.equals(this.targetType, o.targetType);
+        }
     }
 
 }

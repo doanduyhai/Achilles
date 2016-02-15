@@ -31,7 +31,7 @@ public class ResultLoggingIteratorWrapper<E> implements Iterator<E> {
 
     @Override
     public boolean hasNext() {
-        return values.size() > 0 && delegate.hasNext();
+        return values.size() > 0 || delegate.hasNext();
     }
 
     @Override

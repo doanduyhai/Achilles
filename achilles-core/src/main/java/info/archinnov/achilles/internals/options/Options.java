@@ -225,10 +225,15 @@ public class Options {
                     this.toString(), statement.toString()));
         }
 
-        statement.setConsistencyLevel(operationType.isUpsert ? meta.writeConsistency(cl) : meta.readConsistency(cl));
-        statement.setSerialConsistencyLevel(meta.serialConsistency(serialCL));
+        if (meta.isTable()) {
+            statement.setConsistencyLevel(operationType.isUpsert ? meta.writeConsistency(cl) : meta.readConsistency(cl));
+            statement.setSerialConsistencyLevel(meta.serialConsistency(serialCL));
+        } else if (meta.isView()) {
+            statement.setConsistencyLevel(meta.readConsistency(cl));
+        }
 
-        if (defaultTimestamp.isPresent() && operationType.isUpsert)
+
+        if (defaultTimestamp.isPresent() && operationType.isUpsert && meta.isTable())
             statement.setDefaultTimestamp(defaultTimestamp.get());
         if (fetchSize.isPresent()) statement.setFetchSize(fetchSize.get());
         if (idempotent.isPresent()) statement.setIdempotent(idempotent.get());

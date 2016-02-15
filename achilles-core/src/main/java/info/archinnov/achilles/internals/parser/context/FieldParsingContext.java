@@ -90,9 +90,6 @@ public class FieldParsingContext {
                 fieldName, cqlColumn, columnType, columnInfo), true);
     }
 
-
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -104,7 +101,21 @@ public class FieldParsingContext {
 
     @Override
     public int hashCode() {
-        return Objects.hash(fieldName, className);
+        return Objects.hash(fieldName, className, cqlColumn, columnInfo);
+    }
+
+    public boolean equalsTo(FieldParsingContext o) {
+        if (this == o) return true;
+        return Objects.equals(this.fieldName, o.fieldName) &&
+                Objects.equals(this.cqlColumn, o.cqlColumn) &&
+                Objects.equals(this.columnInfo.frozen, o.columnInfo.frozen);
+    }
+
+    public String toStringForViewCheck() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("fieldName='").append(fieldName).append('\'');
+        sb.append(", cqlColumn='").append(cqlColumn).append('\'');
+        return sb.toString();
     }
 
     public boolean hasProcessedUDT(TypeName rawUdtType) {

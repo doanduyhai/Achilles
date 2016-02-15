@@ -1,0 +1,158 @@
+package info.archinnov.achilles.generated;
+
+import com.datastax.driver.core.ClusteringOrder;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.DataType;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.reflect.TypeToken;
+import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
+import info.archinnov.achilles.internals.codec.FallThroughCodec;
+import info.archinnov.achilles.internals.metamodel.AbstractProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractViewProperty;
+import info.archinnov.achilles.internals.metamodel.SimpleProperty;
+import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
+import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
+import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntitySensor;
+import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorByType;
+import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
+import java.lang.Class;
+import java.lang.Double;
+import java.lang.Long;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Meta class of all entities of type TestViewSensorByType<br/>
+ * The meta class is responsible for<br/>
+ * <ul>
+ *    <li>determining runtime consistency levels (read/write,serial)<li/>
+ *    <li>trigger event interceptors (if any)<li/>
+ *    <li>map a com.datastax.driver.core.Row back to an instance of TestViewSensorByType<li/>
+ *    <li>determine runtime keyspace name using static annotations and runtime SchemaNameProvider (if any)<li/>
+ *    <li>determine runtime table name using static annotations and runtime SchemaNameProvider (if any)<li/>
+ *    <li>generate schema during bootstrap<li/>
+ *    <li>validate schema during bootstrap<li/>
+ *    <li>expose all property meta classes for encoding/decoding purpose on unitary columns<li/>
+ * <ul/>
+ */
+@AchillesMeta
+public final class TestViewSensorByType_AchillesMeta extends AbstractViewProperty<TestViewSensorByType> {
+  /**
+   * Meta class for 'type' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestViewSensorByType instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestViewSensorByType, String, String> type = new SimpleProperty<TestViewSensorByType, String, String>(new FieldInfo<>((TestViewSensorByType entity$) -> entity$.getType(), (TestViewSensorByType entity$, String value$) -> entity$.setType(value$), "type", "type", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("type", java.lang.String.class), (settableData$, value$) -> settableData$.set("type", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+
+  /**
+   * Meta class for 'id' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestViewSensorByType instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestViewSensorByType, Long, Long> id = new SimpleProperty<TestViewSensorByType, Long, Long>(new FieldInfo<>((TestViewSensorByType entity$) -> entity$.getId(), (TestViewSensorByType entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+
+  /**
+   * Meta class for 'date' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestViewSensorByType instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestViewSensorByType, Date, Date> date = new SimpleProperty<TestViewSensorByType, Date, Date>(new FieldInfo<>((TestViewSensorByType entity$) -> entity$.getDate(), (TestViewSensorByType entity$, Date value$) -> entity$.setDate(value$), "date", "date", ColumnType.CLUSTERING, new ClusteringColumnInfo(2, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.timestamp(), gettableData$ -> gettableData$.get("date", java.util.Date.class), (settableData$, value$) -> settableData$.set("date", value$, java.util.Date.class), new TypeToken<Date>(){}, new TypeToken<Date>(){}, new FallThroughCodec<>(Date.class));
+
+  /**
+   * Meta class for 'value' property <br/>
+   * The meta class exposes some useful methods: <ul>
+   *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+   *    <li>encodeField: extract the current property value from the given TestViewSensorByType instance and encode to CQL java compatible type </li>
+   *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+   * </ul>
+   */
+  @SuppressWarnings("serial")
+  public static final SimpleProperty<TestViewSensorByType, Double, Double> value = new SimpleProperty<TestViewSensorByType, Double, Double>(new FieldInfo<>((TestViewSensorByType entity$) -> entity$.getValue(), (TestViewSensorByType entity$, Double value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.cdouble(), gettableData$ -> gettableData$.get("value", java.lang.Double.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.Double.class), new TypeToken<Double>(){}, new TypeToken<Double>(){}, new FallThroughCodec<>(Double.class));
+
+  @Override
+  protected Class<TestViewSensorByType> getEntityClass() {
+    return TestViewSensorByType.class;
+  }
+
+  @Override
+  protected String getDerivedTableOrViewName() {
+    return "testviewsensorbytype";
+  }
+
+  @Override
+  protected BiMap<String, String> fieldNameToCqlColumn() {
+    BiMap<String,String> map = HashBiMap.create(4);
+    map.put("type", "type");
+    map.put("id", "id");
+    map.put("date", "date");
+    map.put("value", "value");
+    return map;
+  }
+
+  @Override
+  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestViewSensorByType, ?, ?>> getPartitionKeys() {
+    return Arrays.asList(type);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestViewSensorByType, ?, ?>> getClusteringColumns() {
+    return Arrays.asList(id,date);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestViewSensorByType, ?, ?>> getNormalColumns() {
+    return Arrays.asList(value);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestViewSensorByType, ?, ?>> getComputedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected Optional<String> getStaticKeyspace() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<String> getStaticTableOrViewName() {
+    return Optional.empty();
+  }
+
+  @Override
+  public Class<?> getBaseEntityClass() {
+    return TestEntitySensor.class;
+  }
+}

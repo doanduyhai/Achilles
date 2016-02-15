@@ -336,7 +336,9 @@ public class ConfigurationContext {
         // Adding PreMutate Bean validator as the LAST interceptor
         if (beanValidator != null && isClassConstrained(entityClass)) {
             LOGGER.debug("Injecting Bean validator (JSR 303)");
-            entityProperty.interceptors.add((Interceptor) preMutateBeanValidationInterceptor);
+            if (entityProperty.isTable()) {
+                entityProperty.interceptors.add((Interceptor) preMutateBeanValidationInterceptor);
+            }
 
             // Add PostLoad interceptor as the FIRST interceptor
             if (postLoadBeanValidationInterceptor.isPresent()) {

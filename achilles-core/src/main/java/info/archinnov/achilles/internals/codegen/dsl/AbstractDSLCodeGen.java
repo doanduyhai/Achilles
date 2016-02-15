@@ -238,7 +238,7 @@ public abstract class AbstractDSLCodeGen {
         return MethodSpec.methodBuilder("allColumns_FromBaseTable")
                 .addJavadoc("Generate ... * FROM ...")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addStatement("final $T where = $L.all().from(meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName()), meta.getTableName()).where()",
+                .addStatement("final $T where = $L.all().from(meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where()",
                         whereTypeName, privateFieldName, "unknown_keyspace_for_")
                 .addStatement("return new $T(where)", newTypeName)
                 .returns(newTypeName)
@@ -263,7 +263,7 @@ public abstract class AbstractDSLCodeGen {
                 .addJavadoc("Generate a ... <strong>FROM xxx</strong> ... ")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("final $T where = $L.from(meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName()), " +
-                        "meta.getTableName()).where()", whereTypeName, privateFieldName, "unknown_keyspace_for_")
+                        "meta.getTableOrViewName()).where()", whereTypeName, privateFieldName, "unknown_keyspace_for_")
                 .addStatement("return new $T(where)", newTypeName)
                 .returns(newTypeName)
                 .build();

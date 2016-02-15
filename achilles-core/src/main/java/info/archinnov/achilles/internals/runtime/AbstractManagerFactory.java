@@ -23,6 +23,7 @@ import static java.lang.String.format;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
@@ -43,6 +44,7 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractViewProperty;
 import info.archinnov.achilles.internals.metamodel.UDTProperty;
 
 public abstract class AbstractManagerFactory {
@@ -75,7 +77,7 @@ public abstract class AbstractManagerFactory {
         final Optional<String> tableName = entityProperties
                 .stream()
                 .filter(x -> x.entityClass.equals(entityClass))
-                .map(x -> x.getKeyspace().map(ks -> ks + "." + x.getTableName()).orElse(x.getTableName()))
+                .map(x -> x.getKeyspace().map(ks -> ks + "." + x.getTableOrViewName()).orElse(x.getTableOrViewName()))
                 .findFirst();
 
         if (LOGGER.isTraceEnabled()) {
@@ -166,6 +168,26 @@ public abstract class AbstractManagerFactory {
 
                 if(udtCountForClass>0)
                     generateUDTAtRuntime(session, x);
+            }
+
+
+            final long viewCount = entityProperties
+                    .stream()
+                    .filter(AbstractEntityProperty::isView)
+                    .count();
+
+            //Inject base table property into view property
+            if (viewCount > 0) {
+                final Map<Class<?>, AbstractEntityProperty<?>> entityPropertiesMap = entityProperties
+                        .stream()
+                        .filter(AbstractEntityProperty::isTable)
+                        .collect(Collectors.toMap(x -> x.entityClass, x -> x));
+
+                entityProperties
+                        .stream()
+                        .filter(AbstractEntityProperty::isView)
+                        .map(x -> (AbstractViewProperty<?>)x)
+                        .forEach(x -> x.setBaseClassProperty(entityPropertiesMap.get(x.getBaseEntityClass())));
             }
 
             entityProperties

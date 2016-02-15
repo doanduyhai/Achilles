@@ -73,17 +73,7 @@ public final class TestEntityWithSimplePartitionKey_AchillesMeta extends Abstrac
   }
 
   @Override
-  protected Optional<String> getStaticKeyspace() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected Optional<String> getStaticTableName() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected String getDerivedTableName() {
+  protected String getDerivedTableOrViewName() {
     return "testentitywithsimplepartitionkey";
   }
 
@@ -96,12 +86,47 @@ public final class TestEntityWithSimplePartitionKey_AchillesMeta extends Abstrac
   }
 
   @Override
+  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getPartitionKeys() {
+    return Arrays.asList(id);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getClusteringColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getNormalColumns() {
+    return Arrays.asList(value);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getComputedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
   protected boolean isCounterTable() {
     return false;
   }
 
   @Override
-  protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+  protected Optional<String> getStaticKeyspace() {
+    return Optional.empty();
+  }
+
+  @Override
+  protected Optional<String> getStaticTableOrViewName() {
     return Optional.empty();
   }
 
@@ -126,32 +151,7 @@ public final class TestEntityWithSimplePartitionKey_AchillesMeta extends Abstrac
   }
 
   @Override
-  protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
-    return Optional.empty();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getPartitionKeys() {
-    return Arrays.asList(id);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getClusteringColumns() {
-    return Arrays.asList();
-  }
-
-  @Override
   protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getStaticColumns() {
-    return Arrays.asList();
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getNormalColumns() {
-    return Arrays.asList(value);
-  }
-
-  @Override
-  protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getComputedColumns() {
     return Arrays.asList();
   }
 
