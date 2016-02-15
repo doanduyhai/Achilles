@@ -21,10 +21,10 @@ import java.util.UUID;
 
 import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.PartitionKey;
 
-@Entity(table = "entity_with_clusterings")
+@Table(table = "entity_with_clusterings")
 public class EntityWithClusteringColumns {
 
     @PartitionKey

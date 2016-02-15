@@ -17,9 +17,9 @@
 package info.archinnov.achilles.internals.entities;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Table;
 
-@Entity(table = "entity_child")
+@Table(table = "entity_child")
 public class EntityAsChild extends EntityAsParent {
 
     @Column("child_value")

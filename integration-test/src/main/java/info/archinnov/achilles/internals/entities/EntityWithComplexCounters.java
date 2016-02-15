@@ -21,7 +21,7 @@ import java.util.UUID;
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.codecs.StringToLongCodec;
 
-@Entity(table = "entity_complex_counters")
+@Table(table = "entity_complex_counters")
 public class EntityWithComplexCounters {
 
     @PartitionKey

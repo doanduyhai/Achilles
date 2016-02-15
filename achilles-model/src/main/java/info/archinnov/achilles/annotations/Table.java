@@ -22,17 +22,17 @@ import java.lang.annotation.*;
 
  * Marks a class as an entity and let Achilles manage it
  * <pre class="code"><code class="java">
- * <strong>{@literal @}Entity</strong>
+ * <strong>{@literal @}Table</strong>
  * public class UserEntity {...}
  * </code></pre>
 
  *
- * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#entity" target="_blank">@Entity</a>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#entity" target="_blank">@Table</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-public @interface Entity {
+public @interface Table {
 
     /**
      * (<strong>Optional</strong>) The name of the keyspace in which this table belongs to.
@@ -42,7 +42,7 @@ public @interface Entity {
      * <pre class="code"><code class="java">
 
 
-     * <strong>{@literal @}Entity(keyspace="production_data", table = "user")</strong>
+     * <strong>{@literal @}Table(keyspace="production_data", table = "user")</strong>
      * public class UserEntity {...}
      * </code></pre>
      */
@@ -55,7 +55,7 @@ public @interface Entity {
      * <br/>
      * <pre class="code"><code class="java">
 
-     * <strong>{@literal @}Entity(table = "user")</strong>
+     * <strong>{@literal @}Table(table = "user")</strong>
      * public class UserEntity {...}
      * </code></pre>
      */

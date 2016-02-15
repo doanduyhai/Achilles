@@ -19,7 +19,7 @@ package info.archinnov.achilles.internals.entities;
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.strategy.NamingStrategy;
 
-@Entity(table = "sensor")
+@Table(table = "sensor")
 @Strategy(naming = NamingStrategy.SNAKE_CASE)
 public class EntitySensor {
 

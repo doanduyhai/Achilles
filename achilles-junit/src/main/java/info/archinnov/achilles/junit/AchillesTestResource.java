@@ -160,7 +160,7 @@ public class AchillesTestResource<T extends AbstractManagerFactory> extends Exte
 
         entityClassesToTruncate
                 .forEach(clazz -> validateTrue(managerFactory.staticTableNameFor(clazz).isPresent(),
-                        "Entity class '%s' is not managed by Achilles. Did you forget to add @Entity annotation ?", clazz.getCanonicalName()));
+                        "Entity class '%s' is not managed by Achilles. Did you forget to add @Table annotation ?", clazz.getCanonicalName()));
 
         maybeGenerateTruncateStatement(session, entityClassesToTruncate
                 .stream()

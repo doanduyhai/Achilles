@@ -39,7 +39,7 @@ import info.archinnov.achilles.type.tuples.Tuple1;
 import info.archinnov.achilles.type.tuples.Tuple2;
 import info.archinnov.achilles.type.tuples.Tuple3;
 
-@Entity(table = "entity_complex_types")
+@Table(table = "entity_complex_types")
 public class EntityWithComplexTypes {
 
     @PartitionKey

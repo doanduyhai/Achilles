@@ -37,7 +37,7 @@ import java.lang.annotation.*;
  * ...
  * }
 
- * {@literal @}Entity
+ * {@literal @}Table
  * public class UserEntity {
 
  * ...

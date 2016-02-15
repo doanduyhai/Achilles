@@ -22,7 +22,7 @@ import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.strategy.NamingStrategy;
 
-@Entity(keyspace = "my_static_keyspace", table = "entity_static_annotations")
+@Table(keyspace = "my_static_keyspace", table = "entity_static_annotations")
 @Strategy(naming = NamingStrategy.SNAKE_CASE, insert = InsertStrategy.NOT_NULL_FIELDS)
 @Consistency(read = ConsistencyLevel.LOCAL_QUORUM, write = ConsistencyLevel.LOCAL_ONE, serial = ConsistencyLevel.LOCAL_SERIAL)
 @TTL(1)

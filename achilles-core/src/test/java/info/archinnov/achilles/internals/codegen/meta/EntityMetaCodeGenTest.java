@@ -441,7 +441,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
         });
         failTestWithMessage(
-                "Cannot have both @Entity and @MaterializedView on the class 'info.archinnov.achilles.internals.sample_classes.parser.view.TestViewWithEntityAnnotation'",
+                "Cannot have both @Table and @MaterializedView on the class 'info.archinnov.achilles.internals.sample_classes.parser.view.TestViewWithEntityAnnotation'",
                 TestViewWithEntityAnnotation.class);
     }
 

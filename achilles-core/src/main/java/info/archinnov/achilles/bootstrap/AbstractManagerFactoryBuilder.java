@@ -166,7 +166,7 @@ public abstract class AbstractManagerFactoryBuilder<T extends AbstractManagerFac
     /**
      * Define the keyspace name to be used by Achilles. It is mandatory if you
      * do not define the keyspace name statically on your entity with the annotation
-     * {@literal @}Entity
+     * {@literal @}Table
      *
      * @return ManagerFactoryBuilder
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#keyspace" target="_blank">Keyspace</a>

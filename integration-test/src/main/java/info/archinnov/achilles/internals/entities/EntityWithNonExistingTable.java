@@ -17,10 +17,10 @@
 package info.archinnov.achilles.internals.entities;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.PartitionKey;
 
-@Entity(table = EntityWithNonExistingTable.TABLE)
+@Table(table = EntityWithNonExistingTable.TABLE)
 public class EntityWithNonExistingTable {
 
     public static final String TABLE = "non_existing_table";

@@ -25,7 +25,7 @@ import com.datastax.driver.core.ConsistencyLevel;
 
 import info.archinnov.achilles.annotations.*;
 
-@Entity(table = "simple")
+@Table(table = "simple")
 public class SimpleEntity {
 
     @PartitionKey

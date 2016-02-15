@@ -23,7 +23,7 @@ import java.lang.annotation.*;
  * Please note that the ordering <strong>starts at 1</strong>
  * <pre class="code"><code class="java">
 
- * {@literal @}Entity
+ * {@literal @}Table
  * public class Entity {
 
  * // Partition key component 1

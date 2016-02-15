@@ -23,7 +23,7 @@ import java.lang.annotation.*;
  * Annotation for secondary index. Example
  * <pre class="code"><code class="java">
 
- * {@literal @}Entity(table = "my_entity")
+ * {@literal @}Table(table = "my_entity")
  * public class MyEntity {
 
  * //Simple index
@@ -100,7 +100,7 @@ public @interface Index {
      * <strong>Optional</strong>.
      * Define the name of the secondary index. If not set, defaults to <strong>table name_field name_index</strong>
      * <pre class="code"><code class="java">
-     * {@literal @}Entity
+     * {@literal @}Table
      * public class User {
     
      * ...

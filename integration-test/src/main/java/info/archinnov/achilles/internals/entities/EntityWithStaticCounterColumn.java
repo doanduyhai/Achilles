@@ -20,7 +20,7 @@ import java.util.UUID;
 
 import info.archinnov.achilles.annotations.*;
 
-@Entity(table = "entity_static_counter")
+@Table(table = "entity_static_counter")
 public class EntityWithStaticCounterColumn {
 
     @PartitionKey

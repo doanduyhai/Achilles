@@ -35,7 +35,7 @@ import info.archinnov.achilles.type.strategy.NamingStrategy;
 
  * <pre class="code"><code class="java">
 
- * {@literal @}Entity(table = "users")
+ * {@literal @}Table(table = "users")
  * <strong>{@literal @}Strategy(insert = InsertStrategy.NOT_NULL_FIELDS)</strong>
  * public class UserEntity;
 
@@ -52,7 +52,7 @@ import info.archinnov.achilles.type.strategy.NamingStrategy;
  * </ul>
  * <pre class="code"><code class="java">
 
- * {@literal @}Entity(table = "usersTable")
+ * {@literal @}Table(table = "usersTable")
  * <strong>{@literal @}Strategy(naming = NamingStrategy.SNAKE_CASE)</strong>
  * public class UserEntity;
 

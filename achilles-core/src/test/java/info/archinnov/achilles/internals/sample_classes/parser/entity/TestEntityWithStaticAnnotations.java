@@ -25,7 +25,7 @@ import info.archinnov.achilles.type.strategy.NamingStrategy;
 
 @APUnitTest
 
-@Entity(keyspace = "my_ks")
+@Table(keyspace = "my_ks")
 @Strategy(naming = NamingStrategy.SNAKE_CASE, insert = InsertStrategy.NOT_NULL_FIELDS)
 @Consistency(read = ConsistencyLevel.LOCAL_ONE, write = ConsistencyLevel.LOCAL_ONE, serial = ConsistencyLevel.LOCAL_SERIAL)
 @TTL(123456)

@@ -44,7 +44,7 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.annotations.CodecRegistry;
-import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.MaterializedView;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryBuilderCodeGen;
@@ -81,7 +81,7 @@ public class AchillesProcessor extends AbstractProcessor {
 
             final List<TypeElement> tableTypes = annotations
                     .stream()
-                    .filter(annotation -> isAnnotationOfType(annotation, Entity.class))
+                    .filter(annotation -> isAnnotationOfType(annotation, Table.class))
                     .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotation).stream())
                     .map(MoreElements::asType)
                     .collect(toList());
@@ -210,7 +210,7 @@ public class AchillesProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return Sets.newHashSet(Entity.class.getCanonicalName(),
+        return Sets.newHashSet(Table.class.getCanonicalName(),
                 MaterializedView.class.getCanonicalName(),
                 CodecRegistry.class.getCanonicalName());
     }

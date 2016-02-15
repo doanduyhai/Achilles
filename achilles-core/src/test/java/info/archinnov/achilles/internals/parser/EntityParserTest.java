@@ -22,7 +22,7 @@ import java.util.Arrays;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
-import org.eclipse.jdt.internal.compiler.tool.EclipseCompiler;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -39,7 +39,6 @@ import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntity
 import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithComplexTypes;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForAnnotationTree;
 import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorByType;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityParserTest extends AbstractTestProcessor {

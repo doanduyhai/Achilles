@@ -23,7 +23,7 @@ import java.lang.annotation.*;
 
  * <pre class="code"><code class="java">
 
- * {@literal @}Entity
+ * {@literal @}Table
  * public class Entity {
 
  * // Partition key component
@@ -62,7 +62,7 @@ public @interface ClusteringColumn {
 
 
      * <pre class="code"><code class="java">
-     * {@literal @}Entity
+     * {@literal @}Table
      * public class Entity {
 
      * // Partition key

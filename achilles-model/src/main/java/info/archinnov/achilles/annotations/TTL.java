@@ -23,7 +23,7 @@ import java.lang.annotation.*;
  * This time to live applies on all the fields on the entity
  * <pre class="code"><code class="java">
 
- * {@literal @}Entity
+ * {@literal @}Table
  * <strong>{@literal @}TTL(3600)</strong>
  * public class Entity {...}
  * </code></pre>
@@ -40,7 +40,7 @@ public @interface TTL {
 
      * <pre class="code"><code class="java">
 
-     * {@literal @}Entity
+     * {@literal @}Table
      * <strong>{@literal @}TTL(3600)</strong>
      * public class Entity {...}
      * </code></pre>

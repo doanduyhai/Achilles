@@ -18,10 +18,10 @@ package info.archinnov.achilles.internals.entities;
 
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Counter;
-import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.PartitionKey;
 
-@Entity(table = "entity_counter")
+@Table(table = "entity_counter")
 public class EntityWithCounterColumn {
 
     @PartitionKey

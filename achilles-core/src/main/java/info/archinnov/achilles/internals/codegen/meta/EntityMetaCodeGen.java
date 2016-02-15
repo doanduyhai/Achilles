@@ -68,12 +68,12 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         final Optional<Consistency> consistency = aptUtils.getAnnotationOnClass(elm, Consistency.class);
         final Optional<TTL> ttl = aptUtils.getAnnotationOnClass(elm, TTL.class);
         final Optional<Strategy> strategy = aptUtils.getAnnotationOnClass(elm, Strategy.class);
-        final Optional<Entity> entityAnnot = aptUtils.getAnnotationOnClass(elm, Entity.class);
+        final Optional<Table> entityAnnot = aptUtils.getAnnotationOnClass(elm, Table.class);
 
         final Optional<TypeName> viewBaseClass = AnnotationTree.findOptionalViewBaseClass(aptUtils, elm);
 
         aptUtils.validateFalse(entityAnnot.isPresent() && viewBaseClass.isPresent(),
-            "Cannot have both @Entity and @MaterializedView on the class '%s'", rawClassTypeName);
+            "Cannot have both @Table and @MaterializedView on the class '%s'", rawClassTypeName);
 
         if (entityType == EntityType.VIEW) {
             aptUtils.validateTrue(viewBaseClass.isPresent(),"Missing @MaterializedView annotation on entity class '%s'", rawClassTypeName);
@@ -148,8 +148,8 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         if (entityType == EntityType.TABLE) {
             builder.superclass(genericType(ABSTRACT_ENTITY_PROPERTY, rawBeanType))
                     .addMethod(buildIsCounterTable(isCounter))
-                    .addMethod(buildStaticKeyspace(aptUtils.getAnnotationOnClass(elm, Entity.class).get().keyspace()))
-                    .addMethod(buildStaticTableOrViewName(aptUtils.getAnnotationOnClass(elm, Entity.class).get().table()))
+                    .addMethod(buildStaticKeyspace(aptUtils.getAnnotationOnClass(elm, Table.class).get().keyspace()))
+                    .addMethod(buildStaticTableOrViewName(aptUtils.getAnnotationOnClass(elm, Table.class).get().table()))
                     .addMethod(buildGetStaticWriteConsistency(consistency))
                     .addMethod(buildGetStaticSerialConsistency(consistency))
                     .addMethod(buildGetStaticTTL(ttl))

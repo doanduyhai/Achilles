@@ -20,7 +20,7 @@ import java.util.UUID;
 
 import info.archinnov.achilles.annotations.*;
 
-@Entity
+@Table
 public class EntityWithStaticColumn {
 
     @PartitionKey

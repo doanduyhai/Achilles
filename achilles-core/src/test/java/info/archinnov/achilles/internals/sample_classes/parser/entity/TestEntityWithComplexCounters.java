@@ -23,7 +23,7 @@ import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 import info.archinnov.achilles.internals.sample_classes.codecs.StringToLongCodec;
 
 @APUnitTest
-@Entity
+@Table
 public class TestEntityWithComplexCounters {
 
     @PartitionKey

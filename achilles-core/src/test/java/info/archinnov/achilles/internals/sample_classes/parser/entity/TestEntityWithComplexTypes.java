@@ -33,7 +33,7 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 import info.archinnov.achilles.type.tuples.Tuple3;
 
 @APUnitTest
-@Entity
+@Table
 public class TestEntityWithComplexTypes {
 
     @PartitionKey

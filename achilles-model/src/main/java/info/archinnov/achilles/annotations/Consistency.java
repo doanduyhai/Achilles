@@ -27,7 +27,7 @@ import com.datastax.driver.core.ConsistencyLevel;
 
  * <pre class="code"><code class="java">
 
- * {@literal @}Entity(table = "user")
+ * {@literal @}Table(table = "user")
  * <strong>{@literal @}Consistency(read = ConsistencyLevel.ONE, write = ConsistencyLevel.ALL, serial = ConsistencyLevel.LOCAL_SERIAL)</strong>
  * public class User {...}
 

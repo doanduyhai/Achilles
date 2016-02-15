@@ -16,7 +16,7 @@
 
 package info.archinnov.achilles.internals.sample_classes.parser.view;
 
-import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.annotations.MaterializedView;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
@@ -24,7 +24,7 @@ import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntity
 
 @APUnitTest
 @MaterializedView(baseEntity = TestEntitySensor.class)
-@Entity
+@Table
 public class TestViewWithEntityAnnotation {
 
     @PartitionKey

@@ -22,7 +22,7 @@ import java.util.Set;
 
 import info.archinnov.achilles.annotations.*;
 
-@Entity
+@Table
 public class EntityWithComplexIndices {
 
     @PartitionKey

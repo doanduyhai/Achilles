@@ -24,7 +24,7 @@ import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 
 @APUnitTest
-@Entity
+@Table
 public class TestEntityWithComplexIndices {
 
     @PartitionKey

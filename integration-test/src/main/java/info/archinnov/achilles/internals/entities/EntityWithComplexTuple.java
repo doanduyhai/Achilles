@@ -20,11 +20,11 @@ import java.util.List;
 import java.util.Map;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-@Entity(table = "complex_tuple")
+@Table(table = "complex_tuple")
 public class EntityWithComplexTuple {
 
     @PartitionKey

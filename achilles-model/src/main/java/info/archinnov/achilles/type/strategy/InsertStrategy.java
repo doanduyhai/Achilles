@@ -28,7 +28,7 @@ package info.archinnov.achilles.type.strategy;
 
  * <pre class="code"><code class="java">
 
- * {@literal @}Entity(table = "users")
+ * {@literal @}Table(table = "users")
  * <strong>{@literal @}Strategy(insert = InsertStrategy.NOT_NULL_FIELDS)</strong>
  * public class UserEntity;
 
