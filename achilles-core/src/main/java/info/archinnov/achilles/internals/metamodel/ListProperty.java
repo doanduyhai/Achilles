@@ -182,6 +182,16 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
+    public boolean containsUDTProperty() {
+        return valueProperty.containsUDTProperty();
+    }
+
+    @Override
+    public List<AbstractUDTClassProperty<?>> getUDTClassProperties() {
+        return valueProperty.getUDTClassProperties();
+    }
+
+    @Override
     public void inject(TupleTypeFactory factory) {
         valueProperty.inject(factory);
     }

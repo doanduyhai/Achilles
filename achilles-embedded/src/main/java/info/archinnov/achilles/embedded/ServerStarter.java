@@ -143,6 +143,7 @@ public enum ServerStarter {
         final AtomicReference<CassandraDaemon> daemonRef = new AtomicReference<>();
         executor.execute(() -> {
             CassandraDaemon cassandraDaemon = new CassandraDaemon();
+            cassandraDaemon.completeSetup();
             cassandraDaemon.activate();
             daemonRef.getAndSet(cassandraDaemon);
             startupLatch.countDown();

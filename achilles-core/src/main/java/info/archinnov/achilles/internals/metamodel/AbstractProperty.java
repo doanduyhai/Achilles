@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
+import java.util.List;
 import java.util.Objects;
 
 import com.datastax.driver.core.DataType;
@@ -92,6 +93,10 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
 
     public abstract void encodeFieldToUdt(ENTITY entity, UDTValue udtValue);
 
+    public abstract boolean containsUDTProperty();
+
+    public abstract List<AbstractUDTClassProperty<?>> getUDTClassProperties();
+
     public void decodeField(GettableData gettableData, ENTITY entity) {
         final VALUEFROM valuefrom = decodeFromGettable(gettableData);
         fieldInfo.setter.set(entity, valuefrom);
@@ -104,7 +109,6 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
     public void setField(ENTITY entity, VALUEFROM value) {
         fieldInfo.setter.set(entity, value);
     }
-
 
     public String getColumnForSelect() {
         return fieldInfo.cqlColumn;

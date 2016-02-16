@@ -18,6 +18,8 @@ package info.archinnov.achilles.internals.metamodel;
 
 import static java.lang.String.format;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -124,6 +126,16 @@ public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue
         }
 
         udtValue.setUDTValue(fieldInfo.cqlColumn, valueTo);
+    }
+
+    @Override
+    public boolean containsUDTProperty() {
+        return true;
+    }
+
+    @Override
+    public List<AbstractUDTClassProperty<?>> getUDTClassProperties() {
+        return Arrays.asList(udtClassProperty);
     }
 
     @Override

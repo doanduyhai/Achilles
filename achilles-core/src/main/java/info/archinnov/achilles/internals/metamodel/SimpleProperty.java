@@ -18,6 +18,8 @@ package info.archinnov.achilles.internals.metamodel;
 
 import static java.lang.String.format;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -135,6 +137,16 @@ public class SimpleProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProperty
         }
 
         settable.accept(udtValue, valueTo);
+    }
+
+    @Override
+    public boolean containsUDTProperty() {
+        return false;
+    }
+
+    @Override
+    public List<AbstractUDTClassProperty<?>> getUDTClassProperties() {
+        return new ArrayList<>();
     }
 
     @Override

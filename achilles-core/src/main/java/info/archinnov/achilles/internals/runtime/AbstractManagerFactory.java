@@ -162,8 +162,8 @@ public abstract class AbstractManagerFactory {
                         .stream()
                         .filter(entityProperty -> manageEntities.contains(entityProperty.entityClass))
                         .flatMap(entityProperty -> entityProperty.allColumns.stream())
-                        .filter(property -> property instanceof UDTProperty)
-                        .filter(property -> ((UDTProperty) property).udtClassProperty.equals(x))
+                        .filter(property -> property.containsUDTProperty())
+                        .filter(property -> property.getUDTClassProperties().contains(x))
                         .count();
 
                 if(udtCountForClass>0)

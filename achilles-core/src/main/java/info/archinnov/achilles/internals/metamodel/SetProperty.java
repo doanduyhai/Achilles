@@ -20,6 +20,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -176,6 +177,16 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
             LOGGER.trace(format("Encode '%s' set %s to UDT value %s", fieldName, valueTo, udtValue));
         }
         udtValue.setSet(fieldInfo.cqlColumn, valueTo);
+    }
+
+    @Override
+    public boolean containsUDTProperty() {
+        return valueProperty.containsUDTProperty();
+    }
+
+    @Override
+    public List<AbstractUDTClassProperty<?>> getUDTClassProperties() {
+        return valueProperty.getUDTClassProperties();
     }
 
     @Override

@@ -18,6 +18,7 @@ package info.archinnov.achilles.internals.metamodel;
 
 import static java.lang.String.format;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -123,6 +124,16 @@ public class JdkOptionalProperty<ENTITY, FROM, TO> extends AbstractProperty<ENTI
         if (encoded != null) {
             aProperty.encodeFieldToUdt(entity, udtValue);
         }
+    }
+
+    @Override
+    public boolean containsUDTProperty() {
+        return aProperty.containsUDTProperty();
+    }
+
+    @Override
+    public List<AbstractUDTClassProperty<?>> getUDTClassProperties() {
+        return aProperty.getUDTClassProperties();
     }
 
     @Override

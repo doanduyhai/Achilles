@@ -18,6 +18,8 @@ package info.archinnov.achilles.internals.metamodel;
 
 import static java.lang.String.format;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -111,6 +113,16 @@ public class ComputedProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProper
     @Override
     public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue) {
         throw new UnsupportedOperationException(format("No UDT encoding for computed field '%s'", fieldInfo.fieldName));
+    }
+
+    @Override
+    public boolean containsUDTProperty() {
+        return false;
+    }
+
+    @Override
+    public List<AbstractUDTClassProperty<?>> getUDTClassProperties() {
+        return new ArrayList<>();
     }
 
     @Override

@@ -19,8 +19,10 @@ package info.archinnov.achilles.internals.metamodel;
 
 import static java.lang.String.format;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,5 +120,22 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
         for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
             x.injectRuntimeCodecs(runtimeCodecs);
         }
+    }
+
+    @Override
+    public boolean containsUDTProperty() {
+        boolean containsUDT = false;
+        for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
+            containsUDT = containsUDT || x.containsUDTProperty();
+        }
+        return containsUDT;
+    }
+
+    @Override
+    public List<AbstractUDTClassProperty<?>> getUDTClassProperties() {
+        return componentsProperty()
+                .stream()
+                .flatMap(property -> property.getUDTClassProperties().stream())
+                .collect(Collectors.toList());
     }
 }

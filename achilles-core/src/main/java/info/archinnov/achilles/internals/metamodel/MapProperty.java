@@ -20,6 +20,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.utils.ListHelper;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -188,6 +190,16 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
             LOGGER.trace(format("Encode '%s' map %s to UDT value %s", fieldName, valueTo, udtValue));
         }
         udtValue.setMap(fieldInfo.cqlColumn, valueTo);
+    }
+
+    @Override
+    public boolean containsUDTProperty() {
+        return keyProperty.containsUDTProperty() || valueProperty.containsUDTProperty();
+    }
+
+    @Override
+    public List<AbstractUDTClassProperty<?>> getUDTClassProperties() {
+        return ListHelper.appendAll(keyProperty.getUDTClassProperties(), valueProperty.getUDTClassProperties());
     }
 
     @Override
