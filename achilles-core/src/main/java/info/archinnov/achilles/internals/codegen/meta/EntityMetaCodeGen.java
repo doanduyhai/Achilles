@@ -43,7 +43,6 @@ import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.Entity
 import info.archinnov.achilles.internals.metamodel.columns.*;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
-import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
@@ -112,7 +111,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         final TypeName rawBeanType = TypeName.get(aptUtils.erasure(elm));
 
         final String className = elm.getSimpleName() + META_SUFFIX;
-        final TypeName typeName = ClassName.get(TypeUtils.ENTITY_META_PACKAGE, className);
+        final TypeName typeName = ClassName.get(ENTITY_META_PACKAGE, className);
 
         final TypeSpec.Builder builder = TypeSpec.classBuilder(className)
                 .addJavadoc("Meta class of all entities of type $T<br/>\n", rawBeanType)

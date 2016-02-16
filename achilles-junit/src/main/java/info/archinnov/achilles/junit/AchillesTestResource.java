@@ -44,10 +44,12 @@ import info.archinnov.achilles.script.ScriptExecutor;
 import info.archinnov.achilles.type.TypedMap;
 
 /**
+ * <strong>WARNING: this AchillesTestResource will use an unsafe Cassandra daemon, it is not suitable for production</strong>
+ * <br/><br/>
  * Test resource for JUnit. Example of usage:
-
+ *
  * <pre class="code"><code class="java">
-
+ *
  * {@literal @}Rule
  * public AchillesTestResource<ManagerFactory> resource = AchillesTestResourceBuilder
  * .forJunit()

@@ -89,6 +89,8 @@ public class CassandraEmbeddedServerBuilder {
 
     private boolean durableWrite = false;
 
+    private boolean useUnsafeCassandraDaemon = false;
+
     private List<String> scriptLocations = new ArrayList<>();
 
     private Map<String, Map<String, Object>> scriptTemplates = new HashMap<>();
@@ -359,6 +361,52 @@ public class CassandraEmbeddedServerBuilder {
     }
 
     /**
+     * Use an unsafe version of the Cassandra daemon. This version will:
+     * <ul>
+     *     <li>disable JMX</li>
+     *     <li>disable legacy schema migration</li>
+     *     <li>disable pre-3.0 hints migration</li>
+     *     <li>disable pre-3.0 batch entries migration</li>
+     *     <li>disable auto compaction on all keyspaces. <strong>Your test/dev data should fit in memory normally</strong></li>
+     *     <li>disable metrics</li>
+     *     <li>disable GCInspector</li>
+     *     <li>disable native mlock system call</li>
+     *     <li>disable Thrift server</li>
+     *     <li>disable startup checks (Jemalloc, validLaunchDate, JMXPorts, JvmOptions, JnaInitialization, initSigarLibrary, dataDirs, SSTablesFormat, SystemKeyspaceState, Datacenter, Rack)</li>
+     *     <li>disable materialized view rebuild. <strong>You should clean your data folder between each test anyway</strong></li>
+     *     <li>disable the SizeEstimatesRecorder (estimate SSTable size, who cares for unit testing or dev ?)</li>
+     * </ul>
+     * @return
+     */
+    public CassandraEmbeddedServerBuilder useUnsafeCassandraDeamon() {
+        this.useUnsafeCassandraDaemon = true;
+        return this;
+    }
+
+    /**
+     * Use an unsafe version of the Cassandra daemon. This version will:
+     * <ul>
+     *     <li>disable JMX</li>
+     *     <li>disable legacy schema migration</li>
+     *     <li>disable pre-3.0 hints migration</li>
+     *     <li>disable pre-3.0 batch entries migration</li>
+     *     <li>disable auto compaction on all keyspaces. <strong>Your test/dev data should fit in memory normally</strong></li>
+     *     <li>disable metrics</li>
+     *     <li>disable GCInspector</li>
+     *     <li>disable native mlock system call</li>
+     *     <li>disable Thrift server</li>
+     *     <li>disable startup checks (Jemalloc, validLaunchDate, JMXPorts, JvmOptions, JnaInitialization, initSigarLibrary, dataDirs, SSTablesFormat, SystemKeyspaceState, Datacenter, Rack)</li>
+     *     <li>disable materialized view rebuild. <strong>You should clean your data folder between each test anyway</strong></li>
+     *     <li>disable the SizeEstimatesRecorder (estimate SSTable size, who cares for unit testing or dev ?)</li>
+     * </ul>
+     * @return
+     */
+    public CassandraEmbeddedServerBuilder useUnsafeCassandraDeamon(boolean useUnsafeCassandraDaemon) {
+        this.useUnsafeCassandraDaemon = useUnsafeCassandraDaemon;
+        return this;
+    }
+
+    /**
      * Start an embedded Cassandra server but DO NOT bootstrap Achilles
      *
      * @return native Java driver core Cluster
@@ -434,6 +482,10 @@ public class CassandraEmbeddedServerBuilder {
             final Map<String, Map<String, Object>> existingScriptTemplates = cassandraParams.getTypedOr(SCRIPT_TEMPLATES, new HashMap<>());
             existingScriptTemplates.putAll(scriptTemplates);
             cassandraParams.put(SCRIPT_TEMPLATES, existingScriptTemplates);
+        }
+
+        if (useUnsafeCassandraDaemon) {
+            cassandraParams.put(USE_UNSAFE_CASSANDRA_DAEMON, true);
         }
 
         cassandraParams.put(KEYSPACE_DURABLE_WRITE, durableWrite);

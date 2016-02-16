@@ -16,9 +16,7 @@
 
 package info.archinnov.achilles.junit;
 
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_KEYSPACE_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SCRIPT_LOCATIONS;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SCRIPT_TEMPLATES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
@@ -34,6 +32,8 @@ import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.validation.Validator;
 
 /**
+ * <strong>WARNING: this AchillesTestResource will use an unsafe Cassandra daemon, it is not suitable for production</strong>
+ * <br/><br/>
  * Builder class to create an instance of {@link AchillesTestResource}
  * <pre class="code"><code class="java">
  * AchillesTestResourceBuilder
@@ -52,6 +52,7 @@ import info.archinnov.achilles.validation.Validator;
  * .build()
  * );
  * </code></pre>
+ *
  */
 public class AchillesTestResourceBuilder {
 
@@ -218,6 +219,7 @@ public class AchillesTestResourceBuilder {
     private TypedMap buildCassandraParams() {
         cassandraParams.put(SCRIPT_LOCATIONS, scriptLocations);
         cassandraParams.put(SCRIPT_TEMPLATES, scriptTemplates);
+        cassandraParams.put(USE_UNSAFE_CASSANDRA_DAEMON, true);
         return cassandraParams;
     }
 }

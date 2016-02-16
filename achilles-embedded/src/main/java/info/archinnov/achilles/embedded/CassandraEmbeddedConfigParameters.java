@@ -28,6 +28,9 @@ public class CassandraEmbeddedConfigParameters {
     /**
      * Configuration parameters
      */
+
+    public static final String USE_UNSAFE_CASSANDRA_DAEMON = "useUnsafeCassandraDaemon";
+
     public static final String CLEAN_CASSANDRA_DATA_FILES = "cleanCassandraDataFiles";
 
     public static final String CLEAN_CASSANDRA_CONFIG_FILE = "cleanCassandraConfigFile";
@@ -96,6 +99,7 @@ public class CassandraEmbeddedConfigParameters {
 
     static TypedMap mergeWithDefaultParameters(TypedMap parameters) {
         TypedMap defaultParams = new TypedMap();
+        defaultParams.put(USE_UNSAFE_CASSANDRA_DAEMON, false);
         defaultParams.put(CLEAN_CASSANDRA_DATA_FILES, true);
         defaultParams.put(CLEAN_CASSANDRA_CONFIG_FILE, true);
         defaultParams.put(DATA_FILE_FOLDER, DEFAULT_ACHILLES_TEST_DATA_FOLDER);

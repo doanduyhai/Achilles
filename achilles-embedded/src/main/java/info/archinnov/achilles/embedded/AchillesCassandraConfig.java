@@ -1,15 +1,12 @@
 package info.archinnov.achilles.embedded;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.cassandra.config.Config;
 import org.apache.cassandra.config.ConfigurationLoader;
 import org.apache.cassandra.config.EncryptionOptions;
 import org.apache.cassandra.config.ParameterizedClass;
 import org.apache.cassandra.exceptions.ConfigurationException;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AchillesCassandraConfig implements ConfigurationLoader {
@@ -29,6 +26,8 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
     public Config loadConfig() throws ConfigurationException {
         final Config config = new Config();
 
+        final int numTokens = Integer.parseInt(System.getProperty("cassandra-num-tokens", "256"));
+        config.num_tokens = numTokens;
         config.rpc_port = Integer.parseInt(System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_THRIFT_PORT));
         config.native_transport_port = Integer.parseInt(System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT));
         config.storage_port = Integer.parseInt(System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT));
@@ -56,14 +55,14 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.trickle_fsync_interval_in_kb = 10240;
         config.listen_address = "localhost";
         config.start_native_transport = true;
-        config.start_rpc = true;
+        config.start_rpc = false;
         config.rpc_address = "localhost";
         config.rpc_keepalive = true;
         config.rpc_server_type = "sync";
         config.thrift_framed_transport_size_in_mb = 15;
         config.incremental_backups = false;
         config.snapshot_before_compaction = false;
-        config.auto_snapshot = true;
+        config.auto_snapshot = false;
         config.column_index_size_in_kb = 64;
         config.compaction_throughput_mb_per_sec = 16;
         config.read_request_timeout_in_ms = 10000L;

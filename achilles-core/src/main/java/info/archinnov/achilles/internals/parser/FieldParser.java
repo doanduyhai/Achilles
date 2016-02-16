@@ -560,6 +560,9 @@ public class FieldParser {
     }
 
     public static class TypeParsingResult {
+        /**
+         * FIELD_MODIFIERS should contains static because static fields are initialized BEFORE constructor body ...
+         */
         private static final Modifier[] FIELD_MODIFIERS = new Modifier[]{Modifier.FINAL, Modifier.PUBLIC, Modifier.STATIC};
         final public FieldParsingContext context;
         final public AnnotationTree annotationTree;

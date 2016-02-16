@@ -52,6 +52,8 @@ import info.archinnov.achilles.validation.Validator;
 public enum ServerStarter {
     CASSANDRA_EMBEDDED;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerStarter.class);
+
     private static final OrderedShutdownHook orderedShutdownHook = new OrderedShutdownHook();
     private static int cqlPort;
 
@@ -136,13 +138,25 @@ public enum ServerStarter {
         System.setProperty("cassandra.embedded.concurrent.writes", parameters.getTypedOr(CASSANDRA_CONCURRENT_WRITES, 32).toString());
         System.setProperty("cassandra-foreground", "true");
 
+        final boolean useUnsafeCassandra = parameters.getTyped(USE_UNSAFE_CASSANDRA_DAEMON);
+
+        if (useUnsafeCassandra) {
+            System.setProperty("cassandra-num-tokens", "1");
+        }
+
         System.setProperty("cassandra.config.loader", "info.archinnov.achilles.embedded.AchillesCassandraConfig");
 
         final CountDownLatch startupLatch = new CountDownLatch(1);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         final AtomicReference<CassandraDaemon> daemonRef = new AtomicReference<>();
         executor.execute(() -> {
-            CassandraDaemon cassandraDaemon = new CassandraDaemon();
+            if (useUnsafeCassandra) {
+                LOGGER.warn("******* WARNING, starting unsafe embedded Cassandra deamon. This should be only used for unit testing or development and not for production !");
+            }
+
+            CassandraDaemon cassandraDaemon = useUnsafeCassandra == true
+                    ? new AchillesCassandraDaemon(): new CassandraDaemon();
+
             cassandraDaemon.completeSetup();
             cassandraDaemon.activate();
             daemonRef.getAndSet(cassandraDaemon);
