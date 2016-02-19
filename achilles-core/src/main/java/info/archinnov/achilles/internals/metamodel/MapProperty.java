@@ -37,7 +37,7 @@ import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
-import info.archinnov.achilles.internals.utils.ListHelper;
+import info.archinnov.achilles.internals.utils.CollectionsHelper;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -199,7 +199,7 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
 
     @Override
     public List<AbstractUDTClassProperty<?>> getUDTClassProperties() {
-        return ListHelper.appendAll(keyProperty.getUDTClassProperties(), valueProperty.getUDTClassProperties());
+        return CollectionsHelper.appendAll(keyProperty.getUDTClassProperties(), valueProperty.getUDTClassProperties());
     }
 
     @Override

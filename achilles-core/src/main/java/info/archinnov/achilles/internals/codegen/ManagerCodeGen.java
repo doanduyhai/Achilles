@@ -32,6 +32,7 @@ import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaColumnsForFunctionsCodeGen;
 import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.TypeUtils;
@@ -108,6 +109,11 @@ public class ManagerCodeGen {
         builder.addType(crudClass.build());
         builder.addType(dslClass.build());
         builder.addType(queryClass.build());
+
+        // Build public static final xxx_Manager.ColumnsForFunctions COLUMNS = new xxx_Manager.ColumnsForFunctions();
+        final String className = signature.className + MANAGER_SUFFIX;
+        builder.addType(EntityMetaColumnsForFunctionsCodeGen.createColumnsClassForFunctionParam(signature.parsingResults))
+                .addField(buildColumnsField(className));
 
         return new ManagerAndDSLClasses(builder.build(), classes);
     }
@@ -496,5 +502,15 @@ public class ManagerCodeGen {
             this.managerClass = managerClass;
             this.dslClasses = dslClasses;
         }
+    }
+
+    private static FieldSpec buildColumnsField(String parentClassName) {
+
+        TypeName typeName = ClassName.get(MANAGER_PACKAGE, parentClassName+"."+COLUMNS_FOR_FUNCTIONS_CLASS);
+        return FieldSpec
+                .builder(typeName, "COLUMNS", Modifier.PUBLIC, Modifier.FINAL)
+                .addJavadoc("Static class to expose $S fields for <strong>type-safe</strong> function calls", parentClassName)
+                .initializer(CodeBlock.builder().addStatement("new $T()", typeName).build())
+                .build();
     }
 }

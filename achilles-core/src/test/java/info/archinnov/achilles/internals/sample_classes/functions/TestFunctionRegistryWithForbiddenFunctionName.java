@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.utils;
+package info.archinnov.achilles.internals.sample_classes.functions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import info.archinnov.achilles.annotations.FunctionRegistry;
 
-public class ListHelper {
+@FunctionRegistry
+public interface TestFunctionRegistryWithForbiddenFunctionName {
 
-    public static <T> List<T> appendAll(List<T>... lists) {
-        final List<T> newList = new ArrayList<>();
-        Arrays.asList(lists).forEach(x -> newList.addAll(x));
-        return newList;
-    }
+    String writetime(int val);
 }

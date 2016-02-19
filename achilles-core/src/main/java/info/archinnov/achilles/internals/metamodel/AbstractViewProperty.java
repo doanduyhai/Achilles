@@ -17,8 +17,6 @@
 package info.archinnov.achilles.internals.metamodel;
 
 import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
-import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticDeleteQueries;
-import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticInsertQueries;
 import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticSelectQuery;
 import static info.archinnov.achilles.validation.Validator.validateNotNull;
 import static java.lang.String.format;
@@ -37,7 +35,7 @@ import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.schema.SchemaCreator;
-import info.archinnov.achilles.internals.utils.ListHelper;
+import info.archinnov.achilles.internals.utils.CollectionsHelper;
 import info.archinnov.achilles.type.interceptor.Event;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.tuples.Tuple3;
@@ -118,12 +116,12 @@ public abstract class AbstractViewProperty<T> extends AbstractEntityProperty<T> 
     }
 
     protected List<AbstractProperty<T, ?, ?>> getAllColumns() {
-        return ListHelper.appendAll(partitionKeys,
+        return CollectionsHelper.appendAll(partitionKeys,
                 clusteringColumns, normalColumns);
     }
 
     protected List<AbstractProperty<T, ?, ?>> getAllColumnsWithComputed() {
-        return ListHelper.appendAll(partitionKeys,
+        return CollectionsHelper.appendAll(partitionKeys,
                 clusteringColumns, normalColumns, computedColumns);
     }
 

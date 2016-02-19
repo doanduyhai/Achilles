@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.sample_classes.config;
+package info.archinnov.achilles.internals.config;
 
-import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Map;
-
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.UDTValue;
 
 import info.archinnov.achilles.annotations.FunctionRegistry;
 
 @FunctionRegistry
-public interface TestFunctionRegistry {
+public interface MyFunctionRegistry {
 
-    int min(int val1, int val2);
+    /**
+     * This is a <strong>{@link info.archinnov.achilles.generated.function.SystemFunctions}</strong> class
+     */
+    long convertToLong(String longValue);
 
-    int sum(List<Integer> integers);
-
-    List<String> extractTuple(TupleValue tuple);
-
-    Map<String, ByteBuffer> extractUDT(UDTValue udtValue);
+    /**
+     *
+     * @param strings list of string
+     * @return string
+     */
+    String convertListToJson(List<String> strings);
 }

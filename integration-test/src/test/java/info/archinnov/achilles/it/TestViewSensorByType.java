@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.it;
 
-import static com.datastax.driver.core.ConsistencyLevel.*;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,8 +29,6 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 
 import info.archinnov.achilles.exception.AchillesException;

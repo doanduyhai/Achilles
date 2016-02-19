@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.sample_classes.config;
+package info.archinnov.achilles.internals.utils;
 
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.UDTValue;
+public class CollectionsHelper {
 
-import info.archinnov.achilles.annotations.FunctionRegistry;
+    public static <T> List<T> appendAll(List<T>... lists) {
+        final List<T> newList = new ArrayList<>();
+        Arrays.asList(lists).forEach(newList::addAll);
+        return newList;
+    }
 
-@FunctionRegistry
-public interface TestFunctionRegistry {
-
-    int min(int val1, int val2);
-
-    int sum(List<Integer> integers);
-
-    List<String> extractTuple(TupleValue tuple);
-
-    Map<String, ByteBuffer> extractUDT(UDTValue udtValue);
+    public static <T> Set<T> appendAll(Set<T> ... sets) {
+        final Set<T> newSet = new HashSet<>();
+        Arrays.asList(sets).forEach(newSet::addAll);
+        return newSet;
+    }
 }

@@ -14,25 +14,27 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.sample_classes.config;
+package info.archinnov.achilles.generated.function;
 
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.UDTValue;
+public abstract class AbstractCQLCompatibleType<T> {
 
-import info.archinnov.achilles.annotations.FunctionRegistry;
+    protected Optional<T> value = Optional.empty();
 
-@FunctionRegistry
-public interface TestFunctionRegistry {
+    protected AbstractCQLCompatibleType() {
+    }
 
-    int min(int val1, int val2);
 
-    int sum(List<Integer> integers);
+    protected String cqlColumn() {
+        throw new IllegalStateException("You're calling getValue() whereas no value has been set. To set a literal value, please call wrap() method first");
+    }
 
-    List<String> extractTuple(TupleValue tuple);
+    public boolean hasLiteralValue() {
+        return value.isPresent();
+    }
 
-    Map<String, ByteBuffer> extractUDT(UDTValue udtValue);
+    public Object getValue() {
+        return value.isPresent() ? value.get() : cqlColumn();
+    }
 }

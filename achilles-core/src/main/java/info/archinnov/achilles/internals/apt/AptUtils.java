@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.*;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -33,7 +32,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
-import org.eclipse.jdt.internal.compiler.apt.model.DeclaredTypeImpl;
 import org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl;
 import org.eclipse.jdt.internal.compiler.apt.model.VariableElementImpl;
 
@@ -46,7 +44,6 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacElements;
 
-import info.archinnov.achilles.annotations.Codec;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesException;
@@ -313,16 +310,16 @@ public class AptUtils {
         return varElm instanceof Symbol.VarSymbol;
     }
 
-    public static boolean isJavaCompiler(TypeElement varElm) {
-        return varElm instanceof Symbol.ClassSymbol;
+    public static boolean isJavaCompiler(TypeElement typeElm) {
+        return typeElm instanceof Symbol.ClassSymbol;
     }
 
     public static boolean isEclipseCompiler(VariableElement varElm) {
         return varElm instanceof VariableElementImpl;
     }
 
-    public static boolean isEclipseCompiler(TypeElement varElm) {
-        return varElm instanceof TypeElementImpl;
+    public static boolean isEclipseCompiler(TypeElement typeElm) {
+        return typeElm instanceof TypeElementImpl;
     }
 
     /**

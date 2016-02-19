@@ -33,6 +33,7 @@ import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
+import info.archinnov.achilles.internals.utils.TypeNameHelper;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public class SelectDSLCodeGen extends AbstractDSLCodeGen {
@@ -71,6 +72,7 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .filter(x -> x.context.columnType == ColumnType.COMPUTED)
                 .forEach(x -> selectClassBuilder.addMethod(buildSelectComputedColumnMethod(selectColumnsTypeName, x, "select", NEW)));
 
+        selectClassBuilder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypeName, "select", NEW));
 
         selectClassBuilder.addMethod(buildAllColumns(selectFromTypeName, SELECT_WHERE, "select"));
         selectClassBuilder.addMethod(buildAllColumnsWithSchemaProvider(selectFromTypeName, SELECT_WHERE, "select"));
@@ -120,6 +122,8 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .filter(x -> x.context.columnType == ColumnType.COMPUTED)
                 .forEach(x -> builder.addMethod(buildSelectComputedColumnMethod(selectColumnsTypeName, x, "selection", THIS)));
 
+        builder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypeName, "selection", THIS));
+
         builder.addMethod(buildFrom(selectFromTypeName, SELECT_WHERE, "selection"));
         builder.addMethod(buildFromWithSchemaProvider(selectFromTypeName, SELECT_WHERE, "selection"));
 
@@ -160,6 +164,79 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("$L.column($S)", fieldName, parsingResult.context.cqlColumn)
                 .returns(newTypeName);
+
+        if (returnType == NEW) {
+            return builder.addStatement("return new $T(select)", newTypeName).build();
+        } else {
+            return builder.addStatement("return this").build();
+        }
+    }
+
+    private static MethodSpec buildSelectFunctionCallMethod(TypeName newTypeName, String fieldName, ReturnType returnType) {
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("function")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .returns(newTypeName)
+                .addJavadoc("Use this method to call a system or user-defined function.")
+                .addJavadoc("<br/>")
+                .addJavadoc("All the system functions are accessible from the <strong>{@link info.archinnov.achilles.generated.function.SystemFunctions}</strong> class")
+                .addJavadoc("<br/>")
+                .addJavadoc("All the user-defined functions and aggregates are accessible from the <strong>{@link info.archinnov.achilles.generated.function.FunctionsRegistry}</strong> class")
+                .addJavadoc("<br/>")
+                .addJavadoc("System and user-defined functions accept only appropriate type. To pass in an entity field as function argument, use ")
+                .addJavadoc("the generated <strong>manager.COLUMNS</strong> class which exposes all columns with their appropriate type")
+                .addJavadoc("<br/>")
+                .addJavadoc("Example: ")
+                .addJavadoc("<pre class=\"code\"><code class=\"java\">")
+                .addJavadoc("\n")
+                .addJavadoc("  {@literal @}Table\n")
+                .addJavadoc("  public class MyEntity {\n")
+                .addJavadoc("\n")
+                .addJavadoc("      ...\n")
+                .addJavadoc("\n")
+                .addJavadoc("      {@literal @}Column(\"value_column\")\n")
+                .addJavadoc("      private String value;\n")
+                .addJavadoc("\n")
+                .addJavadoc("      {@literal @}Column(\"list_of_string\")\n")
+                .addJavadoc("      private List<String> strings;\n")
+                .addJavadoc("\n")
+                .addJavadoc("      ...\n")
+                .addJavadoc("\n")
+                .addJavadoc("  }\n")
+                .addJavadoc("\n")
+                .addJavadoc("  {@literal @}FunctionsRegistry\n")
+                .addJavadoc("  public interface MyFunctions {\n")
+                .addJavadoc("\n")
+                .addJavadoc("       String convertListToJson(List<String> strings);\n")
+                .addJavadoc("\n")
+                .addJavadoc("  }\n")
+                .addJavadoc("\n")
+                .addJavadoc("\n")
+                .addJavadoc("  ...\n")
+                .addJavadoc("\n")
+                .addJavadoc("\n")
+                .addJavadoc("  manager\n")
+                .addJavadoc("     .dsl()\n")
+                .addJavadoc("     .select()\n")
+                .addJavadoc("     // This call will generate SELECT cast(writetime(value_column) as text) AS writetimeOfValueAsString, ...\n")
+                .addJavadoc("     .function(SystemFunctions.castAsText(SystemFunctions.writetime(manager.COLUMNS.VALUE)), \"writetimeOfValueAsString\")\n")
+                .addJavadoc("     ...\n")
+                .addJavadoc("\n")
+                .addJavadoc("  manager \n")
+                .addJavadoc("     .dsl()\n")
+                .addJavadoc("     .select()\n")
+                .addJavadoc("     // This call will generate SELECT convertlisttojson(list_of_string) AS strings_as_json, ...\n")
+                .addJavadoc("     .function(FunctionsRegistry.convertListToJson(manager.COLUMNS.STRINGS), \"strings_as_json\")\n")
+                .addJavadoc("     ...\n")
+                .addJavadoc("\n")
+                .addJavadoc("</code></pre>\n")
+                .addJavadoc("<br/>")
+                .addJavadoc("\n")
+                .addJavadoc("@param functionCall the function call object \n")
+                .addJavadoc("@param alias mandatory alias for this function call for easier retrieval from the ResultSet \n")
+                .addJavadoc("@return a built-in function call passed to the QueryBuilder object \n")
+                .addParameter(FUNCTION_CALL, "functionCall", Modifier.FINAL)
+                .addParameter(STRING, "alias", Modifier.FINAL)
+                .addStatement("functionCall.addToSelect($L, alias)", fieldName);
 
         if (returnType == NEW) {
             return builder.addStatement("return new $T(select)", newTypeName).build();

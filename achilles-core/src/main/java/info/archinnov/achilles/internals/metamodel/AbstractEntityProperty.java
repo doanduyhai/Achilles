@@ -44,7 +44,7 @@ import info.archinnov.achilles.internals.schema.SchemaCreator;
 import info.archinnov.achilles.internals.statements.BoundValuesWrapper;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.types.OverridingOptional;
-import info.archinnov.achilles.internals.utils.ListHelper;
+import info.archinnov.achilles.internals.utils.CollectionsHelper;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
@@ -282,12 +282,12 @@ public abstract class AbstractEntityProperty<T> implements
     }
 
     protected List<AbstractProperty<T, ?, ?>> getAllColumns() {
-        return ListHelper.appendAll(partitionKeys, staticColumns,
+        return CollectionsHelper.appendAll(partitionKeys, staticColumns,
                 clusteringColumns, normalColumns, counterColumns);
     }
 
     protected List<AbstractProperty<T, ?, ?>> getAllColumnsWithComputed() {
-        return ListHelper.appendAll(partitionKeys, staticColumns,
+        return CollectionsHelper.appendAll(partitionKeys, staticColumns,
                 clusteringColumns, normalColumns, counterColumns, computedColumns);
     }
 

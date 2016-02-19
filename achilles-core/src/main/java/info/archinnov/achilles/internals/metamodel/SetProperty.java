@@ -55,14 +55,8 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
 
     public SetProperty(FieldInfo<ENTITY, Set<VALUEFROM>> fieldInfo, boolean frozen, boolean emptyCollectionIfNull, Class<?> valueToClass, AbstractProperty<ENTITY, VALUEFROM, VALUETO> valueProperty) {
         super(
-                new TypeToken<Set<VALUEFROM>>() {
-                }
-                        .where(new TypeParameter<VALUEFROM>() {
-                        }, valueProperty.valueFromTypeToken),
-                new TypeToken<Set<VALUETO>>() {
-                }
-                        .where(new TypeParameter<VALUETO>() {
-                        }, valueProperty.valueToTypeToken),
+                new TypeToken<Set<VALUEFROM>>() {}.where(new TypeParameter<VALUEFROM>() {}, valueProperty.valueFromTypeToken),
+                new TypeToken<Set<VALUETO>>() {}.where(new TypeParameter<VALUETO>() {}, valueProperty.valueToTypeToken),
                 fieldInfo);
 
         this.frozen = frozen;

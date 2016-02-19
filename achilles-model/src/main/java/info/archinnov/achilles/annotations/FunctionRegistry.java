@@ -20,64 +20,54 @@ import java.lang.annotation.*;
 
 /**
  *
- * Marker annotation to be used on configuration class
- * for compile-time code generation. The type (class,
- * abstract class or interface) having this
- * annotation will expose a list of codecs to be used by
- * Achilles during source code parsing.
- * <br/>
- * Usage:
- * <br/>
+ * Marks a class as a function registry and let Achilles manage it
  * <pre class="code"><code class="java">
+ * <strong>{@literal @}FunctionRegistry</strong>
+ * public interface MyFunctions {
  *
- * public class MyOwnType {...}
- * <strong>{@literal @}CodecRegistry</strong>
- * public [class | abstract class | interface] MyCodecRegistry {
+ *      int sumOf(int val1, int val2);
  *
- *      //Source type = int, target type = String (according to IntToStringCodec codec)
- *      {@literal @}Codec(IntToStringCodec.class)
- *      private int intToString;
- *
- *      //Source type = MyOwnType, target type = String (according to MyOwnTypeToStringCodec codec)
- *      {@literal @}Codec(MyOwnTypeToStringCodec.class)
- *      private MyOwnType myOwnTypeToString;
- *
- *      //Source type = AnotherBean, target type = String (because of {@literal @}JSON)
- *      {@literal @}JSON
- *      private AnotherBean beanToJSON;
- *
- *      //Source type = MyEnum, target type = int (because of Encoding.ORDINAL)
- *      {@literal @}Enumerated(Encoding.ORDINAL)
- *      private MyEnum enumToOrdinal;
+ *      long toLong(Date javaDate);
  * }
  * </code></pre>
  * <br/>
- *
- * <em>Note: it is possible to declare several codec registries in your source code,
- * just annotate them with {@literal @}CodecRegistry</em>
+ * <em>Note: it is possible to declare several function registries in your source code,
+ * just annotate them with {@literal @}FunctionRegistry</em>
  * <br/><br/>
- * <strong>Warning: it is not possible to declare 2 different codecs for the same source type
- * for all registered codec registries.
+ * <strong>Warning: it is not possible to declare 2 different functions with the same name and signature in the same keyspace
  * Achilles will raise a compilation error when encountering such case.</strong> Ex:
  * <br/>
  * <br/>
  * <pre class="code"><code class="java">
- * <strong>{@literal @}CodecRegistry</strong>
- * public class MyCodecRegistry {
+ * <strong>{@literal @}FunctionRegistry</strong>
+ * public interface MyFunctionRegistry {
  *
- *      {@literal @}Codec(MyOwnTypeToStringCodec.class)
- *      private MyOwnType myOwnTypeToString;
  *
- *      <strong>// ERROR, not possible to have a 2nd codec for the same source type MyOwnType</strong>
- *      {@literal @}Codec(MyOwnTypeToBytesCodec.class)
- *      private MyOwnType myOwnTypeToBytes;
+ *      String toString(long value);
+ *
+ *      String toString(int value); // OK because parameter type is different
+ *
+ *      String toString(long value); // KO because same signature as the first function
  * }
  * </code></pre>
  *
- * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Codec-System#codec-registry" target="_blank">Codec Registry</a>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Functions-And_Aggregates#function-registry" target="_blank">Function Registry</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Documented
 public @interface FunctionRegistry {
+
+
+    /**
+     * (<strong>Optional</strong>) The name of the keyspace in which the declared functions belong to.
+     * If not set explicitly, <strong>Achilles</strong> will use the current
+     * keyspace of the java driver <em>Session</em> object.
+     * <br/>
+     * <pre class="code"><code class="java">
+     * <strong>{@literal @}FunctionRegistry(keyspace="production")</strong>
+     * public class MyFunctions {...}
+     * </code></pre>
+     */
+    String keyspace() default "";
 }

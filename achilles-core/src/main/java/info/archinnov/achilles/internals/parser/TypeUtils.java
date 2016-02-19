@@ -16,6 +16,9 @@
 
 package info.archinnov.achilles.internals.parser;
 
+import static com.squareup.javapoet.TypeName.OBJECT;
+import static java.lang.String.format;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -43,6 +46,8 @@ import info.archinnov.achilles.internals.codec.*;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.metamodel.*;
 import info.archinnov.achilles.internals.metamodel.columns.*;
+import info.archinnov.achilles.generated.function.AbstractCQLCompatibleType;
+import info.archinnov.achilles.internals.metamodel.functions.FunctionCall;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.options.Options;
@@ -61,6 +66,7 @@ import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.types.ConfigMap;
 import info.archinnov.achilles.internals.types.RuntimeCodecWrapper;
+import info.archinnov.achilles.internals.utils.TypeNameHelper;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.tuples.*;
@@ -98,14 +104,20 @@ public class TypeUtils {
     public static final String CRUD_SUFFIX = "_CRUD";
     public static final String DSL_SUFFIX = "_DSL";
     public static final String QUERY_SUFFIX = "_QUERY";
+    public static final String FUNCTION_TYPE_SUFFIX = "_Type";
     public static final String GENERATED_PACKAGE = "info.archinnov.achilles.generated";
     public static final String ENTITY_META_PACKAGE = "info.archinnov.achilles.generated.meta.entity";
     public static final String UDT_META_PACKAGE = "info.archinnov.achilles.generated.meta.udt";
     public static final String MANAGER_PACKAGE = "info.archinnov.achilles.generated.manager";
     public static final String PROXY_PACKAGE = "info.archinnov.achilles.generated.proxy";
+    public static final String FUNCTION_PACKAGE = "info.archinnov.achilles.generated.function";
     public static final String DSL_PACKAGE = "info.archinnov.achilles.generated.dsl";
     public static final String MANAGER_FACTORY_BUILDER_CLASS = "ManagerFactoryBuilder";
     public static final String MANAGER_FACTORY_CLASS = "ManagerFactory";
+    public static final String FUNCTIONS_REGISTRY_CLASS = "FunctionsRegistry";
+    public static final String SYSTEM_FUNCTIONS_CLASS = "SystemFunctions";
+    public static final String COLUMNS_FOR_FUNCTIONS_CLASS = "ColumnsForFunctions";
+
 
     // Codecs
     public static final ClassName JSON_CODEC = ClassName.get(JSONCodec.class);
@@ -197,6 +209,10 @@ public class TypeUtils {
     public static final ClassName DELETE_WITH_OPTIONS = ClassName.get(DeleteWithOptions.class);
     public static final ClassName DELETE_BY_PARTITION_WITH_OPTIONS = ClassName.get(DeleteByPartitionWithOptions.class);
 
+    // UDF & UDA
+    public static final ClassName ABSTRACT_CQL_COMPATIBLE_TYPE = ClassName.get(AbstractCQLCompatibleType.class);
+    public static final ClassName FUNCTION_CALL = ClassName.get(FunctionCall.class);
+
     // Common
     public static final TypeName WILDCARD = WildcardTypeName.subtypeOf(TypeName.OBJECT);
     public static final ClassName OPTIONAL = ClassName.get(Optional.class);
@@ -207,6 +223,7 @@ public class TypeUtils {
     public static final ClassName COLLECTORS = ClassName.get(Collectors.class);
     public static final ClassName SETS = ClassName.get(Sets.class);
     public static final TypeName LIST_OBJECT = ParameterizedTypeName.get(ClassName.get(List.class), TypeName.OBJECT);
+    public static final TypeName OVERRIDE_ANNOTATION = ClassName.get(Override.class);
 
     // Jackson types
     public static final ClassName SIMPLE_TYPE = ClassName.get(SimpleType.class);
@@ -218,11 +235,39 @@ public class TypeUtils {
     public static final ClassName LIST = ClassName.get(List.class);
     public static final ClassName SET = ClassName.get(Set.class);
     public static final ClassName MAP = ClassName.get(Map.class);
+
+    public static final TypeName NATIVE_BYTE_ARRAY = TypeName.get(byte[].class);
+    public static final TypeName OBJECT_BYTE_ARRAY = TypeName.get(Byte[].class);
     public static final TypeName BYTE_BUFFER = ClassName.get(ByteBuffer.class);
     public static final TypeName STRING = ClassName.get(String.class);
+    public static final TypeName DOUBLE_ARRAY = TypeName.get(double[].class);
+    public static final TypeName FLOAT_ARRAY = TypeName.get(float[].class);
+    public static final TypeName INT_ARRAY = TypeName.get(int[].class);
+    public static final TypeName LONG_ARRAY = TypeName.get(long[].class);
+    public static final TypeName NATIVE_BOOLEAN = TypeName.get(boolean.class);
+    public static final TypeName OBJECT_BOOLEAN = ClassName.get(Boolean.class);
+    public static final TypeName NATIVE_BYTE = TypeName.get(byte.class);
+    public static final TypeName OBJECT_BYTE = ClassName.get(Byte.class);
+    public static final TypeName NATIVE_SHORT = TypeName.get(short.class);
+    public static final TypeName OBJECT_SHORT = ClassName.get(Short.class);
+    public static final TypeName NATIVE_INT = TypeName.get(int.class);
     public static final TypeName OBJECT_INT = ClassName.get(Integer.class);
-
+    public static final TypeName BIG_INT = ClassName.get(BigInteger.class);
+    public static final TypeName NATIVE_LONG = TypeName.get(long.class);
+    public static final TypeName OBJECT_LONG = ClassName.get(Long.class);
+    public static final TypeName NATIVE_DOUBLE = TypeName.get(double.class);
+    public static final TypeName OBJECT_DOUBLE = ClassName.get(Double.class);
+    public static final TypeName NATIVE_FLOAT = TypeName.get(float.class);
+    public static final TypeName OBJECT_FLOAT = ClassName.get(Float.class);
+    public static final TypeName BIG_DECIMAL = ClassName.get(BigDecimal.class);
+    public static final TypeName INET_ADDRESS = ClassName.get(InetAddress.class);
     public static final TypeName UUID = ClassName.get(UUID.class);
+    public static final TypeName JAVA_DRIVER_LOCAL_DATE = ClassName.get(LocalDate.class);
+    public static final TypeName JAVA_UTIL_DATE = ClassName.get(Date.class);
+    public static final TypeName JAVA_TIME_INSTANT = ClassName.get(java.time.Instant.class);
+    public static final TypeName JAVA_TIME_LOCAL_DATE = ClassName.get(java.time.LocalDate.class);
+    public static final TypeName JAVA_TIME_LOCAL_TIME = ClassName.get(java.time.LocalTime.class);
+    public static final TypeName JAVA_TIME_ZONED_DATE_TME = ClassName.get(java.time.ZonedDateTime.class);
     public static final TypeName TUPLE_TYPE = ClassName.get(TupleType.class);
 
     // Java Driver types
@@ -239,6 +284,8 @@ public class TypeUtils {
     public static final ClassName TYPE_TOKEN = ClassName.get(TypeToken.class);
 
     public static final List<TypeName> ALLOWED_TYPES = new ArrayList<>();
+    public static final Set<TypeName> NATIVE_TYPES = new HashSet<>();
+    public static final Map<TypeName, TypeName> NATIVE_TYPES_MAPPING = new HashMap<>();
     public static final Map<TypeName, String> DRIVER_TYPES_MAPPING = new HashMap<>();
 
     // Java 8 Types
@@ -246,97 +293,119 @@ public class TypeUtils {
 
     static {
         // Bytes
-        ALLOWED_TYPES.add(TypeName.get(byte.class));
-        ALLOWED_TYPES.add(TypeName.get(Byte.class));
-        ALLOWED_TYPES.add(TypeName.get(byte[].class));
-        ALLOWED_TYPES.add(TypeName.get(Byte[].class));
-        ALLOWED_TYPES.add(TypeName.get(ByteBuffer.class));
-        ALLOWED_TYPES.add(TypeName.get(double[].class));
-        ALLOWED_TYPES.add(TypeName.get(float[].class));
-        ALLOWED_TYPES.add(TypeName.get(int[].class));
-        ALLOWED_TYPES.add(TypeName.get(long[].class));
+        ALLOWED_TYPES.add(NATIVE_BYTE);
+        ALLOWED_TYPES.add(OBJECT_BYTE);
+        ALLOWED_TYPES.add(NATIVE_BYTE_ARRAY);
+        ALLOWED_TYPES.add(OBJECT_BYTE_ARRAY);
+        ALLOWED_TYPES.add(BYTE_BUFFER);
+        ALLOWED_TYPES.add(DOUBLE_ARRAY);
+        ALLOWED_TYPES.add(FLOAT_ARRAY);
+        ALLOWED_TYPES.add(INT_ARRAY);
+        ALLOWED_TYPES.add(LONG_ARRAY);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(byte.class), "tinyint()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(Byte.class), "tinyint()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(byte[].class), "blob()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(Byte[].class), "blob()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(ByteBuffer.class), "blob()");
+        NATIVE_TYPES.add(OBJECT_BYTE);
+        NATIVE_TYPES.add(BYTE_BUFFER);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(double[].class), "frozenList(DataType.cdouble())");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(float[].class), "frozenList(DataType.cfloat())");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(int[].class), "frozenList(DataType.cint())");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(long[].class), "frozenList(DataType.bigint())");
+        DRIVER_TYPES_MAPPING.put(NATIVE_BYTE, "tinyint()");
+        DRIVER_TYPES_MAPPING.put(OBJECT_BYTE, "tinyint()");
+        DRIVER_TYPES_MAPPING.put(NATIVE_BYTE_ARRAY, "blob()");
+        DRIVER_TYPES_MAPPING.put(OBJECT_BYTE_ARRAY, "blob()");
+        DRIVER_TYPES_MAPPING.put(BYTE_BUFFER, "blob()");
+
+        DRIVER_TYPES_MAPPING.put(DOUBLE_ARRAY, "frozenList(DataType.cdouble())");
+        DRIVER_TYPES_MAPPING.put(FLOAT_ARRAY, "frozenList(DataType.cfloat())");
+        DRIVER_TYPES_MAPPING.put(INT_ARRAY, "frozenList(DataType.cint())");
+        DRIVER_TYPES_MAPPING.put(LONG_ARRAY, "frozenList(DataType.bigint())");
+
+        NATIVE_TYPES_MAPPING.put(DOUBLE_ARRAY, genericType(LIST, OBJECT_DOUBLE));
+        NATIVE_TYPES_MAPPING.put(FLOAT_ARRAY, genericType(LIST, OBJECT_FLOAT));
+        NATIVE_TYPES_MAPPING.put(INT_ARRAY, genericType(LIST, OBJECT_INT));
+        NATIVE_TYPES_MAPPING.put(LONG_ARRAY, genericType(LIST, OBJECT_LONG));
 
         // Boolean
-        ALLOWED_TYPES.add(TypeName.get(boolean.class));
-        ALLOWED_TYPES.add(TypeName.get(Boolean.class));
+        ALLOWED_TYPES.add(NATIVE_BOOLEAN);
+        ALLOWED_TYPES.add(OBJECT_BOOLEAN);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(boolean.class), "cboolean()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(Boolean.class), "cboolean()");
+        NATIVE_TYPES.add(OBJECT_BOOLEAN);
+
+        DRIVER_TYPES_MAPPING.put(NATIVE_BOOLEAN, "cboolean()");
+        DRIVER_TYPES_MAPPING.put(OBJECT_BOOLEAN, "cboolean()");
 
         // Datetime
-        ALLOWED_TYPES.add(TypeName.get(Date.class));
+        ALLOWED_TYPES.add(JAVA_UTIL_DATE);
+        NATIVE_TYPES.add(JAVA_UTIL_DATE);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(Date.class), "timestamp()");
+        DRIVER_TYPES_MAPPING.put(JAVA_UTIL_DATE, "timestamp()");
 
         // Date
-        ALLOWED_TYPES.add(TypeName.get(LocalDate.class));
+        ALLOWED_TYPES.add(JAVA_DRIVER_LOCAL_DATE);
+        NATIVE_TYPES.add(JAVA_DRIVER_LOCAL_DATE);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(LocalDate.class), "date()");
+        DRIVER_TYPES_MAPPING.put(JAVA_DRIVER_LOCAL_DATE, "date()");
 
         //Short
-        ALLOWED_TYPES.add(TypeName.get(short.class));
-        ALLOWED_TYPES.add(TypeName.get(Short.class));
+        ALLOWED_TYPES.add(NATIVE_SHORT);
+        ALLOWED_TYPES.add(OBJECT_SHORT);
+        NATIVE_TYPES.add(OBJECT_SHORT);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(short.class), "smallint()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(Short.class), "smallint()");
+        DRIVER_TYPES_MAPPING.put(NATIVE_SHORT, "smallint()");
+        DRIVER_TYPES_MAPPING.put(OBJECT_SHORT, "smallint()");
 
         // Double
-        ALLOWED_TYPES.add(TypeName.get(double.class));
-        ALLOWED_TYPES.add(TypeName.get(Double.class));
+        ALLOWED_TYPES.add(NATIVE_DOUBLE);
+        ALLOWED_TYPES.add(OBJECT_DOUBLE);
+        NATIVE_TYPES.add(OBJECT_DOUBLE);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(double.class), "cdouble()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(Double.class), "cdouble()");
+        DRIVER_TYPES_MAPPING.put(NATIVE_DOUBLE, "cdouble()");
+        DRIVER_TYPES_MAPPING.put(OBJECT_DOUBLE, "cdouble()");
 
         // Float
-        ALLOWED_TYPES.add(TypeName.get(BigDecimal.class));
-        ALLOWED_TYPES.add(TypeName.get(float.class));
-        ALLOWED_TYPES.add(TypeName.get(Float.class));
+        ALLOWED_TYPES.add(BIG_DECIMAL);
+        ALLOWED_TYPES.add(NATIVE_FLOAT);
+        ALLOWED_TYPES.add(OBJECT_FLOAT);
+        NATIVE_TYPES.add(BIG_DECIMAL);
+        NATIVE_TYPES.add(OBJECT_FLOAT);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(BigDecimal.class), "decimal()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(float.class), "cfloat()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(Float.class), "cfloat()");
+        DRIVER_TYPES_MAPPING.put(BIG_DECIMAL, "decimal()");
+        DRIVER_TYPES_MAPPING.put(NATIVE_FLOAT, "cfloat()");
+        DRIVER_TYPES_MAPPING.put(OBJECT_FLOAT, "cfloat()");
 
         // InetAddress
-        ALLOWED_TYPES.add(TypeName.get(InetAddress.class));
+        ALLOWED_TYPES.add(INET_ADDRESS);
+        NATIVE_TYPES.add(INET_ADDRESS);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(InetAddress.class), "inet()");
+        DRIVER_TYPES_MAPPING.put(INET_ADDRESS, "inet()");
 
         // Integer
-        ALLOWED_TYPES.add(TypeName.get(int.class));
-        ALLOWED_TYPES.add(TypeName.get(Integer.class));
-        ALLOWED_TYPES.add(TypeName.get(BigInteger.class));
+        ALLOWED_TYPES.add(NATIVE_INT);
+        ALLOWED_TYPES.add(OBJECT_INT);
+        ALLOWED_TYPES.add(BIG_INT);
+        NATIVE_TYPES.add(OBJECT_INT);
+        NATIVE_TYPES.add(BIG_INT);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(int.class), "cint()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(Integer.class), "cint()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(BigInteger.class), "varint()");
+        DRIVER_TYPES_MAPPING.put(NATIVE_INT, "cint()");
+        DRIVER_TYPES_MAPPING.put(OBJECT_INT, "cint()");
+        DRIVER_TYPES_MAPPING.put(BIG_INT, "varint()");
 
         // Long
-        ALLOWED_TYPES.add(TypeName.get(long.class));
-        ALLOWED_TYPES.add(TypeName.get(Long.class));
+        ALLOWED_TYPES.add(NATIVE_LONG);
+        ALLOWED_TYPES.add(OBJECT_LONG);
+        NATIVE_TYPES.add(OBJECT_LONG);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(long.class), "bigint()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(Long.class), "bigint()");
+        DRIVER_TYPES_MAPPING.put(NATIVE_LONG, "bigint()");
+        DRIVER_TYPES_MAPPING.put(OBJECT_LONG, "bigint()");
 
         // String
-        ALLOWED_TYPES.add(TypeName.get(String.class));
+        ALLOWED_TYPES.add(STRING);
+        NATIVE_TYPES.add(STRING);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(String.class), "text()");
+        DRIVER_TYPES_MAPPING.put(STRING, "text()");
 
         // UUID
-        ALLOWED_TYPES.add(TypeName.get(UUID.class));
+        ALLOWED_TYPES.add(UUID);
+        NATIVE_TYPES.add(UUID);
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(UUID.class), "uuid()");
+        DRIVER_TYPES_MAPPING.put(UUID, "uuid()");
 
         // Tuples
         ALLOWED_TYPES.add(TypeName.get(Tuple1.class));
@@ -352,34 +421,44 @@ public class TypeUtils {
 
 
         // Collections
-        ALLOWED_TYPES.add(TypeName.get(List.class));
-        ALLOWED_TYPES.add(TypeName.get(Set.class));
-        ALLOWED_TYPES.add(TypeName.get(Map.class));
+        ALLOWED_TYPES.add(LIST);
+        ALLOWED_TYPES.add(SET);
+        ALLOWED_TYPES.add(MAP);
+        NATIVE_TYPES.add(LIST);
+        NATIVE_TYPES.add(SET);
+        NATIVE_TYPES.add(MAP);
 
         // Driver tuple
-        ALLOWED_TYPES.add(TypeName.get(TupleValue.class));
+        ALLOWED_TYPES.add(JAVA_DRIVER_TUPLE_VALUE_TYPE);
+        NATIVE_TYPES.add(JAVA_DRIVER_TUPLE_VALUE_TYPE);
 
         // Drive UDTValue
-        ALLOWED_TYPES.add(TypeName.get(UDTValue.class));
+        ALLOWED_TYPES.add(JAVA_DRIVER_UDT_VALUE_TYPE);
+        NATIVE_TYPES.add(JAVA_DRIVER_UDT_VALUE_TYPE);
 
         //Java 8 types
-        ALLOWED_TYPES.add(TypeName.get(Instant.class));
-        ALLOWED_TYPES.add(TypeName.get(java.time.LocalDate.class));
-        ALLOWED_TYPES.add(TypeName.get(LocalTime.class));
-        ALLOWED_TYPES.add(TypeName.get(ZonedDateTime.class));
+        ALLOWED_TYPES.add(JAVA_TIME_INSTANT);
+        ALLOWED_TYPES.add(JAVA_TIME_LOCAL_DATE);
+        ALLOWED_TYPES.add(JAVA_TIME_LOCAL_TIME);
+        ALLOWED_TYPES.add(JAVA_TIME_ZONED_DATE_TME);
 
         // Optional
         ALLOWED_TYPES.add(TypeName.get(java.util.Optional.class));
 
 
-        DRIVER_TYPES_MAPPING.put(TypeName.get(Instant.class), "timestamp()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(java.time.LocalDate.class), "date()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(LocalTime.class), "time()");
-        DRIVER_TYPES_MAPPING.put(TypeName.get(ZonedDateTime.class),
+        DRIVER_TYPES_MAPPING.put(JAVA_TIME_INSTANT, "timestamp()");
+        DRIVER_TYPES_MAPPING.put(JAVA_TIME_LOCAL_DATE, "date()");
+        DRIVER_TYPES_MAPPING.put(JAVA_TIME_LOCAL_TIME, "time()");
+        DRIVER_TYPES_MAPPING.put(JAVA_TIME_ZONED_DATE_TME,
             "com.datastax.driver.core.TupleType.of(com.datastax.driver.core.ProtocolVersion.NEWEST_SUPPORTED, " +
                     "new com.datastax.driver.core.CodecRegistry(), " +
                     "com.datastax.driver.core.DataType.timestamp(), " +
                     "com.datastax.driver.core.DataType.varchar())");
+
+        NATIVE_TYPES_MAPPING.put(JAVA_TIME_INSTANT, JAVA_UTIL_DATE);
+        NATIVE_TYPES_MAPPING.put(JAVA_TIME_LOCAL_DATE, JAVA_DRIVER_LOCAL_DATE);
+        NATIVE_TYPES_MAPPING.put(JAVA_TIME_LOCAL_TIME, OBJECT_LONG);
+        NATIVE_TYPES_MAPPING.put(JAVA_TIME_ZONED_DATE_TME, JAVA_DRIVER_TUPLE_VALUE_TYPE);
     }
 
     public static String gettableDataGetter(TypeName typeName, String cqlColumn) {
@@ -396,6 +475,27 @@ public class TypeUtils {
             return CodeBlock.builder().add(dataType).build();
         } else {
             return CodeBlock.builder().add("$T.$L", DATATYPE, dataType).build();
+        }
+    }
+
+    public static String getNativeDataTypeFor(TypeName typeName) {
+        if (typeName.isPrimitive()) {
+            return getNativeDataTypeFor(typeName.box());
+        } else if (typeName instanceof ParameterizedTypeName) {
+            final ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) typeName;
+            final ClassName rawType = parameterizedTypeName.rawType;
+            if (rawType.equals(LIST)) {
+                return "list<" + getNativeDataTypeFor(parameterizedTypeName.typeArguments.get(0)) + ">";
+            } else if (rawType.equals(SET)) {
+                return "set<" + getNativeDataTypeFor(parameterizedTypeName.typeArguments.get(0)) + ">";
+            } else if (rawType.equals(MAP)) {
+                return "map<" + getNativeDataTypeFor(parameterizedTypeName.typeArguments.get(0))
+                        + "," + getNativeDataTypeFor(parameterizedTypeName.typeArguments.get(1)) + ">";
+            } else {
+                throw new IllegalStateException(format("Cannot map Java type '%s' to native Cassandra type", typeName));
+            }
+        } else {
+            return DRIVER_TYPES_MAPPING.get(typeName).replaceAll("\\(","").replaceAll("\\)","");
         }
     }
 
@@ -421,5 +521,32 @@ public class TypeUtils {
         } else {
             return typeName;
         }
+    }
+
+    public static TypeName mapToNativeCassandraType(TypeName typeName) {
+        if (typeName.isPrimitive()) {
+            return typeName.box();
+        } else if (typeName instanceof ParameterizedTypeName) {
+            final ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) typeName;
+            final ClassName rawType = parameterizedTypeName.rawType;
+            if (rawType.equals(LIST)) {
+                return genericType(LIST, mapToNativeCassandraType(parameterizedTypeName.typeArguments.get(0)));
+            } else if (rawType.equals(SET)) {
+                return genericType(SET, mapToNativeCassandraType(parameterizedTypeName.typeArguments.get(0)));
+            } else if (rawType.equals(MAP)) {
+                return genericType(MAP,
+                        mapToNativeCassandraType(parameterizedTypeName.typeArguments.get(0)),
+                        mapToNativeCassandraType(parameterizedTypeName.typeArguments.get(1)));
+            } else {
+                throw new IllegalStateException(format("Cannot map Java type '%s' to native Cassandra type", typeName));
+            }
+        } else {
+            return NATIVE_TYPES_MAPPING.containsKey(typeName) ? NATIVE_TYPES_MAPPING.get(typeName): typeName;
+        }
+
+    }
+
+    public static TypeName determineTypeForFunctionParam(TypeName typeName) {
+         return typeName.equals(OBJECT) ? typeName : ClassName.get(FUNCTION_PACKAGE, TypeNameHelper.asString(typeName) + FUNCTION_TYPE_SUFFIX);
     }
 }

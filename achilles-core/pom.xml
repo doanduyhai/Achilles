@@ -173,6 +173,7 @@
                                         <include>**/TestView*.java</include>
                                         <include>**/TestUDT*.java</include>
                                         <include>**/TestCodecRegistry*.java</include>
+                                        <include>**/TestFunctionRegistry*.java</include>
                                     </includes>
                                 </resource>
                             </resources>

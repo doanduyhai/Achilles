@@ -14,25 +14,14 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.sample_classes.config;
-
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
-
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.UDTValue;
+package info.archinnov.achilles.internals.sample_classes.functions;
 
 import info.archinnov.achilles.annotations.FunctionRegistry;
 
-@FunctionRegistry
-public interface TestFunctionRegistry {
+@FunctionRegistry(keyspace = "ks")
+public interface TestFunctionRegistryWithKeyspaceName {
 
-    int min(int val1, int val2);
+    long toLong(String val);
 
-    int sum(List<Integer> integers);
-
-    List<String> extractTuple(TupleValue tuple);
-
-    Map<String, ByteBuffer> extractUDT(UDTValue udtValue);
+    int toInt(String val);
 }

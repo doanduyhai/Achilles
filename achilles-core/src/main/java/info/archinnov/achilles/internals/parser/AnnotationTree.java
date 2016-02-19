@@ -640,4 +640,27 @@ public class AnnotationTree {
                 .map(x -> (TypeName)x)
                 .findFirst();
     }
+
+    public static Optional<String> findKeyspaceForFunctionRegistry(AptUtils aptUtils, TypeElement functionRegistry) {
+        if (isJavaCompiler(functionRegistry)) {
+            return functionRegistry.getAnnotationMirrors()
+                    .stream()
+                    .filter(x -> areSameByClass(x, FunctionRegistry.class))
+                    .findFirst()
+                    .map(annot -> aptUtils.getElementValue(annot, "keyspace", String.class, false));
+
+        } else if (AptUtils.isEclipseCompiler(functionRegistry)) {
+            return Arrays.asList(((TypeElementImpl) functionRegistry)._binding.getAnnotations())
+                    .stream()
+                    .filter(annotBinding -> FunctionRegistry.class.getCanonicalName().equals(annotBinding.getAnnotationType().debugName()))
+                    .flatMap(annot -> Arrays.asList(annot.getElementValuePairs()).stream())
+                    .filter(pair -> new String(pair.getName()).equals("keyspace"))
+                    .findFirst()
+                    .map(elementValuePair -> (StringConstant)elementValuePair.getValue())
+                    .map(stringConstant -> stringConstant.stringValue());
+        } else {
+            aptUtils.printError("Unknown compiler, only standard Java compiler and Eclipse ECJ compiler are supported");
+            return Optional.empty();
+        }
+    }
 }
