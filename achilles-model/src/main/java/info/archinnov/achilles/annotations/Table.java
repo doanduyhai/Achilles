@@ -36,7 +36,7 @@ public @interface Table {
 
     /**
      * (<strong>Optional</strong>) The name of the keyspace in which this table belongs to.
-     * If not set explicitely on the entity, <strong>Achilles</strong> will use the current
+     * If not set explicitly on the entity, <strong>Achilles</strong> will use the current
      * keyspace of the java driver <em>Session</em> object.
      * <br/>
      * <pre class="code"><code class="java">
