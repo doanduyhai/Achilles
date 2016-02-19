@@ -116,7 +116,7 @@ public interface StatementWrapper {
         if (actualLogger.isTraceEnabled()) {
             for (ExecutionInfo executionInfo : resultSet.getAllExecutionInfo()) {
 
-                trace.append(format("\n\nTracing for Query ID {%s} at host {%s} with achieved consistency level {} \n", queryId.toString(), executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel()));
+                trace.append(format("\n\nTracing for Query ID %s at host %s with achieved consistency level %s \n", queryId.toString(), executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel()));
                 trace.append("****************************\n");
                 trace.append(format("%1$-80s | %2$-16s | %3$-24s | %4$-20s\n", "Description", "Source", "Source elapsed in micros", "Thread name"));
                 try {
