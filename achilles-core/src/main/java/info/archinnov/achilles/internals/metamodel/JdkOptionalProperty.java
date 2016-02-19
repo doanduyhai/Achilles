@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
@@ -44,7 +45,8 @@ public class JdkOptionalProperty<ENTITY, FROM, TO> extends AbstractProperty<ENTI
     private final AbstractProperty<ENTITY, FROM, TO> aProperty;
 
     public JdkOptionalProperty(FieldInfo<ENTITY, Optional<FROM>> fieldInfo, AbstractProperty<ENTITY, FROM, TO> aProperty) {
-        super(new TypeToken<Optional<FROM>>() {}, aProperty.valueToTypeToken, fieldInfo);
+        super(new TypeToken<Optional<FROM>>() {}.where(new TypeParameter<FROM>() {}, aProperty.valueFromTypeToken),
+                aProperty.valueToTypeToken, fieldInfo);
         this.aProperty = aProperty;
     }
 
