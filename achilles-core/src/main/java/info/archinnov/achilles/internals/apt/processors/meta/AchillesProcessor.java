@@ -21,9 +21,12 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.parser.validator.BeanValidator.validateViewsAgainstBaseTable;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -41,11 +44,11 @@ import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Sets;
 import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.annotations.CodecRegistry;
-import info.archinnov.achilles.annotations.Table;
-import info.archinnov.achilles.annotations.MaterializedView;
+import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryBuilderCodeGen;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryCodeGen;
@@ -77,44 +80,16 @@ public class AchillesProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (!this.processed) {
-            final GlobalParsingContext parsingContext = parseCodecRegistry(annotations, roundEnv);
-
-            final List<TypeElement> tableTypes = annotations
-                    .stream()
-                    .filter(annotation -> isAnnotationOfType(annotation, Table.class))
-                    .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotation).stream())
-                    .map(MoreElements::asType)
-                    .collect(toList());
-
-            final List<TypeElement> viewTypes = annotations
-                    .stream()
-                    .filter(annotation -> isAnnotationOfType(annotation, MaterializedView.class))
-                    .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotation).stream())
-                    .map(MoreElements::asType)
-                    .collect(toList());
-
-            final List<TypeElement> types = ListHelper.appendAll(tableTypes, viewTypes);
-
-            validateEntityNames(types);
-
-            final List<EntityMetaSignature> tableSignatures = tableTypes
-                    .stream()
-                    .map(x -> entityParser.parseEntity(x, parsingContext))
-                    .collect(toList());
-
-            final List<EntityMetaSignature> viewSignatures = viewTypes
-                    .stream()
-                    .map(x -> entityParser.parseView(x, parsingContext))
-                    .collect(toList());
-
-            final List<EntityMetaSignature> tableAndViewSignatures = ListHelper.appendAll(tableSignatures, viewSignatures);
-
-            validateViewsAgainstBaseTable(aptUtils, viewSignatures, tableSignatures);
-
-            final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance();
-            final ManagersAndDSLClasses managersAndDSLClasses = ManagerFactoryCodeGen.buildInstance(aptUtils, tableAndViewSignatures, parsingContext);
 
             try {
+                final GlobalParsingContext parsingContext = parseCodecRegistry(annotations, roundEnv);
+
+                final List<EntityMetaSignature> tableAndViewSignatures = discoverAndValidateTablesAndViews(annotations, roundEnv, parsingContext);
+
+
+                final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance();
+                final ManagersAndDSLClasses managersAndDSLClasses = ManagerFactoryCodeGen.buildInstance(aptUtils, tableAndViewSignatures, parsingContext);
+
                 aptUtils.printNote("[Achilles] Reading previously generated source files (if exist)");
                 try {
                     final FileObject resource = aptUtils.filer.getResource(StandardLocation.SOURCE_OUTPUT, GENERATED_PACKAGE, MANAGER_FACTORY_BUILDER_CLASS);
@@ -157,15 +132,25 @@ public class AchillesProcessor extends AbstractProcessor {
                     JavaFile.builder(DSL_PACKAGE, dsl)
                             .build().writeTo(aptUtils.filer);
                 }
-            } catch (IllegalStateException e) {
+            }catch (AchillesException e) {
+                e.printStackTrace();
                 aptUtils.printError("Error while parsing: %s", e.getMessage(), e);
-                e.printStackTrace();
+            } catch (IllegalStateException e) {
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                aptUtils.printError("Error while parsing: %s", sw.toString(), e);
             } catch (IOException e) {
-                aptUtils.printError("Fail generating source file : %s", e.getMessage(), e);
-                e.printStackTrace();
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                aptUtils.printError("Fail generating source file : %s", sw.toString(), e);
+
             } catch (Throwable throwable) {
-                aptUtils.printError("Fail generating source file : %s", throwable.getMessage(), throwable);
-                throwable.printStackTrace();
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                throwable.printStackTrace(pw);
+                aptUtils.printError("Fail generating source file : %s", sw.toString(), throwable);
             } finally {
                 this.processed = true;
             }

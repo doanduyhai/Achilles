@@ -48,6 +48,8 @@ import com.sun.tools.javac.model.JavacElements;
 
 import info.archinnov.achilles.annotations.Codec;
 import info.archinnov.achilles.annotations.UDT;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
@@ -445,14 +447,14 @@ public class AptUtils {
     public void validateTrue(boolean condition, String message, Object... params) {
         if (!condition) {
             messager.printMessage(Diagnostic.Kind.ERROR, format(message, params));
-            throw new IllegalStateException(format(message, params));
+            throw new AchillesBeanMappingException(format(message, params));
         }
     }
 
     public void validateFalse(boolean condition, String message, Object... params) {
         if (condition) {
             messager.printMessage(Diagnostic.Kind.ERROR, format(message, params));
-            throw new IllegalStateException(format(message, params));
+            throw new AchillesBeanMappingException(format(message, params));
         }
     }
 
