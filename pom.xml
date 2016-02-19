@@ -136,6 +136,7 @@
 
         <clean.data.files>true</clean.data.files>
         <joda-time.version>2.9.1</joda-time.version>
+        <asm.version>5.0.4</asm.version>
     </properties>
 
     <modules>
@@ -233,6 +234,13 @@
                 <groupId>org.apache.cassandra</groupId>
                 <artifactId>cassandra-thrift</artifactId>
                 <version>${cassandra.version}</version>
+            </dependency>
+
+            <!--Bytecode verifier for UDF/UDA-->
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>${asm.version}</version>
             </dependency>
 
             <!-- Datastax Java driver -->
