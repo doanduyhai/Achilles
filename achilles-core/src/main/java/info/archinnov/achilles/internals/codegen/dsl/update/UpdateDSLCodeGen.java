@@ -32,7 +32,7 @@ import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
-import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
@@ -213,7 +213,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
     private static List<MethodSpec> buildUpdateColumnMethods(AptUtils aptUtils,
                                                              TypeName nextTypeName,
-                                                             TypeParsingResult parsingResult,
+                                                             FieldMetaSignature parsingResult,
                                                              ReturnType returnType) {
 
         final ColumnType columnType = parsingResult.context.columnType;
@@ -235,7 +235,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
     }
 
-    private static MethodSpec buildMethodForSimpleUpdate(TypeName newTypeName, TypeParsingResult parsingResult,
+    private static MethodSpec buildMethodForSimpleUpdate(TypeName newTypeName, FieldMetaSignature parsingResult,
                                                          ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String cqlColumn = parsingResult.context.cqlColumn;
@@ -262,7 +262,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
     }
 
     private static List<MethodSpec> buildMethodsForListUpdate(AptUtils aptUtils, TypeName newTypeName,
-                                                              TypeParsingResult parsingResult,
+                                                              FieldMetaSignature parsingResult,
                                                               ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String param = fieldName + "_element";
@@ -408,7 +408,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
     }
 
     private static List<MethodSpec> buildMethodsForSetUpdate(AptUtils aptUtils, TypeName newTypeName,
-                                                             TypeParsingResult parsingResult,
+                                                             FieldMetaSignature parsingResult,
                                                              ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String param = fieldName + "_element";
@@ -496,7 +496,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
     }
 
     private static List<MethodSpec> buildMethodsForMapUpdate(AptUtils aptUtils, TypeName newTypeName,
-                                                             TypeParsingResult parsingResult,
+                                                             FieldMetaSignature parsingResult,
                                                              ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String paramKey = fieldName + "_key";
@@ -576,7 +576,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
     }
 
     private static List<MethodSpec> buildMethodsForCounterUpdate(TypeName newTypeName,
-                                                                 TypeParsingResult parsingResult,
+                                                                 FieldMetaSignature parsingResult,
                                                                  ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String param = fieldName + "_increment";

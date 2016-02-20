@@ -33,7 +33,7 @@ import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
-import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
@@ -185,7 +185,7 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .build();
     }
 
-    private static MethodSpec buildDeleteColumnMethod(TypeName deleteTypeName, TypeParsingResult parsingResult, ReturnType returnType) {
+    private static MethodSpec buildDeleteColumnMethod(TypeName deleteTypeName, FieldMetaSignature parsingResult, ReturnType returnType) {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(parsingResult.context.fieldName)
                 .addJavadoc("Generate DELETE <strong>$L</strong> ...", parsingResult.context.cqlColumn)

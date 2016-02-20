@@ -58,7 +58,7 @@ public class FieldParser {
         this.udtParser = new UDTParser(aptUtils);
     }
 
-    public TypeParsingResult parse(VariableElement elm, EntityParsingContext entityContext) {
+    public FieldMetaSignature parse(VariableElement elm, EntityParsingContext entityContext) {
         final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
         final FieldInfoContext fieldInfoContext = fieldInfoParser.buildFieldInfo(elm, annotationTree, entityContext);
         final FieldParsingContext context = new FieldParsingContext(entityContext, getRawType(entityContext.entityType), fieldInfoContext);
@@ -71,7 +71,7 @@ public class FieldParser {
         return parseType(annotationTree, context, TypeName.get(elm.asType()));
     }
 
-    protected TypeParsingResult parseType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
+    protected FieldMetaSignature parseType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
         final TypeMirror currentTypeMirror = annotationTree.getCurrentType();
         final Map<Class<? extends Annotation>, TypedMap> annotationsInfo = annotationTree.getAnnotations();
         final List<? extends TypeMirror> typeArguments = AptUtils.getTypeArguments(currentTypeMirror);
@@ -119,7 +119,7 @@ public class FieldParser {
     }
 
 
-    private TypeParsingResult parseComputedType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
+    private FieldMetaSignature parseComputedType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
         final CodecInfo codecInfo = codecFactory.createCodec(sourceType, annotationTree, context, Optional.empty());
         final TypeName rawTargetType = getRawType(codecInfo.targetType);
         final TypedMap computed = extractTypedMap(annotationTree, Computed.class).get();
@@ -141,11 +141,11 @@ public class FieldParser {
 
         final ParameterizedTypeName propertyType = genericType(COMPUTED_PROPERTY, context.entityRawType, codecInfo.sourceType, codecInfo.targetType);
 
-        return new TypeParsingResult(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
+        return new FieldMetaSignature(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
                 sourceType, codecInfo.targetType, propertyType, typeCode);
     }
 
-    private TypeParsingResult parseSimpleType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
+    private FieldMetaSignature parseSimpleType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
         CodecInfo codecInfo = buildOrGetCodecFromRegistry(annotationTree, context, sourceType);
 
         final TypeName rawTargetType = getRawType(codecInfo.targetType);
@@ -187,33 +187,33 @@ public class FieldParser {
                 .build();
         final ParameterizedTypeName propertyType = genericType(SIMPLE_PROPERTY, context.entityRawType, codecInfo.sourceType.box(), codecInfo.targetType.box());
 
-        return new TypeParsingResult(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
+        return new FieldMetaSignature(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
                 sourceType, codecInfo.targetType, propertyType, typeCode);
     }
 
-    protected TypeParsingResult parseOptional(AnnotationTree annotationTree, FieldParsingContext context) {
+    protected FieldMetaSignature parseOptional(AnnotationTree annotationTree, FieldParsingContext context) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final TypeMirror typeMirror1 = AptUtils.getTypeArguments(annotationTree.getCurrentType()).get(0);
         final TypeName sourceType1 = TypeName.get(typeMirror1);
-        final TypeParsingResult parsingResult = parseType(annotationTree.next(), context.forOptionalType(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult = parseType(annotationTree.next(), context.forOptionalType(context.entityRawType, sourceType1), sourceType1);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L)",
                 JDK_OPTIONAL_PROPERTY,
                 context.fieldInfoCode,
                 parsingResult.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(JDK_OPTIONAL_PROPERTY, context.entityRawType, sourceType1, parsingResult.targetType);
-        return new TypeParsingResult(context, parsingResult.annotationTree, sourceType, parsingResult.targetType, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, parsingResult.targetType, propertyType, codeBlock);
     }
 
-    private TypeParsingResult parseMap(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
+    private FieldMetaSignature parseMap(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final boolean hasFrozen = containsAnnotation(annotationsInfo.keySet(), Frozen.class);
         final boolean hasEmptyCollectionIfNull = containsAnnotation(annotationsInfo.keySet(), EmptyCollectionIfNull.class);
         final TypeMirror keyTypeMirror = typeArguments.get(0);
         final TypeMirror valueTypeMirror = typeArguments.get(1);
         final TypeName sourceKeyType = TypeName.get(keyTypeMirror);
-        final TypeParsingResult keyParsingResult = this.parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceKeyType), sourceKeyType);
+        final FieldMetaSignature keyParsingResult = this.parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceKeyType), sourceKeyType);
         final TypeName sourceValueType = TypeName.get(valueTypeMirror);
-        final TypeParsingResult valueParsingResult = this.parseType(keyParsingResult.annotationTree, context.noLambda(context.entityRawType, sourceValueType), sourceValueType);
+        final FieldMetaSignature valueParsingResult = this.parseType(keyParsingResult.annotationTree, context.noLambda(context.entityRawType, sourceValueType), sourceValueType);
         final CodeBlock typeCode = CodeBlock.builder()
                 .add("new $T<$T, $T, $T, $T, $T>($L, $L, $L, $L, $L)",
                         MAP_PROPERTY,
@@ -229,16 +229,16 @@ public class FieldParser {
                         valueParsingResult.typeCode).build();
         final TypeName targetType = genericType(MAP, keyParsingResult.targetType, valueParsingResult.targetType);
         final ParameterizedTypeName propertyType = genericType(MAP_PROPERTY, context.entityRawType, sourceKeyType, keyParsingResult.targetType, sourceValueType, valueParsingResult.targetType);
-        return new TypeParsingResult(context, valueParsingResult.annotationTree, sourceType, targetType, propertyType, typeCode);
+        return new FieldMetaSignature(context, valueParsingResult.annotationTree, sourceType, targetType, propertyType, typeCode);
     }
 
-    private TypeParsingResult parseSet(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
+    private FieldMetaSignature parseSet(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final boolean hasFrozen = containsAnnotation(annotationsInfo.keySet(), Frozen.class);
         final boolean hasEmptyCollectionIfNull = containsAnnotation(annotationsInfo.keySet(), EmptyCollectionIfNull.class);
         final TypeMirror typeMirror1 = typeArguments.get(0);
         final TypeName sourceType1 = TypeName.get(typeMirror1);
-        final TypeParsingResult parsingResult = this.parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult = this.parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
         final CodeBlock typeCode = CodeBlock.builder()
                 .add("new $T<>($L, $L, $L, $T.class, $L)",
                         SET_PROPERTY,
@@ -249,16 +249,16 @@ public class FieldParser {
                         parsingResult.typeCode).build();
         final TypeName targetType = genericType(SET, parsingResult.targetType);
         final ParameterizedTypeName propertyType = genericType(SET_PROPERTY, context.entityRawType, sourceType1, parsingResult.targetType);
-        return new TypeParsingResult(context, parsingResult.annotationTree, sourceType, targetType, propertyType, typeCode);
+        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, targetType, propertyType, typeCode);
     }
 
-    private TypeParsingResult parseList(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
+    private FieldMetaSignature parseList(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final boolean hasFrozen = containsAnnotation(annotationsInfo.keySet(), Frozen.class);
         final boolean hasEmptyCollectionIfNull = containsAnnotation(annotationsInfo.keySet(), EmptyCollectionIfNull.class);
         final TypeMirror typeMirror1 = typeArguments.get(0);
         final TypeName sourceType1 = TypeName.get(typeMirror1);
-        final TypeParsingResult parsingResult = this.parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult = this.parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
         final CodeBlock typeCode = CodeBlock.builder()
                 .add("new $T<>($L, $L, $L, $T.class, $L)",
                         LIST_PROPERTY,
@@ -269,50 +269,50 @@ public class FieldParser {
                         parsingResult.typeCode).build();
         final TypeName targetType = genericType(LIST, parsingResult.targetType);
         final ParameterizedTypeName propertyType = genericType(LIST_PROPERTY, context.entityRawType, sourceType1, parsingResult.targetType);
-        return new TypeParsingResult(context, parsingResult.annotationTree, sourceType, targetType, propertyType, typeCode);
+        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, targetType, propertyType, typeCode);
     }
 
 
-    protected TypeParsingResult parseTuple1(AnnotationTree annotationTree, FieldParsingContext context) {
+    protected FieldMetaSignature parseTuple1(AnnotationTree annotationTree, FieldParsingContext context) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final TypeMirror typeMirror1 = AptUtils.getTypeArguments(annotationTree.getCurrentType()).get(0);
         final TypeName sourceType1 = TypeName.get(typeMirror1);
-        final TypeParsingResult parsingResult = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L)",
                 TUPLE1_PROPERTY,
                 context.fieldInfoCode,
                 parsingResult.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE1_PROPERTY, context.entityRawType, sourceType1);
-        return new TypeParsingResult(context, parsingResult.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
     }
 
-    protected TypeParsingResult parseTuple2(AnnotationTree annotationTree, FieldParsingContext context) {
+    protected FieldMetaSignature parseTuple2(AnnotationTree annotationTree, FieldParsingContext context) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final List<? extends TypeMirror> typeArguments = AptUtils.getTypeArguments(annotationTree.getCurrentType());
         final TypeName sourceType1 = TypeName.get(typeArguments.get(0));
         final TypeName sourceType2 = TypeName.get(typeArguments.get(1));
 
-        final TypeParsingResult parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
-        final TypeParsingResult parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
+        final FieldMetaSignature parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L, $L)",
                 TUPLE2_PROPERTY,
                 context.fieldInfoCode,
                 parsingResult1.typeCode,
                 parsingResult2.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE2_PROPERTY, context.entityRawType, sourceType1, sourceType2);
-        return new TypeParsingResult(context, parsingResult2.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult2.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
     }
 
-    protected TypeParsingResult parseTuple3(AnnotationTree annotationTree, FieldParsingContext context) {
+    protected FieldMetaSignature parseTuple3(AnnotationTree annotationTree, FieldParsingContext context) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final List<? extends TypeMirror> typeArguments = AptUtils.getTypeArguments(annotationTree.getCurrentType());
         final TypeName sourceType1 = TypeName.get(typeArguments.get(0));
         final TypeName sourceType2 = TypeName.get(typeArguments.get(1));
         final TypeName sourceType3 = TypeName.get(typeArguments.get(2));
 
-        final TypeParsingResult parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
-        final TypeParsingResult parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
-        final TypeParsingResult parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
+        final FieldMetaSignature parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
+        final FieldMetaSignature parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L, $L, $L)",
                 TUPLE3_PROPERTY,
                 context.fieldInfoCode,
@@ -321,10 +321,10 @@ public class FieldParser {
                 parsingResult3.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE3_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3);
-        return new TypeParsingResult(context, parsingResult3.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult3.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
     }
 
-    protected TypeParsingResult parseTuple4(AnnotationTree annotationTree, FieldParsingContext context) {
+    protected FieldMetaSignature parseTuple4(AnnotationTree annotationTree, FieldParsingContext context) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final List<? extends TypeMirror> typeArguments = AptUtils.getTypeArguments(annotationTree.getCurrentType());
         final TypeName sourceType1 = TypeName.get(typeArguments.get(0));
@@ -332,10 +332,10 @@ public class FieldParser {
         final TypeName sourceType3 = TypeName.get(typeArguments.get(2));
         final TypeName sourceType4 = TypeName.get(typeArguments.get(3));
 
-        final TypeParsingResult parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
-        final TypeParsingResult parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
-        final TypeParsingResult parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
-        final TypeParsingResult parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
+        final FieldMetaSignature parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
+        final FieldMetaSignature parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
+        final FieldMetaSignature parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L, $L, $L, $L)",
                 TUPLE4_PROPERTY,
                 context.fieldInfoCode,
@@ -345,10 +345,10 @@ public class FieldParser {
                 parsingResult4.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE4_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4);
-        return new TypeParsingResult(context, parsingResult4.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult4.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
     }
 
-    protected TypeParsingResult parseTuple5(AnnotationTree annotationTree, FieldParsingContext context) {
+    protected FieldMetaSignature parseTuple5(AnnotationTree annotationTree, FieldParsingContext context) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final List<? extends TypeMirror> typeArguments = AptUtils.getTypeArguments(annotationTree.getCurrentType());
         final TypeName sourceType1 = TypeName.get(typeArguments.get(0));
@@ -357,11 +357,11 @@ public class FieldParser {
         final TypeName sourceType4 = TypeName.get(typeArguments.get(3));
         final TypeName sourceType5 = TypeName.get(typeArguments.get(4));
 
-        final TypeParsingResult parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
-        final TypeParsingResult parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
-        final TypeParsingResult parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
-        final TypeParsingResult parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
-        final TypeParsingResult parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
+        final FieldMetaSignature parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
+        final FieldMetaSignature parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
+        final FieldMetaSignature parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
+        final FieldMetaSignature parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L, $L, $L, $L, $L)",
                 TUPLE5_PROPERTY,
                 context.fieldInfoCode,
@@ -372,10 +372,10 @@ public class FieldParser {
                 parsingResult5.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE5_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5);
-        return new TypeParsingResult(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
     }
 
-    protected TypeParsingResult parseTuple6(AnnotationTree annotationTree, FieldParsingContext context) {
+    protected FieldMetaSignature parseTuple6(AnnotationTree annotationTree, FieldParsingContext context) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final List<? extends TypeMirror> typeArguments = AptUtils.getTypeArguments(annotationTree.getCurrentType());
         final TypeName sourceType1 = TypeName.get(typeArguments.get(0));
@@ -385,12 +385,12 @@ public class FieldParser {
         final TypeName sourceType5 = TypeName.get(typeArguments.get(4));
         final TypeName sourceType6 = TypeName.get(typeArguments.get(5));
 
-        final TypeParsingResult parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
-        final TypeParsingResult parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
-        final TypeParsingResult parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
-        final TypeParsingResult parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
-        final TypeParsingResult parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
-        final TypeParsingResult parsingResult6 = parseType(parsingResult5.annotationTree, context.noLambda(context.entityRawType, sourceType6), sourceType6);
+        final FieldMetaSignature parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
+        final FieldMetaSignature parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
+        final FieldMetaSignature parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
+        final FieldMetaSignature parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
+        final FieldMetaSignature parsingResult6 = parseType(parsingResult5.annotationTree, context.noLambda(context.entityRawType, sourceType6), sourceType6);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L, $L, $L, $L, $L, $L)",
                 TUPLE6_PROPERTY,
                 context.fieldInfoCode,
@@ -402,10 +402,10 @@ public class FieldParser {
                 parsingResult6.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE6_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5, sourceType6);
-        return new TypeParsingResult(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
     }
 
-    protected TypeParsingResult parseTuple7(AnnotationTree annotationTree, FieldParsingContext context) {
+    protected FieldMetaSignature parseTuple7(AnnotationTree annotationTree, FieldParsingContext context) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final List<? extends TypeMirror> typeArguments = AptUtils.getTypeArguments(annotationTree.getCurrentType());
         final TypeName sourceType1 = TypeName.get(typeArguments.get(0));
@@ -416,13 +416,13 @@ public class FieldParser {
         final TypeName sourceType6 = TypeName.get(typeArguments.get(5));
         final TypeName sourceType7 = TypeName.get(typeArguments.get(6));
 
-        final TypeParsingResult parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
-        final TypeParsingResult parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
-        final TypeParsingResult parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
-        final TypeParsingResult parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
-        final TypeParsingResult parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
-        final TypeParsingResult parsingResult6 = parseType(parsingResult5.annotationTree, context.noLambda(context.entityRawType, sourceType6), sourceType6);
-        final TypeParsingResult parsingResult7 = parseType(parsingResult6.annotationTree, context.noLambda(context.entityRawType, sourceType7), sourceType7);
+        final FieldMetaSignature parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
+        final FieldMetaSignature parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
+        final FieldMetaSignature parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
+        final FieldMetaSignature parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
+        final FieldMetaSignature parsingResult6 = parseType(parsingResult5.annotationTree, context.noLambda(context.entityRawType, sourceType6), sourceType6);
+        final FieldMetaSignature parsingResult7 = parseType(parsingResult6.annotationTree, context.noLambda(context.entityRawType, sourceType7), sourceType7);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L, $L, $L, $L, $L, $L, $L)",
                 TUPLE7_PROPERTY,
                 context.fieldInfoCode,
@@ -435,10 +435,10 @@ public class FieldParser {
                 parsingResult7.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE7_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5, sourceType6, sourceType7);
-        return new TypeParsingResult(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
     }
 
-    protected TypeParsingResult parseTuple8(AnnotationTree annotationTree, FieldParsingContext context) {
+    protected FieldMetaSignature parseTuple8(AnnotationTree annotationTree, FieldParsingContext context) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final List<? extends TypeMirror> typeArguments = AptUtils.getTypeArguments(annotationTree.getCurrentType());
         final TypeName sourceType1 = TypeName.get(typeArguments.get(0));
@@ -450,14 +450,14 @@ public class FieldParser {
         final TypeName sourceType7 = TypeName.get(typeArguments.get(6));
         final TypeName sourceType8 = TypeName.get(typeArguments.get(7));
 
-        final TypeParsingResult parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
-        final TypeParsingResult parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
-        final TypeParsingResult parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
-        final TypeParsingResult parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
-        final TypeParsingResult parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
-        final TypeParsingResult parsingResult6 = parseType(parsingResult5.annotationTree, context.noLambda(context.entityRawType, sourceType6), sourceType6);
-        final TypeParsingResult parsingResult7 = parseType(parsingResult6.annotationTree, context.noLambda(context.entityRawType, sourceType7), sourceType7);
-        final TypeParsingResult parsingResult8 = parseType(parsingResult7.annotationTree, context.noLambda(context.entityRawType, sourceType8), sourceType8);
+        final FieldMetaSignature parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
+        final FieldMetaSignature parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
+        final FieldMetaSignature parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
+        final FieldMetaSignature parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
+        final FieldMetaSignature parsingResult6 = parseType(parsingResult5.annotationTree, context.noLambda(context.entityRawType, sourceType6), sourceType6);
+        final FieldMetaSignature parsingResult7 = parseType(parsingResult6.annotationTree, context.noLambda(context.entityRawType, sourceType7), sourceType7);
+        final FieldMetaSignature parsingResult8 = parseType(parsingResult7.annotationTree, context.noLambda(context.entityRawType, sourceType8), sourceType8);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L, $L, $L, $L, $L, $L, $L, $L)",
                 TUPLE8_PROPERTY,
                 context.fieldInfoCode,
@@ -471,10 +471,10 @@ public class FieldParser {
                 parsingResult8.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE8_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5, sourceType6, sourceType7, sourceType8);
-        return new TypeParsingResult(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
     }
 
-    protected TypeParsingResult parseTuple9(AnnotationTree annotationTree, FieldParsingContext context) {
+    protected FieldMetaSignature parseTuple9(AnnotationTree annotationTree, FieldParsingContext context) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final List<? extends TypeMirror> typeArguments = AptUtils.getTypeArguments(annotationTree.getCurrentType());
         final TypeName sourceType1 = TypeName.get(typeArguments.get(0));
@@ -487,15 +487,15 @@ public class FieldParser {
         final TypeName sourceType8 = TypeName.get(typeArguments.get(7));
         final TypeName sourceType9 = TypeName.get(typeArguments.get(8));
 
-        final TypeParsingResult parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
-        final TypeParsingResult parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
-        final TypeParsingResult parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
-        final TypeParsingResult parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
-        final TypeParsingResult parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
-        final TypeParsingResult parsingResult6 = parseType(parsingResult5.annotationTree, context.noLambda(context.entityRawType, sourceType6), sourceType6);
-        final TypeParsingResult parsingResult7 = parseType(parsingResult6.annotationTree, context.noLambda(context.entityRawType, sourceType7), sourceType7);
-        final TypeParsingResult parsingResult8 = parseType(parsingResult7.annotationTree, context.noLambda(context.entityRawType, sourceType8), sourceType8);
-        final TypeParsingResult parsingResult9 = parseType(parsingResult8.annotationTree, context.noLambda(context.entityRawType, sourceType9), sourceType9);
+        final FieldMetaSignature parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
+        final FieldMetaSignature parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
+        final FieldMetaSignature parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
+        final FieldMetaSignature parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
+        final FieldMetaSignature parsingResult6 = parseType(parsingResult5.annotationTree, context.noLambda(context.entityRawType, sourceType6), sourceType6);
+        final FieldMetaSignature parsingResult7 = parseType(parsingResult6.annotationTree, context.noLambda(context.entityRawType, sourceType7), sourceType7);
+        final FieldMetaSignature parsingResult8 = parseType(parsingResult7.annotationTree, context.noLambda(context.entityRawType, sourceType8), sourceType8);
+        final FieldMetaSignature parsingResult9 = parseType(parsingResult8.annotationTree, context.noLambda(context.entityRawType, sourceType9), sourceType9);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L, $L, $L, $L, $L, $L, $L, $L, $L)",
                 TUPLE9_PROPERTY,
                 context.fieldInfoCode,
@@ -510,10 +510,10 @@ public class FieldParser {
                 parsingResult9.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE9_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5, sourceType6, sourceType7, sourceType8, sourceType9);
-        return new TypeParsingResult(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
     }
 
-    protected TypeParsingResult parseTuple10(AnnotationTree annotationTree, FieldParsingContext context) {
+    protected FieldMetaSignature parseTuple10(AnnotationTree annotationTree, FieldParsingContext context) {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final List<? extends TypeMirror> typeArguments = AptUtils.getTypeArguments(annotationTree.getCurrentType());
         final TypeName sourceType1 = TypeName.get(typeArguments.get(0));
@@ -527,16 +527,16 @@ public class FieldParser {
         final TypeName sourceType9 = TypeName.get(typeArguments.get(8));
         final TypeName sourceType10 = TypeName.get(typeArguments.get(9));
 
-        final TypeParsingResult parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
-        final TypeParsingResult parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
-        final TypeParsingResult parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
-        final TypeParsingResult parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
-        final TypeParsingResult parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
-        final TypeParsingResult parsingResult6 = parseType(parsingResult5.annotationTree, context.noLambda(context.entityRawType, sourceType6), sourceType6);
-        final TypeParsingResult parsingResult7 = parseType(parsingResult6.annotationTree, context.noLambda(context.entityRawType, sourceType7), sourceType7);
-        final TypeParsingResult parsingResult8 = parseType(parsingResult7.annotationTree, context.noLambda(context.entityRawType, sourceType8), sourceType8);
-        final TypeParsingResult parsingResult9 = parseType(parsingResult8.annotationTree, context.noLambda(context.entityRawType, sourceType9), sourceType9);
-        final TypeParsingResult parsingResult10 = parseType(parsingResult9.annotationTree, context.noLambda(context.entityRawType, sourceType10), sourceType10);
+        final FieldMetaSignature parsingResult1 = parseType(annotationTree.next(), context.noLambda(context.entityRawType, sourceType1), sourceType1);
+        final FieldMetaSignature parsingResult2 = parseType(parsingResult1.annotationTree, context.noLambda(context.entityRawType, sourceType2), sourceType2);
+        final FieldMetaSignature parsingResult3 = parseType(parsingResult2.annotationTree, context.noLambda(context.entityRawType, sourceType3), sourceType3);
+        final FieldMetaSignature parsingResult4 = parseType(parsingResult3.annotationTree, context.noLambda(context.entityRawType, sourceType4), sourceType4);
+        final FieldMetaSignature parsingResult5 = parseType(parsingResult4.annotationTree, context.noLambda(context.entityRawType, sourceType5), sourceType5);
+        final FieldMetaSignature parsingResult6 = parseType(parsingResult5.annotationTree, context.noLambda(context.entityRawType, sourceType6), sourceType6);
+        final FieldMetaSignature parsingResult7 = parseType(parsingResult6.annotationTree, context.noLambda(context.entityRawType, sourceType7), sourceType7);
+        final FieldMetaSignature parsingResult8 = parseType(parsingResult7.annotationTree, context.noLambda(context.entityRawType, sourceType8), sourceType8);
+        final FieldMetaSignature parsingResult9 = parseType(parsingResult8.annotationTree, context.noLambda(context.entityRawType, sourceType9), sourceType9);
+        final FieldMetaSignature parsingResult10 = parseType(parsingResult9.annotationTree, context.noLambda(context.entityRawType, sourceType10), sourceType10);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L, $L, $L, $L, $L, $L, $L, $L, $L, $L)",
                 TUPLE10_PROPERTY,
                 context.fieldInfoCode,
@@ -552,14 +552,14 @@ public class FieldParser {
                 parsingResult10.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE10_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5, sourceType6, sourceType7, sourceType8, sourceType9, sourceType10);
-        return new TypeParsingResult(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
     }
 
     private CodecInfo buildOrGetCodecFromRegistry(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
         return codecFactory.createCodec(sourceType, annotationTree, context, Optional.ofNullable(context.getCodecFor(sourceType))) ;
     }
 
-    public static class TypeParsingResult {
+    public static class FieldMetaSignature {
         /**
          * FIELD_MODIFIERS should contains static because static fields are initialized BEFORE constructor body ...
          */
@@ -571,8 +571,8 @@ public class FieldParser {
         final public CodeBlock typeCode;
         final public TypeName propertyType;
 
-        public TypeParsingResult(FieldParsingContext context, AnnotationTree annotationTree, TypeName sourceType, TypeName targetType,
-                                 TypeName propertyType, CodeBlock typeCode) {
+        public FieldMetaSignature(FieldParsingContext context, AnnotationTree annotationTree, TypeName sourceType, TypeName targetType,
+                                  TypeName propertyType, CodeBlock typeCode) {
             this.context = context;
             this.annotationTree = annotationTree;
             this.sourceType = sourceType;
@@ -614,7 +614,7 @@ public class FieldParser {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            TypeParsingResult that = (TypeParsingResult) o;
+            FieldMetaSignature that = (FieldMetaSignature) o;
             return Objects.equals(context, that.context);
         }
 
@@ -632,7 +632,7 @@ public class FieldParser {
             return sb.toString();
         }
 
-        public boolean equalsTo(TypeParsingResult o) {
+        public boolean equalsTo(FieldMetaSignature o) {
             if (this == o) return true;
             return this.context.equalsTo(o.context) &&
                     Objects.equals(this.sourceType, o.sourceType) &&

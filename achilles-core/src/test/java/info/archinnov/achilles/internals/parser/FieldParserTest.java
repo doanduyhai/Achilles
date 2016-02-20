@@ -34,16 +34,14 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.truth0.Truth;
 
-import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.UDTValue;
 import com.google.common.collect.Sets;
 import com.google.testing.compile.JavaSourcesSubjectFactory;
 import com.squareup.javapoet.ClassName;
 
-import info.archinnov.achilles.annotations.Enumerated;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
-import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistry;
@@ -76,7 +74,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private boolean primitiveBoolean
             VariableElement elm = findFieldInType(typeElement, "primitiveBoolean");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("boolean");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -96,7 +94,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private boolean objectBoolean
             VariableElement elm = findFieldInType(typeElement, "objectBoolean");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(Boolean.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -116,7 +114,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private byte[] primitiveByteArray;
             VariableElement elm = findFieldInType(typeElement, "primitiveByteArray");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(java.nio.ByteBuffer.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -136,7 +134,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private Byte[] objectByteArray;
             VariableElement elm = findFieldInType(typeElement, "objectByteArray");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(java.nio.ByteBuffer.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -156,7 +154,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // @Enumerated(value = NAME) private ConsistencyLevel consistencyLevel
             VariableElement elm = findFieldInType(typeElement, "consistencyLevel");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(String.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -176,7 +174,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private @JSON Date time
             VariableElement elm = findFieldInType(typeElement, "time");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(String.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -196,7 +194,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private String value
             VariableElement elm = findFieldInType(typeElement, "value");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(String.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -216,7 +214,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // @Codec(IntToStringCodec.class) private Integer okInteger;
             VariableElement elm = findFieldInType(typeElement, "okInteger");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(String.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -236,7 +234,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private Set<@Enumerated(value = ORDINAL) Double> okSet
             VariableElement elm = findFieldInType(typeElement, "okSet");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.Set<java.lang.Integer>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -256,7 +254,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // @JSON private Map<@JSON Integer, List<Integer>> jsonMap;
             VariableElement elm = findFieldInType(typeElement, "jsonMap");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -276,7 +274,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private Map<Integer, @JSON List<Map<Integer, String>>> mapWithNestedJson;
             VariableElement elm = findFieldInType(typeElement, "mapWithNestedJson");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.Map<java.lang.Integer, java.lang.String>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -296,7 +294,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private List<Map<Integer,String>> listNesting;
             VariableElement elm = findFieldInType(typeElement, "listNesting");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.List<java.util.Map<java.lang.Integer, java.lang.String>>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -316,7 +314,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private Set<Map<Integer,String>> setNesting;
             VariableElement elm = findFieldInType(typeElement, "setNesting");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.Set<java.util.Map<java.lang.Integer, java.lang.String>>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -336,7 +334,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private Map<Integer,List<String>> mapNesting
             VariableElement elm = findFieldInType(typeElement, "mapNesting");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.Map<java.lang.Integer, java.util.List<java.lang.String>>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -356,7 +354,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private Tuple2<Integer, List<String>> tupleNesting;
             VariableElement elm = findFieldInType(typeElement, "tupleNesting");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(TUPLE_VALUE_CLASSNAME);
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -376,7 +374,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private Map<Integer, Tuple2<Integer, String>> nestedTuple;
             VariableElement elm = findFieldInType(typeElement, "nestedTuple");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.Map<java.lang.Integer, com.datastax.driver.core.TupleValue>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -403,7 +401,7 @@ public class FieldParserTest extends AbstractTestProcessor {
              *                                                  @Enumerated(value = ORDINAL) ConsistencyLevel>>> map;
              */
             VariableElement elm = findFieldInType(typeElement, "map");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.Map<java.lang.String, java.util.Map<java.lang.Integer, com.datastax.driver.core.TupleValue>>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -423,7 +421,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private Tuple1<@JSON ConsistencyLevel> tuple1;
             VariableElement elm = findFieldInType(typeElement, "tuple1");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(TUPLE_VALUE_CLASSNAME);
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -443,7 +441,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private Tuple2<@JSON ConsistencyLevel, @Codec(IntToStringCodec.class) Integer> tuple2;
             VariableElement elm = findFieldInType(typeElement, "tuple2");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(TUPLE_VALUE_CLASSNAME);
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -466,7 +464,7 @@ public class FieldParserTest extends AbstractTestProcessor {
                     Integer> tuple3;
              */
             VariableElement elm = findFieldInType(typeElement, "tuple3");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(TUPLE_VALUE_CLASSNAME);
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -489,7 +487,7 @@ public class FieldParserTest extends AbstractTestProcessor {
                     Integer, Integer> tuple4;
              */
             VariableElement elm = findFieldInType(typeElement, "tuple4");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(TUPLE_VALUE_CLASSNAME);
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -512,7 +510,7 @@ public class FieldParserTest extends AbstractTestProcessor {
                     Integer, Integer, Integer> tuple5;
              */
             VariableElement elm = findFieldInType(typeElement, "tuple5");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(TUPLE_VALUE_CLASSNAME);
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -535,7 +533,7 @@ public class FieldParserTest extends AbstractTestProcessor {
                     Integer, Integer, Integer, Integer> tuple6;
              */
             VariableElement elm = findFieldInType(typeElement, "tuple6");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(TUPLE_VALUE_CLASSNAME);
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -558,7 +556,7 @@ public class FieldParserTest extends AbstractTestProcessor {
                     Integer, Integer, Integer, Integer, Integer> tuple7;
              */
             VariableElement elm = findFieldInType(typeElement, "tuple7");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(TUPLE_VALUE_CLASSNAME);
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -581,7 +579,7 @@ public class FieldParserTest extends AbstractTestProcessor {
                     Integer, Integer, Integer, Integer, Integer, Integer> tuple8;
              */
             VariableElement elm = findFieldInType(typeElement, "tuple8");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(TUPLE_VALUE_CLASSNAME);
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -604,7 +602,7 @@ public class FieldParserTest extends AbstractTestProcessor {
                     Integer, Integer, Integer, Integer, Integer, Integer, Integer> tuple9;
              */
             VariableElement elm = findFieldInType(typeElement, "tuple9");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(TUPLE_VALUE_CLASSNAME);
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -627,7 +625,7 @@ public class FieldParserTest extends AbstractTestProcessor {
                     Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> tuple10;
              */
             VariableElement elm = findFieldInType(typeElement, "tuple10");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(TUPLE_VALUE_CLASSNAME);
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -647,7 +645,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private TestUDT simpleUdt;
             VariableElement elm = findFieldInType(typeElement, "simpleUdt");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(UDTValue.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -667,7 +665,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private List<TestUDT> listUdt;
             VariableElement elm = findFieldInType(typeElement, "listUdt");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.List<com.datastax.driver.core.UDTValue>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -687,7 +685,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private Set<TestUDT> setUdt;
             VariableElement elm = findFieldInType(typeElement, "setUdt");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.Set<com.datastax.driver.core.UDTValue>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -707,7 +705,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private Map<Integer, TestUDT> mapUdt;
             VariableElement elm = findFieldInType(typeElement, "mapUdt");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.Map<java.lang.Integer, com.datastax.driver.core.UDTValue>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -727,7 +725,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             // private Map<@JSON Integer, double[]> mapOfDoubleArray;
             VariableElement elm = findFieldInType(typeElement, "mapOfDoubleArray");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.Map<java.lang.String, double[]>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -747,7 +745,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
             //  private List<@Frozen Map<@Enumerated ProtocolVersion, List<int[]>>> nestedArrays;
             VariableElement elm = findFieldInType(typeElement, "nestedArrays");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.List<java.util.Map<java.lang.String, java.util.List<int[]>>>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -768,7 +766,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // @Computed(function = "writetime",  alias = "writetime", targettargetColumnsap"}, cqlClass = Long.class)
             // private Long writeTime;
             VariableElement elm = findFieldInType(typeElement, "writeTime");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.Long");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -790,7 +788,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // @info.archinnov.achilles.annotations.Codec(IntToStringCodec.class)
             // private Integer writeTimeAsInt;
             VariableElement elm = findFieldInType(typeElement, "writeTimeAsInt");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -812,7 +810,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             //@Column
             //private ProtocolVersion runtimeCodec;
             VariableElement elm = findFieldInType(typeElement, "runtimeCodec");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -836,7 +834,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             //@Column
             //private SimpleLongWrapper longWrapper;
             VariableElement elm = findFieldInType(typeElement, "longWrapper");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.Long");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -864,7 +862,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             //@Column
             //private MyBean myBean;
             VariableElement elm = findFieldInType(typeElement, "myBean");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -892,7 +890,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             //@Column
             //private ProtocolVersion protocolVersion;
             VariableElement elm = findFieldInType(typeElement, "protocolVersion");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -920,7 +918,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             //@Column
             //private Enumerated.Encoding encoding;
             VariableElement elm = findFieldInType(typeElement, "encoding");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.Integer");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -950,7 +948,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // @Enumerated(Enumerated.Encoding.ORDINAL)
             // private ProtocolVersion protocolVersionAsOrdinal;
             VariableElement elm = findFieldInType(typeElement, "protocolVersionAsOrdinal");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.Integer");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -979,7 +977,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // @Column
             // private Optional<String> optionalString;
             VariableElement elm = findFieldInType(typeElement, "optionalString");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -1008,7 +1006,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // @Column
             // private Optional<ProtocolVersion> optionalProtocolVersion;
             VariableElement elm = findFieldInType(typeElement, "optionalProtocolVersion");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.String");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -1037,7 +1035,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // @Column
             // private Optional<@Enumerated(Encoding.ORDINAL) ProtocolVersion> optionalEncodingAsOrdinal;
             VariableElement elm = findFieldInType(typeElement, "optionalEncodingAsOrdinal");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.lang.Integer");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -1066,7 +1064,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // @Column
             // private List<Optional<String>> listOfOptional;
             VariableElement elm = findFieldInType(typeElement, "listOfOptional");
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo("java.util.List<java.lang.String>");
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -1110,7 +1108,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private String overridenName;
             VariableElement elm = findFieldInType(typeElement, "overridenName");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(String.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -1131,7 +1129,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private Instant jdkInstant;
             VariableElement elm = findFieldInType(typeElement, "jdkInstant");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(Instant.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -1152,7 +1150,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private java.time.LocalDate jdkLocalDate;
             VariableElement elm = findFieldInType(typeElement, "jdkLocalDate");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(LocalDate.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -1173,7 +1171,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private java.time.LocalTime jdkLocalTime;
             VariableElement elm = findFieldInType(typeElement, "jdkLocalTime");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(LocalTime.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
@@ -1194,7 +1192,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             // private ZonedDateTime jdkZonedDateTime;
             VariableElement elm = findFieldInType(typeElement, "jdkZonedDateTime");
 
-            TypeParsingResult parsingResult = fieldParser.parse(elm, entityContext);
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
 
             assertThat(parsingResult.targetType.toString()).isEqualTo(ZonedDateTime.class.getCanonicalName());
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))

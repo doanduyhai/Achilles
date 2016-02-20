@@ -34,7 +34,7 @@ import com.squareup.javapoet.*;
 import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
-import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 
 public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
@@ -45,7 +45,7 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
         this.aptUtils = aptUtils;
     }
 
-    public TypeSpec buildUDTClassProperty(TypeElement elm, EntityParsingContext context, List<TypeParsingResult> parsingResults) {
+    public TypeSpec buildUDTClassProperty(TypeElement elm, EntityParsingContext context, List<FieldMetaSignature> parsingResults) {
 
         final TypeName rawBeanType = TypeName.get(aptUtils.erasure(elm));
 
@@ -65,7 +65,7 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .addMethod(buildCreateUDTFromBeanT(rawBeanType, parsingResults))
                 .addMethod(buildCreateBeanFromUDT(rawBeanType, parsingResults));
 
-        for (TypeParsingResult x : parsingResults) {
+        for (FieldMetaSignature x : parsingResults) {
             builder.addField(x.buildPropertyAsField());
         }
 
@@ -143,7 +143,7 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
 
     }
 
-    private MethodSpec buildComponentsProperty(TypeName rawBeanType, List<TypeParsingResult> parsingResults) {
+    private MethodSpec buildComponentsProperty(TypeName rawBeanType, List<FieldMetaSignature> parsingResults) {
         TypeName returnType = genericType(LIST, genericType(ABSTRACT_PROPERTY, rawBeanType, WILDCARD, WILDCARD));
         final StringJoiner allFields = new StringJoiner(", ");
         parsingResults
@@ -163,7 +163,7 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
 
     }
 
-    private MethodSpec buildCreateUDTFromBeanT(TypeName rawBeanType, List<TypeParsingResult> parsingResults) {
+    private MethodSpec buildCreateUDTFromBeanT(TypeName rawBeanType, List<FieldMetaSignature> parsingResults) {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("createUDTFromBean")
                 .addAnnotation(Override.class)
@@ -172,7 +172,7 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .returns(JAVA_DRIVER_UDT_VALUE_TYPE)
                 .addStatement("final $T udtValue = userType.newValue()", JAVA_DRIVER_UDT_VALUE_TYPE);
 
-        for (TypeParsingResult x : parsingResults) {
+        for (FieldMetaSignature x : parsingResults) {
             builder.addStatement("$L.encodeFieldToUdt(instance, udtValue)", x.context.fieldName);
         }
 
@@ -181,7 +181,7 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
         return builder.build();
     }
 
-    private MethodSpec buildCreateBeanFromUDT(TypeName rawBeanType, List<TypeParsingResult> parsingResults) {
+    private MethodSpec buildCreateBeanFromUDT(TypeName rawBeanType, List<FieldMetaSignature> parsingResults) {
         final ClassName udtType = ClassName.get(UDTValue.class);
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("createBeanFromUDT")
@@ -191,7 +191,7 @@ public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .returns(rawBeanType)
                 .addStatement("final $T instance = udtFactory.newInstance(udtClass)", rawBeanType);
 
-        for (TypeParsingResult x : parsingResults) {
+        for (FieldMetaSignature x : parsingResults) {
             builder.addStatement("$L.decodeField(udtValue, instance)", x.context.fieldName);
         }
 

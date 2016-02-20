@@ -33,7 +33,7 @@ import com.squareup.javapoet.TypeSpec;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.meta.UDTMetaCodeGen;
-import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
 
@@ -46,7 +46,7 @@ public class UDTParser extends AbstractBeanParser {
         this.udtMetaCodeGen = new UDTMetaCodeGen(aptUtils);
     }
 
-    public TypeParsingResult parseUDT(AnnotationTree annotationTree, FieldParsingContext context, FieldParser fieldParser) {
+    public FieldMetaSignature parseUDT(AnnotationTree annotationTree, FieldParsingContext context, FieldParser fieldParser) {
         final TypeMirror typeMirror = annotationTree.getCurrentType();
         final TypeName udtTypeName = TypeName.get(typeMirror);
         final TypeName rawUdtTypeName = getRawType(udtTypeName);
@@ -68,7 +68,7 @@ public class UDTParser extends AbstractBeanParser {
                 UDT_META_PACKAGE + "." + typeElement.getSimpleName() + META_SUFFIX)
                 .build();
         final ParameterizedTypeName propertyType = genericType(UDT_PROPERTY, context.entityRawType, rawUdtTypeName);
-        return new TypeParsingResult(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
+        return new FieldMetaSignature(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
                 udtTypeName, JAVA_DRIVER_UDT_VALUE_TYPE, propertyType, typeCode);
     }
 
@@ -82,7 +82,7 @@ public class UDTParser extends AbstractBeanParser {
     }
 
     TypeSpec buildUDTClassProperty(TypeElement elm, FieldParser fieldParser, EntityParsingContext context) {
-        final List<TypeParsingResult> parsingResults = parseFields(elm, fieldParser, context.globalContext);
+        final List<FieldMetaSignature> parsingResults = parseFields(elm, fieldParser, context.globalContext);
         return udtMetaCodeGen.buildUDTClassProperty(elm, context, parsingResults);
     }
 }

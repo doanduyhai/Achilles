@@ -44,7 +44,7 @@ public abstract class AbstractBeanParser {
         this.aptUtils = aptUtils;
     }
 
-    public List<FieldParser.TypeParsingResult> parseFields(TypeElement elm, FieldParser fieldParser, GlobalParsingContext context) {
+    public List<FieldParser.FieldMetaSignature> parseFields(TypeElement elm, FieldParser fieldParser, GlobalParsingContext context) {
         final Optional<Strategy> strategy = aptUtils.getAnnotationOnClass(elm, Strategy.class);
         final InternalNamingStrategy namingStrategy = inferNamingStrategy(strategy, context.namingStrategy);
 

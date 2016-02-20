@@ -32,8 +32,7 @@ import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMe
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
-import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
-import info.archinnov.achilles.internals.utils.TypeNameHelper;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public class SelectDSLCodeGen extends AbstractDSLCodeGen {
@@ -157,7 +156,7 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .build();
     }
 
-    private static MethodSpec buildSelectColumnMethod(TypeName newTypeName, TypeParsingResult parsingResult, String fieldName, ReturnType returnType) {
+    private static MethodSpec buildSelectColumnMethod(TypeName newTypeName, FieldMetaSignature parsingResult, String fieldName, ReturnType returnType) {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(parsingResult.context.fieldName)
                 .addJavadoc("Generate a SELECT ... <strong>$L</strong> ...", parsingResult.context.cqlColumn)
@@ -246,7 +245,7 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
     }
 
 
-    private static MethodSpec buildSelectComputedColumnMethod(TypeName newTypeName, TypeParsingResult parsingResult, String fieldName, ReturnType returnType) {
+    private static MethodSpec buildSelectComputedColumnMethod(TypeName newTypeName, FieldMetaSignature parsingResult, String fieldName, ReturnType returnType) {
 
         final ComputedColumnInfo columnInfo = (ComputedColumnInfo) parsingResult.context.columnInfo;
         StringJoiner joiner = new StringJoiner(",", fieldName + ".fcall($S,", ").as($S)");

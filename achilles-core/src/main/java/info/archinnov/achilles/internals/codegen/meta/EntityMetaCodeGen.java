@@ -42,7 +42,7 @@ import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
 import info.archinnov.achilles.internals.metamodel.columns.*;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
-import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
@@ -62,7 +62,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         this.aptUtils = aptUtils;
     }
 
-    public EntityMetaSignature buildEntityMeta(EntityType entityType, TypeElement elm, GlobalParsingContext globalParsingContext, List<TypeParsingResult> parsingResults) {
+    public EntityMetaSignature buildEntityMeta(EntityType entityType, TypeElement elm, GlobalParsingContext globalParsingContext, List<FieldMetaSignature> parsingResults) {
         final TypeName rawClassTypeName = getRawType(TypeName.get(elm.asType()));
         final Optional<Consistency> consistency = aptUtils.getAnnotationOnClass(elm, Consistency.class);
         final Optional<TTL> ttl = aptUtils.getAnnotationOnClass(elm, TTL.class);
@@ -162,14 +162,14 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                     .addMethod(buildGetBaseEntityClass(viewBaseClass.get()));
         }
 
-        for(TypeParsingResult x: parsingResults) {
+        for(FieldMetaSignature x: parsingResults) {
             builder.addField(x.buildPropertyAsField());
         }
 
         return new EntityMetaSignature(entityType, builder.build(), elm.getSimpleName().toString(), typeName, rawBeanType, viewBaseClass, parsingResults);
     }
 
-    private MethodSpec buildFieldNameToCqlColumn(List<TypeParsingResult> parsingResults) {
+    private MethodSpec buildFieldNameToCqlColumn(List<FieldMetaSignature> parsingResults) {
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("fieldNameToCqlColumn")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
@@ -238,7 +238,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         }
     }
 
-    private MethodSpec buildPartitionKeys(List<TypeParsingResult> parsingResults, TypeName rawClassType) {
+    private MethodSpec buildPartitionKeys(List<FieldMetaSignature> parsingResults, TypeName rawClassType) {
         StringJoiner joiner = new StringJoiner(",");
         parsingResults
                 .stream()
@@ -256,7 +256,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .build();
     }
 
-    private MethodSpec buildClusteringColumns(List<TypeParsingResult> parsingResults, TypeName rawClassType) {
+    private MethodSpec buildClusteringColumns(List<FieldMetaSignature> parsingResults, TypeName rawClassType) {
         StringJoiner joiner = new StringJoiner(",");
         parsingResults
                 .stream()
@@ -274,7 +274,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .build();
     }
 
-    private MethodSpec buildStaticColumns(List<TypeParsingResult> parsingResults, TypeName rawClassType) {
+    private MethodSpec buildStaticColumns(List<FieldMetaSignature> parsingResults, TypeName rawClassType) {
         StringJoiner joiner = new StringJoiner(",");
         parsingResults
                 .stream()
@@ -292,7 +292,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .build();
     }
 
-    private MethodSpec buildComputedColumns(List<TypeParsingResult> parsingResults, TypeName rawClassType) {
+    private MethodSpec buildComputedColumns(List<FieldMetaSignature> parsingResults, TypeName rawClassType) {
         StringJoiner joiner = new StringJoiner(",");
         parsingResults
                 .stream()
@@ -310,7 +310,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .build();
     }
 
-    private MethodSpec buildCounterColumns(List<TypeParsingResult> parsingResults, TypeName rawClassType) {
+    private MethodSpec buildCounterColumns(List<FieldMetaSignature> parsingResults, TypeName rawClassType) {
         StringJoiner joiner = new StringJoiner(",");
         parsingResults
                 .stream()
@@ -328,7 +328,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .build();
     }
 
-    private MethodSpec buildNormalColumns(List<TypeParsingResult> parsingResults, TypeName rawClassType) {
+    private MethodSpec buildNormalColumns(List<FieldMetaSignature> parsingResults, TypeName rawClassType) {
         StringJoiner joiner = new StringJoiner(",");
         parsingResults
                 .stream()
@@ -462,11 +462,11 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         public final TypeName typeName;
         public final TypeName entityRawClass;
         public final String fieldName;
-        public final List<TypeParsingResult> parsingResults;
+        public final List<FieldMetaSignature> parsingResults;
         public final EntityType entityType;
         public final Optional<TypeName> viewBaseClass;
 
-        public EntityMetaSignature(EntityType entityType, TypeSpec sourceCode, String className, TypeName typeName, TypeName entityRawClass, Optional<TypeName> viewBaseClass, List<TypeParsingResult> parsingResults) {
+        public EntityMetaSignature(EntityType entityType, TypeSpec sourceCode, String className, TypeName typeName, TypeName entityRawClass, Optional<TypeName> viewBaseClass, List<FieldMetaSignature> parsingResults) {
             this.entityType = entityType;
             this.sourceCode = sourceCode;
             this.className = className;

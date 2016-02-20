@@ -57,7 +57,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -73,7 +73,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -89,7 +89,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -105,7 +105,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -121,7 +121,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -137,7 +137,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -153,7 +153,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -169,7 +169,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -185,7 +185,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -201,7 +201,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -217,7 +217,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -233,7 +233,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -252,7 +252,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
                     IMPLICIT_ENTITY_FIELD_FILTER, IMPLICIT_UDT_FIELD_FILTER, new FrozenNestedTypeStrategy());
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -268,7 +268,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
@@ -284,7 +284,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
 
         });
@@ -300,7 +300,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
 
         });
@@ -316,7 +316,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
         });
         failTestWithMessage(
@@ -331,7 +331,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
         });
         failTestWithMessage(
@@ -346,7 +346,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
         });
         failTestWithMessage(
@@ -361,7 +361,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
         });
         failTestWithMessage(
@@ -376,7 +376,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
         });
         failTestWithMessage(
@@ -391,7 +391,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
         });
         failTestWithMessage(
@@ -406,7 +406,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
         });
         failTestWithMessage(
@@ -421,7 +421,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
         });
         failTestWithMessage(
@@ -436,7 +436,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults);
 
         });
@@ -452,7 +452,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults);
 
         });
@@ -468,7 +468,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults);
 
         });
@@ -484,7 +484,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.TypeParsingResult> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
             builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults);
 
         });

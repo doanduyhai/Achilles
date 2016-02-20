@@ -31,7 +31,7 @@ import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMe
 import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
-import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.type.tuples.Tuple2;
 import info.archinnov.achilles.type.tuples.Tuple4;
 
@@ -282,7 +282,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static List<FieldSignatureInfo> getPartitionKeysSignatureInfo(List<TypeParsingResult> parsingResults) {
+    protected static List<FieldSignatureInfo> getPartitionKeysSignatureInfo(List<FieldMetaSignature> parsingResults) {
         return new ArrayList<>(parsingResults
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.PARTITION)
@@ -292,7 +292,7 @@ public abstract class AbstractDSLCodeGen {
                 .collect(toList()));
     }
 
-    protected static List<FieldSignatureInfo> getClusteringColsSignatureInfo(List<TypeParsingResult> parsingResults) {
+    protected static List<FieldSignatureInfo> getClusteringColsSignatureInfo(List<FieldMetaSignature> parsingResults) {
         return new ArrayList<>(parsingResults
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.CLUSTERING)

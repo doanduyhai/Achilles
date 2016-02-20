@@ -26,7 +26,7 @@ import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
 public interface TypeParsingResultConsumer {
 
-    static List<FieldParser.TypeParsingResult> getTypeParsingResults(AptUtils aptUtils, TypeElement typeElement, GlobalParsingContext context) {
+    static List<FieldParser.FieldMetaSignature> getTypeParsingResults(AptUtils aptUtils, TypeElement typeElement, GlobalParsingContext context) {
         final EntityParser parser = new EntityParser(aptUtils);
         final FieldParser fieldParser = new FieldParser(aptUtils);
         return parser.parseFields(typeElement, fieldParser, context);

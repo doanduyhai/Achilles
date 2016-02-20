@@ -27,7 +27,7 @@ import javax.lang.model.element.Modifier;
 import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
-import info.archinnov.achilles.internals.parser.FieldParser.TypeParsingResult;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
 
@@ -35,7 +35,7 @@ public class EntityMetaColumnsForFunctionsCodeGen  {
 
     private static final SnakeCaseNaming SNAKE_CASE_NAMING = new SnakeCaseNaming();
 
-    public static final TypeSpec createColumnsClassForFunctionParam(List<TypeParsingResult> parsingResults) {
+    public static final TypeSpec createColumnsClassForFunctionParam(List<FieldMetaSignature> parsingResults) {
         final TypeSpec.Builder builder = TypeSpec.classBuilder(COLUMNS_FOR_FUNCTIONS_CLASS)
                 .addJavadoc("Utility class to expose all fields with their CQL type for function call")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL);
@@ -48,7 +48,7 @@ public class EntityMetaColumnsForFunctionsCodeGen  {
         return builder.build();
     }
 
-    private static final FieldSpec buildField(TypeParsingResult parsingResult) {
+    private static final FieldSpec buildField(FieldMetaSignature parsingResult) {
         final TypeName targetType = TypeUtils.mapToNativeCassandraType(parsingResult.targetType.box());
         final TypeName typeNameForFunctionParam = TypeUtils.determineTypeForFunctionParam(targetType);
         final String fieldName = SNAKE_CASE_NAMING.apply(parsingResult.context.fieldName).toUpperCase();
