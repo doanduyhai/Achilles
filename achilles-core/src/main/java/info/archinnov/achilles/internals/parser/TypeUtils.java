@@ -104,6 +104,7 @@ public class TypeUtils {
     public static final String CRUD_SUFFIX = "_CRUD";
     public static final String DSL_SUFFIX = "_DSL";
     public static final String QUERY_SUFFIX = "_QUERY";
+    public static final String FUNCTION_SIGNATURE_TYPE_SUFFIX = "_FunctionMeta";
     public static final String FUNCTION_TYPE_SUFFIX = "_Type";
     public static final String GENERATED_PACKAGE = "info.archinnov.achilles.generated";
     public static final String ENTITY_META_PACKAGE = "info.archinnov.achilles.generated.meta.entity";

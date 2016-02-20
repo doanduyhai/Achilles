@@ -17,6 +17,7 @@
 package info.archinnov.achilles.internals.codegen.dsl.select;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
+import info.archinnov.achilles.internals.utils.NamingHelper;
 import info.archinnov.achilles.type.tuples.Tuple;
 
 public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {

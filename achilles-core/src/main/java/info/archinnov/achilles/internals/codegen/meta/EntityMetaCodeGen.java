@@ -24,6 +24,7 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.parser.validator.BeanValidator.*;
 import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateCorrectKeysOrder;
 import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
+import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -46,6 +47,7 @@ import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
+import info.archinnov.achilles.internals.utils.NamingHelper;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
@@ -600,10 +602,6 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
 
         public String updateStaticWhereReturnType(String fieldName) {
             return updateStaticClassName() + "." + className + UPDATE_STATIC_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
-        }
-
-        protected static String upperCaseFirst(String fieldName) {
-            return fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
         }
     }
 }

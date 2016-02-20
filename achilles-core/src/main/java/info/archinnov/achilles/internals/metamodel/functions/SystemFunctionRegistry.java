@@ -17,6 +17,7 @@
 package info.archinnov.achilles.internals.metamodel.functions;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
@@ -46,10 +47,6 @@ public class SystemFunctionRegistry {
 
     private static final List<TypeName> NUMERIC_TYPES = Arrays.asList(OBJECT_BYTE, OBJECT_SHORT, BIG_INT, OBJECT_LONG,
             OBJECT_FLOAT, OBJECT_DOUBLE, BIG_DECIMAL, OBJECT_INT);
-
-    private static String upperCaseFirst(String name) {
-        return name.substring(0, 1).toUpperCase() + name.substring(1);
-    }
 
     static {
 

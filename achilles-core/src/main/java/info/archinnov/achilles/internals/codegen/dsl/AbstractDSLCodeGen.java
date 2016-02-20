@@ -17,6 +17,7 @@
 package info.archinnov.achilles.internals.codegen.dsl;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -49,10 +50,6 @@ public abstract class AbstractDSLCodeGen {
             (o1, o2) -> o1._4().order.compareTo(o2._4().order);
     public static Comparator<Tuple4<String, String, TypeName, ClusteringColumnInfo>> TUPLE4_CLUSTERING_COLUMN_SORTER =
             (o1, o2) -> o1._4().order.compareTo(o2._4().order);
-
-    protected static String upperCaseFirst(String fieldName) {
-        return fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-    }
 
     protected static List<ClassSignatureInfo> buildClassesSignatureForWhereClause(EntityMetaSignature signature,
                                                                                   ClassSignatureParams classSignatureParams,
