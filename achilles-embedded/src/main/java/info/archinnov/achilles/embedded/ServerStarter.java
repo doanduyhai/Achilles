@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.management.*;
 
@@ -183,7 +184,7 @@ public enum ServerStarter {
 
                 log.info("Shutting down embedded Cassandra server");
                 // Then shutdown the server
-                executor.shutdown();
+                executor.shutdownNow();
             }
         });
     }
