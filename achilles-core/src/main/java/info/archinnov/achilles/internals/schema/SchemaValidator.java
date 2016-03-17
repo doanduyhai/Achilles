@@ -86,7 +86,7 @@ public class SchemaValidator {
 
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format("Validating index on column % of table %s",
+            LOGGER.debug(format("Validating index on column %s of table %s",
                     cqlColumn, indexMetadata.getTable().getName()));
         }
 
