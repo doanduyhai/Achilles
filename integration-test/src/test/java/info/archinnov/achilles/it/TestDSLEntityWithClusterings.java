@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.commons.lang3.RandomUtils;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,6 +52,7 @@ public class TestDSLEntityWithClusterings {
             .forJunit()
             .entityClassesToTruncate(EntityWithClusteringColumns.class)
             .truncateBeforeAndAfterTest()
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
                     .withManagedEntityClasses(EntityWithClusteringColumns.class)
@@ -111,10 +113,10 @@ public class TestDSLEntityWithClusterings {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        final Date date1 = dateFormat.parse("2015-10-01 00:00:00 GMT");
+
         final Date date2 = dateFormat.parse("2015-10-02 00:00:00 GMT");
+        final Date date3 = dateFormat.parse("2015-10-03 00:00:00 GMT");
         final Date date4 = dateFormat.parse("2015-10-04 00:00:00 GMT");
-        final Date date5 = dateFormat.parse("2015-10-05 00:00:00 GMT");
 
         values.put("date1", "'2015-10-01 00:00:00+0000'");
         values.put("date2", "'2015-10-02 00:00:00+0000'");
@@ -122,10 +124,8 @@ public class TestDSLEntityWithClusterings {
         values.put("date4", "'2015-10-04 00:00:00+0000'");
         values.put("date5", "'2015-10-05 00:00:00+0000'");
 
-        scriptExecutor.executeScriptTemplate("EntityWithClusteringColumns/insert_many_rows.cql", values);
-
         /*
-            Data are ordered as:
+            Data are ordered as physically:
 
             uuid1, date3,
             uuid1, date2,
@@ -134,7 +134,15 @@ public class TestDSLEntityWithClusterings {
             uuid2, date4
 
             because date is ORDERED BY DESC natively
+
+            but (uuid,date) >= (uuid1, date2) AND (uuid,date) < (uuid2, date4) should return
+
+            uuid1, date3
+            uuid1, date2
+
          */
+        scriptExecutor.executeScriptTemplate("EntityWithClusteringColumns/insert_many_rows.cql", values);
+
 
         //When
         final List<EntityWithClusteringColumns> list = manager
@@ -150,19 +158,15 @@ public class TestDSLEntityWithClusterings {
                 .getList();
 
         //Then
-        assertThat(list).hasSize(3);
+        assertThat(list).hasSize(2);
 
         assertThat(list.get(0).getUuid()).isEqualTo(uuid1);
-        assertThat(list.get(0).getDate()).isEqualTo(date2);
-        assertThat(list.get(0).getValue()).isEqualTo("val2");
+        assertThat(list.get(0).getDate()).isEqualTo(date3);
+        assertThat(list.get(0).getValue()).isEqualTo("val3");
 
         assertThat(list.get(1).getUuid()).isEqualTo(uuid1);
-        assertThat(list.get(1).getDate()).isEqualTo(date1);
-        assertThat(list.get(1).getValue()).isEqualTo("val1");
-
-        assertThat(list.get(2).getUuid()).isEqualTo(uuid2);
-        assertThat(list.get(2).getDate()).isEqualTo(date5);
-        assertThat(list.get(2).getValue()).isEqualTo("val5");
+        assertThat(list.get(1).getDate()).isEqualTo(date2);
+        assertThat(list.get(1).getValue()).isEqualTo("val2");
     }
 
     @Test
@@ -187,8 +191,8 @@ public class TestDSLEntityWithClusterings {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        final Date date1 = dateFormat.parse("2015-10-01 00:00:00 GMT");
         final Date date2 = dateFormat.parse("2015-10-02 00:00:00 GMT");
+        final Date date3 = dateFormat.parse("2015-10-03 00:00:00 GMT");
 
         values.put("date1", "'2015-10-01 00:00:00+0000'");
         values.put("date2", "'2015-10-02 00:00:00+0000'");
@@ -208,6 +212,11 @@ public class TestDSLEntityWithClusterings {
             uuid2, date4
 
             because date is ORDERED BY DESC natively
+
+            but (uuid,date) > (uuid1, date2) AND uuid < uuid2 should return
+
+            uuid1, date3
+
          */
 
         //When
@@ -227,9 +236,8 @@ public class TestDSLEntityWithClusterings {
         assertThat(list).hasSize(1);
 
         assertThat(list.get(0).getUuid()).isEqualTo(uuid1);
-        assertThat(list.get(0).getDate()).isEqualTo(date1);
-        assertThat(list.get(0).getValue()).isEqualTo("val1");
-
+        assertThat(list.get(0).getDate()).isEqualTo(date3);
+        assertThat(list.get(0).getValue()).isEqualTo("val3");
     }
 
     @Test
