@@ -45,6 +45,7 @@ public class TestEntityWithByteBufferTypeIT {
         final Cluster cluster = CassandraEmbeddedServerBuilder
                 .builder()
                 .useUnsafeCassandraDeamon()
+                .withScript("functions/createFunctions.cql")
                 .buildNativeCluster();
 
         final Long id = RandomUtils.nextLong(0, Long.MAX_VALUE);

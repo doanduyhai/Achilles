@@ -40,7 +40,7 @@ public interface NestedTypesStrategy {
             final TypeMirror mapKey = next.getCurrentType();
             if (aptUtils.isCompositeTypeForCassandra(mapKey) && !containsAnnotation(next, JSON.class)) {
                 aptUtils.validateTrue(containsAnnotation(next, Frozen.class),
-                        "Map key of type collection/UDT '%s' in field '%s' of class '%s' should be annotated with @Frozen",
+                        "Map key of type collection/UDT '%s' in '%s' of class '%s' should be annotated with @Frozen",
                         mapKey, fieldName, rawClass);
             }
         }

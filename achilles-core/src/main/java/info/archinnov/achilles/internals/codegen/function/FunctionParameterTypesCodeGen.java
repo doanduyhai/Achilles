@@ -21,6 +21,7 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static java.lang.String.format;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
@@ -30,27 +31,32 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.internals.parser.context.UDFContext;
+import info.archinnov.achilles.internals.apt.AptUtils;
+import info.archinnov.achilles.internals.parser.context.FunctionsContext;
 import info.archinnov.achilles.internals.utils.TypeNameHelper;
 
 public class FunctionParameterTypesCodeGen {
 
-    public static List<TypeSpec> buildParameterTypesClasses(UDFContext UDFContext) {
+    public static List<TypeSpec> buildParameterTypesClasses(AptUtils aptUtils, FunctionsContext functionContext) {
 
-        return UDFContext.allUsedTypes
+        final Set<TypeName> uniqueTypeNames = functionContext.allUsedTypes
+                .stream()
+                .map(TypeName::box)
+                .collect(Collectors.toSet());
+
+        return uniqueTypeNames
             .stream()
-            .map(typeName -> {
-                TypeName boxed = typeName.box();
-                return TypeSpec.classBuilder(TypeNameHelper.asString(boxed)+ FUNCTION_TYPE_SUFFIX)
-                        .superclass(genericType(ABSTRACT_CQL_COMPATIBLE_TYPE, boxed))
+            .map(typeName ->
+                TypeSpec.classBuilder(TypeNameHelper.asString(typeName)+ FUNCTION_TYPE_SUFFIX)
+                        .superclass(genericType(ABSTRACT_CQL_COMPATIBLE_TYPE, typeName))
                         .addSuperinterface(FUNCTION_CALL)
                         .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                        .addMethod(buildConstructor(boxed))
+                        .addMethod(buildConstructor(typeName))
                         .addMethod(buildIsFunctionCall())
                         //TODO Enable it when https://issues.apache.org/jira/browse/CASSANDRA-10783 is done
                         //.addMethod(buildStaticWrapperMethod(boxed))
-                        .build();
-            })
+                        .build()
+            )
             .collect(Collectors.toList());
 
     }

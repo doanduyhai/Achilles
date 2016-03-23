@@ -5,6 +5,9 @@ import com.datastax.driver.core.DataType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
+import info.archinnov.achilles.generated.function.Long_Type;
+import info.archinnov.achilles.generated.function.String_Type;
+import info.archinnov.achilles.generated.meta.entity.TestEntityWithSimplePartitionKey_AchillesMeta.ColumnsForFunctions;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
 import info.archinnov.achilles.internals.codec.FallThroughCodec;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
@@ -66,6 +69,11 @@ public final class TestEntityWithSimplePartitionKey_AchillesMeta extends Abstrac
    */
   @SuppressWarnings("serial")
   public static final SimpleProperty<TestEntityWithSimplePartitionKey, String, String> value = new SimpleProperty<TestEntityWithSimplePartitionKey, String, String>(new FieldInfo<>((TestEntityWithSimplePartitionKey entity$) -> entity$.getValue(), (TestEntityWithSimplePartitionKey entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("value", java.lang.String.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+
+  /**
+   * Static class to expose "TestEntityWithSimplePartitionKey_AchillesMeta" fields for <strong>type-safe</strong> function calls */
+  public static final TestEntityWithSimplePartitionKey_AchillesMeta.ColumnsForFunctions COLUMNS = new TestEntityWithSimplePartitionKey_AchillesMeta.ColumnsForFunctions();
+  ;
 
   @Override
   protected Class<TestEntityWithSimplePartitionKey> getEntityClass() {
@@ -158,5 +166,43 @@ public final class TestEntityWithSimplePartitionKey_AchillesMeta extends Abstrac
   @Override
   protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getCounterColumns() {
     return Arrays.asList();
+  }
+
+  /**
+   * Utility class to expose all fields with their CQL type for function call */
+  public static final class ColumnsForFunctions {
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"id"</strong> */
+    public final Long_Type ID = new Long_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "id";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"value"</strong> */
+    public final String_Type VALUE = new String_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "value";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
   }
 }

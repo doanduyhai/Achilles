@@ -6,6 +6,10 @@ import com.datastax.driver.core.DataType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
+import info.archinnov.achilles.generated.function.Long_Type;
+import info.archinnov.achilles.generated.function.String_Type;
+import info.archinnov.achilles.generated.function.UUID_Type;
+import info.archinnov.achilles.generated.meta.entity.TestEntityWithComplexCounters_AchillesMeta.ColumnsForFunctions;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
 import info.archinnov.achilles.internals.codec.FallThroughCodec;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
@@ -104,6 +108,11 @@ public final class TestEntityWithComplexCounters_AchillesMeta extends AbstractEn
   @SuppressWarnings("serial")
   public static final SimpleProperty<TestEntityWithComplexCounters, String, Long> counterWithCodec = new SimpleProperty<TestEntityWithComplexCounters, String, Long>(new FieldInfo<>((TestEntityWithComplexCounters entity$) -> entity$.getCounterWithCodec(), (TestEntityWithComplexCounters entity$, String value$) -> entity$.setCounterWithCodec(value$), "counterWithCodec", "counterwithcodec", ColumnType.COUNTER, new ColumnInfo(false), IndexInfo.noIndex()), DataType.counter(), gettableData$ -> gettableData$.get("counterwithcodec", java.lang.Long.class), (settableData$, value$) -> settableData$.set("counterwithcodec", value$, java.lang.Long.class), new TypeToken<String>(){}, new TypeToken<Long>(){}, new StringToLongCodec());
 
+  /**
+   * Static class to expose "TestEntityWithComplexCounters_AchillesMeta" fields for <strong>type-safe</strong> function calls */
+  public static final TestEntityWithComplexCounters_AchillesMeta.ColumnsForFunctions COLUMNS = new TestEntityWithComplexCounters_AchillesMeta.ColumnsForFunctions();
+  ;
+
   @Override
   protected Class<TestEntityWithComplexCounters> getEntityClass() {
     return TestEntityWithComplexCounters.class;
@@ -198,5 +207,94 @@ public final class TestEntityWithComplexCounters_AchillesMeta extends AbstractEn
   @Override
   protected List<AbstractProperty<TestEntityWithComplexCounters, ?, ?>> getCounterColumns() {
     return Arrays.asList(counterWithCodec,simpleCounter);
+  }
+
+  /**
+   * Utility class to expose all fields with their CQL type for function call */
+  public static final class ColumnsForFunctions {
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"id"</strong> */
+    public final Long_Type ID = new Long_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "id";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"staticCounter"</strong> */
+    public final Long_Type STATIC_COUNTER = new Long_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "staticcounter";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"uuid"</strong> */
+    public final UUID_Type UUID = new UUID_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "uuid";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"simpleCounter"</strong> */
+    public final Long_Type SIMPLE_COUNTER = new Long_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "simplecounter";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"counterWithCodec"</strong> */
+    public final String_Type COUNTER_WITH_CODEC = new String_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "counterwithcodec";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
   }
 }

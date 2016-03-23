@@ -45,6 +45,7 @@ public class TestEntityWithCounterColumn {
             .forJunit()
             .entityClassesToTruncate(EntityWithCounterColumn.class)
             .truncateBeforeAndAfterTest()
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
                     .withManagedEntityClasses(EntityWithCounterColumn.class)

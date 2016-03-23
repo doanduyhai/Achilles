@@ -37,8 +37,8 @@ public class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
 
 
     public static List<TypeSpec> buildWhereClasses(EntityMetaSignature signature) {
-        final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.parsingResults);
-        final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.parsingResults);
+        final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
+        final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(UPDATE_DSL_SUFFIX,
                 UPDATE_WHERE_DSL_SUFFIX, UPDATE_END_DSL_SUFFIX,
@@ -63,8 +63,8 @@ public class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
     }
 
     public static List<TypeSpec> buildWhereClassesForStatic(EntityMetaSignature signature) {
-        final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.parsingResults);
-        final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.parsingResults);
+        final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
+        final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(UPDATE_STATIC_DSL_SUFFIX,
                 UPDATE_STATIC_WHERE_DSL_SUFFIX, UPDATE_STATIC_END_DSL_SUFFIX,

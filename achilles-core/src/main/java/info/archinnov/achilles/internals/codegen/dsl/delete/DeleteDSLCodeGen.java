@@ -44,7 +44,7 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
 
     public static TypeSpec buildDeleteClass(EntityMetaSignature signature) {
 
-        final String firstPartitionKey = signature.parsingResults
+        final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.PARTITION)
                 .map(x -> Tuple2.of(x.context.fieldName, (PartitionKeyInfo) x.context.columnInfo))
@@ -72,7 +72,7 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .addType(buildDeleteFrom(signature, signature.className + DELETE_FROM_DSL_SUFFIX,
                         deleteWhereTypeName));
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> candidateColumns.contains(x.context.columnType))
                 .forEach(x -> builder.addMethod(buildDeleteColumnMethod(deleteColumnsTypeName, x, ReturnType.NEW)));
@@ -88,7 +88,7 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
 
     public static TypeSpec buildDeleteStaticClass(EntityMetaSignature signature) {
 
-        final String firstPartitionKey = signature.parsingResults
+        final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.PARTITION)
                 .map(x -> Tuple2.of(x.context.fieldName, (PartitionKeyInfo) x.context.columnInfo))
@@ -115,7 +115,7 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .addType(buildDeleteFrom(signature, signature.className + DELETE_STATIC_FROM_DSL_SUFFIX,
                         deleteStaticWhereTypeName));
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> candidateColumns.contains(x.context.columnType))
                 .forEach(x -> builder.addMethod(buildDeleteColumnMethod(deleteStaticColumnsTypeName, x, ReturnType.NEW)));
@@ -154,7 +154,7 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                         .addStatement("super(deleteColumns)")
                         .build());
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> candidateColumns.contains(x.context.columnType))
                 .forEach(x -> builder.addMethod(buildDeleteColumnMethod(deleteColumnsTypeName, x, ReturnType.THIS)));

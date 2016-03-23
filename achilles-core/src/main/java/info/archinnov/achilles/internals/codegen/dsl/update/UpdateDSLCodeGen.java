@@ -43,7 +43,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
     public static TypeSpec buildUpdateClass(AptUtils aptUtils, EntityMetaSignature signature) {
 
-        final String firstPartitionKey = signature.parsingResults
+        final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.PARTITION)
                 .map(x -> Tuple2.of(x.context.fieldName, (PartitionKeyInfo) x.context.columnInfo))
@@ -82,7 +82,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
     public static TypeSpec buildUpdateStaticClass(AptUtils aptUtils, EntityMetaSignature signature) {
 
-        final String firstPartitionKey = signature.parsingResults
+        final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.PARTITION)
                 .map(x -> Tuple2.of(x.context.fieldName, (PartitionKeyInfo) x.context.columnInfo))
@@ -171,7 +171,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                         .addStatement("super(where)")
                         .build());
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> candidateColumns.contains(x.context.columnType))
                 .forEach(x -> buildUpdateColumnMethods(aptUtils, updateColumnsTypeName, x, ReturnType.NEW)
@@ -195,7 +195,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                         .addStatement("super(where)")
                         .build());
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> candidateColumns.contains(x.context.columnType))
                 .forEach(x -> buildUpdateColumnMethods(aptUtils, updateColumnsTypeName, x, ReturnType.THIS)

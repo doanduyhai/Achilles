@@ -46,7 +46,7 @@ public class TypeNameHelperTest {
         //When
         assertThat(TypeNameHelper.asString(nativeBool)).isEqualTo("Boolean");
         assertThat(TypeNameHelper.asString(objectLong)).isEqualTo("Long");
-        assertThat(TypeNameHelper.asString(localDate)).isEqualTo("LocalDate");
+        assertThat(TypeNameHelper.asString(localDate)).isEqualTo("DriverLocalDate");
         assertThat(TypeNameHelper.asString(bigDecimal)).isEqualTo("BigDecimal");
         assertThat(TypeNameHelper.asString(listString)).isEqualTo("List_String");
         assertThat(TypeNameHelper.asString(mapStringTuple)).isEqualTo("Map_String_TupleValue");

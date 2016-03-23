@@ -16,22 +16,31 @@
 
 package info.archinnov.achilles.internals.config;
 
-import java.util.List;
+import static info.archinnov.achilles.annotations.Enumerated.Encoding.ORDINAL;
 
-import info.archinnov.achilles.annotations.FunctionRegistry;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import com.datastax.driver.core.ConsistencyLevel;
+
+import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.internals.codecs.IntToStringCodec;
+import info.archinnov.achilles.internals.entities.TestUDT;
+import info.archinnov.achilles.type.tuples.Tuple3;
 
 @FunctionRegistry
 public interface MyFunctionRegistry {
 
-    /**
-     * This is a <strong>{@link info.archinnov.achilles.generated.function.SystemFunctions}</strong> class
-     */
-    long convertToLong(String longValue);
+    Long convertToLong(String longValue);
 
-    /**
-     *
-     * @param strings list of string
-     * @return string
-     */
-    String convertListToJson(List<String> strings);
+    String convertListToJson(List<Optional<String>> strings);
+
+    String convertConsistencyLevelList(List<@Enumerated ConsistencyLevel> consistencyLevels);
+
+    String stringifyComplexNestingMap(Map<@JSON TestUDT,
+            @EmptyCollectionIfNull @Frozen Map<Integer,
+                    Tuple3<@Codec(value = IntToStringCodec.class) Integer,
+                            Integer,
+                            @Enumerated(value = ORDINAL) ConsistencyLevel>>> map);
 }

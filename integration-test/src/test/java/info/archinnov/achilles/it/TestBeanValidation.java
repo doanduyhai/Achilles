@@ -70,13 +70,16 @@ public class TestBeanValidation {
             return asList(PRE_INSERT);
         }
     };
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
+
     @Rule
     public AchillesTestResource<ManagerFactory> resource = AchillesTestResourceBuilder
             .forJunit()
             .entityClassesToTruncate(EntityWithBeanValidation.class)
             .truncateBeforeAndAfterTest()
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
                     .withManagedEntityClasses(EntityWithBeanValidation.class)

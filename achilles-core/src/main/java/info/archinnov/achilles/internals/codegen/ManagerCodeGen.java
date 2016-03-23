@@ -110,11 +110,6 @@ public class ManagerCodeGen {
         builder.addType(dslClass.build());
         builder.addType(queryClass.build());
 
-        // Build public static final xxx_Manager.ColumnsForFunctions COLUMNS = new xxx_Manager.ColumnsForFunctions();
-        final String className = signature.className + MANAGER_SUFFIX;
-        builder.addType(EntityMetaColumnsForFunctionsCodeGen.createColumnsClassForFunctionParam(signature.parsingResults))
-                .addField(buildColumnsField(className));
-
         return new ManagerAndDSLClasses(builder.build(), classes);
     }
 
@@ -209,7 +204,7 @@ public class ManagerCodeGen {
                 .addStatement("$T keys = new $T<>()", LIST_OBJECT, ARRAY_LIST)
                 .addStatement("$T encodedKeys = new $T<>()", LIST_OBJECT, ARRAY_LIST);
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == PARTITION)
                 .map(x -> Tuple3.of(x.context.fieldName, x.sourceType, (PartitionKeyInfo) x.context.columnInfo))
@@ -224,7 +219,7 @@ public class ManagerCodeGen {
                                                 signature.className + META_SUFFIX, tuple._1(), tuple._1())
                 );
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == CLUSTERING)
                 .map(x -> Tuple3.of(x.context.fieldName, x.sourceType, (ClusteringColumnInfo) x.context.columnInfo))
@@ -265,7 +260,7 @@ public class ManagerCodeGen {
                 .addStatement("$T keys = new $T<>()", LIST_OBJECT, ARRAY_LIST)
                 .addStatement("$T encodedKeys = new $T<>()", LIST_OBJECT, ARRAY_LIST);
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == PARTITION)
                 .map(x -> Tuple3.of(x.context.fieldName, x.sourceType, (PartitionKeyInfo) x.context.columnInfo))
@@ -280,7 +275,7 @@ public class ManagerCodeGen {
                                                 signature.className + META_SUFFIX, tuple._1(), tuple._1())
                 );
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == CLUSTERING)
                 .map(x -> Tuple3.of(x.context.fieldName, x.sourceType, (ClusteringColumnInfo) x.context.columnInfo))
@@ -328,7 +323,7 @@ public class ManagerCodeGen {
                 .addStatement("$T keys = new $T<>()", LIST_OBJECT, ARRAY_LIST)
                 .addStatement("$T encodedKeys = new $T<>()", LIST_OBJECT, ARRAY_LIST);
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == PARTITION)
                 .map(x -> Tuple3.of(x.context.fieldName, x.sourceType, (PartitionKeyInfo) x.context.columnInfo))
@@ -502,15 +497,5 @@ public class ManagerCodeGen {
             this.managerClass = managerClass;
             this.dslClasses = dslClasses;
         }
-    }
-
-    private static FieldSpec buildColumnsField(String parentClassName) {
-
-        TypeName typeName = ClassName.get(MANAGER_PACKAGE, parentClassName+"."+COLUMNS_FOR_FUNCTIONS_CLASS);
-        return FieldSpec
-                .builder(typeName, "COLUMNS", Modifier.PUBLIC, Modifier.FINAL)
-                .addJavadoc("Static class to expose $S fields for <strong>type-safe</strong> function calls", parentClassName)
-                .initializer(CodeBlock.builder().addStatement("new $T()", typeName).build())
-                .build();
     }
 }

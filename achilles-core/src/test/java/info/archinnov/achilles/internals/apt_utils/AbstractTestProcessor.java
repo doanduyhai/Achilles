@@ -38,6 +38,7 @@ import com.google.testing.compile.JavaSourcesSubjectFactory;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 
+import info.archinnov.achilles.annotations.FunctionRegistry;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 import info.archinnov.achilles.annotations.CodecRegistry;
@@ -63,7 +64,8 @@ public abstract class AbstractTestProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         return Sets.newHashSet(APUnitTest.class.getCanonicalName(),
-                CodecRegistry.class.getCanonicalName());
+                CodecRegistry.class.getCanonicalName(),
+                FunctionRegistry.class.getCanonicalName());
     }
 
     @Override

@@ -22,16 +22,14 @@ import static java.util.stream.Collectors.toList;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
-import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.*;
 import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl;
-import org.eclipse.jdt.internal.compiler.apt.model.VariableElementImpl;
+import org.eclipse.jdt.internal.compiler.apt.model.*;
 import org.eclipse.jdt.internal.compiler.impl.BooleanConstant;
 import org.eclipse.jdt.internal.compiler.impl.IntConstant;
 import org.eclipse.jdt.internal.compiler.impl.StringConstant;
@@ -43,6 +41,8 @@ import com.squareup.javapoet.TypeName;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.SymbolMetadata;
+import com.sun.tools.javac.code.TargetType;
+import com.sun.tools.javac.util.*;
 
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
@@ -63,6 +63,153 @@ public class AnnotationTree {
         this.annotations = annotations;
         this.currentType = currentType;
         this.depth = currentDepth;
+    }
+
+
+    public static AnnotationTree buildFromMethodForReturnType(AptUtils aptUtils, ExecutableElement method) {
+        if (isJavaCompiler(method)) {
+            final TypeMirror returnType = method.getReturnType();
+            final SymbolMetadata metadata = ((Symbol.MethodSymbol) method).getMetadata();
+            final List<Attribute.TypeCompound> typeAttributes = metadata == null ? Arrays.asList() : metadata.getTypeAttributes();
+            final Map<Class<? extends Annotation>, TypedMap> annotationInfo = typeAttributes
+                    .stream()
+                    .filter(x -> x.getPosition().type == TargetType.METHOD_RETURN && x.getPosition().location.size() == 0)
+                    .map(x -> (AnnotationMirror) x)
+                    .collect(Collectors.toMap(x -> toAnnotation_Javac(aptUtils, x),
+                            x -> inspectSupportedAnnotation_Javac(aptUtils, returnType, x)));
+
+            final AnnotationTree annotationTree = new AnnotationTree(returnType, annotationInfo, 1);
+
+            final List<? extends TypeMirror> nestedTypes = returnType.getKind() == TypeKind.DECLARED ?
+                    MoreTypes.asDeclared(returnType).getTypeArguments() : Arrays.asList();
+
+            final List<Attribute.TypeCompound> nestedTypeAttributes = typeAttributes
+                    .stream()
+                    .filter(x -> x.getPosition().type == TargetType.METHOD_RETURN && x.getPosition().location.size() > 0)
+                    .collect(toList());
+
+            buildTree_Javac(aptUtils, annotationTree, 1, nestedTypes, nestedTypeAttributes);
+
+            return annotationTree;
+
+        } else if (isEclipseCompiler(method)) {
+            final TypeMirror returnType = method.getReturnType();
+            final List<? extends TypeMirror> nestedTypes = returnType.getKind() == TypeKind.DECLARED ?
+                    MoreTypes.asDeclared(returnType).getTypeArguments() : Arrays.asList();
+            final TypeBinding binding = (TypeBinding) DeclaredTypeImplContainer.from((TypeMirrorImpl) returnType).getBinding();
+            final List<AnnotationBinding> annotationBindings = Arrays.asList(binding.getTypeAnnotations());
+            final Map<Class<? extends Annotation>, TypedMap> annotationInfo = annotationBindings
+                    .stream()
+                    .filter(annotBinding -> {
+                        final String annotationName = annotBinding.getAnnotationType().debugName();
+                        return JSON.class.getCanonicalName().equals(annotationName) ||
+                                EmptyCollectionIfNull.class.getCanonicalName().equals(annotationName) ||
+                                Enumerated.class.getCanonicalName().equals(annotationName) ||
+                                Frozen.class.getCanonicalName().equals(annotationName) ||
+                                Computed.class.getCanonicalName().equals(annotationName) ||
+                                Counter.class.getCanonicalName().equals(annotationName) ||
+                                TimeUUID.class.getCanonicalName().equals(annotationName) ||
+                                Codec.class.getCanonicalName().equals(annotationName) ||
+                                RuntimeCodec.class.getCanonicalName().equals(annotationName) ||
+                                Index.class.getCanonicalName().equals(annotationName) ||
+                                PartitionKey.class.getCanonicalName().equals(annotationName) ||
+                                ClusteringColumn.class.getCanonicalName().equals(annotationName);
+                    })
+                    .map(x -> inspectSupportedAnnotation_Ecj(aptUtils, returnType, x))
+                    .collect(Collectors.toMap(Tuple2::_1, Tuple2::_2));
+
+            final AnnotationTree annotationTree = new AnnotationTree(returnType, annotationInfo, 1);
+            List<TypeBinding> typeBindings = new ArrayList<>();
+            if (binding instanceof ParameterizedTypeBinding) {
+                typeBindings = Arrays.asList(((ParameterizedTypeBinding) binding).typeArguments());
+            }
+            buildTree_Ecj(aptUtils, annotationTree, 1, nestedTypes, typeBindings);
+            return annotationTree;
+
+        } else {
+            aptUtils.printError("Unknown compiler, only standard Java compiler and Eclipse ECJ compiler are supported");
+            return null;
+        }
+    }
+
+    public static List<AnnotationTree> buildFromMethodForParam(AptUtils aptUtils, ExecutableElement method) {
+        if (isJavaCompiler(method)) {
+            final List<AnnotationTree> annotationTrees = new ArrayList<>(method.getParameters().size());
+            final SymbolMetadata metadata = ((Symbol.MethodSymbol) method).getMetadata();
+            final List<Attribute.TypeCompound> typeAttributes = metadata == null ? Arrays.asList() : metadata.getTypeAttributes();
+            final List<? extends VariableElement> parameters = method.getParameters();
+            for(int i=0; i< parameters.size(); i++) {
+                final int finalI = i;
+                final VariableElement parameter = parameters.get(i);
+                final TypeMirror typeMirror = parameter.asType();
+                final Map<Class<? extends Annotation>, TypedMap> annotationInfo = typeAttributes
+                        .stream()
+                        .filter(x -> x.getPosition().parameter_index == finalI && x.getPosition().location.size() == 0)
+                        .map(x -> (AnnotationMirror) x)
+                        .collect(Collectors.toMap(x -> toAnnotation_Javac(aptUtils, x),
+                                x -> inspectSupportedAnnotation_Javac(aptUtils, typeMirror, x)));
+
+                final AnnotationTree annotationTree = new AnnotationTree(typeMirror, annotationInfo, 1);
+
+                final List<? extends TypeMirror> nestedTypes = typeMirror.getKind() == TypeKind.DECLARED ?
+                        MoreTypes.asDeclared(typeMirror).getTypeArguments() : Arrays.asList();
+
+                final List<Attribute.TypeCompound> nestedTypeAttributes = typeAttributes
+                        .stream()
+                        .filter(x -> x.getPosition().parameter_index == finalI && x.getPosition().location.size() > 0)
+                        .collect(toList());
+
+                buildTree_Javac(aptUtils, annotationTree, 1, nestedTypes, nestedTypeAttributes);
+                annotationTrees.add(annotationTree);
+            }
+
+            return annotationTrees;
+
+        } else if (isEclipseCompiler(method)) {
+            final List<AnnotationTree> annotationTrees = new ArrayList<>(method.getParameters().size());
+            for (VariableElement varElm : method.getParameters()) {
+                final TypeMirror currentType = varElm.asType();
+                final List<? extends TypeMirror> nestedTypes = currentType.getKind() == TypeKind.DECLARED ?
+                        MoreTypes.asDeclared(currentType).getTypeArguments() : Arrays.asList();
+
+                final TypeBinding binding = (TypeBinding) DeclaredTypeImplContainer.from((TypeMirrorImpl) currentType).getBinding();
+                final List<AnnotationBinding> annotationBindings = Arrays.asList(binding.getTypeAnnotations());
+                final Map<Class<? extends Annotation>, TypedMap> annotationInfo = annotationBindings
+                        .stream()
+                        .filter(annotBinding -> {
+                            final String annotationName = annotBinding.getAnnotationType().debugName();
+                            return JSON.class.getCanonicalName().equals(annotationName) ||
+                                    EmptyCollectionIfNull.class.getCanonicalName().equals(annotationName) ||
+                                    Enumerated.class.getCanonicalName().equals(annotationName) ||
+                                    Frozen.class.getCanonicalName().equals(annotationName) ||
+                                    Computed.class.getCanonicalName().equals(annotationName) ||
+                                    Counter.class.getCanonicalName().equals(annotationName) ||
+                                    TimeUUID.class.getCanonicalName().equals(annotationName) ||
+                                    Codec.class.getCanonicalName().equals(annotationName) ||
+                                    RuntimeCodec.class.getCanonicalName().equals(annotationName) ||
+                                    Index.class.getCanonicalName().equals(annotationName) ||
+                                    PartitionKey.class.getCanonicalName().equals(annotationName) ||
+                                    ClusteringColumn.class.getCanonicalName().equals(annotationName);
+                        })
+                        .map(x -> inspectSupportedAnnotation_Ecj(aptUtils, currentType, x))
+                        .collect(Collectors.toMap(Tuple2::_1, Tuple2::_2));
+
+                final AnnotationTree annotationTree = new AnnotationTree(currentType, annotationInfo, 1);
+                List<TypeBinding> typeBindings = new ArrayList<>();
+                if (binding instanceof ParameterizedTypeBinding) {
+                    typeBindings = Arrays.asList(((ParameterizedTypeBinding) binding).typeArguments());
+                }
+
+                buildTree_Ecj(aptUtils, annotationTree, 1, nestedTypes, typeBindings);
+                annotationTrees.add(annotationTree);
+            }
+
+            return annotationTrees;
+
+        } else {
+            aptUtils.printError("Unknown compiler, only standard Java compiler and Eclipse ECJ compiler are supported");
+            return null;
+        }
     }
 
     public static AnnotationTree buildFrom(AptUtils aptUtils, VariableElement varElm) {
@@ -88,6 +235,7 @@ public class AnnotationTree {
             final FieldBinding binding = (FieldBinding)((VariableElementImpl) varElm)._binding;
 
             final List<AnnotationBinding> annotationBindings = Arrays.asList(binding.getAnnotations());
+
             final Map<Class<? extends Annotation>, TypedMap> annotationInfo = annotationBindings
                 .stream()
                 .filter(annotBinding -> {
@@ -113,6 +261,7 @@ public class AnnotationTree {
             if (binding.type instanceof ParameterizedTypeBinding) {
                 typeBindings = Arrays.asList(((ParameterizedTypeBinding) binding.type).typeArguments());
             }
+
             buildTree_Ecj(aptUtils, annotationTree, 1, nestedTypes, typeBindings);
             return annotationTree;
         } else if (isJavaCompiler(varElm)) {

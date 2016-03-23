@@ -47,7 +47,6 @@ import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
-import info.archinnov.achilles.internals.utils.NamingHelper;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
@@ -64,7 +63,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         this.aptUtils = aptUtils;
     }
 
-    public EntityMetaSignature buildEntityMeta(EntityType entityType, TypeElement elm, GlobalParsingContext globalParsingContext, List<FieldMetaSignature> parsingResults) {
+    public EntityMetaSignature buildEntityMeta(EntityType entityType, TypeElement elm, GlobalParsingContext globalParsingContext, List<FieldMetaSignature> fieldMetaSignatures) {
         final TypeName rawClassTypeName = getRawType(TypeName.get(elm.asType()));
         final Optional<Consistency> consistency = aptUtils.getAnnotationOnClass(elm, Consistency.class);
         final Optional<TTL> ttl = aptUtils.getAnnotationOnClass(elm, TTL.class);
@@ -82,28 +81,28 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
 
         validateIsAConcreteNonFinalClass(aptUtils, elm);
         validateHasPublicConstructor(aptUtils, rawClassTypeName, elm);
-        validateNoDuplicateNames(aptUtils, rawClassTypeName, parsingResults);
-        validateHasPartitionKey(aptUtils, rawClassTypeName, parsingResults);
+        validateNoDuplicateNames(aptUtils, rawClassTypeName, fieldMetaSignatures);
+        validateHasPartitionKey(aptUtils, rawClassTypeName, fieldMetaSignatures);
 
-        final boolean isCounter = BeanValidator.isCounterTable(aptUtils, rawClassTypeName, parsingResults);
+        final boolean isCounter = BeanValidator.isCounterTable(aptUtils, rawClassTypeName, fieldMetaSignatures);
 
         if (entityType == EntityType.TABLE) {
-            validateStaticColumns(aptUtils, rawClassTypeName, parsingResults);
+            validateStaticColumns(aptUtils, rawClassTypeName, fieldMetaSignatures);
         } else if (entityType == EntityType.VIEW) {
-            validateNoStaticColumnsForView(aptUtils, rawClassTypeName, parsingResults);
+            validateNoStaticColumnsForView(aptUtils, rawClassTypeName, fieldMetaSignatures);
             aptUtils.validateFalse(isCounter, "The class '%s' cannot have counter columns because it is a materialized view", rawClassTypeName);
         }
 
-        validateComputed(aptUtils, rawClassTypeName, parsingResults);
-        validateCqlColumnNotReservedWords(aptUtils, rawClassTypeName, parsingResults);
+        validateComputed(aptUtils, rawClassTypeName, fieldMetaSignatures);
+        validateCqlColumnNotReservedWords(aptUtils, rawClassTypeName, fieldMetaSignatures);
 
-        validateCorrectKeysOrder(aptUtils, rawClassTypeName, parsingResults
+        validateCorrectKeysOrder(aptUtils, rawClassTypeName, fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.PARTITION)
                 .map(x -> Tuple2.of(x.context.fieldName, (KeyColumnInfo) x.context.columnInfo))
                 .collect(toList()), "@PartitionKey");
 
-        validateCorrectKeysOrder(aptUtils, rawClassTypeName, parsingResults
+        validateCorrectKeysOrder(aptUtils, rawClassTypeName, fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == CLUSTERING)
                 .map(x -> Tuple2.of(x.context.fieldName, (KeyColumnInfo) x.context.columnInfo))
@@ -138,13 +137,13 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildEntityClass(rawClassTypeName))
                 .addMethod(buildDerivedTableName(elm, globalParsingContext.namingStrategy))
-                .addMethod(buildFieldNameToCqlColumn(parsingResults))
+                .addMethod(buildFieldNameToCqlColumn(fieldMetaSignatures))
                 .addMethod(buildGetStaticReadConsistency(consistency))
                 .addMethod(buildGetStaticNamingStrategy(strategy))
-                .addMethod(buildPartitionKeys(parsingResults, rawBeanType))
-                .addMethod(buildClusteringColumns(parsingResults, rawBeanType))
-                .addMethod(buildNormalColumns(parsingResults, rawBeanType))
-                .addMethod(buildComputedColumns(parsingResults, rawBeanType));
+                .addMethod(buildPartitionKeys(fieldMetaSignatures, rawBeanType))
+                .addMethod(buildClusteringColumns(fieldMetaSignatures, rawBeanType))
+                .addMethod(buildNormalColumns(fieldMetaSignatures, rawBeanType))
+                .addMethod(buildComputedColumns(fieldMetaSignatures, rawBeanType));
 
         if (entityType == EntityType.TABLE) {
             builder.superclass(genericType(ABSTRACT_ENTITY_PROPERTY, rawBeanType))
@@ -155,8 +154,8 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                     .addMethod(buildGetStaticSerialConsistency(consistency))
                     .addMethod(buildGetStaticTTL(ttl))
                     .addMethod(buildGetStaticInsertStrategy(strategy))
-                    .addMethod(buildStaticColumns(parsingResults, rawBeanType))
-                    .addMethod(buildCounterColumns(parsingResults, rawBeanType));
+                    .addMethod(buildStaticColumns(fieldMetaSignatures, rawBeanType))
+                    .addMethod(buildCounterColumns(fieldMetaSignatures, rawBeanType));
         } else if (entityType == EntityType.VIEW) {
             builder.superclass(genericType(ABSTRACT_VIEW_PROPERTY, rawBeanType))
                     .addMethod(buildStaticKeyspace(aptUtils.getAnnotationOnClass(elm, MaterializedView.class).get().keyspace()))
@@ -164,11 +163,15 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                     .addMethod(buildGetBaseEntityClass(viewBaseClass.get()));
         }
 
-        for(FieldMetaSignature x: parsingResults) {
+        for(FieldMetaSignature x: fieldMetaSignatures) {
             builder.addField(x.buildPropertyAsField());
         }
 
-        return new EntityMetaSignature(entityType, builder.build(), elm.getSimpleName().toString(), typeName, rawBeanType, viewBaseClass, parsingResults);
+        // Build public static final xxx_AchillesMeta.ColumnsForFunctions COLUMNS = new xxx_AchillesMeta.ColumnsForFunctions();
+        builder.addType(EntityMetaColumnsForFunctionsCodeGen.createColumnsClassForFunctionParam(fieldMetaSignatures))
+                .addField(buildColumnsField(className));
+
+        return new EntityMetaSignature(entityType, builder.build(), elm.getSimpleName().toString(), typeName, rawBeanType, viewBaseClass, fieldMetaSignatures);
     }
 
     private MethodSpec buildFieldNameToCqlColumn(List<FieldMetaSignature> parsingResults) {
@@ -454,6 +457,17 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                 .build();
     }
 
+
+    private FieldSpec buildColumnsField(String parentClassName) {
+
+        TypeName typeName = ClassName.get(ENTITY_META_PACKAGE, parentClassName + "." + COLUMNS_FOR_FUNCTIONS_CLASS);
+        return FieldSpec
+                .builder(typeName, "COLUMNS", Modifier.STATIC, Modifier.PUBLIC, Modifier.FINAL)
+                .addJavadoc("Static class to expose $S fields for <strong>type-safe</strong> function calls", parentClassName)
+                .initializer(CodeBlock.builder().addStatement("new $T()", typeName).build())
+                .build();
+    }
+
     private ParameterizedTypeName propertyListType(TypeName rawClassType) {
         return genericType(LIST, genericType(ABSTRACT_PROPERTY, rawClassType, WILDCARD, WILDCARD));
     }
@@ -464,31 +478,31 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
         public final TypeName typeName;
         public final TypeName entityRawClass;
         public final String fieldName;
-        public final List<FieldMetaSignature> parsingResults;
+        public final List<FieldMetaSignature> fieldMetaSignatures;
         public final EntityType entityType;
         public final Optional<TypeName> viewBaseClass;
 
-        public EntityMetaSignature(EntityType entityType, TypeSpec sourceCode, String className, TypeName typeName, TypeName entityRawClass, Optional<TypeName> viewBaseClass, List<FieldMetaSignature> parsingResults) {
+        public EntityMetaSignature(EntityType entityType, TypeSpec sourceCode, String className, TypeName typeName, TypeName entityRawClass, Optional<TypeName> viewBaseClass, List<FieldMetaSignature> fieldMetaSignatures) {
             this.entityType = entityType;
             this.sourceCode = sourceCode;
             this.className = className;
             this.typeName = typeName;
             this.entityRawClass = entityRawClass;
             this.viewBaseClass = viewBaseClass;
-            this.parsingResults = parsingResults;
+            this.fieldMetaSignatures = fieldMetaSignatures;
             this.fieldName = className.substring(0, 1).toLowerCase() + className.substring(1);
         }
 
         public boolean hasClustering() {
-            return parsingResults.stream().filter(x -> x.context.columnType == CLUSTERING).count() > 0;
+            return fieldMetaSignatures.stream().filter(x -> x.context.columnType == CLUSTERING).count() > 0;
         }
 
         public boolean hasStatic() {
-            return parsingResults.stream().filter(x -> x.context.columnType == STATIC || x.context.columnType == STATIC_COUNTER).count() > 0;
+            return fieldMetaSignatures.stream().filter(x -> x.context.columnType == STATIC || x.context.columnType == STATIC_COUNTER).count() > 0;
         }
 
         public boolean isCounterEntity() {
-            return parsingResults.stream()
+            return fieldMetaSignatures.stream()
                     .filter(x -> x.context.columnType == COUNTER || x.context.columnType == STATIC_COUNTER)
                     .count() > 0;
         }

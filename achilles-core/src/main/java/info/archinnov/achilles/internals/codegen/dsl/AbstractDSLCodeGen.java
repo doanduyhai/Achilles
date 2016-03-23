@@ -213,7 +213,7 @@ public abstract class AbstractDSLCodeGen {
 
     protected static boolean hasCounter(EntityMetaSignature signature) {
         return signature
-                .parsingResults
+                .fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.COUNTER || x.context.columnType == ColumnType.STATIC_COUNTER)
                 .count() > 0;
@@ -301,7 +301,7 @@ public abstract class AbstractDSLCodeGen {
 
     protected static void buildLWtConditionMethods(EntityMetaSignature signature, ClassSignatureInfo currentSignature, boolean hasCounter, TypeSpec.Builder builder) {
         if (!hasCounter) {
-            signature.parsingResults.stream()
+            signature.fieldMetaSignatures.stream()
                     .filter(x -> x.context.columnType == ColumnType.NORMAL || x.context.columnType == ColumnType.STATIC)
                     .forEach(x -> {
                         final FieldSignatureInfo fieldSignatureInfo = FieldSignatureInfo.of(x.context.fieldName, x.context.cqlColumn, x.sourceType);

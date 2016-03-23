@@ -32,6 +32,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
+import org.eclipse.jdt.internal.compiler.apt.model.ExecutableElementImpl;
 import org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl;
 import org.eclipse.jdt.internal.compiler.apt.model.VariableElementImpl;
 
@@ -314,12 +315,19 @@ public class AptUtils {
         return typeElm instanceof Symbol.ClassSymbol;
     }
 
+    public static boolean isJavaCompiler(ExecutableElement executableElement) {
+        return executableElement instanceof Symbol.MethodSymbol;
+    }
+
     public static boolean isEclipseCompiler(VariableElement varElm) {
         return varElm instanceof VariableElementImpl;
     }
-
     public static boolean isEclipseCompiler(TypeElement typeElm) {
         return typeElm instanceof TypeElementImpl;
+    }
+
+    public static boolean isEclipseCompiler(ExecutableElement executableElement) {
+        return executableElement instanceof ExecutableElementImpl;
     }
 
     /**

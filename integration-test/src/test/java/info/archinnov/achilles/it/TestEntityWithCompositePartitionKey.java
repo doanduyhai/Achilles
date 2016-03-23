@@ -49,6 +49,7 @@ public class TestEntityWithCompositePartitionKey {
             .forJunit()
             .entityClassesToTruncate(EntityWithCompositePartitionKey.class)
             .truncateBeforeAndAfterTest()
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
                     .withManagedEntityClasses(EntityWithCompositePartitionKey.class)

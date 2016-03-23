@@ -17,9 +17,6 @@
 package info.archinnov.achilles.internals.parser.validator;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.ALLOWED_TYPES;
-import static info.archinnov.achilles.internals.parser.TypeUtils.NATIVE_TYPES;
-
-import javax.lang.model.element.ExecutableElement;
 
 import com.squareup.javapoet.*;
 
@@ -50,28 +47,28 @@ public class TypeValidator {
         }
     }
 
-    public static void validateNativeTypesForFunction(AptUtils aptUtils, ExecutableElement method, TypeName type, String position) {
+    public static void validateAllowedTypesForFunction(AptUtils aptUtils, String className, String methodName, TypeName type) {
         if (type.isPrimitive()) {
-            validateNativeTypesForFunction(aptUtils, method, type.box(), position);
+            validateAllowedTypesForFunction(aptUtils, className, methodName, type.box());
         } else if (type instanceof ParameterizedTypeName) {
             final ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) type;
-            validateNativeTypesForFunction(aptUtils, method, parameterizedTypeName.rawType, position);
+            validateAllowedTypesForFunction(aptUtils, className, methodName, parameterizedTypeName.rawType);
 
             for (TypeName x : parameterizedTypeName.typeArguments) {
-                validateNativeTypesForFunction(aptUtils, method, x, position);
+                validateAllowedTypesForFunction(aptUtils, className, methodName, x);
             }
         } else if (type instanceof WildcardTypeName) {
             final WildcardTypeName wildcardTypeName = (WildcardTypeName) type;
             for (TypeName x : wildcardTypeName.upperBounds) {
-                validateNativeTypesForFunction(aptUtils, method, x, position);
+                validateAllowedTypesForFunction(aptUtils, className, methodName, x);
             }
-        } else if (type instanceof ClassName) {
-            final boolean isValidType = NATIVE_TYPES.contains(type);
-            aptUtils.validateTrue(isValidType, "Type '%s' in method '%s' %s on class '%s' is not a valid native Java type for Cassandra",
-                type.toString(), method.toString(), position, method.getEnclosingElement().getSimpleName());
+        } else if (type instanceof ClassName || type instanceof ArrayTypeName) {
+            final boolean isValidType = ALLOWED_TYPES.contains(type);
+            aptUtils.validateTrue(isValidType, "Type '%s' in method '%s' return type/parameter on class '%s' is not a valid native Java type for Cassandra",
+                type.toString(), methodName, className);
         } else {
-            aptUtils.printError("Type '%s' in method '%s' %s on class '%s' is not a valid native Java type for Cassandra",
-                type.toString(), method.toString(), position, method.getEnclosingElement().getSimpleName());
+            aptUtils.printError("Type '%s' in method '%s' return type/parameter on class '%s' is not a valid native Java type for Cassandra",
+                type.toString(), methodName, className);
         }
     }
 }

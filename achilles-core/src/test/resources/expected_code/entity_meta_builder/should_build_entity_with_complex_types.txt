@@ -8,6 +8,28 @@ import com.fasterxml.jackson.databind.type.SimpleType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
+import info.archinnov.achilles.generated.function.Array_Byte_Type;
+import info.archinnov.achilles.generated.function.Array_Primitive_byte_Type;
+import info.archinnov.achilles.generated.function.Boolean_Type;
+import info.archinnov.achilles.generated.function.Byte_Type;
+import info.archinnov.achilles.generated.function.ConsistencyLevel_Type;
+import info.archinnov.achilles.generated.function.Date_Type;
+import info.archinnov.achilles.generated.function.Integer_Type;
+import info.archinnov.achilles.generated.function.List_Map_Integer_String_Type;
+import info.archinnov.achilles.generated.function.List_TestUDT_Type;
+import info.archinnov.achilles.generated.function.Long_Type;
+import info.archinnov.achilles.generated.function.Map_Integer_List_Integer_Type;
+import info.archinnov.achilles.generated.function.Map_Integer_List_Map_Integer_String_Type;
+import info.archinnov.achilles.generated.function.Map_Integer_TestUDT_Type;
+import info.archinnov.achilles.generated.function.Map_TestUDT_Map_Integer_Tuple3_Integer_Integer_ConsistencyLevel_Type;
+import info.archinnov.achilles.generated.function.Set_ConsistencyLevel_Type;
+import info.archinnov.achilles.generated.function.String_Type;
+import info.archinnov.achilles.generated.function.TestUDT_Type;
+import info.archinnov.achilles.generated.function.Tuple1_ConsistencyLevel_Type;
+import info.archinnov.achilles.generated.function.Tuple2_ConsistencyLevel_Integer_Type;
+import info.archinnov.achilles.generated.function.Tuple2_Integer_List_String_Type;
+import info.archinnov.achilles.generated.function.UUID_Type;
+import info.archinnov.achilles.generated.meta.entity.TestEntityWithComplexTypes_AchillesMeta.ColumnsForFunctions;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
 import info.archinnov.achilles.internals.codec.ByteArrayCodec;
 import info.archinnov.achilles.internals.codec.ByteArrayPrimitiveCodec;
@@ -371,6 +393,11 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   @SuppressWarnings("serial")
   public static final SimpleProperty<TestEntityWithComplexTypes, UUID, UUID> timeuuid = new SimpleProperty<TestEntityWithComplexTypes, UUID, UUID>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTimeuuid(), (TestEntityWithComplexTypes entity$, UUID value$) -> entity$.setTimeuuid(value$), "timeuuid", "timeuuid", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.timeuuid(), gettableData$ -> gettableData$.get("timeuuid", java.util.UUID.class), (settableData$, value$) -> settableData$.set("timeuuid", value$, java.util.UUID.class), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
 
+  /**
+   * Static class to expose "TestEntityWithComplexTypes_AchillesMeta" fields for <strong>type-safe</strong> function calls */
+  public static final TestEntityWithComplexTypes_AchillesMeta.ColumnsForFunctions COLUMNS = new TestEntityWithComplexTypes_AchillesMeta.ColumnsForFunctions();
+  ;
+
   @Override
   protected Class<TestEntityWithComplexTypes> getEntityClass() {
     return TestEntityWithComplexTypes.class;
@@ -485,5 +512,400 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   @Override
   protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getCounterColumns() {
     return Arrays.asList();
+  }
+
+  /**
+   * Utility class to expose all fields with their CQL type for function call */
+  public static final class ColumnsForFunctions {
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"id"</strong> */
+    public final Long_Type ID = new Long_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "id";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"value"</strong> */
+    public final String_Type VALUE = new String_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "value";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"consistencyLevel"</strong> */
+    public final ConsistencyLevel_Type CONSISTENCY_LEVEL = new ConsistencyLevel_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "consistencylevel";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"time"</strong> */
+    public final Date_Type TIME = new Date_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "time";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"primitiveBoolean"</strong> */
+    public final Boolean_Type PRIMITIVE_BOOLEAN = new Boolean_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "primitiveboolean";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"objectBoolean"</strong> */
+    public final Boolean_Type OBJECT_BOOLEAN = new Boolean_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "objectboolean";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"primitiveByte"</strong> */
+    public final Byte_Type PRIMITIVE_BYTE = new Byte_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "primitivebyte";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"objectByte"</strong> */
+    public final Byte_Type OBJECT_BYTE = new Byte_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "objectbyte";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"primitiveByteArray"</strong> */
+    public final Array_Primitive_byte_Type PRIMITIVE_BYTE_ARRAY = new Array_Primitive_byte_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "primitivebytearray";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"objectByteArray"</strong> */
+    public final Array_Byte_Type OBJECT_BYTE_ARRAY = new Array_Byte_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "objectbytearray";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"integer"</strong> */
+    public final Integer_Type INTEGER = new Integer_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "integer";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"simpleUdt"</strong> */
+    public final TestUDT_Type SIMPLE_UDT = new TestUDT_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "simpleudt";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"listUdt"</strong> */
+    public final List_TestUDT_Type LIST_UDT = new List_TestUDT_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "listudt";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"mapUdt"</strong> */
+    public final Map_Integer_TestUDT_Type MAP_UDT = new Map_Integer_TestUDT_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "mapudt";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"okSet"</strong> */
+    public final Set_ConsistencyLevel_Type OK_SET = new Set_ConsistencyLevel_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "okset";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"jsonMap"</strong> */
+    public final Map_Integer_List_Integer_Type JSON_MAP = new Map_Integer_List_Integer_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "jsonmap";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"mapWithNestedJson"</strong> */
+    public final Map_Integer_List_Map_Integer_String_Type MAP_WITH_NESTED_JSON = new Map_Integer_List_Map_Integer_String_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "mapwithnestedjson";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"listNesting"</strong> */
+    public final List_Map_Integer_String_Type LIST_NESTING = new List_Map_Integer_String_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "listnesting";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"tupleNesting"</strong> */
+    public final Tuple2_Integer_List_String_Type TUPLE_NESTING = new Tuple2_Integer_List_String_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "tuplenesting";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"tuple1"</strong> */
+    public final Tuple1_ConsistencyLevel_Type TUPLE_1 = new Tuple1_ConsistencyLevel_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "tuple1";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"tuple2"</strong> */
+    public final Tuple2_ConsistencyLevel_Integer_Type TUPLE_2 = new Tuple2_ConsistencyLevel_Integer_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "tuple2";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"complexNestingMap"</strong> */
+    public final Map_TestUDT_Map_Integer_Tuple3_Integer_Integer_ConsistencyLevel_Type COMPLEX_NESTING_MAP = new Map_TestUDT_Map_Integer_Tuple3_Integer_Integer_ConsistencyLevel_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "complexnestingmap";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"timeuuid"</strong> */
+    public final UUID_Type TIMEUUID = new UUID_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "timeuuid";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
   }
 }

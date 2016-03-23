@@ -48,6 +48,7 @@ public class TestEntityWithComplexCounter {
             .forJunit()
             .entityClassesToTruncate(EntityWithComplexCounters.class)
             .truncateBeforeAndAfterTest()
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
                     .withManagedEntityClasses(EntityWithComplexCounters.class)

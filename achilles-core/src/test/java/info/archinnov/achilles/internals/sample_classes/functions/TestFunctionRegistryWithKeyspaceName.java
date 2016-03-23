@@ -17,11 +17,12 @@
 package info.archinnov.achilles.internals.sample_classes.functions;
 
 import info.archinnov.achilles.annotations.FunctionRegistry;
+import info.archinnov.achilles.annotations.JSON;
 
 @FunctionRegistry(keyspace = "ks")
 public interface TestFunctionRegistryWithKeyspaceName {
 
-    long toLong(String val);
+    Long toLong(String val);
 
-    int toInt(String val);
+    Integer toInt(String val);
 }

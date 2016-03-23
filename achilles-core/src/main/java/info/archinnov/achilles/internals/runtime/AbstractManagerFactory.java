@@ -19,7 +19,9 @@ package info.archinnov.achilles.internals.runtime;
 import static info.archinnov.achilles.internals.schema.SchemaCreator.generateSchemaAtRuntime;
 import static info.archinnov.achilles.internals.schema.SchemaCreator.generateUDTAtRuntime;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +48,7 @@ import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractViewProperty;
 import info.archinnov.achilles.internals.metamodel.UDTProperty;
+import info.archinnov.achilles.internals.metamodel.functions.FunctionProperty;
 
 public abstract class AbstractManagerFactory {
 
@@ -57,6 +60,7 @@ public abstract class AbstractManagerFactory {
 
     protected List<AbstractEntityProperty<?>> entityProperties;
     protected List<Class<?>> entityClasses;
+    protected List<FunctionProperty> functionProperties;
 
     public AbstractManagerFactory(Cluster cluster, ConfigurationContext configContext) {
         this.cluster = cluster;
@@ -149,6 +153,10 @@ public abstract class AbstractManagerFactory {
                 .stream()
                 .filter(x -> manageEntities.contains(x.entityClass))
                 .forEach(x -> x.validateSchema(configContext));
+
+        functionProperties
+                .stream()
+                .forEach(x -> x.validate(configContext));
     }
 
 

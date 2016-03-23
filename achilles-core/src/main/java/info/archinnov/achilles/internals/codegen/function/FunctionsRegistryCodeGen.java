@@ -20,23 +20,25 @@ import static com.squareup.javapoet.TypeName.BOOLEAN;
 import static com.squareup.javapoet.TypeName.OBJECT;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.internals.metamodel.functions.UDFSignature;
+import info.archinnov.achilles.internals.parser.context.FunctionSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public class FunctionsRegistryCodeGen {
 
-    public static TypeSpec generateFunctionsRegistryClass(String className, List<UDFSignature> udfSignatures) {
+    public static TypeSpec generateFunctionsRegistryClass(String className, List<FunctionSignature> udfSignatures) {
 
         final TypeSpec.Builder builder = TypeSpec.classBuilder(className)
                 .addModifiers(Modifier.FINAL, Modifier.PUBLIC);
 
         if (className.equals(SYSTEM_FUNCTIONS_CLASS)) {
             builder.addJavadoc("This class is the common registry for all system functions");
+            buildAcceptAllMethodsForSystemFunction().forEach(builder::addMethod);
         } else {
             builder.addJavadoc("This class is the common registry for all registered user-defined functions");
         }
@@ -46,7 +48,7 @@ public class FunctionsRegistryCodeGen {
         return builder.build();
     }
 
-    private static MethodSpec buildMethodForFunction(UDFSignature signature) {
+    private static MethodSpec buildMethodForFunction(FunctionSignature signature) {
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(signature.methodName)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .addJavadoc("Call $S function with given parameters", signature.getFunctionName())
@@ -60,7 +62,7 @@ public class FunctionsRegistryCodeGen {
                     .addStatement("params.add($L.buildRecursive())", paramName)
                     .nextControlFlow("else")
                     .addStatement("params.add($L.hasLiteralValue() ? $L.getValue() : $T.column((String)$L.getValue()))",
-                        paramName, paramName, QUERY_BUILDER, paramName)
+                            paramName, paramName, QUERY_BUILDER, paramName)
                     .endControlFlow();
 
         });
@@ -95,7 +97,7 @@ public class FunctionsRegistryCodeGen {
                     .addModifiers(Modifier.PUBLIC)
                     .addAnnotation(Override.class)
                     .returns(STRING)
-                    .addStatement("return $S", TypeUtils.getNativeDataTypeFor(signature.returnType))
+                    .addStatement("return $S", TypeUtils.getNativeDataTypeFor(signature.returnTypeSignature.targetCQLTypeName))
                     .build());
         }
 
@@ -103,5 +105,167 @@ public class FunctionsRegistryCodeGen {
 
         return builder.addStatement("return $L", anonymousClass)
                 .build();
+    }
+
+    private static List<MethodSpec> buildAcceptAllMethodsForSystemFunction() {
+        final List<MethodSpec> methods = new ArrayList<>();
+        final TypeName LONG_TYPE = TypeUtils.determineTypeForFunctionParam(OBJECT_LONG);
+        final TypeName INT_TYPE = TypeUtils.determineTypeForFunctionParam(OBJECT_INT);
+
+        final TypeVariableName typeVariableName = TypeVariableName.get("T", ABSTRACT_CQL_COMPATIBLE_TYPE, FUNCTION_CALL);
+
+        //Token function
+        final MethodSpec.Builder tokenFunctionBuilder = MethodSpec.methodBuilder("token")
+                .addTypeVariable(typeVariableName)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .addJavadoc("Call $S function with given parameters", "token")
+                .returns(LONG_TYPE)
+                .addParameter(typeVariableName, "input", Modifier.FINAL)
+                .addStatement("final $T params = new $T<>()", LIST, ARRAY_LIST)
+                .addStatement("$T.validateFalse(input.isFunctionCall(), $S)", VALIDATOR, "Invalid argument for 'token' function, it does not accept function call as argument, only simple column")
+                .addStatement("$T.validateFalse(input.hasLiteralValue(), $S)", VALIDATOR, "Invalid argument for 'token' function, it does not accept literal value as argument, only simple column")
+                .addStatement("params.add($T.column((String)$L.getValue()))", QUERY_BUILDER, "input");
+
+        final TypeSpec.Builder tokenAnonClassBuilder = TypeSpec.anonymousClassBuilder("$T.empty()", OPTIONAL)
+                .superclass(LONG_TYPE)
+                .addMethod(MethodSpec
+                        .methodBuilder("isFunctionCall")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(BOOLEAN)
+                        .addStatement("return true")
+                        .build())
+                .addMethod(MethodSpec
+                        .methodBuilder("functionName")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(STRING)
+                        .addStatement("return $S", "token")
+                        .build())
+                .addMethod(MethodSpec
+                        .methodBuilder("parameters")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(genericType(LIST, OBJECT))
+                        .addStatement("return params")
+                        .build());
+
+        methods.add(tokenFunctionBuilder.addStatement("return $L", tokenAnonClassBuilder.build()).build());
+
+
+        //writetime function
+        final MethodSpec.Builder writetimeFunctionBuilder = MethodSpec.methodBuilder("writetime")
+                .addTypeVariable(typeVariableName)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .addJavadoc("Call $S function with given parameters", "writetime")
+                .returns(LONG_TYPE)
+                .addParameter(typeVariableName, "input", Modifier.FINAL)
+                .addStatement("final $T params = new $T<>()", LIST, ARRAY_LIST)
+                .addStatement("$T.validateFalse(input.isFunctionCall(), $S)", VALIDATOR, "Invalid argument for 'writetime' function, it does not accept function call as argument, only simple column")
+                .addStatement("$T.validateFalse(input.hasLiteralValue(), $S)", VALIDATOR, "Invalid argument for 'writetime' function, it does not accept literal value as argument, only simple column")
+                .addStatement("params.add($T.column((String)$L.getValue()))", QUERY_BUILDER, "input");
+
+        final TypeSpec.Builder writetimeAnonClassBuilder = TypeSpec.anonymousClassBuilder("$T.empty()", OPTIONAL)
+                .superclass(LONG_TYPE)
+                .addMethod(MethodSpec
+                        .methodBuilder("isFunctionCall")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(BOOLEAN)
+                        .addStatement("return true")
+                        .build())
+                .addMethod(MethodSpec
+                        .methodBuilder("functionName")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(STRING)
+                        .addStatement("return $S", "writetime")
+                        .build())
+                .addMethod(MethodSpec
+                        .methodBuilder("parameters")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(genericType(LIST, OBJECT))
+                        .addStatement("return params")
+                        .build());
+
+        methods.add(writetimeFunctionBuilder.addStatement("return $L", writetimeAnonClassBuilder.build()).build());
+
+        //count function
+        final MethodSpec.Builder countNotNullFunctionBuilder = MethodSpec.methodBuilder("countNotNull")
+                .addTypeVariable(typeVariableName)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .addJavadoc("Call $S function with given parameters", "countNotNull")
+                .returns(LONG_TYPE)
+                .addParameter(typeVariableName, "input", Modifier.FINAL)
+                .addStatement("final $T params = new $T<>()", LIST, ARRAY_LIST)
+                .addStatement("$T.validateFalse(input.isFunctionCall(), $S)", VALIDATOR, "Invalid argument for 'countNotNull' function, it does not accept function call as argument, only simple column")
+                .addStatement("$T.validateFalse(input.hasLiteralValue(), $S)", VALIDATOR, "Invalid argument for 'countNotNull' function, it does not accept literal value as argument, only simple column")
+                .addStatement("params.add($T.column((String)$L.getValue()))", QUERY_BUILDER, "input");
+
+        final TypeSpec.Builder countNotNullAnonClassBuilder = TypeSpec.anonymousClassBuilder("$T.empty()", OPTIONAL)
+                .superclass(LONG_TYPE)
+                .addMethod(MethodSpec
+                        .methodBuilder("isFunctionCall")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(BOOLEAN)
+                        .addStatement("return true")
+                        .build())
+                .addMethod(MethodSpec
+                        .methodBuilder("functionName")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(STRING)
+                        .addStatement("return $S", "count")
+                        .build())
+                .addMethod(MethodSpec
+                        .methodBuilder("parameters")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(genericType(LIST, OBJECT))
+                        .addStatement("return params")
+                        .build());
+
+        methods.add(countNotNullFunctionBuilder.addStatement("return $L", countNotNullAnonClassBuilder.build()).build());
+
+        //ttl function
+        final MethodSpec.Builder ttllFunctionBuilder = MethodSpec.methodBuilder("ttl")
+                .addTypeVariable(typeVariableName)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .addJavadoc("Call $S function with given parameters", "countNotNull")
+                .returns(INT_TYPE)
+                .addParameter(typeVariableName, "input", Modifier.FINAL)
+                .addStatement("final $T params = new $T<>()", LIST, ARRAY_LIST)
+                .addStatement("$T.validateFalse(input.isFunctionCall(), $S)", VALIDATOR, "Invalid argument for 'ttl' function, it does not accept function call as argument, only simple column")
+                .addStatement("$T.validateFalse(input.hasLiteralValue(), $S)", VALIDATOR, "Invalid argument for 'ttl' function, it does not accept literal value as argument, only simple column")
+                .addStatement("params.add($T.column((String)$L.getValue()))", QUERY_BUILDER, "input");
+
+        final TypeSpec.Builder ttlAnonClassBuilder = TypeSpec.anonymousClassBuilder("$T.empty()", OPTIONAL)
+                .superclass(INT_TYPE)
+                .addMethod(MethodSpec
+                        .methodBuilder("isFunctionCall")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(BOOLEAN)
+                        .addStatement("return true")
+                        .build())
+                .addMethod(MethodSpec
+                        .methodBuilder("functionName")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(STRING)
+                        .addStatement("return $S", "ttl")
+                        .build())
+                .addMethod(MethodSpec
+                        .methodBuilder("parameters")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(genericType(LIST, OBJECT))
+                        .addStatement("return params")
+                        .build());
+
+        methods.add(ttllFunctionBuilder.addStatement("return $L", ttlAnonClassBuilder.build()).build());
+        return methods;
     }
 }

@@ -107,7 +107,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
         });
         failTestWithMessage("collections/array type/UDT " +
                 "'java.util.List<java.lang.String>' " +
-                "in field 'listList' " +
+                "in 'listList' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
                 "should be annotated with @Frozen", TestEntityWithNestedTypes.class);
     }
@@ -127,7 +127,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
         });
         failTestWithMessage("collections/array type/UDT " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT' " +
-                "in field 'listUdt' " +
+                "in 'listUdt' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
                 "should be annotated with @Frozen", TestEntityWithNestedTypes.class);
     }
@@ -179,7 +179,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
         });
         failTestWithMessage("collections/array type/UDT " +
                 "'com.datastax.driver.core.UDTValue' " +
-                "in field 'listUdtValue' " +
+                "in 'listUdtValue' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
                 "should be annotated with @Frozen", TestEntityWithNestedTypes.class);
     }
@@ -199,7 +199,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
         });
         failTestWithMessage("collections/array type/UDT " +
                 "'java.util.List<java.lang.String>' " +
-                "in field 'mapList' " +
+                "in 'mapList' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
                 "should be annotated with @Frozen", TestEntityWithNestedTypes.class);
     }
@@ -219,7 +219,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
         });
         failTestWithMessage("collections/array type/UDT " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT' " +
-                "in field 'mapUdt' " +
+                "in 'mapUdt' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
                 "should be annotated with @Frozen", TestEntityWithNestedTypes.class);
     }
@@ -271,7 +271,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
         });
         failTestWithMessage("collections/array type/UDT " +
                 "'com.datastax.driver.core.UDTValue' " +
-                "in field 'mapUDTValue' " +
+                "in 'mapUDTValue' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
                 "should be annotated with @Frozen", TestEntityWithNestedTypes.class);
     }
@@ -291,7 +291,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
         });
         failTestWithMessage("Map key of type collection/UDT " +
                 "'java.util.List<java.lang.Integer>' " +
-                "in field 'mapListKey' " +
+                "in 'mapListKey' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
                 "should be annotated with @Frozen", TestEntityWithNestedTypes.class);
     }
@@ -311,7 +311,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
         });
         failTestWithMessage("Map key of type collection/UDT " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT' " +
-                "in field 'mapUdtKey' " +
+                "in 'mapUdtKey' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
                 "should be annotated with @Frozen", TestEntityWithNestedTypes.class);
     }
@@ -363,7 +363,7 @@ public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
         });
         failTestWithMessage("Map key of type collection/UDT " +
                 "'com.datastax.driver.core.UDTValue' " +
-                "in field 'mapUDTValueKey' " +
+                "in 'mapUDTValueKey' " +
                 "of class 'info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes' " +
                 "should be annotated with @Frozen", TestEntityWithNestedTypes.class);
     }

@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.config;
+package info.archinnov.achilles.internals.parser.context;
 
-import com.datastax.driver.core.ProtocolVersion;
+import java.util.List;
+import java.util.Set;
 
-import info.archinnov.achilles.annotations.CodecRegistry;
-import info.archinnov.achilles.annotations.Enumerated;
-import info.archinnov.achilles.annotations.RuntimeCodec;
+import com.squareup.javapoet.TypeName;
 
-@CodecRegistry
-public abstract class AnotherCodecRegstry {
+public class FunctionsContext {
 
-    @RuntimeCodec(cqlClass = String.class)
-    private ProtocolVersion protocol;
+    public final List<FunctionSignature> functionSignatures;
+    public final Set<TypeName> allUsedTypes;
 
-    @RuntimeCodec(codecName = "encoding_codec", cqlClass = Integer.class)
-    private Enumerated.Encoding encoding;
+    public FunctionsContext(List<FunctionSignature> functionSignatures, Set<TypeName> allUsedTypes) {
+        this.functionSignatures = functionSignatures;
+        this.allUsedTypes = allUsedTypes;
+    }
 }

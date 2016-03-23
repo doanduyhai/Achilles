@@ -22,6 +22,7 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateCodec;
 import static info.archinnov.achilles.internals.parser.validator.TypeValidator.validateAllowedTypes;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.reducing;
 import static java.util.stream.Collectors.toList;
 
 import java.lang.reflect.ParameterizedType;
@@ -44,6 +45,7 @@ import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.context.CodecContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
 import info.archinnov.achilles.internals.parser.context.RuntimeCodecContext;
+import info.archinnov.achilles.internals.parser.validator.TypeValidator;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
@@ -177,6 +179,65 @@ public class CodecFactory {
                 validateAllowedTypes(aptUtils, sourceType, sourceType);
                 codec = CodeBlock.builder().add("new $T<>($T.class)", FALL_THROUGH_CODEC, getRawType(sourceType).box()).build();
                 return new CodecInfo(codec, sourceType, targetType);
+            }
+        }
+    }
+
+    public TypeName determineTargetCQLType(AnnotationTree annotationTree, TypeName parentType, TypeName sourceType,
+        String methodName, String paramName, Optional<CodecInfo> codecFromRegistry) {
+        TypeName targetType = sourceType;
+        TypeMirror typeMirror = annotationTree.getCurrentType();
+
+        final Optional<TypedMap> jsonTransform = extractTypedMap(annotationTree, JSON.class);
+        final Optional<TypedMap> enumerated = extractTypedMap(annotationTree, Enumerated.class);
+        final Optional<TypedMap> codecFromType = extractTypedMap(annotationTree, Codec.class);
+        final Optional<TypedMap> runtimeCodec = extractTypedMap(annotationTree, RuntimeCodec.class);
+        final Optional<TypedMap> computed = extractTypedMap(annotationTree, Computed.class);
+        final Optional<TypeName> computedCQLClass = computed
+                .map(x -> x.<Class<?>>getTyped("cqlClass"))
+                .map(ClassName::get);
+        final boolean isCounter = extractTypedMap(annotationTree, Counter.class).isPresent();
+
+        if (jsonTransform.isPresent()) {
+            return ClassName.get(String.class);
+        } else if (codecFromType.isPresent()) {
+            final CodecContext codecContext = codecFromType.get().getTyped("codecContext");
+            validateCodec(aptUtils, codecContext, sourceType, computedCQLClass, isCounter);
+            return codecContext.targetType.box();
+        } else if(runtimeCodec.isPresent()) {
+            final RuntimeCodecContext runtimeCodecContext = runtimeCodec.get().getTyped("runtimeCodecContext");
+            validateCodec(aptUtils, runtimeCodecContext, runtimeCodecContext.sourceType, computedCQLClass, isCounter);
+            return runtimeCodecContext.targetType.box();
+        } else if (enumerated.isPresent()) {
+            final TypedMap typedMap = enumerated.get();
+            final Object value = typedMap.getTyped("value");
+            aptUtils.validateTrue(isAnEnum(value), "The type '%s' on param '%s' of method '%s' in class '%s' is not a java.lang.Enum type",
+                    sourceType.toString(), paramName, methodName, parentType);
+            final Encoding encoding = typedMap.getTyped("value");
+            if (encoding == Encoding.NAME) {
+                return STRING;
+
+            } else {
+                return OBJECT_INT;
+            }
+        } else if (typeMirror.getKind() == TypeKind.ARRAY && typeMirror.toString().equals("byte[]")) {
+            if (codecFromRegistry.isPresent()) {
+                return codecFromRegistry.get().targetType.box();
+            } else {
+                return BYTE_BUFFER;
+            }
+        } else if (typeMirror.getKind() == TypeKind.ARRAY && typeMirror.toString().equals("java.lang.Byte[]")) {
+            if (codecFromRegistry.isPresent()) {
+                return codecFromRegistry.get().targetType.box();
+            } else {
+                return BYTE_BUFFER;
+            }
+        } else {
+            if (codecFromRegistry.isPresent()) {
+                return codecFromRegistry.get().targetType.box();
+            } else {
+                TypeValidator.validateAllowedTypesForFunction(aptUtils, parentType.toString(), methodName, sourceType);
+                return targetType;
             }
         }
     }

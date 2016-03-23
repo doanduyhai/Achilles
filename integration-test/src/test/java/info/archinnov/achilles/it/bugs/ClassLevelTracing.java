@@ -47,6 +47,7 @@ public class ClassLevelTracing {
             .forJunit()
             .entityClassesToTruncate(SimpleEntity.class)
             .truncateBeforeAndAfterTest()
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
                     .withManagedEntityClasses(SimpleEntity.class)

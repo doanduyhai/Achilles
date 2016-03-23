@@ -40,7 +40,7 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
 
     public static TypeSpec buildSelectClass(EntityMetaSignature signature) {
 
-        final String firstPartitionKey = signature.parsingResults
+        final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.PARTITION)
                 .map(x -> Tuple2.of(x.context.fieldName, (PartitionKeyInfo) x.context.columnInfo))
@@ -61,12 +61,12 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .addType(buildSelectColumns(signature))
                 .addType(buildSelectFrom(signature, firstPartitionKey));
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType != ColumnType.COMPUTED)
                 .forEach(x -> selectClassBuilder.addMethod(buildSelectColumnMethod(selectColumnsTypeName, x, "select", NEW)));
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.COMPUTED)
                 .forEach(x -> selectClassBuilder.addMethod(buildSelectComputedColumnMethod(selectColumnsTypeName, x, "select", NEW)));
@@ -111,12 +111,12 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
                         .addStatement("super(selection)")
                         .build());
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType != ColumnType.COMPUTED)
                 .forEach(x -> builder.addMethod(buildSelectColumnMethod(selectColumnsTypeName, x, "selection", THIS)));
 
-        signature.parsingResults
+        signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.COMPUTED)
                 .forEach(x -> builder.addMethod(buildSelectComputedColumnMethod(selectColumnsTypeName, x, "selection", THIS)));

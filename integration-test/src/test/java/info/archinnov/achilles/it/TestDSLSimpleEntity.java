@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +36,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
@@ -46,7 +44,6 @@ import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.dsl.SimpleEntity_Delete;
 import info.archinnov.achilles.generated.dsl.SimpleEntity_Select;
 import info.archinnov.achilles.generated.dsl.SimpleEntity_Update;
-import info.archinnov.achilles.generated.function.SystemFunctions;
 import info.archinnov.achilles.generated.manager.SimpleEntity_Manager;
 import info.archinnov.achilles.internals.entities.SimpleEntity;
 import info.archinnov.achilles.it.utils.CassandraLogAsserter;
@@ -54,7 +51,6 @@ import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
 import info.archinnov.achilles.type.SchemaNameProvider;
-import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
@@ -64,9 +60,10 @@ public class TestDSLSimpleEntity {
     @Rule
     public AchillesTestResource<ManagerFactory> resource = AchillesTestResourceBuilder
             .forJunit()
-            .withScript("create_keyspace.cql")
             .entityClassesToTruncate(SimpleEntity.class)
             .truncateBeforeAndAfterTest()
+            .withScript("create_keyspace.cql")
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                 .builder(cluster)
                 .withManagedEntityClasses(SimpleEntity.class)

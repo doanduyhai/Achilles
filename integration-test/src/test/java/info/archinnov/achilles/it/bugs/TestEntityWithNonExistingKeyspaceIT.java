@@ -46,6 +46,7 @@ public class TestEntityWithNonExistingKeyspaceIT {
         final Cluster cluster = CassandraEmbeddedServerBuilder
                 .builder()
                 .useUnsafeCassandraDeamon()
+                .withScript("functions/createFunctions.cql")
                 .buildNativeCluster();
 
         //When

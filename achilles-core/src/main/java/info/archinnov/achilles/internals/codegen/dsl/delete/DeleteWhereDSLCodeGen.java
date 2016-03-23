@@ -32,8 +32,8 @@ import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMe
 public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
 
     public static List<TypeSpec> buildWhereClasses(EntityMetaSignature signature) {
-        final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.parsingResults);
-        final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.parsingResults);
+        final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
+        final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(DELETE_DSL_SUFFIX,
                 DELETE_WHERE_DSL_SUFFIX, DELETE_END_DSL_SUFFIX,
@@ -60,7 +60,7 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
     }
 
     public static List<TypeSpec> buildWhereClassesForStatic(EntityMetaSignature signature) {
-        final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.parsingResults);
+        final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(DELETE_STATIC_DSL_SUFFIX,
                 DELETE_STATIC_WHERE_DSL_SUFFIX, DELETE_STATIC_END_DSL_SUFFIX,

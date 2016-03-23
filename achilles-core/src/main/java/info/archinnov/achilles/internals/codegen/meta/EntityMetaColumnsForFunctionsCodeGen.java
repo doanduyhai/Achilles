@@ -48,16 +48,16 @@ public class EntityMetaColumnsForFunctionsCodeGen  {
         return builder.build();
     }
 
-    private static final FieldSpec buildField(FieldMetaSignature parsingResult) {
-        final TypeName targetType = TypeUtils.mapToNativeCassandraType(parsingResult.targetType.box());
-        final TypeName typeNameForFunctionParam = TypeUtils.determineTypeForFunctionParam(targetType);
-        final String fieldName = SNAKE_CASE_NAMING.apply(parsingResult.context.fieldName).toUpperCase();
-        final String cqlColumn = parsingResult.context.cqlColumn;
+    private static final FieldSpec buildField(FieldMetaSignature fieldMetaSignature) {
+//        final TypeName targetType = TypeUtils.mapToNativeCassandraType(fieldMetaSignature.targetType.box());
+        final TypeName typeNameForFunctionParam = TypeUtils.determineTypeForFunctionParam(fieldMetaSignature.sourceType);
+        final String fieldName = SNAKE_CASE_NAMING.apply(fieldMetaSignature.context.fieldName).toUpperCase();
+        final String cqlColumn = fieldMetaSignature.context.cqlColumn;
         return FieldSpec.builder(typeNameForFunctionParam, fieldName, Modifier.PUBLIC, Modifier.FINAL)
                 .addJavadoc("<br/>\n")
                 .addJavadoc("Field to be used for <em>manager.dsl().select().function(...)</em> call\n")
                 .addJavadoc("<br/>\n")
-                .addJavadoc("This is an alias for the field <strong>$S</strong>", parsingResult.context.fieldName)
+                .addJavadoc("This is an alias for the field <strong>$S</strong>", fieldMetaSignature.context.fieldName)
                 .initializer(CodeBlock
                         .builder()
                         .add("new $T($T.empty()){\n", typeNameForFunctionParam, OPTIONAL)

@@ -21,5 +21,5 @@ import info.archinnov.achilles.annotations.FunctionRegistry;
 @FunctionRegistry
 public interface TestFunctionRegistryWithVoidReturn {
 
-    void unsupportedParam(String val);
+    void voidReturnType(String val);
 }

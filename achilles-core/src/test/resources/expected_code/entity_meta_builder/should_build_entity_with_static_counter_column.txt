@@ -6,6 +6,9 @@ import com.datastax.driver.core.DataType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
+import info.archinnov.achilles.generated.function.Long_Type;
+import info.archinnov.achilles.generated.function.UUID_Type;
+import info.archinnov.achilles.generated.meta.entity.TestEntityWithStaticCounterColumn_AchillesMeta.ColumnsForFunctions;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
 import info.archinnov.achilles.internals.codec.FallThroughCodec;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
@@ -80,6 +83,11 @@ public final class TestEntityWithStaticCounterColumn_AchillesMeta extends Abstra
    */
   @SuppressWarnings("serial")
   public static final SimpleProperty<TestEntityWithStaticCounterColumn, Long, Long> count = new SimpleProperty<TestEntityWithStaticCounterColumn, Long, Long>(new FieldInfo<>((TestEntityWithStaticCounterColumn entity$) -> entity$.getCount(), (TestEntityWithStaticCounterColumn entity$, Long value$) -> entity$.setCount(value$), "count", "count", ColumnType.STATIC_COUNTER, new ColumnInfo(false), IndexInfo.noIndex()), DataType.counter(), gettableData$ -> gettableData$.get("count", java.lang.Long.class), (settableData$, value$) -> settableData$.set("count", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+
+  /**
+   * Static class to expose "TestEntityWithStaticCounterColumn_AchillesMeta" fields for <strong>type-safe</strong> function calls */
+  public static final TestEntityWithStaticCounterColumn_AchillesMeta.ColumnsForFunctions COLUMNS = new TestEntityWithStaticCounterColumn_AchillesMeta.ColumnsForFunctions();
+  ;
 
   @Override
   protected Class<TestEntityWithStaticCounterColumn> getEntityClass() {
@@ -173,5 +181,60 @@ public final class TestEntityWithStaticCounterColumn_AchillesMeta extends Abstra
   @Override
   protected List<AbstractProperty<TestEntityWithStaticCounterColumn, ?, ?>> getCounterColumns() {
     return Arrays.asList();
+  }
+
+  /**
+   * Utility class to expose all fields with their CQL type for function call */
+  public static final class ColumnsForFunctions {
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"id"</strong> */
+    public final Long_Type ID = new Long_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "id";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"uuid"</strong> */
+    public final UUID_Type UUID = new UUID_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "uuid";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"count"</strong> */
+    public final Long_Type COUNT = new Long_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "count";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
   }
 }

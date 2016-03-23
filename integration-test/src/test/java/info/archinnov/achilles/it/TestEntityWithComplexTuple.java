@@ -53,6 +53,7 @@ public class TestEntityWithComplexTuple {
             .forJunit()
             .entityClassesToTruncate(EntityWithComplexTuple.class)
             .truncateBeforeAndAfterTest()
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
                     .withManagedEntityClasses(EntityWithComplexTuple.class)

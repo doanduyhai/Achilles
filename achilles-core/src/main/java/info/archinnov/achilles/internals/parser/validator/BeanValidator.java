@@ -185,7 +185,7 @@ public class BeanValidator {
 
         final Map<TypeName, List<FieldMetaSignature>> entitySignaturesMap = entitySignatures
                 .stream()
-                .collect(toMap(meta -> meta.entityRawClass, meta -> meta.parsingResults));
+                .collect(toMap(meta -> meta.entityRawClass, meta -> meta.fieldMetaSignatures));
 
         for (EntityMetaSignature view : viewSignatures) {
             final TypeName viewBaseClass = view.viewBaseClass.get();
@@ -194,13 +194,13 @@ public class BeanValidator {
                 "Cannot find base entity class '%s' for view class '%s'", viewBaseClass, view.entityRawClass);
 
             // Validate all view columns are in base and have correct name & types
-            for (FieldMetaSignature vpr : view.parsingResults) {
+            for (FieldMetaSignature vpr : view.fieldMetaSignatures) {
                 final long count = entityParsingResults.stream().filter(epr -> epr.equalsTo(vpr)).count();
                 aptUtils.validateTrue(count == 1, "Cannot find any match in base table for field '%s' in view class '%s'",
                   vpr.toStringForViewCheck(), view.entityRawClass);
             }
 
-            final List<FieldMetaSignature> viewPKColumns = view.parsingResults
+            final List<FieldMetaSignature> viewPKColumns = view.fieldMetaSignatures
                     .stream()
                     .filter(vpr -> vpr.context.columnType == ColumnType.PARTITION || vpr.context.columnType == ColumnType.CLUSTERING)
                     .collect(toList());
@@ -230,7 +230,7 @@ public class BeanValidator {
 
             // Validate collections in base should be in view
             for (FieldMetaSignature epr : baseCollectionColumns) {
-                final long count = view.parsingResults.stream().filter(vpr -> vpr.equalsTo(epr)).count();
+                final long count = view.fieldMetaSignatures.stream().filter(vpr -> vpr.equalsTo(epr)).count();
                 aptUtils.validateTrue(count == 1, "Collection/UDT column '%s' in base class %s is not found in view class '%s'. It should be included in the view",
                         epr.toStringForViewCheck(), epr.context.entityRawType, view.entityRawClass);
             }

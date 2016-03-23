@@ -17,11 +17,13 @@
 package info.archinnov.achilles.internals.codegen;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
@@ -30,17 +32,20 @@ import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.ManagerCodeGen.ManagerAndDSLClasses;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
+import info.archinnov.achilles.internals.parser.context.FunctionSignature.FunctionParamSignature;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
+import info.archinnov.achilles.internals.parser.context.FunctionsContext;
+import info.archinnov.achilles.internals.parser.context.FunctionSignature;
 
 public class ManagerFactoryCodeGen {
 
-    public static ManagersAndDSLClasses buildInstance(AptUtils aptUtils, List<EntityMetaSignature> signatures, GlobalParsingContext parsingContext) {
+    public static ManagersAndDSLClasses buildInstance(AptUtils aptUtils, List<EntityMetaSignature> signatures, FunctionsContext functionsContext, GlobalParsingContext parsingContext) {
         List<TypeSpec> managerClasses = new ArrayList<>();
         List<TypeSpec> dslClasses = new ArrayList<>();
         final TypeSpec.Builder builder = TypeSpec.classBuilder(MANAGER_FACTORY_CLASS)
                 .superclass(ABSTRACT_MANAGER_FACTORY)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildConstructor(signatures));
+                .addMethod(buildConstructor(signatures, functionsContext));
 
         for(EntityMetaSignature x: signatures) {
             TypeName managerType = ClassName.get(MANAGER_PACKAGE, x.className + MANAGER_SUFFIX);
@@ -60,7 +65,10 @@ public class ManagerFactoryCodeGen {
             builder.addField(entityPropertyMeta)
                     .addField(entityManager)
                     .addMethod(buildManagerFor(x));
+        }
 
+        for (FunctionSignature functionSignature : functionsContext.functionSignatures) {
+            builder.addField(buildFunctionProperty(functionSignature));
         }
 
         TypeName listOfUdtClassProperties = genericType(LIST, genericType(ABSTRACT_UDT_CLASS_PROPERTY, WILDCARD));
@@ -68,6 +76,36 @@ public class ManagerFactoryCodeGen {
         builder.addMethod(getUDTClassProperties(parsingContext, listOfUdtClassProperties));
 
         return new ManagersAndDSLClasses(builder.build(), managerClasses, dslClasses);
+    }
+
+    private static FieldSpec buildFunctionProperty(FunctionSignature functionSignature) {
+        final String fieldName = functionSignature.name + FUNCTION_PROPERTY_SUFFIX;
+        CodeBlock keyspaceCodeBlock;
+        if (functionSignature.keyspace.isPresent()) {
+            keyspaceCodeBlock = CodeBlock.builder().add("$T.of($S)", OPTIONAL, functionSignature.keyspace.get()).build();
+        } else {
+            keyspaceCodeBlock = CodeBlock.builder().add("$T.empty()", OPTIONAL).build();
+        }
+        StringJoiner functionParams = new StringJoiner(", ", "$T.asList(", ")");
+
+        for (FunctionParamSignature parameterSignature : functionSignature.parameterSignatures) {
+            functionParams.add("\"" + parameterSignature.targetCQLDataType + "\"");
+        }
+
+        CodeBlock parametersCodeBlock = CodeBlock.builder().add(functionParams.toString(), ARRAYS).build();
+
+        CodeBlock functionProperty = CodeBlock
+                .builder()
+                .add("new $T($L, $S, $S, $L)", FUNCTION_PROPERTY,
+                        keyspaceCodeBlock,
+                        functionSignature.name.toLowerCase(),
+                        functionSignature.returnTypeSignature.targetCQLDataType,
+                        parametersCodeBlock)
+                .build();
+
+        return FieldSpec.builder(FUNCTION_PROPERTY, fieldName, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+                .initializer(functionProperty)
+                .build();
     }
 
     private static MethodSpec getUDTClassProperties(GlobalParsingContext parsingContext, TypeName listOfUdtClassProperties) {
@@ -87,12 +125,19 @@ public class ManagerFactoryCodeGen {
         return getUdtClassPropertiesBuilder.build();
     }
 
-    private static MethodSpec buildConstructor(List<EntityMetaSignature> signatures) {
-        StringJoiner joiner = new StringJoiner(",");
+    private static MethodSpec buildConstructor(List<EntityMetaSignature> signatures, FunctionsContext functionsContext) {
+        final StringJoiner entityProperties = new StringJoiner(", ");
+        final StringJoiner functionProperties = new StringJoiner(", ");
+
         signatures
                 .stream()
                 .map(x -> x.fieldName + META_SUFFIX)
-                .forEach(x -> joiner.add(x));
+                .forEach(entityProperties::add);
+
+        functionsContext.functionSignatures
+                .stream()
+                .map(signature -> signature.name + FUNCTION_PROPERTY_SUFFIX)
+                .forEach(functionProperties::add);
 
         return MethodSpec
                 .constructorBuilder()
@@ -100,7 +145,8 @@ public class ManagerFactoryCodeGen {
                 .addParameter(CLUSTER, "cluster", Modifier.FINAL)
                 .addParameter(CONFIGURATION_CONTEXT, "configContext", Modifier.FINAL)
                 .addStatement("super($N, $N)", "cluster", "configContext")
-                .addStatement("this.entityProperties = $T.asList($L)", ARRAYS, joiner.toString())
+                .addStatement("this.entityProperties = $T.asList($L)", ARRAYS, entityProperties.toString())
+                .addStatement("this.functionProperties = $T.asList($L)", ARRAYS, functionProperties.toString())
                 .addStatement("this.entityClasses = this.entityProperties.stream().map(x -> x.entityClass).collect($T.toList())", COLLECTORS)
                 .addStatement("bootstrap()")
                 .build();

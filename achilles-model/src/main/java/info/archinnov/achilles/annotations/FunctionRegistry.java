@@ -25,9 +25,9 @@ import java.lang.annotation.*;
  * <strong>{@literal @}FunctionRegistry</strong>
  * public interface MyFunctions {
  *
- *      int sumOf(int val1, int val2);
+ *      Integer sumOf(int val1, int val2);
  *
- *      long toLong(Date javaDate);
+ *      Long toLong(Date javaDate);
  * }
  * </code></pre>
  * <br/>
@@ -51,6 +51,27 @@ import java.lang.annotation.*;
  * }
  * </code></pre>
  *
+ * <strong>Remark 1: functions return types cannot be primitive, use boxed types instead </strong>
+ * <br/>
+ * <br/>
+ * <strong>Remark 2: Achilles' codec system also applies for function parameters and return type </strong>
+ * <br/>
+ * <br/>
+ * <pre class="code"><code class="java">
+ * {@literal @}FunctionRegistry
+ * public interface FunctionsWithCodecSystemRegistry {
+ *
+ *      // CQL function signature = listtojson(consistencylevels list<text>), returns text
+ *      String listToJson(List<<strong>@Enumerated</strong> ConsistencyLevel> consistencyLevels);
+ *
+ *      // CQL function signature = getinvalue(input text), returns text
+ *      <strong>{@literal @}Codec(IntToString.class)</strong> String getIntValue(String input);
+ *
+ * }
+ * </code></pre>
+ * <strong>Remark 3: functions name and parameters' name are lower-cased by Cassandra automatically </strong>
+ * <br/>
+ * <br/>
  * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Functions-And_Aggregates#function-registry" target="_blank">Function Registry</a>
  */
 @Retention(RetentionPolicy.RUNTIME)

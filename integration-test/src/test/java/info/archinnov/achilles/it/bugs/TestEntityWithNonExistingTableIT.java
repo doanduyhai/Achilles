@@ -46,6 +46,7 @@ public class TestEntityWithNonExistingTableIT {
         final Cluster cluster = CassandraEmbeddedServerBuilder
                 .builder()
                 .useUnsafeCassandraDeamon()
+                .withScript("functions/createFunctions.cql")
                 .buildNativeCluster();
 
         //When

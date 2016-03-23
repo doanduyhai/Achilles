@@ -5,6 +5,9 @@ import com.datastax.driver.core.DataType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
+import info.archinnov.achilles.generated.function.Long_Type;
+import info.archinnov.achilles.generated.function.String_Type;
+import info.archinnov.achilles.generated.meta.entity.TestEntityWithStaticAnnotations_AchillesMeta.ColumnsForFunctions;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
 import info.archinnov.achilles.internals.codec.FallThroughCodec;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
@@ -77,6 +80,11 @@ public final class TestEntityWithStaticAnnotations_AchillesMeta extends Abstract
    */
   @SuppressWarnings("serial")
   public static final SimpleProperty<TestEntityWithStaticAnnotations, String, String> overridenName = new SimpleProperty<TestEntityWithStaticAnnotations, String, String>(new FieldInfo<>((TestEntityWithStaticAnnotations entity$) -> entity$.getOverridenName(), (TestEntityWithStaticAnnotations entity$, String value$) -> entity$.setOverridenName(value$), "overridenName", "overriden", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("overriden", java.lang.String.class), (settableData$, value$) -> settableData$.set("overriden", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
+
+  /**
+   * Static class to expose "TestEntityWithStaticAnnotations_AchillesMeta" fields for <strong>type-safe</strong> function calls */
+  public static final TestEntityWithStaticAnnotations_AchillesMeta.ColumnsForFunctions COLUMNS = new TestEntityWithStaticAnnotations_AchillesMeta.ColumnsForFunctions();
+  ;
 
   @Override
   protected Class<TestEntityWithStaticAnnotations> getEntityClass() {
@@ -170,5 +178,60 @@ public final class TestEntityWithStaticAnnotations_AchillesMeta extends Abstract
   @Override
   protected List<AbstractProperty<TestEntityWithStaticAnnotations, ?, ?>> getCounterColumns() {
     return Arrays.asList();
+  }
+
+  /**
+   * Utility class to expose all fields with their CQL type for function call */
+  public static final class ColumnsForFunctions {
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"partitionKey"</strong> */
+    public final Long_Type PARTITION_KEY = new Long_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "partition_key";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"stringValue"</strong> */
+    public final String_Type STRING_VALUE = new String_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "string_value";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used for <em>manager.dsl().select().function(...)</em> call
+     * <br/>
+     * This is an alias for the field <strong>"overridenName"</strong> */
+    public final String_Type OVERRIDEN_NAME = new String_Type(Optional.empty()){
+      @Override
+      protected String cqlColumn() {
+          return "overriden";
+    }
+      @Override
+      public boolean isFunctionCall() {
+          return false;
+    }
+      }
+    ;
   }
 }

@@ -54,6 +54,7 @@ public class TestViewSensorByType {
             .forJunit()
             .entityClassesToTruncate(EntitySensor.class)
             .truncateBeforeAndAfterTest()
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
                     .withManagedEntityClasses(EntitySensor.class, ViewSensorByType.class)

@@ -49,6 +49,7 @@ public class TestALLEntityAsChild {
             .forJunit()
             .entityClassesToTruncate(EntityAsChild.class)
             .truncateBeforeAndAfterTest()
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
                     .withManagedEntityClasses(EntityAsChild.class)

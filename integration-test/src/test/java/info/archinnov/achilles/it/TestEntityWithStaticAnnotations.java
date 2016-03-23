@@ -53,6 +53,7 @@ public class TestEntityWithStaticAnnotations {
             .createAndUseKeyspace("my_static_keyspace")
             .entityClassesToTruncate(EntityWithStaticAnnotations.class)
             .truncateBeforeAndAfterTest()
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
                     .withManagedEntityClasses(EntityWithStaticAnnotations.class)

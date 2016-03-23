@@ -48,6 +48,7 @@ import info.archinnov.achilles.internals.metamodel.*;
 import info.archinnov.achilles.internals.metamodel.columns.*;
 import info.archinnov.achilles.generated.function.AbstractCQLCompatibleType;
 import info.archinnov.achilles.internals.metamodel.functions.FunctionCall;
+import info.archinnov.achilles.internals.metamodel.functions.FunctionProperty;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.options.Options;
@@ -104,8 +105,8 @@ public class TypeUtils {
     public static final String CRUD_SUFFIX = "_CRUD";
     public static final String DSL_SUFFIX = "_DSL";
     public static final String QUERY_SUFFIX = "_QUERY";
-    public static final String FUNCTION_SIGNATURE_TYPE_SUFFIX = "_FunctionMeta";
     public static final String FUNCTION_TYPE_SUFFIX = "_Type";
+    public static final String FUNCTION_PROPERTY_SUFFIX = "_FunctionProperty";
     public static final String GENERATED_PACKAGE = "info.archinnov.achilles.generated";
     public static final String ENTITY_META_PACKAGE = "info.archinnov.achilles.generated.meta.entity";
     public static final String UDT_META_PACKAGE = "info.archinnov.achilles.generated.meta.udt";
@@ -118,6 +119,7 @@ public class TypeUtils {
     public static final String FUNCTIONS_REGISTRY_CLASS = "FunctionsRegistry";
     public static final String SYSTEM_FUNCTIONS_CLASS = "SystemFunctions";
     public static final String COLUMNS_FOR_FUNCTIONS_CLASS = "ColumnsForFunctions";
+
 
 
     // Codecs
@@ -160,6 +162,8 @@ public class TypeUtils {
 
     public static final ClassName ABSTRACT_PROPERTY = ClassName.get(AbstractProperty.class);
     public static final ClassName ABSTRACT_UDT_CLASS_PROPERTY = ClassName.get(AbstractUDTClassProperty.class);
+    public static final ClassName FUNCTION_PROPERTY = ClassName.get(FunctionProperty.class);
+
     public static final ClassName CONSISTENCY_LEVEL = ClassName.get(ConsistencyLevel.class);
     public static final ClassName INSERT_STRATEGY = ClassName.get(InsertStrategy.class);
     public static final ClassName NAMING_STRATEGY = ClassName.get(InternalNamingStrategy.class);
@@ -284,13 +288,28 @@ public class TypeUtils {
     public static final TypeName REGULAR_STATEMENT = ClassName.get(RegularStatement.class);
     public static final ClassName TYPE_TOKEN = ClassName.get(TypeToken.class);
 
+    // Java 8 Types
+    public static final TypeName JDK_ZONED_DATE_TIME = ClassName.get(ZonedDateTime.class);
+
+    // Achilles Tuple Types
+    public static final ClassName TUPLE1 = ClassName.get(Tuple1.class);
+
+    public static final ClassName TUPLE2 = ClassName.get(Tuple2.class);
+    public static final ClassName TUPLE3 = ClassName.get(Tuple3.class);
+    public static final ClassName TUPLE4 = ClassName.get(Tuple4.class);
+    public static final ClassName TUPLE5 = ClassName.get(Tuple5.class);
+    public static final ClassName TUPLE6 = ClassName.get(Tuple6.class);
+    public static final ClassName TUPLE7 = ClassName.get(Tuple7.class);
+    public static final ClassName TUPLE8 = ClassName.get(Tuple8.class);
+    public static final ClassName TUPLE9 = ClassName.get(Tuple9.class);
+    public static final ClassName TUPLE10 = ClassName.get(Tuple10.class);
+
+
     public static final List<TypeName> ALLOWED_TYPES = new ArrayList<>();
     public static final Set<TypeName> NATIVE_TYPES = new HashSet<>();
     public static final Map<TypeName, TypeName> NATIVE_TYPES_MAPPING = new HashMap<>();
     public static final Map<TypeName, String> DRIVER_TYPES_MAPPING = new HashMap<>();
-
-    // Java 8 Types
-    public static final TypeName JDK_ZONED_DATE_TIME = ClassName.get(ZonedDateTime.class);
+    public static final Map<TypeName, String> DRIVER_TYPES_FUNCTION_PARAM_MAPPING = new HashMap<>();
 
     static {
         // Bytes
@@ -313,10 +332,21 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(OBJECT_BYTE_ARRAY, "blob()");
         DRIVER_TYPES_MAPPING.put(BYTE_BUFFER, "blob()");
 
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(NATIVE_BYTE, "tinyint");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_BYTE, "tinyint");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(NATIVE_BYTE_ARRAY, "blob");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_BYTE_ARRAY, "blob");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(BYTE_BUFFER, "blob");
+
         DRIVER_TYPES_MAPPING.put(DOUBLE_ARRAY, "frozenList(DataType.cdouble())");
         DRIVER_TYPES_MAPPING.put(FLOAT_ARRAY, "frozenList(DataType.cfloat())");
         DRIVER_TYPES_MAPPING.put(INT_ARRAY, "frozenList(DataType.cint())");
         DRIVER_TYPES_MAPPING.put(LONG_ARRAY, "frozenList(DataType.bigint())");
+
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(DOUBLE_ARRAY, "list<double>");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(FLOAT_ARRAY, "list<float>");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(INT_ARRAY, "list<int>");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(LONG_ARRAY, "list<bigint>");
 
         NATIVE_TYPES_MAPPING.put(DOUBLE_ARRAY, genericType(LIST, OBJECT_DOUBLE));
         NATIVE_TYPES_MAPPING.put(FLOAT_ARRAY, genericType(LIST, OBJECT_FLOAT));
@@ -332,17 +362,22 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(NATIVE_BOOLEAN, "cboolean()");
         DRIVER_TYPES_MAPPING.put(OBJECT_BOOLEAN, "cboolean()");
 
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(NATIVE_BOOLEAN, "boolean");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_BOOLEAN, "boolean");
+
         // Datetime
         ALLOWED_TYPES.add(JAVA_UTIL_DATE);
         NATIVE_TYPES.add(JAVA_UTIL_DATE);
 
         DRIVER_TYPES_MAPPING.put(JAVA_UTIL_DATE, "timestamp()");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(JAVA_UTIL_DATE, "timestamp");
 
         // Date
         ALLOWED_TYPES.add(JAVA_DRIVER_LOCAL_DATE);
         NATIVE_TYPES.add(JAVA_DRIVER_LOCAL_DATE);
 
         DRIVER_TYPES_MAPPING.put(JAVA_DRIVER_LOCAL_DATE, "date()");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(JAVA_DRIVER_LOCAL_DATE, "date");
 
         //Short
         ALLOWED_TYPES.add(NATIVE_SHORT);
@@ -352,6 +387,9 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(NATIVE_SHORT, "smallint()");
         DRIVER_TYPES_MAPPING.put(OBJECT_SHORT, "smallint()");
 
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(NATIVE_SHORT, "smallint");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_SHORT, "smallint");
+
         // Double
         ALLOWED_TYPES.add(NATIVE_DOUBLE);
         ALLOWED_TYPES.add(OBJECT_DOUBLE);
@@ -359,6 +397,9 @@ public class TypeUtils {
 
         DRIVER_TYPES_MAPPING.put(NATIVE_DOUBLE, "cdouble()");
         DRIVER_TYPES_MAPPING.put(OBJECT_DOUBLE, "cdouble()");
+
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(NATIVE_DOUBLE, "double");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_DOUBLE, "double");
 
         // Float
         ALLOWED_TYPES.add(BIG_DECIMAL);
@@ -371,11 +412,16 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(NATIVE_FLOAT, "cfloat()");
         DRIVER_TYPES_MAPPING.put(OBJECT_FLOAT, "cfloat()");
 
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(BIG_DECIMAL, "decimal");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(NATIVE_FLOAT, "float");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_FLOAT, "float");
+
         // InetAddress
         ALLOWED_TYPES.add(INET_ADDRESS);
         NATIVE_TYPES.add(INET_ADDRESS);
 
         DRIVER_TYPES_MAPPING.put(INET_ADDRESS, "inet()");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(INET_ADDRESS, "inet");
 
         // Integer
         ALLOWED_TYPES.add(NATIVE_INT);
@@ -388,6 +434,10 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(OBJECT_INT, "cint()");
         DRIVER_TYPES_MAPPING.put(BIG_INT, "varint()");
 
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(NATIVE_INT, "int");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_INT, "int");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(BIG_INT, "varint");
+
         // Long
         ALLOWED_TYPES.add(NATIVE_LONG);
         ALLOWED_TYPES.add(OBJECT_LONG);
@@ -396,29 +446,34 @@ public class TypeUtils {
         DRIVER_TYPES_MAPPING.put(NATIVE_LONG, "bigint()");
         DRIVER_TYPES_MAPPING.put(OBJECT_LONG, "bigint()");
 
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(NATIVE_LONG, "bigint");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_LONG, "bigint");
+
         // String
         ALLOWED_TYPES.add(STRING);
         NATIVE_TYPES.add(STRING);
 
         DRIVER_TYPES_MAPPING.put(STRING, "text()");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(STRING, "text");
 
         // UUID
         ALLOWED_TYPES.add(UUID);
         NATIVE_TYPES.add(UUID);
 
         DRIVER_TYPES_MAPPING.put(UUID, "uuid()");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(UUID, "uuid");
 
         // Tuples
-        ALLOWED_TYPES.add(TypeName.get(Tuple1.class));
-        ALLOWED_TYPES.add(TypeName.get(Tuple2.class));
-        ALLOWED_TYPES.add(TypeName.get(Tuple3.class));
-        ALLOWED_TYPES.add(TypeName.get(Tuple4.class));
-        ALLOWED_TYPES.add(TypeName.get(Tuple5.class));
-        ALLOWED_TYPES.add(TypeName.get(Tuple6.class));
-        ALLOWED_TYPES.add(TypeName.get(Tuple7.class));
-        ALLOWED_TYPES.add(TypeName.get(Tuple8.class));
-        ALLOWED_TYPES.add(TypeName.get(Tuple9.class));
-        ALLOWED_TYPES.add(TypeName.get(Tuple10.class));
+        ALLOWED_TYPES.add(TUPLE1);
+        ALLOWED_TYPES.add(TUPLE2);
+        ALLOWED_TYPES.add(TUPLE3);
+        ALLOWED_TYPES.add(TUPLE4);
+        ALLOWED_TYPES.add(TUPLE5);
+        ALLOWED_TYPES.add(TUPLE6);
+        ALLOWED_TYPES.add(TUPLE7);
+        ALLOWED_TYPES.add(TUPLE8);
+        ALLOWED_TYPES.add(TUPLE9);
+        ALLOWED_TYPES.add(TUPLE10);
 
 
         // Collections
@@ -455,6 +510,11 @@ public class TypeUtils {
                     "new com.datastax.driver.core.CodecRegistry(), " +
                     "com.datastax.driver.core.DataType.timestamp(), " +
                     "com.datastax.driver.core.DataType.varchar())");
+
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(JAVA_TIME_INSTANT, "timestamp");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(JAVA_TIME_LOCAL_DATE, "date");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(JAVA_TIME_LOCAL_TIME, "time");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(JAVA_TIME_ZONED_DATE_TME,"tuple<timestamp, varchar>");
 
         NATIVE_TYPES_MAPPING.put(JAVA_TIME_INSTANT, JAVA_UTIL_DATE);
         NATIVE_TYPES_MAPPING.put(JAVA_TIME_LOCAL_DATE, JAVA_DRIVER_LOCAL_DATE);

@@ -27,43 +27,64 @@ import java.util.*;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.ProtocolVersion;
 import com.google.common.collect.ImmutableMap;
 
+import info.archinnov.achilles.annotations.Enumerated;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.function.FunctionsRegistry;
 import info.archinnov.achilles.generated.function.SystemFunctions;
+import info.archinnov.achilles.generated.manager.EntityWithComplexTypes_Manager;
 import info.archinnov.achilles.generated.manager.SimpleEntity_Manager;
+import info.archinnov.achilles.generated.meta.entity.EntityWithComplexTypes_AchillesMeta;
+import info.archinnov.achilles.generated.meta.entity.SimpleEntity_AchillesMeta;
+import info.archinnov.achilles.internals.codecs.EncodingOrdinalCodec;
+import info.archinnov.achilles.internals.codecs.ProtocolVersionCodec;
+import info.archinnov.achilles.internals.entities.EntityWithComplexTypes;
 import info.archinnov.achilles.internals.entities.SimpleEntity;
+import info.archinnov.achilles.internals.entities.TestUDT;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
 import info.archinnov.achilles.type.TypedMap;
+import info.archinnov.achilles.type.codec.CodecSignature;
+import info.archinnov.achilles.type.tuples.Tuple3;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestFunctionCallsSimpleEntity {
 
     @Rule
+    public ExpectedException exception = ExpectedException.none();
+
+    @Rule
     public AchillesTestResource<ManagerFactory> resource = AchillesTestResourceBuilder
             .forJunit()
-            .entityClassesToTruncate(SimpleEntity.class)
+            .entityClassesToTruncate(SimpleEntity.class, EntityWithComplexTypes.class)
             .truncateBeforeAndAfterTest()
-            .withScript("SimpleEntity/createUDF.cql")
+            .withScript("functions/createFunctions.cql")
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                 .builder(cluster)
-                .withManagedEntityClasses(SimpleEntity.class)
+                .withManagedEntityClasses(SimpleEntity.class, EntityWithComplexTypes.class)
                 .doForceSchemaCreation(true)
                 .withStatementsCache(statementsCache)
+                .withRuntimeCodec(new CodecSignature<>(ProtocolVersion.class, String.class),
+                        new ProtocolVersionCodec())
+                .withRuntimeCodec(new CodecSignature<>(Enumerated.Encoding.class, Integer.class, "encoding_codec"),
+                        new EncodingOrdinalCodec())
                 .withDefaultKeyspaceName(DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME)
             .build());
 
     private ScriptExecutor scriptExecutor = resource.getScriptExecutor();
     private SimpleEntity_Manager manager = resource.getManagerFactory().forSimpleEntity();
-    
+    private EntityWithComplexTypes_Manager complexTypes_manager = resource.getManagerFactory().forEntityWithComplexTypes();
+
     @Test
     public void should_dsl_with_system_function_call() throws Exception {
         //Given
@@ -76,8 +97,8 @@ public class TestFunctionCallsSimpleEntity {
                 .dsl()
                 .select()
                 .id()
-                .function(SystemFunctions.toUnixTimestamp(manager.COLUMNS.DATE), "dateAsLong")
-                .function(writetime(manager.COLUMNS.VALUE), "writetimeOfValue")
+                .function(toUnixTimestamp(SimpleEntity_AchillesMeta.COLUMNS.DATE), "dateAsLong")
+                .function(writetime(SimpleEntity_AchillesMeta.COLUMNS.VALUE), "writetimeOfValue")
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
@@ -103,7 +124,7 @@ public class TestFunctionCallsSimpleEntity {
                 .dsl()
                 .select()
                 .id()
-                .function(max(writetime(manager.COLUMNS.VALUE)), "maxWritetimeOfValue")
+                .function(max(writetime(SimpleEntity_AchillesMeta.COLUMNS.VALUE)), "maxWritetimeOfValue")
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
@@ -128,7 +149,7 @@ public class TestFunctionCallsSimpleEntity {
                 .dsl()
                 .select()
                 .id()
-                .function(SystemFunctions.castAsText(SystemFunctions.writetime(manager.COLUMNS.VALUE)), "writetimeOfValueAsString")
+                .function(SystemFunctions.castAsText(SystemFunctions.writetime(SimpleEntity_AchillesMeta.COLUMNS.VALUE)), "writetimeOfValueAsString")
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
@@ -153,7 +174,7 @@ public class TestFunctionCallsSimpleEntity {
                 .dsl()
                 .select()
                 .id()
-                .function(FunctionsRegistry.convertToLong(castAsText(writetime(manager.COLUMNS.VALUE))), "casted")
+                .function(FunctionsRegistry.convertToLong(castAsText(writetime(SimpleEntity_AchillesMeta.COLUMNS.VALUE))), "casted")
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
@@ -167,7 +188,7 @@ public class TestFunctionCallsSimpleEntity {
     }
 
     @Test
-    public void should_dsl_with_complicated_udf_call() throws Exception {
+    public void should_dsl_with_udf_call() throws Exception {
         //Given
         final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
         final Date date = buildDateKey();
@@ -178,7 +199,7 @@ public class TestFunctionCallsSimpleEntity {
                 .dsl()
                 .select()
                 .id()
-                .function(FunctionsRegistry.convertListToJson(manager.COLUMNS.CONSISTENCY_LIST), "consistency_levels")
+                .function(FunctionsRegistry.convertConsistencyLevelList(SimpleEntity_AchillesMeta.COLUMNS.CONSISTENCY_LIST), "consistency_levels")
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
@@ -189,6 +210,63 @@ public class TestFunctionCallsSimpleEntity {
         assertThat(typedMap).isNotNull();
         assertThat(typedMap).isNotEmpty();
         assertThat(typedMap.<String>getTyped("consistency_levels")).isEqualTo("['QUORUM','LOCAL_ONE']");
+    }
+
+    @Test
+    public void should_fail_call_writetime_on_another_function_call() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final Date date = buildDateKey();
+        scriptExecutor.executeScriptTemplate("SimpleEntity/insert_single_row.cql", ImmutableMap.of("id", id, "table", "simple"));
+
+        exception.expect(AchillesException.class);
+        exception.expectMessage("Invalid argument for 'writetime' function, it does not accept function call as argument, only simple column");
+
+        //When
+        manager
+                .dsl()
+                .select()
+                .id()
+                .function(writetime(max(SimpleEntity_AchillesMeta.COLUMNS.VALUE)), "maxWritetimeOfValue")
+                .fromBaseTable()
+                .where()
+                .id_Eq(id)
+                .date_Eq(date)
+                .getTypedMap();
+
+    }
+
+    @Test
+    public void should_call_user_defined_functions() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final TestUDT udt = new TestUDT();
+        final EntityWithComplexTypes entity = new EntityWithComplexTypes();
+
+        entity.setId(id);
+        entity.setValue("12345");
+        entity.setListOfOptional(Arrays.asList(Optional.of("one"), Optional.of("two")));
+        entity.setComplexNestingMap(ImmutableMap.of(udt,
+                ImmutableMap.of(1, Tuple3.of(1, 2, ConsistencyLevel.ALL))));
+
+        complexTypes_manager.crud().insert(entity).execute();
+
+        //When
+        final TypedMap typedMap = complexTypes_manager.dsl()
+                .select()
+                .function(FunctionsRegistry.convertToLong(EntityWithComplexTypes_AchillesMeta.COLUMNS.VALUE), "asLong")
+                .function(FunctionsRegistry.convertListToJson(EntityWithComplexTypes_AchillesMeta.COLUMNS.LIST_OF_OPTIONAL), "list_as_json")
+                .function(FunctionsRegistry.stringifyComplexNestingMap(EntityWithComplexTypes_AchillesMeta.COLUMNS.COMPLEX_NESTING_MAP), "complex_map")
+                .fromBaseTable()
+                .where()
+                .id_Eq(id)
+                .getTypedMap();
+
+        //Then
+        assertThat(typedMap.<Long>getTyped("aslong")).isEqualTo(12345L);
+        assertThat(typedMap.<String>getTyped("list_as_json")).isEqualTo("[one, two]");
+        //TODO implement method once https://issues.apache.org/jira/browse/CASSANDRA-11391 is solved
+        assertThat(typedMap.<String>getTyped("complex_map")).contains("whatever");
     }
 
     private Date buildDateKey() throws ParseException {
