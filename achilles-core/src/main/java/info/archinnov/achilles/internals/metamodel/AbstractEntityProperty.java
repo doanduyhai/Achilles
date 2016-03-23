@@ -353,6 +353,12 @@ public abstract class AbstractEntityProperty<T> implements
                     keyspace, entityClass.getCanonicalName()));
         }
         this.keyspace = Optional.of(keyspace);
+
+        allColumns
+                .stream()
+                .filter(x -> x instanceof UDTProperty)
+                .map(x -> (UDTProperty)x)
+                .forEach(x -> x.injectKeyspace(keyspace));
     }
 
     @Override

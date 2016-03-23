@@ -277,11 +277,16 @@ public class ConfigurationContext {
         final Class<?> entityClass = entityProperty.entityClass;
         final String className = entityClass.getCanonicalName();
 
-        LOGGER.debug("Injecting user type factory");
-        entityProperty.inject(userTypeFactory);
+        if (currentKeyspace.isPresent()) {
+            LOGGER.debug("Injecting current global keyspace");
+            entityProperty.injectKeyspace(currentKeyspace.get());
+        }
 
-        LOGGER.debug("Injecting tuple type factory");
-        entityProperty.inject(tupleTypeFactory);
+        if (schemaNameProvider.isPresent()) {
+            LOGGER.debug("Injecting schema name provider");
+            entityProperty.inject(schemaNameProvider.get());
+        }
+
 
         LOGGER.debug("Injecting default bean factory");
         entityProperty.inject(defaultBeanFactory);
@@ -292,14 +297,25 @@ public class ConfigurationContext {
         LOGGER.debug("Injecting global Insert strategy");
         entityProperty.inject(globalInsertStrategy);
 
-        if (currentKeyspace.isPresent()) {
-            LOGGER.debug("Injecting current global keyspace");
-            entityProperty.injectKeyspace(currentKeyspace.get());
+        if (!interceptors.isEmpty()) {
+            LOGGER.debug("Injecting bean interceptors");
+            interceptors.stream()
+                    .filter(x -> x.acceptEntity(entityClass))
+                    .map(x -> (Interceptor) x)
+                    .forEach(entityProperty.interceptors::add);
         }
 
-        if (schemaNameProvider.isPresent()) {
-            LOGGER.debug("Injecting schema name provider");
-            entityProperty.inject(schemaNameProvider.get());
+        // Adding PreMutate Bean validator as the LAST interceptor
+        if (beanValidator != null && isClassConstrained(entityClass)) {
+            LOGGER.debug("Injecting Bean validator (JSR 303)");
+            if (entityProperty.isTable()) {
+                entityProperty.interceptors.add((Interceptor) preMutateBeanValidationInterceptor);
+            }
+
+            // Add PostLoad interceptor as the FIRST interceptor
+            if (postLoadBeanValidationInterceptor.isPresent()) {
+                entityProperty.interceptors.add(0, (Interceptor) postLoadBeanValidationInterceptor.get());
+            }
         }
 
         ConsistencyLevel driverConsistency = session.getCluster().getConfiguration().getQueryOptions().getConsistencyLevel();
@@ -324,35 +340,17 @@ public class ConfigurationContext {
                         .defaultValue(defaultSerialConsistencyLevel)
                         .get();
 
-
-        if (!interceptors.isEmpty()) {
-            LOGGER.debug("Injecting bean interceptors");
-            interceptors.stream()
-                    .filter(x -> x.acceptEntity(entityClass))
-                    .map(x -> (Interceptor) x)
-                    .forEach(entityProperty.interceptors::add);
-        }
-
-        // Adding PreMutate Bean validator as the LAST interceptor
-        if (beanValidator != null && isClassConstrained(entityClass)) {
-            LOGGER.debug("Injecting Bean validator (JSR 303)");
-            if (entityProperty.isTable()) {
-                entityProperty.interceptors.add((Interceptor) preMutateBeanValidationInterceptor);
-            }
-
-            // Add PostLoad interceptor as the FIRST interceptor
-            if (postLoadBeanValidationInterceptor.isPresent()) {
-                entityProperty.interceptors.add(0, (Interceptor) postLoadBeanValidationInterceptor.get());
-            }
-        }
-
-
         LOGGER.debug("Injecting global consistency levels");
         entityProperty.inject(Tuple3.of(readConsistency, writeConsistency, serialConsistency));
 
         LOGGER.debug("Injecting runtime codecs");
         entityProperty.injectRuntimeCodecs(runtimeCodecs);
 
+        LOGGER.debug("Injecting user type factory");
+        entityProperty.inject(userTypeFactory);
+
+        LOGGER.debug("Injecting tuple type factory");
+        entityProperty.inject(tupleTypeFactory);
     }
 
 
