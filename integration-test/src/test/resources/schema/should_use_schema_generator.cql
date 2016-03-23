@@ -144,6 +144,7 @@ CREATE TABLE IF NOT EXISTS my_static_keyspace.entity_static_annotations(
 CREATE TABLE IF NOT EXISTS test.entitywithstaticcolumn(
 		id bigint,
 		uuid uuid,
+		another_static_col text static,
 		static_col text static,
 		value text,
 		PRIMARY KEY(id, uuid))

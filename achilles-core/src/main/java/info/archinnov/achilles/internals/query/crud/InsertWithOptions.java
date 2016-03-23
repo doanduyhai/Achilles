@@ -16,9 +16,9 @@
 
 package info.archinnov.achilles.internals.query.crud;
 
-import static info.archinnov.achilles.internals.cache.CacheKey.Operation.INSERT;
-import static info.archinnov.achilles.internals.cache.CacheKey.Operation.INSERT_IF_NOT_EXISTS;
+import static info.archinnov.achilles.internals.cache.CacheKey.Operation.*;
 import static info.archinnov.achilles.internals.query.LWTHelper.triggerLWTListeners;
+import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validateColumnsForInsertStatic;
 import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validatePrimaryKey;
 import static info.archinnov.achilles.type.interceptor.Event.POST_INSERT;
 import static info.archinnov.achilles.type.interceptor.Event.PRE_INSERT;
@@ -56,17 +56,25 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForInsert<InsertWi
     private final RuntimeEngine rte;
     private final ENTITY instance;
     private final Options options = new Options();
+    private final boolean insertStatic;
 
-    public InsertWithOptions(AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte, ENTITY instance) {
+    public InsertWithOptions(AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte, ENTITY instance, boolean insertStatic) {
         this.meta = meta;
         this.rte = rte;
         this.instance = instance;
+        this.insertStatic = insertStatic;
     }
 
     public CompletableFuture<ExecutionInfo> executeAsyncWithStats() {
 
         meta.triggerInterceptorsForEvent(PRE_INSERT, instance);
-        validatePrimaryKey(instance, meta);
+
+        if (insertStatic) {
+            validateColumnsForInsertStatic(instance, meta);
+        } else {
+            validatePrimaryKey(instance, meta);
+        }
+
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
         final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
 
@@ -106,13 +114,17 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForInsert<InsertWi
 
     @Override
     public List<Object> getBoundValues() {
-        BoundValuesWrapper wrapper = meta.extractAllValuesFromEntity(instance, options);
+        BoundValuesWrapper wrapper = insertStatic == true
+                ? meta.extractPartitionKeysAndStaticColumnsFromEntity(instance, options)
+                : meta.extractAllValuesFromEntity(instance, options);
         return wrapper.boundValuesInfo.stream().map(x -> x.boundValue).collect(toList());
     }
 
     @Override
     public List<Object> getEncodedBoundValues() {
-        BoundValuesWrapper wrapper = meta.extractAllValuesFromEntity(instance, options);
+        BoundValuesWrapper wrapper = insertStatic == true
+                ? meta.extractPartitionKeysAndStaticColumnsFromEntity(instance, options)
+                : meta.extractAllValuesFromEntity(instance, options);
         return wrapper.boundValuesInfo.stream().map(x -> x.encodedValue).collect(toList());
     }
 
@@ -132,7 +144,10 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForInsert<InsertWi
         }
 
         final PreparedStatement ps = getInternalPreparedStatement();
-        BoundValuesWrapper wrapper = meta.extractAllValuesFromEntity(instance, options);
+        BoundValuesWrapper wrapper = insertStatic == true
+                ? meta.extractPartitionKeysAndStaticColumnsFromEntity(instance, options)
+                : meta.extractAllValuesFromEntity(instance, options);
+
         StatementWrapper statementWrapper = wrapper.bindWithInsertStrategy(ps, getOverridenStrategy(meta));
         statementWrapper.applyOptions(options);
         return statementWrapper;
@@ -140,9 +155,13 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForInsert<InsertWi
 
     private PreparedStatement getInternalPreparedStatement() {
         if (ifNotExists.isPresent() && ifNotExists.get() == true) {
-            return INSERT_IF_NOT_EXISTS.getPreparedStatement(rte, meta, options);
+            return insertStatic == true
+                    ? INSERT_STATIC_IF_NOT_EXISTS.getPreparedStatement(rte, meta, options)
+                    : INSERT_IF_NOT_EXISTS.getPreparedStatement(rte, meta, options);
         } else {
-            return INSERT.getPreparedStatement(rte, meta, options);
+            return insertStatic == true
+                    ? INSERT_STATIC.getPreparedStatement(rte, meta, options)
+                    : INSERT.getPreparedStatement(rte, meta, options);
         }
     }
 

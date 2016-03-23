@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internals.runtime;
 
+import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validateColumnsForInsertStatic;
 import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validatePrimaryKey;
 import static info.archinnov.achilles.internals.statement.StatementHelper.isSelectStatement;
 import static info.archinnov.achilles.validation.Validator.*;
@@ -90,7 +91,7 @@ public abstract class AbstractManager<ENTITY> {
         return rte.getCluster();
     }
 
-    protected InsertWithOptions<ENTITY> insertInternal(ENTITY instance) {
+    protected InsertWithOptions<ENTITY> insertInternal(ENTITY instance, boolean insertStatic) {
 
         validateNotNull(instance, "Entity to be inserted should not be null");
 
@@ -98,8 +99,13 @@ public abstract class AbstractManager<ENTITY> {
             LOGGER.trace(format("Create insert CRUD for entity %s", instance));
         }
 
-        validatePrimaryKey(instance, meta_internal);
-        return new InsertWithOptions<>(meta_internal, rte, instance);
+        if (insertStatic) {
+            validateColumnsForInsertStatic(instance, meta_internal);
+        } else {
+            validatePrimaryKey(instance, meta_internal);
+        }
+
+        return new InsertWithOptions<>(meta_internal, rte, instance, insertStatic);
     }
 
     protected DeleteWithOptions<ENTITY> deleteInternal(ENTITY instance) {

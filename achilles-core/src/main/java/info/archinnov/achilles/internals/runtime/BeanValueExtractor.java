@@ -133,4 +133,46 @@ public class BeanValueExtractor {
 
         return Tuple2.of(boundValues, encodedValues);
     }
+
+    public static <T> BoundValuesWrapper extractPartitionKeysAndStaticValues(T instance, AbstractEntityProperty<T> entityProperty, Options options) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format("Extract partition key values and static columns from entity %s of type %",
+                    instance, entityProperty.entityClass.getCanonicalName()));
+        }
+
+        final List<BoundValueInfo> boundValues = new ArrayList<>();
+        final List<BoundValueInfo> partitionKeys = entityProperty.partitionKeys
+                .stream()
+                .map(x -> {
+                    final AbstractProperty x1 = (AbstractProperty) x;
+                    final BiConsumer<Object, SettableData> lambda = x1::encodeToSettable;
+                    return BoundValueInfo.of(lambda, x.getFieldValue(instance), x.encodeField(instance));
+                })
+                .collect(toList());
+
+        boundValues.addAll(partitionKeys);
+
+        boundValues.addAll(entityProperty.staticColumns
+                .stream()
+                .map(x -> {
+                    final AbstractProperty x1 = (AbstractProperty) x;
+                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance));
+                })
+                .collect(toList()));
+
+        final Optional<Integer> ttl = OverridingOptional
+                .from(options.getTimeToLive())
+                .andThen(entityProperty.staticTTL)
+                .getOptional();
+
+        boundValues.add(ttl.isPresent()
+                ? BoundValueInfo.of((Object value, SettableData settableData) -> settableData.setInt("ttl", ttl.get()), ttl.get(), ttl.get())
+                : BoundValueInfo.of((Object value, SettableData settableData) -> settableData.setInt("ttl", 0), 0, 0));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format("Extracted encoded bound values : %s", boundValues));
+        }
+        return new BoundValuesWrapper(entityProperty, boundValues);
+
+    }
 }

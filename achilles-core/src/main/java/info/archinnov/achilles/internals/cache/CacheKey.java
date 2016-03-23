@@ -94,6 +94,19 @@ public class CacheKey {
                         .orElse(psFromCache);
             }
         },
+        INSERT_STATIC {
+            @Override
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(String.format("Prepare INSERT STATIC statement for entity of type %s",
+                            meta.entityClass.getCanonicalName()));
+                }
+                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, INSERT_STATIC));
+                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsertStatic(meta, provider))
+                        .orElse(psFromCache);
+            }
+        },
         INSERT_IF_NOT_EXISTS {
             @Override
             public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
@@ -104,6 +117,19 @@ public class CacheKey {
                 final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, INSERT_IF_NOT_EXISTS));
                 return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsertIfNotExists(meta, provider))
+                        .orElse(psFromCache);
+            }
+        },
+        INSERT_STATIC_IF_NOT_EXISTS {
+            @Override
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(String.format("Prepare INSERT STATIC IF NOT EXISTS statement for entity of type %s",
+                            meta.entityClass.getCanonicalName()));
+                }
+                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, INSERT_STATIC_IF_NOT_EXISTS));
+                return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsertStaticIfNotExists(meta, provider))
                         .orElse(psFromCache);
             }
         },

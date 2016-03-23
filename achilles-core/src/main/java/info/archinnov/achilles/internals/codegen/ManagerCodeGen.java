@@ -32,7 +32,6 @@ import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
-import info.archinnov.achilles.internals.codegen.meta.EntityMetaColumnsForFunctionsCodeGen;
 import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.TypeUtils;
@@ -71,6 +70,9 @@ public class ManagerCodeGen {
 
             if (!signature.isCounterEntity()) {
                 crudClass.addMethod(buildInsert(signature));
+                if (signature.hasStatic()) {
+                    crudClass.addMethod(buildInsertStatic(signature));
+                }
             }
 
             if (signature.hasClustering()) {
@@ -135,6 +137,7 @@ public class ManagerCodeGen {
 
         if (signature.isTable()) {
             builder.addJavadoc("   <li>INSERT</li>\n")
+                    .addJavadoc("   <li>INSERT STATIC</li>\n")
                     .addJavadoc("   <li>INSERT IF NOT EXISTS</li>\n")
                     .addJavadoc("   <li>DELETE BY ID</li>\n")
                     .addJavadoc("   <li>DELETE BY ID IF NOT EXISTS</li>\n")
@@ -186,12 +189,25 @@ public class ManagerCodeGen {
 
     private static MethodSpec buildInsert(EntityMetaSignature signature) {
         return MethodSpec.methodBuilder("insert")
-                .addJavadoc("Insert this entity")
-                .addJavadoc("@param instance an instance of $T", signature.entityRawClass)
+                .addJavadoc("Insert this entity\n\n")
+                .addJavadoc("@param instance an instance of $T\n", signature.entityRawClass)
                 .addJavadoc("@return InsertWithOptions<$T>", signature.entityRawClass)
                 .addModifiers(Modifier.FINAL, Modifier.PUBLIC)
                 .addParameter(signature.entityRawClass, "instance", Modifier.FINAL)
-                .addStatement("return insertInternal(instance)")
+                .addStatement("return insertInternal(instance, false)") // insertStatic = false
+                .returns(genericType(INSERT_WITH_OPTIONS, signature.entityRawClass))
+                .build();
+    }
+
+    private static MethodSpec buildInsertStatic(EntityMetaSignature signature) {
+        return MethodSpec.methodBuilder("insertStatic")
+                .addJavadoc("Insert only partition key(s) and static column(s).\n\n")
+                .addJavadoc("<strong>All clustering column(s) values will be ignored and not inserted</strong>\n\n")
+                .addJavadoc("@param instance an instance of $T\n", signature.entityRawClass)
+                .addJavadoc("@return InsertWithOptions<$T>", signature.entityRawClass)
+                .addModifiers(Modifier.FINAL, Modifier.PUBLIC)
+                .addParameter(signature.entityRawClass, "instance", Modifier.FINAL)
+                .addStatement("return insertInternal(instance, true)") // insertStatic = true
                 .returns(genericType(INSERT_WITH_OPTIONS, signature.entityRawClass))
                 .build();
     }

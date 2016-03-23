@@ -39,6 +39,7 @@ import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.ComputedProperty;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.type.SchemaNameProvider;
+import info.archinnov.achilles.validation.Validator;
 
 public class PreparedStatementGenerator {
 
@@ -234,6 +235,14 @@ public class PreparedStatementGenerator {
 
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_IF_NOT_EXISTS),
                 () -> session.prepare(generateInsertIfNotExists(entityProperty, Optional.empty())));
+
+        if (entityProperty.hasStaticColumn()) {
+            cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_STATIC),
+                    () -> session.prepare(generateInsertStatic(entityProperty, Optional.empty())));
+
+            cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_STATIC_IF_NOT_EXISTS),
+                    () -> session.prepare(generateInsertStaticIfNotExists(entityProperty, Optional.empty())));
+        }
     }
 
     public static RegularStatement generateInsert( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
@@ -250,6 +259,27 @@ public class PreparedStatementGenerator {
         return insert.using(ttl(bindMarker("ttl")));
     }
 
+    public static RegularStatement generateInsertStatic( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format("Generate INSERT STATIC query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
+        }
+
+        Validator.validateBeanMappingTrue(entityProperty.hasStaticColumn(),
+                "Cannot generate INSERT STATIC query for entity of type %s because it has no static column");
+
+        final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
+
+        for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
+            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+        }
+
+        for (AbstractProperty<?, ?, ?> x : entityProperty.staticColumns) {
+            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+        }
+
+        return insert.using(ttl(bindMarker("ttl")));
+    }
+
     public static RegularStatement generateInsertIfNotExists( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate INSERT IF NOT EXISTS query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
@@ -258,6 +288,27 @@ public class PreparedStatementGenerator {
         final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.allColumns) {
+            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+        }
+
+        return insert.ifNotExists().using(ttl(bindMarker("ttl")));
+    }
+
+    public static RegularStatement generateInsertStaticIfNotExists( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format("Generate INSERT STATIC IF NOT EXISTS query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
+        }
+
+        Validator.validateBeanMappingTrue(entityProperty.hasStaticColumn(),
+                "Cannot generate INSERT IF NOT EXISTS query for entity of type %s because it has no static column");
+
+        final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
+
+        for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
+            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+        }
+
+        for (AbstractProperty<?, ?, ?> x : entityProperty.staticColumns) {
             insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
         }
 

@@ -47,15 +47,46 @@ public class BeanInternalValidator {
                                         tuple._1(), entityProperty.entityClass.getCanonicalName())
                 );
 
+
         entityProperty
                 .clusteringColumns
                 .stream()
                 .map(x -> Tuple2.of(x.fieldName, x.encodeField(instance)))
                 .filter(x -> x._2() == null)
                 .forEach(tuple ->
-                                Validator.validateNotNull(tuple._2(),
-                                        "Field '%s' in entity of type '%s' should not be null because it is a clustering column",
-                                        tuple._1(), entityProperty.entityClass.getCanonicalName())
+                        Validator.validateNotNull(tuple._2(),
+                                "Field '%s' in entity of type '%s' should not be null because it is a clustering column",
+                                tuple._1(), entityProperty.entityClass.getCanonicalName())
                 );
+
+    }
+
+    public static <T> void validateColumnsForInsertStatic(T instance, AbstractEntityProperty<T> entityProperty) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format("Validate partition columns and other columns for INSERT STATIC of instance %s of type %s",
+                    instance, entityProperty.entityClass.getCanonicalName()));
+        }
+
+        entityProperty
+                .partitionKeys
+                .stream()
+                .map(x -> Tuple2.of(x.fieldName, x.encodeField(instance)))
+                .filter(x -> x._2() == null)
+                .forEach(tuple ->
+                        Validator.validateNotNull(tuple._2(),
+                                "Field '%s' in entity of type '%s' should not be null because it is a partition key",
+                                tuple._1(), entityProperty.entityClass.getCanonicalName())
+                );
+
+        final long nonNullStaticColumnsCount = entityProperty
+                .staticColumns
+                .stream()
+                .map(x -> x.encodeField(instance))
+                .filter(x -> x != null)
+                .count();
+
+        Validator.validateTrue(nonNullStaticColumnsCount > 0,
+                "There should be at least one non null static column in entity of type '%s' when calling insertStatic()",
+                entityProperty.entityClass.getCanonicalName());
     }
 }

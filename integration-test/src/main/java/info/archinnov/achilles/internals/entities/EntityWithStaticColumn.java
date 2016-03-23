@@ -33,6 +33,10 @@ public class EntityWithStaticColumn {
     @Column("static_col")
     private String staticCol;
 
+    @Static
+    @Column("another_static_col")
+    private String anotherStaticCol;
+
     @Column
     private String value;
 
@@ -43,6 +47,14 @@ public class EntityWithStaticColumn {
         this.id = id;
         this.uuid = uuid;
         this.staticCol = staticCol;
+        this.value = value;
+    }
+
+    public EntityWithStaticColumn(Long id, UUID uuid, String staticCol, String anotherStaticCol, String value) {
+        this.id = id;
+        this.uuid = uuid;
+        this.staticCol = staticCol;
+        this.anotherStaticCol = anotherStaticCol;
         this.value = value;
     }
 
@@ -68,6 +80,14 @@ public class EntityWithStaticColumn {
 
     public void setStaticCol(String staticCol) {
         this.staticCol = staticCol;
+    }
+
+    public String getAnotherStaticCol() {
+        return anotherStaticCol;
+    }
+
+    public void setAnotherStaticCol(String anotherStaticCol) {
+        this.anotherStaticCol = anotherStaticCol;
     }
 
     public String getValue() {

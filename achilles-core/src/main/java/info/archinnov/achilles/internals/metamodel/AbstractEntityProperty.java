@@ -207,6 +207,10 @@ public abstract class AbstractEntityProperty<T> implements
         return clusteringColumns.size() > 0;
     }
 
+    public boolean hasStaticColumn() {
+        return staticColumns.size() > 0;
+    }
+
     public InsertStrategy insertStrategy() {
         return staticInsertStrategy.orElse(insertStrategy);
     }
@@ -243,6 +247,10 @@ public abstract class AbstractEntityProperty<T> implements
         return BeanValueExtractor.extractAllValues(instance, this, options);
     }
 
+    public BoundValuesWrapper extractPartitionKeysAndStaticColumnsFromEntity(T instance, Options options) {
+        return BeanValueExtractor.extractPartitionKeysAndStaticValues(instance, this, options);
+    }
+
     public Optional<String> getKeyspace() {
         final Optional<String> keyspace = OverridingOptional
                 .from(staticKeyspace)
@@ -277,6 +285,7 @@ public abstract class AbstractEntityProperty<T> implements
         if (!counterTable) {
             generateStaticInsertQueries(session, cache, this);
         }
+
         generateStaticDeleteQueries(session, cache, this);
         generateStaticSelectQuery(session, cache, this);
     }

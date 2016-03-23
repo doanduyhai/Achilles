@@ -20,6 +20,7 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -39,6 +40,9 @@ import info.archinnov.achilles.internals.entities.EntityWithStaticColumn;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
+import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener;
+import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener.LWTResult;
+import info.archinnov.achilles.type.strategy.InsertStrategy;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestEntityWithStaticColumn {
@@ -81,6 +85,79 @@ public class TestEntityWithStaticColumn {
         assertThat(actual).isNotNull();
         assertThat(actual.getString("static_col")).isEqualTo("static_val");
         assertThat(actual.getString("value")).isEqualTo("val");
+    }
+
+    @Test
+    public void should_insert_static() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+
+        final EntityWithStaticColumn entity = new EntityWithStaticColumn(id, null, "static_val", "val");
+
+        //When
+        manager
+                .crud()
+                .insertStatic(entity)
+                .execute();
+
+        //Then
+        final Row actual = session.execute("SELECT * FROM entitywithstaticcolumn WHERE id = " + id).one();
+
+        assertThat(actual).isNotNull();
+        assertThat(actual.getString("static_col")).isEqualTo("static_val");
+        assertThat(actual.isNull("value")).isTrue();
+    }
+
+    @Test
+    public void should_insert_static_with_insert_strategy() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+
+        final EntityWithStaticColumn entity1 = new EntityWithStaticColumn(id, null, "static_val1", "another_static_val1", null);
+        final EntityWithStaticColumn entity2 = new EntityWithStaticColumn(id, null, null, "another_static_val2", null);
+        manager
+                .crud()
+                .insertStatic(entity1)
+                .execute();
+
+        //When
+        manager
+                .crud()
+                .insertStatic(entity2)
+                .withInsertStrategy(InsertStrategy.NOT_NULL_FIELDS)
+                .execute();
+        //Then
+        final Row actual = session.execute("SELECT * FROM entitywithstaticcolumn WHERE id = " + id).one();
+
+        assertThat(actual).isNotNull();
+        assertThat(actual.getString("static_col")).isEqualTo("static_val1");
+        assertThat(actual.getString("another_static_col")).isEqualTo("another_static_val2");
+    }
+
+    @Test
+    public void should_insert_static_if_not_exist() throws Exception {
+        //Given
+        final AtomicReference<LWTResult> lwtResultRef = new AtomicReference<>();
+        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final EntityWithStaticColumn entity = new EntityWithStaticColumn(id, null, "static_val", null);
+
+        manager
+                .crud()
+                .insertStatic(entity)
+                .ifNotExists()
+                .execute();
+
+        //When
+        manager
+                .crud()
+                .insertStatic(entity)
+                .ifNotExists()
+                .withLwtResultListener(lwtResultRef::set)
+                .execute();
+
+        //Then
+        assertThat(lwtResultRef.get()).isNotNull();
+        assertThat(lwtResultRef.get().currentValues().<String>getTyped("static_col")).isEqualTo("static_val");
     }
 
     @Test
