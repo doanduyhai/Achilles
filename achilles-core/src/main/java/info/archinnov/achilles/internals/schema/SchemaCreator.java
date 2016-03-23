@@ -17,6 +17,7 @@
 package info.archinnov.achilles.internals.schema;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 import java.util.*;
 
@@ -226,10 +227,16 @@ public class SchemaCreator {
             LOGGER.debug(format("Generating schema for udt of type %s",
                     udtClassProperty.udtClass.getCanonicalName()));
         }
+
+        udtClassProperty.componentsProperty
+                .stream()
+                .flatMap(x -> x.getUDTClassProperties().stream())
+                .forEach(x -> generateUDTAtRuntime(session, x));
+
         final String udtKeyspace = udtClassProperty.staticKeyspace.orElse(session.getLoggedKeyspace());
-        final String udtSchema = udtClassProperty.generateSchema(new SchemaContext(udtKeyspace, true, true));
+        final SchemaContext schemaContext = new SchemaContext(udtKeyspace, true, true);
+        final String udtSchema = udtClassProperty.generateSchema(schemaContext);
         final ResultSet resultSet = session.execute(udtSchema);
         resultSet.getExecutionInfo().isSchemaInAgreement();
     }
-
 }

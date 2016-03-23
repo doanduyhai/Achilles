@@ -29,8 +29,8 @@ import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 
 public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
-        implements InjectTupleTypeFactory, InjectUserTypeFactory, InjectBeanFactory,
-        InjectJacksonMapper, InjectRuntimeCodecs {
+        implements InjectUserAndTupleTypeFactory, InjectBeanFactory,
+        InjectJacksonMapper, InjectRuntimeCodecs, InjectKeyspace {
     public final FieldInfo<ENTITY, VALUEFROM> fieldInfo;
     public final String fieldName;
     public TypeToken<VALUEFROM> valueFromTypeToken;

@@ -33,6 +33,7 @@ import com.datastax.driver.core.Session;
 
 import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
+import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.schema.SchemaCreator;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;

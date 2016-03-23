@@ -192,13 +192,8 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public void inject(TupleTypeFactory factory) {
-        valueProperty.inject(factory);
-    }
-
-    @Override
-    public void inject(UserTypeFactory factory) {
-        valueProperty.inject(factory);
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }
 
     @Override
@@ -214,5 +209,10 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
     @Override
     public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
         valueProperty.injectRuntimeCodecs(runtimeCodecs);
+    }
+
+    @Override
+    public void injectKeyspace(String keyspace) {
+        valueProperty.injectKeyspace(keyspace);
     }
 }

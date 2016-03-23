@@ -203,15 +203,9 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public void inject(TupleTypeFactory factory) {
-        keyProperty.inject(factory);
-        valueProperty.inject(factory);
-    }
-
-    @Override
-    public void inject(UserTypeFactory factory) {
-        keyProperty.inject(factory);
-        valueProperty.inject(factory);
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        keyProperty.inject(userTypeFactory, tupleTypeFactory);
+        valueProperty.inject(userTypeFactory, tupleTypeFactory);
     }
 
     @Override
@@ -230,5 +224,11 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
     public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
         keyProperty.injectRuntimeCodecs(runtimeCodecs);
         valueProperty.injectRuntimeCodecs(runtimeCodecs);
+    }
+
+    @Override
+    public void injectKeyspace(String keyspace) {
+        keyProperty.injectKeyspace(keyspace);
+        valueProperty.injectKeyspace(keyspace);
     }
 }

@@ -16,9 +16,10 @@
 
 package info.archinnov.achilles.internals.injectable;
 
+import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 
-public interface InjectUserTypeFactory {
+public interface InjectUserAndTupleTypeFactory {
 
-    void inject(UserTypeFactory factory);
+    void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory);
 }

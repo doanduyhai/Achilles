@@ -16,6 +16,8 @@
 
 package info.archinnov.achilles.internals.entities;
 
+import java.util.Objects;
+
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.UDT;
 
@@ -50,5 +52,19 @@ public class UDTWithNoKeyspace {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UDTWithNoKeyspace that = (UDTWithNoKeyspace) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, value);
     }
 }

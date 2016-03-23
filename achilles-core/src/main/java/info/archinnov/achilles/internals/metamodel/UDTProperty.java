@@ -17,10 +17,12 @@
 package info.archinnov.achilles.internals.metamodel;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,15 +38,16 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.injectable.InjectBeanFactory;
 import info.archinnov.achilles.internals.injectable.InjectKeyspace;
-import info.archinnov.achilles.internals.injectable.InjectUserTypeFactory;
+import info.archinnov.achilles.internals.injectable.InjectUserAndTupleTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.utils.CollectionsHelper;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
 
 public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue>
-        implements InjectUserTypeFactory, InjectBeanFactory, InjectKeyspace {
+        implements InjectUserAndTupleTypeFactory, InjectBeanFactory, InjectKeyspace {
 
     public static final TypeToken<UDTValue> UDT_VALUE_TYPE_TOKEN = new TypeToken<UDTValue>() {
     };
@@ -135,12 +138,17 @@ public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue
 
     @Override
     public List<AbstractUDTClassProperty<?>> getUDTClassProperties() {
-        return Arrays.asList(udtClassProperty);
+        return CollectionsHelper.appendAll(
+                udtClassProperty.componentsProperty
+                        .stream()
+                        .flatMap(x -> x.getUDTClassProperties().stream())
+                        .collect(toList()),
+                Arrays.asList(udtClassProperty));
     }
 
     @Override
-    public void inject(UserTypeFactory factory) {
-        udtClassProperty.inject(factory);
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        udtClassProperty.inject(userTypeFactory, tupleTypeFactory);
     }
 
     @Override
@@ -151,11 +159,6 @@ public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue
     @Override
     public void injectKeyspace(String keyspace) {
         udtClassProperty.injectKeyspace(keyspace);
-    }
-
-    @Override
-    public void inject(TupleTypeFactory factory) {
-        udtClassProperty.inject(factory);
     }
 
     @Override

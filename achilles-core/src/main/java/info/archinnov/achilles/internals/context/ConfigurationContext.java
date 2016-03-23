@@ -346,11 +346,9 @@ public class ConfigurationContext {
         LOGGER.debug("Injecting runtime codecs");
         entityProperty.injectRuntimeCodecs(runtimeCodecs);
 
-        LOGGER.debug("Injecting user type factory");
-        entityProperty.inject(userTypeFactory);
+        LOGGER.debug("Injecting user type factory and tuple type factory");
+        entityProperty.inject(userTypeFactory, tupleTypeFactory);
 
-        LOGGER.debug("Injecting tuple type factory");
-        entityProperty.inject(tupleTypeFactory);
     }
 
 

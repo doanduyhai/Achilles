@@ -36,7 +36,7 @@ import com.google.common.reflect.TypeToken;
 
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
-import info.archinnov.achilles.internals.injectable.InjectTupleTypeFactory;
+import info.archinnov.achilles.internals.injectable.InjectUserAndTupleTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
@@ -44,7 +44,7 @@ import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.tuples.Tuple;
 
 public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends AbstractProperty<ENTITY, T, TupleValue>
-        implements InjectTupleTypeFactory {
+         {
 
     public static final TypeToken<TupleValue> TUPLE_VALUE_TYPE_TOKEN = new TypeToken<TupleValue>() {
     };
@@ -83,21 +83,20 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
         udtValue.setTupleValue(fieldInfo.cqlColumn, tupleValue);
     }
 
-    @Override
-    public void inject(TupleTypeFactory factory) {
-        tupleTypeFactory = factory;
-        tupleType = buildType();
+     @Override
+     public void injectKeyspace(String keyspace) {
+         for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
+             x.injectKeyspace(keyspace);
+         }
+     }
 
+             @Override
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        this.tupleTypeFactory = tupleTypeFactory;
         for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
-            x.inject(factory);
+            x.inject(userTypeFactory, tupleTypeFactory);
         }
-    }
-
-    @Override
-    public void inject(UserTypeFactory factory) {
-        for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
-            x.inject(factory);
-        }
+        this.tupleType = this.buildType();
     }
 
     @Override

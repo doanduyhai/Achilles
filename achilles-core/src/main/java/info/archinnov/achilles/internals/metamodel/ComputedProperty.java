@@ -126,12 +126,7 @@ public class ComputedProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProper
     }
 
     @Override
-    public void inject(TupleTypeFactory factory) {
-        // No op
-    }
-
-    @Override
-    public void inject(UserTypeFactory factory) {
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         // No op
     }
 
@@ -158,5 +153,10 @@ public class ComputedProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProper
         sb.append("computedColumnInfo=").append(computedColumnInfo);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public void injectKeyspace(String keyspace) {
+        // No op
     }
 }

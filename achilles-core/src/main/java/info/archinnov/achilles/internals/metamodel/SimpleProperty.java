@@ -150,12 +150,7 @@ public class SimpleProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProperty
     }
 
     @Override
-    public void inject(TupleTypeFactory factory) {
-        // No op
-    }
-
-    @Override
-    public void inject(UserTypeFactory factory) {
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         // No op
     }
 
@@ -176,5 +171,10 @@ public class SimpleProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProperty
         if (valueCodec instanceof RuntimeCodecWrapper) {
             ((RuntimeCodecWrapper)valueCodec).inject(runtimeCodecs);
         }
+    }
+
+    @Override
+    public void injectKeyspace(String keyspace) {
+        // No op
     }
 }

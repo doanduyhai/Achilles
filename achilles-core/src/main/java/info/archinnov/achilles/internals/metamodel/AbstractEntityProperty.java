@@ -59,7 +59,7 @@ import info.archinnov.achilles.validation.Validator;
 public abstract class AbstractEntityProperty<T> implements
         InjectBeanFactory, InjectKeyspace,
         InjectConsistency, InjectInsertStrategy,
-        InjectTupleTypeFactory, InjectUserTypeFactory,
+        InjectUserAndTupleTypeFactory,
         InjectJacksonMapper, InjectSchemaStrategy,
         InjectRuntimeCodecs {
 
@@ -406,26 +406,14 @@ public abstract class AbstractEntityProperty<T> implements
     }
 
     @Override
-    public void inject(TupleTypeFactory factory) {
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format("Injecting tuple type factory %s into entity meta of %s",
-                    factory, entityClass.getCanonicalName()));
+            LOGGER.debug(format("Injecting user type factory %s and tuple type factory %s into entity meta of %s",
+                    userTypeFactory, tupleTypeFactory, entityClass.getCanonicalName()));
         }
 
         for (AbstractProperty<T, ?, ?> x : allColumns) {
-            x.inject(factory);
-        }
-    }
-
-    @Override
-    public void inject(UserTypeFactory factory) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format("Injecting user type factory %s into entity meta of %s",
-                    factory, entityClass.getCanonicalName()));
-        }
-
-        for (AbstractProperty<T, ?, ?> x : allColumns) {
-            x.inject(factory);
+            x.inject(userTypeFactory, tupleTypeFactory);
         }
     }
 

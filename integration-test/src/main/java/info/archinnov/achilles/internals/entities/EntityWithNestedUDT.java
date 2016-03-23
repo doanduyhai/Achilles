@@ -31,13 +31,10 @@ public class EntityWithNestedUDT {
     @Column
     private UDTWithNoKeyspace udt;
 
-    public EntityWithNestedUDT() {
-    }
+    @Frozen
+    @Column
+    private UDTWithNestedUDT complexUDT;
 
-    public EntityWithNestedUDT(Long id, UDTWithNoKeyspace udt) {
-        this.id = id;
-        this.udt = udt;
-    }
 
     public Long getId() {
         return id;
@@ -53,5 +50,13 @@ public class EntityWithNestedUDT {
 
     public void setUdt(UDTWithNoKeyspace udt) {
         this.udt = udt;
+    }
+
+    public UDTWithNestedUDT getComplexUDT() {
+        return complexUDT;
+    }
+
+    public void setComplexUDT(UDTWithNestedUDT complexUDT) {
+        this.complexUDT = complexUDT;
     }
 }

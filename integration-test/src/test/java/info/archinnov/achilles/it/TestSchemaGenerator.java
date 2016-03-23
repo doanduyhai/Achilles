@@ -97,8 +97,7 @@ public class TestSchemaGenerator extends AbstractTestUtil {
         TupleTypeFactory tupleTypeFactory = new TupleTypeFactory(ProtocolVersion.NEWEST_SUPPORTED, codecRegistry);
         UserTypeFactory userTypeFactory = new UserTypeFactory(ProtocolVersion.NEWEST_SUPPORTED, codecRegistry);
 
-        meta.inject(tupleTypeFactory);
-        meta.inject(userTypeFactory);
+        meta.inject(userTypeFactory, tupleTypeFactory);
 
         //When
         final String actual = meta.generateSchema(context);

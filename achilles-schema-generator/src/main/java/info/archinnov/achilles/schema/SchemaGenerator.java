@@ -161,6 +161,9 @@ public class SchemaGenerator {
                 .filter(x -> x != null)
                 .collect(toList());
 
+        //Inject keyspace to entity metas
+        entityMetas.forEach(x -> x.injectKeyspace(keyspace.get()));
+
         LOGGER.info(format("Found %s entity meta classes", entityMetas.size()));
 
         //Generate UDT BEFORE tables
@@ -179,8 +182,8 @@ public class SchemaGenerator {
             LOGGER.info(format("Found %s udt classes", udtMetas.size()));
 
             for (AbstractUDTClassProperty<?> instance : udtMetas) {
-                instance.inject(USER_TYPE_FACTORY);
-                instance.inject(TUPLE_TYPE_FACTORY);
+                instance.injectKeyspace(keyspace.get());
+                instance.inject(USER_TYPE_FACTORY, TUPLE_TYPE_FACTORY);
                 builder.append(instance.generateSchema(context));
             }
 
@@ -207,8 +210,7 @@ public class SchemaGenerator {
         }
 
         for (AbstractEntityProperty<?> instance : entityMetas) {
-            instance.inject(USER_TYPE_FACTORY);
-            instance.inject(TUPLE_TYPE_FACTORY);
+            instance.inject(USER_TYPE_FACTORY, TUPLE_TYPE_FACTORY);
             builder.append(instance.generateSchema(context));
         }
 

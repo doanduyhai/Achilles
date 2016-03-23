@@ -2,6 +2,14 @@ CREATE TYPE IF NOT EXISTS test.my_type(
 		name text,
 		list list<text>,
 		map map<text, text>);
+CREATE TYPE IF NOT EXISTS test.having_nested_type(
+		value text,
+		udtlist list<frozen<test.no_ks>>,
+		nestedudt frozen<test.no_ks>,
+		tuplewithudt frozen<tuple<int, frozen<test.no_ks>>>);
+CREATE TYPE IF NOT EXISTS test.no_ks(
+		id bigint,
+		value text);
 CREATE TABLE IF NOT EXISTS test.entity_child(
 		id bigint,
 		child_value text,
@@ -123,6 +131,11 @@ CREATE TABLE IF NOT EXISTS test.entitywithimplicitfieldparsing(
 		uuid uuid,
 		PRIMARY KEY(id, uuid))
 	WITH CLUSTERING ORDER BY(uuid ASC);
+CREATE TABLE IF NOT EXISTS test.table_with_nested_udt(
+		id bigint,
+		complexudt frozen<test.having_nested_type>,
+		udt frozen<test.no_ks>,
+		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS non_existing.test_table(
 		id bigint,
 		value text,

@@ -45,8 +45,8 @@ import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
 
 public abstract class AbstractUDTClassProperty<A>
-        implements InjectUserTypeFactory,
-        InjectTupleTypeFactory, InjectBeanFactory, InjectKeyspace,
+        implements InjectUserAndTupleTypeFactory,
+        InjectBeanFactory, InjectKeyspace,
         InjectJacksonMapper, InjectRuntimeCodecs {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractUDTClassProperty.class);
@@ -130,19 +130,12 @@ public abstract class AbstractUDTClassProperty<A>
     }
 
     @Override
-    public void inject(UserTypeFactory factory) {
-        userTypeFactory = factory;
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        this.userTypeFactory = userTypeFactory;
+        for (AbstractProperty<A, ?, ?> x : componentsProperty) {
+            x.inject(userTypeFactory, tupleTypeFactory);
+        }
         userType = this.buildType();
-        for (AbstractProperty<A, ?, ?> x : componentsProperty) {
-            x.inject(factory);
-        }
-    }
-
-    @Override
-    public void inject(TupleTypeFactory factory) {
-        for (AbstractProperty<A, ?, ?> x : componentsProperty) {
-            x.inject(factory);
-        }
     }
 
     @Override
@@ -162,6 +155,9 @@ public abstract class AbstractUDTClassProperty<A>
     @Override
     public void injectKeyspace(String keyspace) {
         this.keyspace = keyspace;
+        for (AbstractProperty<A, ?, ?> x : componentsProperty) {
+            x.injectKeyspace(keyspace);
+        }
     }
 
     @Override

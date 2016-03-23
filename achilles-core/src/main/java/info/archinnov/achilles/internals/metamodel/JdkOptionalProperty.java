@@ -154,12 +154,12 @@ public class JdkOptionalProperty<ENTITY, FROM, TO> extends AbstractProperty<ENTI
     }
 
     @Override
-    public void inject(TupleTypeFactory factory) {
-        aProperty.inject(factory);
+    public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
+        aProperty.inject(userTypeFactory, tupleTypeFactory);
     }
 
     @Override
-    public void inject(UserTypeFactory factory) {
-        aProperty.inject(factory);
+    public void injectKeyspace(String keyspace) {
+        aProperty.injectKeyspace(keyspace);
     }
 }
