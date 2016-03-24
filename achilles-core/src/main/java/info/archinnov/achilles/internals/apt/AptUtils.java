@@ -47,7 +47,6 @@ import com.sun.tools.javac.model.JavacElements;
 
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
@@ -57,6 +56,25 @@ import info.archinnov.achilles.type.tuples.Tuple2;
  * Some methods are borrowed from the Checker Framework : http://types.cs.washington.edu/checker-framework/
  */
 public class AptUtils {
+
+    private static boolean HAS_JAVAC_CLASSES = false;
+    private static boolean HAS_ECJ_CLASSES = false;
+
+    static {
+        try {
+            Class.forName("com.sun.tools.javac.code.Symbol");
+            HAS_JAVAC_CLASSES = true;
+        } catch (ClassNotFoundException e) {
+            HAS_JAVAC_CLASSES = false;
+        }
+
+        try {
+            Class.forName("org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl");
+            HAS_ECJ_CLASSES = true;
+        } catch (ClassNotFoundException e) {
+            HAS_ECJ_CLASSES = false;
+        }
+    }
 
     public final Elements elementUtils;
     public final Types typeUtils;
@@ -308,26 +326,27 @@ public class AptUtils {
 
 
     public static boolean isJavaCompiler(VariableElement varElm) {
-        return varElm instanceof Symbol.VarSymbol;
+        return HAS_JAVAC_CLASSES && (varElm instanceof Symbol.VarSymbol);
     }
 
     public static boolean isJavaCompiler(TypeElement typeElm) {
-        return typeElm instanceof Symbol.ClassSymbol;
+        return HAS_JAVAC_CLASSES && (typeElm instanceof Symbol.ClassSymbol);
     }
 
     public static boolean isJavaCompiler(ExecutableElement executableElement) {
-        return executableElement instanceof Symbol.MethodSymbol;
+        return HAS_JAVAC_CLASSES && (executableElement instanceof Symbol.MethodSymbol);
     }
 
     public static boolean isEclipseCompiler(VariableElement varElm) {
-        return varElm instanceof VariableElementImpl;
+        return HAS_ECJ_CLASSES && (varElm instanceof VariableElementImpl);
     }
+
     public static boolean isEclipseCompiler(TypeElement typeElm) {
-        return typeElm instanceof TypeElementImpl;
+        return HAS_ECJ_CLASSES && (typeElm instanceof TypeElementImpl);
     }
 
     public static boolean isEclipseCompiler(ExecutableElement executableElement) {
-        return executableElement instanceof ExecutableElementImpl;
+        return HAS_ECJ_CLASSES && (executableElement instanceof ExecutableElementImpl);
     }
 
     /**
