@@ -16,11 +16,11 @@
 
 package info.archinnov.achilles.internals.injectable;
 
-import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.Session;
 
-import info.archinnov.achilles.type.tuples.Tuple3;
+import info.archinnov.achilles.internals.context.ConfigurationContext;
 
 public interface InjectConsistency {
 
-    void inject(Tuple3<ConsistencyLevel, ConsistencyLevel, ConsistencyLevel> consistencyLevels);
+    void injectConsistencyLevels(Session session, ConfigurationContext configContext);
 }

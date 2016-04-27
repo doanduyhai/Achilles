@@ -36,6 +36,7 @@ import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.schema.SchemaCreator;
+import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
 import info.archinnov.achilles.type.interceptor.Event;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
@@ -132,8 +133,17 @@ public abstract class AbstractViewProperty<T> extends AbstractEntityProperty<T> 
     }
 
     @Override
-    public void inject(Tuple3<ConsistencyLevel, ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
-        this.readConsistencyLevel = consistencyLevels._1();
+    public void injectConsistencyLevels(Session session, ConfigurationContext configContext) {
+        ConsistencyLevel clusterConsistency = session.getCluster().getConfiguration().getQueryOptions().getConsistencyLevel();
+
+        final String tableOrViewName = this.getTableOrViewName();
+        this.readConsistencyLevel =
+                OverridingOptional.from(staticReadConsistency)
+                        .andThen(configContext.getReadConsistencyLevelForTable(tableOrViewName))
+                        .andThen(clusterConsistency)
+                        .andThen(configContext.getDefaultReadConsistencyLevel())
+                        .defaultValue(ConfigurationContext.DEFAULT_CONSISTENCY_LEVEL)
+                        .get();
     }
 
     @Override

@@ -28,13 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.extras.codecs.arrays.DoubleArrayCodec;
-import com.datastax.driver.extras.codecs.arrays.FloatArrayCodec;
-import com.datastax.driver.extras.codecs.arrays.IntArrayCodec;
-import com.datastax.driver.extras.codecs.arrays.LongArrayCodec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
@@ -59,8 +54,6 @@ import info.archinnov.achilles.type.strategy.NamingStrategy;
  */
 public class ArgumentExtractor {
 
-    static final ConsistencyLevel DEFAULT_CONSISTENCY_LEVEL = ConsistencyLevel.LOCAL_ONE;
-    static final ConsistencyLevel DEFAULT_SERIAL_CONSISTENCY_LEVEL = ConsistencyLevel.LOCAL_SERIAL;
     static final int DEFAULT_LRU_CACHE_SIZE = 10000;
     static final boolean DEFAULT_ENABLE_PRE_MUTATE_BEAN_VALIDATION = false;
     static final boolean DEFAULT_ENABLE_POST_LOAD_BEAN_VALIDATION = false;
@@ -141,19 +134,19 @@ public class ArgumentExtractor {
         };
     }
 
-    static ConsistencyLevel initDefaultReadConsistencyLevel(ConfigMap configMap) {
+    static Optional<ConsistencyLevel> initDefaultReadConsistencyLevel(ConfigMap configMap) {
         LOGGER.trace("Extract default read Consistency level from configuration map");
-        return configMap.getTypedOr(CONSISTENCY_LEVEL_READ_DEFAULT, DEFAULT_CONSISTENCY_LEVEL);
+        return Optional.ofNullable(configMap.getTyped(CONSISTENCY_LEVEL_READ_DEFAULT));
     }
 
-    static ConsistencyLevel initDefaultWriteConsistencyLevel(ConfigMap configMap) {
+    static Optional<ConsistencyLevel> initDefaultWriteConsistencyLevel(ConfigMap configMap) {
         LOGGER.trace("Extract default read Consistency level from configuration map");
-        return configMap.getTypedOr(CONSISTENCY_LEVEL_WRITE_DEFAULT, DEFAULT_CONSISTENCY_LEVEL);
+        return Optional.ofNullable(configMap.getTyped(CONSISTENCY_LEVEL_WRITE_DEFAULT));
     }
 
-    static ConsistencyLevel initDefaultSerialConsistencyLevel(ConfigMap configMap) {
+    static Optional<ConsistencyLevel> initDefaultSerialConsistencyLevel(ConfigMap configMap) {
         LOGGER.trace("Extract default write Consistency level from configuration map");
-        return configMap.getTypedOr(CONSISTENCY_LEVEL_WRITE_DEFAULT, DEFAULT_SERIAL_CONSISTENCY_LEVEL);
+        return Optional.ofNullable(configMap.getTyped(CONSISTENCY_LEVEL_WRITE_DEFAULT));
     }
 
     public static Map<String, ConsistencyLevel> initReadConsistencyMap(ConfigMap configMap) {

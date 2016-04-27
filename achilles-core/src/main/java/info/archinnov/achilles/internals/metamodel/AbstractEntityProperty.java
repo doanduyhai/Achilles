@@ -163,7 +163,6 @@ public abstract class AbstractEntityProperty<T> implements
     public ConsistencyLevel readConsistency(Optional<ConsistencyLevel> runtimeConsistency) {
         final ConsistencyLevel consistencyLevel = OverridingOptional
                 .from(runtimeConsistency)
-                .andThen(staticReadConsistency)
                 .defaultValue(readConsistencyLevel)
                 .get();
         if (LOGGER.isDebugEnabled()) {
@@ -176,7 +175,6 @@ public abstract class AbstractEntityProperty<T> implements
     public ConsistencyLevel writeConsistency(Optional<ConsistencyLevel> runtimeConsistency) {
         final ConsistencyLevel consistencyLevel = OverridingOptional
                 .from(runtimeConsistency)
-                .andThen(staticWriteConsistency)
                 .defaultValue(writeConsistencyLevel)
                 .get();
         if (LOGGER.isDebugEnabled()) {
@@ -189,7 +187,6 @@ public abstract class AbstractEntityProperty<T> implements
     public ConsistencyLevel serialConsistency(Optional<ConsistencyLevel> runtimeConsistency) {
         final ConsistencyLevel consistencyLevel = OverridingOptional
                 .from(runtimeConsistency)
-                .andThen(staticSerialConsistency)
                 .defaultValue(serialConsistencyLevel)
                 .get();
         if (LOGGER.isDebugEnabled()) {
@@ -362,14 +359,52 @@ public abstract class AbstractEntityProperty<T> implements
     }
 
     @Override
-    public void inject(Tuple3<ConsistencyLevel, ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
+    public void injectConsistencyLevels(Session session, ConfigurationContext configContext) {
+
+        /**
+         * Consistency priority ordering (from highest to lowest)
+         * 1. Set at runtime (see this.writeConsistency(), this.readConsistency() and this.serialConsistency() )
+         * 2. Defined by static annotation on entity
+         * 3. Defined by Consistency Level Map as Achilles Config
+         * 4. Defined as QueryOptions in the injected Cluster object
+         * 5. Defined by Achilles Config
+         * 6. Hard-coded value LOCAL_ONE & LOCAL_SERIAL
+         */
+
+        ConsistencyLevel clusterConsistency = session.getCluster().getConfiguration().getQueryOptions().getConsistencyLevel();
+        ConsistencyLevel clusterSerialConsistency = session.getCluster().getConfiguration().getQueryOptions().getSerialConsistencyLevel();
+
+        final String tableOrViewName = this.getTableOrViewName();
+        this.readConsistencyLevel =
+                OverridingOptional.from(staticReadConsistency)
+                        .andThen(configContext.getReadConsistencyLevelForTable(tableOrViewName))
+                        .andThen(clusterConsistency)
+                        .andThen(configContext.getDefaultReadConsistencyLevel())
+                        .defaultValue(ConfigurationContext.DEFAULT_CONSISTENCY_LEVEL)
+                        .get();
+
+        this.writeConsistencyLevel =
+                OverridingOptional.from(staticWriteConsistency)
+                        .andThen(configContext.getWriteConsistencyLevelForTable(tableOrViewName))
+                        .andThen(clusterConsistency)
+                        .andThen(configContext.getDefaultWriteConsistencyLevel())
+                        .defaultValue(ConfigurationContext.DEFAULT_CONSISTENCY_LEVEL)
+                        .get();
+
+
+        this.serialConsistencyLevel =
+                OverridingOptional.from(staticSerialConsistency)
+                        .andThen(configContext.getSerialConsistencyLevelForTable(tableOrViewName))
+                        .andThen(clusterSerialConsistency)
+                        .andThen(configContext.getDefaultSerialConsistencyLevel())
+                        .defaultValue(ConfigurationContext.DEFAULT_SERIAL_CONSISTENCY_LEVEL)
+                        .get();
+
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format("Injecting read/write/serial consistency levels %s into entity meta of %s",
-                    consistencyLevels, entityClass.getCanonicalName()));
+            LOGGER.debug(format("Injecting read/write/serial consistency levels %s/%s/%s into entity meta of %s",
+                    readConsistencyLevel.name(),writeConsistencyLevel.name(),serialConsistencyLevel.name(),
+                    entityClass.getCanonicalName()));
         }
-        this.readConsistencyLevel = consistencyLevels._1();
-        this.writeConsistencyLevel = consistencyLevels._2();
-        this.serialConsistencyLevel = consistencyLevels._3();
     }
 
     @Override

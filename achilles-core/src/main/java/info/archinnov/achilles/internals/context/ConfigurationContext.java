@@ -50,15 +50,18 @@ public class ConfigurationContext {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationContext.class);
 
+    public static final ConsistencyLevel DEFAULT_CONSISTENCY_LEVEL = ConsistencyLevel.LOCAL_ONE;
+    public static final ConsistencyLevel DEFAULT_SERIAL_CONSISTENCY_LEVEL = ConsistencyLevel.LOCAL_SERIAL;
+
     private boolean forceSchemaGeneration;
 
     private List<Class<?>> manageEntities;
 
     private JacksonMapperFactory jacksonMapperFactory;
 
-    private ConsistencyLevel defaultReadConsistencyLevel;
-    private ConsistencyLevel defaultWriteConsistencyLevel;
-    private ConsistencyLevel defaultSerialConsistencyLevel;
+    private Optional<ConsistencyLevel> defaultReadConsistencyLevel;
+    private Optional<ConsistencyLevel> defaultWriteConsistencyLevel;
+    private Optional<ConsistencyLevel> defaultSerialConsistencyLevel;
 
     private Map<String, ConsistencyLevel> readConsistencyLevelMap = new HashMap<>();
     private Map<String, ConsistencyLevel> writeConsistencyLevelMap = new HashMap<>();
@@ -115,23 +118,27 @@ public class ConfigurationContext {
         this.jacksonMapperFactory = jacksonMapperFactory;
     }
 
-    public ConsistencyLevel getDefaultReadConsistencyLevel() {
+    public Optional<ConsistencyLevel> getDefaultReadConsistencyLevel() {
         return defaultReadConsistencyLevel;
     }
 
-    public void setDefaultReadConsistencyLevel(ConsistencyLevel defaultReadConsistencyLevel) {
+    public void setDefaultReadConsistencyLevel(Optional<ConsistencyLevel> defaultReadConsistencyLevel) {
         this.defaultReadConsistencyLevel = defaultReadConsistencyLevel;
     }
 
-    public ConsistencyLevel getDefaultWriteConsistencyLevel() {
+    public Optional<ConsistencyLevel> getDefaultWriteConsistencyLevel() {
         return defaultWriteConsistencyLevel;
     }
 
-    public void setDefaultWriteConsistencyLevel(ConsistencyLevel defaultWriteConsistencyLevel) {
+    public void setDefaultWriteConsistencyLevel(Optional<ConsistencyLevel> defaultWriteConsistencyLevel) {
         this.defaultWriteConsistencyLevel = defaultWriteConsistencyLevel;
     }
 
-    public void setDefaultSerialConsistencyLevel(ConsistencyLevel defaultSerialConsistencyLevel) {
+    public Optional<ConsistencyLevel> getDefaultSerialConsistencyLevel() {
+        return defaultSerialConsistencyLevel;
+    }
+
+    public void setDefaultSerialConsistencyLevel(Optional<ConsistencyLevel> defaultSerialConsistencyLevel) {
         this.defaultSerialConsistencyLevel = defaultSerialConsistencyLevel;
     }
 
@@ -198,6 +205,9 @@ public class ConfigurationContext {
         return writeConsistencyLevelMap.get(tableName);
     }
 
+    public ConsistencyLevel getSerialConsistencyLevelForTable(String tableName) {
+        return serialConsistencyLevelMap.get(tableName);
+    }
 
     public ObjectMapper getMapperFor(Class<?> type) {
         return jacksonMapperFactory.getMapper(type);
@@ -318,30 +328,8 @@ public class ConfigurationContext {
             }
         }
 
-        ConsistencyLevel driverConsistency = session.getCluster().getConfiguration().getQueryOptions().getConsistencyLevel();
-        ConsistencyLevel driverSerialConsistency = session.getCluster().getConfiguration().getQueryOptions().getSerialConsistencyLevel();
-
-        ConsistencyLevel readConsistency =
-                OverridingOptional.from(readConsistencyLevelMap.get(className))
-                        .andThen(driverConsistency)
-                        .defaultValue(defaultReadConsistencyLevel)
-                        .get();
-
-        ConsistencyLevel writeConsistency =
-                OverridingOptional.from(writeConsistencyLevelMap.get(className))
-                        .andThen(driverConsistency)
-                        .defaultValue(defaultWriteConsistencyLevel)
-                        .get();
-
-
-        ConsistencyLevel serialConsistency =
-                OverridingOptional.from(serialConsistencyLevelMap.get(className))
-                        .andThen(driverSerialConsistency)
-                        .defaultValue(defaultSerialConsistencyLevel)
-                        .get();
-
         LOGGER.debug("Injecting global consistency levels");
-        entityProperty.inject(Tuple3.of(readConsistency, writeConsistency, serialConsistency));
+        entityProperty.injectConsistencyLevels(session, this);
 
         LOGGER.debug("Injecting runtime codecs");
         entityProperty.injectRuntimeCodecs(runtimeCodecs);
