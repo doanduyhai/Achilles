@@ -53,7 +53,7 @@ public class FunctionsRegistryCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .addJavadoc("Call $S function with given parameters", signature.getFunctionName())
                 .returns(signature.returnTypeForFunctionParam())
-                .addStatement("final $T params = new $T<>()", LIST, ARRAY_LIST);
+                .addStatement("final $T<Object> params = new $T<>()", LIST, ARRAY_LIST);
 
         signature.parameterSignatures.forEach(param -> {
             final String paramName = param.name;
@@ -114,14 +114,19 @@ public class FunctionsRegistryCodeGen {
 
         final TypeVariableName typeVariableName = TypeVariableName.get("T", ABSTRACT_CQL_COMPATIBLE_TYPE, FUNCTION_CALL);
 
+        final AnnotationSpec unchecked = AnnotationSpec.builder(ClassName.get(SuppressWarnings.class))
+                .addMember("value", "$S", "rawtypes")
+                .build();
+
         //Token function
         final MethodSpec.Builder tokenFunctionBuilder = MethodSpec.methodBuilder("token")
                 .addTypeVariable(typeVariableName)
+                .addAnnotation(unchecked)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .addJavadoc("Call $S function with given parameters", "token")
                 .returns(LONG_TYPE)
                 .addParameter(typeVariableName, "input", Modifier.FINAL)
-                .addStatement("final $T params = new $T<>()", LIST, ARRAY_LIST)
+                .addStatement("final $T<Object> params = new $T<>()", LIST, ARRAY_LIST)
                 .addStatement("$T.validateFalse(input.isFunctionCall(), $S)", VALIDATOR, "Invalid argument for 'token' function, it does not accept function call as argument, only simple column")
                 .addStatement("$T.validateFalse(input.hasLiteralValue(), $S)", VALIDATOR, "Invalid argument for 'token' function, it does not accept literal value as argument, only simple column")
                 .addStatement("params.add($T.column((String)$L.getValue()))", QUERY_BUILDER, "input");
@@ -156,11 +161,12 @@ public class FunctionsRegistryCodeGen {
         //writetime function
         final MethodSpec.Builder writetimeFunctionBuilder = MethodSpec.methodBuilder("writetime")
                 .addTypeVariable(typeVariableName)
+                .addAnnotation(unchecked)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .addJavadoc("Call $S function with given parameters", "writetime")
                 .returns(LONG_TYPE)
                 .addParameter(typeVariableName, "input", Modifier.FINAL)
-                .addStatement("final $T params = new $T<>()", LIST, ARRAY_LIST)
+                .addStatement("final $T<Object> params = new $T<>()", LIST, ARRAY_LIST)
                 .addStatement("$T.validateFalse(input.isFunctionCall(), $S)", VALIDATOR, "Invalid argument for 'writetime' function, it does not accept function call as argument, only simple column")
                 .addStatement("$T.validateFalse(input.hasLiteralValue(), $S)", VALIDATOR, "Invalid argument for 'writetime' function, it does not accept literal value as argument, only simple column")
                 .addStatement("params.add($T.column((String)$L.getValue()))", QUERY_BUILDER, "input");
@@ -194,11 +200,12 @@ public class FunctionsRegistryCodeGen {
         //count function
         final MethodSpec.Builder countNotNullFunctionBuilder = MethodSpec.methodBuilder("countNotNull")
                 .addTypeVariable(typeVariableName)
+                .addAnnotation(unchecked)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .addJavadoc("Call $S function with given parameters", "countNotNull")
                 .returns(LONG_TYPE)
                 .addParameter(typeVariableName, "input", Modifier.FINAL)
-                .addStatement("final $T params = new $T<>()", LIST, ARRAY_LIST)
+                .addStatement("final $T<Object> params = new $T<>()", LIST, ARRAY_LIST)
                 .addStatement("$T.validateFalse(input.isFunctionCall(), $S)", VALIDATOR, "Invalid argument for 'countNotNull' function, it does not accept function call as argument, only simple column")
                 .addStatement("$T.validateFalse(input.hasLiteralValue(), $S)", VALIDATOR, "Invalid argument for 'countNotNull' function, it does not accept literal value as argument, only simple column")
                 .addStatement("params.add($T.column((String)$L.getValue()))", QUERY_BUILDER, "input");
@@ -232,11 +239,12 @@ public class FunctionsRegistryCodeGen {
         //ttl function
         final MethodSpec.Builder ttllFunctionBuilder = MethodSpec.methodBuilder("ttl")
                 .addTypeVariable(typeVariableName)
+                .addAnnotation(unchecked)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .addJavadoc("Call $S function with given parameters", "countNotNull")
                 .returns(INT_TYPE)
                 .addParameter(typeVariableName, "input", Modifier.FINAL)
-                .addStatement("final $T params = new $T<>()", LIST, ARRAY_LIST)
+                .addStatement("final $T<Object> params = new $T<>()", LIST, ARRAY_LIST)
                 .addStatement("$T.validateFalse(input.isFunctionCall(), $S)", VALIDATOR, "Invalid argument for 'ttl' function, it does not accept function call as argument, only simple column")
                 .addStatement("$T.validateFalse(input.hasLiteralValue(), $S)", VALIDATOR, "Invalid argument for 'ttl' function, it does not accept literal value as argument, only simple column")
                 .addStatement("params.add($T.column((String)$L.getValue()))", QUERY_BUILDER, "input");

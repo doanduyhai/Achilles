@@ -56,7 +56,7 @@ public final class TestEntityWithSimplePartitionKey_AchillesMeta extends Abstrac
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithSimplePartitionKey, Long, Long> id = new SimpleProperty<TestEntityWithSimplePartitionKey, Long, Long>(new FieldInfo<>((TestEntityWithSimplePartitionKey entity$) -> entity$.getId(), (TestEntityWithSimplePartitionKey entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
@@ -67,7 +67,7 @@ public final class TestEntityWithSimplePartitionKey_AchillesMeta extends Abstrac
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithSimplePartitionKey, String, String> value = new SimpleProperty<TestEntityWithSimplePartitionKey, String, String>(new FieldInfo<>((TestEntityWithSimplePartitionKey entity$) -> entity$.getValue(), (TestEntityWithSimplePartitionKey entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("value", java.lang.String.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**

@@ -62,7 +62,7 @@ public final class TestEntityWithClusteringColumns_AchillesMeta extends Abstract
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithClusteringColumns, Long, Long> id = new SimpleProperty<TestEntityWithClusteringColumns, Long, Long>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getId(), (TestEntityWithClusteringColumns entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
@@ -73,7 +73,7 @@ public final class TestEntityWithClusteringColumns_AchillesMeta extends Abstract
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithClusteringColumns, UUID, UUID> uuid = new SimpleProperty<TestEntityWithClusteringColumns, UUID, UUID>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getUuid(), (TestEntityWithClusteringColumns entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.get("uuid", java.util.UUID.class), (settableData$, value$) -> settableData$.set("uuid", value$, java.util.UUID.class), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
 
   /**
@@ -84,7 +84,7 @@ public final class TestEntityWithClusteringColumns_AchillesMeta extends Abstract
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithClusteringColumns, Date, Date> date = new SimpleProperty<TestEntityWithClusteringColumns, Date, Date>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getDate(), (TestEntityWithClusteringColumns entity$, Date value$) -> entity$.setDate(value$), "date", "date", ColumnType.CLUSTERING, new ClusteringColumnInfo(2, false, ClusteringOrder.DESC), IndexInfo.noIndex()), DataType.timestamp(), gettableData$ -> gettableData$.get("date", java.util.Date.class), (settableData$, value$) -> settableData$.set("date", value$, java.util.Date.class), new TypeToken<Date>(){}, new TypeToken<Date>(){}, new FallThroughCodec<>(Date.class));
 
   /**
@@ -95,7 +95,7 @@ public final class TestEntityWithClusteringColumns_AchillesMeta extends Abstract
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithClusteringColumns, String, String> value = new SimpleProperty<TestEntityWithClusteringColumns, String, String>(new FieldInfo<>((TestEntityWithClusteringColumns entity$) -> entity$.getValue(), (TestEntityWithClusteringColumns entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("value", java.lang.String.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**

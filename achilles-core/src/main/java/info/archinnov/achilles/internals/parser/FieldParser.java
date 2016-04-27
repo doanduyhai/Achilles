@@ -594,13 +594,13 @@ public class FieldParser {
                     .initializer(typeCode);
             AnnotationSpec.Builder annotationBuilder = null;
             if (typeCode.toString().contains("SimpleProperty")) {
-                annotationBuilder = AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "serial");
+                annotationBuilder = AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "{$S, $S}", "serial", "unchecked");
             }
 
             if (typeCode.toString().contains("FieldInfo.<")) {
                 annotationBuilder = annotationBuilder == null
                         ? AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "unchecked")
-                        : annotationBuilder.addMember("value", "$S", "unchecked");
+                        : annotationBuilder;
             }
 
             if (annotationBuilder != null) {

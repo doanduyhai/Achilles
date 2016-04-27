@@ -63,7 +63,7 @@ public final class TestEntityWithImplicitFieldParsing_AchillesMeta extends Abstr
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithImplicitFieldParsing, Long, Long> id = new SimpleProperty<TestEntityWithImplicitFieldParsing, Long, Long>(new FieldInfo<>((TestEntityWithImplicitFieldParsing entity$) -> entity$.getId(), (TestEntityWithImplicitFieldParsing entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
@@ -74,7 +74,7 @@ public final class TestEntityWithImplicitFieldParsing_AchillesMeta extends Abstr
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithImplicitFieldParsing, UUID, UUID> uuid = new SimpleProperty<TestEntityWithImplicitFieldParsing, UUID, UUID>(new FieldInfo<>((TestEntityWithImplicitFieldParsing entity$) -> entity$.getUuid(), (TestEntityWithImplicitFieldParsing entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.get("uuid", java.util.UUID.class), (settableData$, value$) -> settableData$.set("uuid", value$, java.util.UUID.class), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
 
   /**
@@ -85,7 +85,7 @@ public final class TestEntityWithImplicitFieldParsing_AchillesMeta extends Abstr
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithImplicitFieldParsing, String, String> value = new SimpleProperty<TestEntityWithImplicitFieldParsing, String, String>(new FieldInfo<>((TestEntityWithImplicitFieldParsing entity$) -> entity$.getValue(), (TestEntityWithImplicitFieldParsing entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("value", java.lang.String.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**

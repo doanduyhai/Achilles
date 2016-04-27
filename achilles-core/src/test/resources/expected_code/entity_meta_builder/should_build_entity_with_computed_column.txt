@@ -58,7 +58,7 @@ public final class TestEntityWithComputedColumn_AchillesMeta extends AbstractEnt
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComputedColumn, Long, Long> id = new SimpleProperty<TestEntityWithComputedColumn, Long, Long>(new FieldInfo<>((TestEntityWithComputedColumn entity$) -> entity$.getId(), (TestEntityWithComputedColumn entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
@@ -79,7 +79,7 @@ public final class TestEntityWithComputedColumn_AchillesMeta extends AbstractEnt
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComputedColumn, String, String> value = new SimpleProperty<TestEntityWithComputedColumn, String, String>(new FieldInfo<>((TestEntityWithComputedColumn entity$) -> entity$.getValue(), (TestEntityWithComputedColumn entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("value", java.lang.String.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**

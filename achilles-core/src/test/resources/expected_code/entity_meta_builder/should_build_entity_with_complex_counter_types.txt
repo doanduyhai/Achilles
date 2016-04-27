@@ -61,7 +61,7 @@ public final class TestEntityWithComplexCounters_AchillesMeta extends AbstractEn
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexCounters, Long, Long> id = new SimpleProperty<TestEntityWithComplexCounters, Long, Long>(new FieldInfo<>((TestEntityWithComplexCounters entity$) -> entity$.getId(), (TestEntityWithComplexCounters entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
@@ -72,7 +72,7 @@ public final class TestEntityWithComplexCounters_AchillesMeta extends AbstractEn
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexCounters, Long, Long> staticCounter = new SimpleProperty<TestEntityWithComplexCounters, Long, Long>(new FieldInfo<>((TestEntityWithComplexCounters entity$) -> entity$.getStaticCounter(), (TestEntityWithComplexCounters entity$, Long value$) -> entity$.setStaticCounter(value$), "staticCounter", "staticcounter", ColumnType.STATIC_COUNTER, new ColumnInfo(false), IndexInfo.noIndex()), DataType.counter(), gettableData$ -> gettableData$.get("staticcounter", java.lang.Long.class), (settableData$, value$) -> settableData$.set("staticcounter", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
@@ -83,7 +83,7 @@ public final class TestEntityWithComplexCounters_AchillesMeta extends AbstractEn
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexCounters, UUID, UUID> uuid = new SimpleProperty<TestEntityWithComplexCounters, UUID, UUID>(new FieldInfo<>((TestEntityWithComplexCounters entity$) -> entity$.getUuid(), (TestEntityWithComplexCounters entity$, UUID value$) -> entity$.setUuid(value$), "uuid", "uuid", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.uuid(), gettableData$ -> gettableData$.get("uuid", java.util.UUID.class), (settableData$, value$) -> settableData$.set("uuid", value$, java.util.UUID.class), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
 
   /**
@@ -94,7 +94,7 @@ public final class TestEntityWithComplexCounters_AchillesMeta extends AbstractEn
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexCounters, Long, Long> simpleCounter = new SimpleProperty<TestEntityWithComplexCounters, Long, Long>(new FieldInfo<>((TestEntityWithComplexCounters entity$) -> entity$.getSimpleCounter(), (TestEntityWithComplexCounters entity$, Long value$) -> entity$.setSimpleCounter(value$), "simpleCounter", "simplecounter", ColumnType.COUNTER, new ColumnInfo(false), IndexInfo.noIndex()), DataType.counter(), gettableData$ -> gettableData$.get("simplecounter", long.class), (settableData$, value$) -> settableData$.set("simplecounter", value$, long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
@@ -105,7 +105,7 @@ public final class TestEntityWithComplexCounters_AchillesMeta extends AbstractEn
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexCounters, String, Long> counterWithCodec = new SimpleProperty<TestEntityWithComplexCounters, String, Long>(new FieldInfo<>((TestEntityWithComplexCounters entity$) -> entity$.getCounterWithCodec(), (TestEntityWithComplexCounters entity$, String value$) -> entity$.setCounterWithCodec(value$), "counterWithCodec", "counterwithcodec", ColumnType.COUNTER, new ColumnInfo(false), IndexInfo.noIndex()), DataType.counter(), gettableData$ -> gettableData$.get("counterwithcodec", java.lang.Long.class), (settableData$, value$) -> settableData$.set("counterwithcodec", value$, java.lang.Long.class), new TypeToken<String>(){}, new TypeToken<Long>(){}, new StringToLongCodec());
 
   /**

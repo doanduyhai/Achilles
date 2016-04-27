@@ -56,7 +56,7 @@ public final class TestEntityWithStaticAnnotations_AchillesMeta extends Abstract
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithStaticAnnotations, Long, Long> partitionKey = new SimpleProperty<TestEntityWithStaticAnnotations, Long, Long>(new FieldInfo<>((TestEntityWithStaticAnnotations entity$) -> entity$.getPartitionKey(), (TestEntityWithStaticAnnotations entity$, Long value$) -> entity$.setPartitionKey(value$), "partitionKey", "partition_key", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("partition_key", java.lang.Long.class), (settableData$, value$) -> settableData$.set("partition_key", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
@@ -67,7 +67,7 @@ public final class TestEntityWithStaticAnnotations_AchillesMeta extends Abstract
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithStaticAnnotations, String, String> stringValue = new SimpleProperty<TestEntityWithStaticAnnotations, String, String>(new FieldInfo<>((TestEntityWithStaticAnnotations entity$) -> entity$.getStringValue(), (TestEntityWithStaticAnnotations entity$, String value$) -> entity$.setStringValue(value$), "stringValue", "string_value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("string_value", java.lang.String.class), (settableData$, value$) -> settableData$.set("string_value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**
@@ -78,7 +78,7 @@ public final class TestEntityWithStaticAnnotations_AchillesMeta extends Abstract
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithStaticAnnotations, String, String> overridenName = new SimpleProperty<TestEntityWithStaticAnnotations, String, String>(new FieldInfo<>((TestEntityWithStaticAnnotations entity$) -> entity$.getOverridenName(), (TestEntityWithStaticAnnotations entity$, String value$) -> entity$.setOverridenName(value$), "overridenName", "overriden", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("overriden", java.lang.String.class), (settableData$, value$) -> settableData$.set("overriden", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**

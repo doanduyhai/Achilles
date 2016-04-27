@@ -109,7 +109,7 @@ public class AchillesProcessor extends AbstractProcessor {
                 }
 
                 aptUtils.printNote("[Achilles] Generating CQL compatible types (used by the application) as class");
-                for (TypeSpec typeSpec : FunctionParameterTypesCodeGen.buildParameterTypesClasses(aptUtils, udfContext)) {
+                for (TypeSpec typeSpec : FunctionParameterTypesCodeGen.buildParameterTypesClasses(udfContext)) {
                     JavaFile.builder(FUNCTION_PACKAGE, typeSpec)
                             .build().writeTo(aptUtils.filer);
                 }

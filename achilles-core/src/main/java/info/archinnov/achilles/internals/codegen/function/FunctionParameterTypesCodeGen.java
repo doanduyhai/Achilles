@@ -26,10 +26,7 @@ import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.context.FunctionsContext;
@@ -37,7 +34,7 @@ import info.archinnov.achilles.internals.utils.TypeNameHelper;
 
 public class FunctionParameterTypesCodeGen {
 
-    public static List<TypeSpec> buildParameterTypesClasses(AptUtils aptUtils, FunctionsContext functionContext) {
+    public static List<TypeSpec> buildParameterTypesClasses(FunctionsContext functionContext) {
 
         final Set<TypeName> uniqueTypeNames = functionContext.allUsedTypes
                 .stream()
@@ -46,17 +43,27 @@ public class FunctionParameterTypesCodeGen {
 
         return uniqueTypeNames
             .stream()
-            .map(typeName ->
-                TypeSpec.classBuilder(TypeNameHelper.asString(typeName)+ FUNCTION_TYPE_SUFFIX)
+            .map(typeName -> {
+
+                //TODO Enable it when https://issues.apache.org/jira/browse/CASSANDRA-10783 is done
+                //.addMethod(buildStaticWrapperMethod(boxed))
+
+                final TypeSpec.Builder builder = TypeSpec.classBuilder(TypeNameHelper.asString(typeName) + FUNCTION_TYPE_SUFFIX)
                         .superclass(genericType(ABSTRACT_CQL_COMPATIBLE_TYPE, typeName))
                         .addSuperinterface(FUNCTION_CALL)
                         .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                         .addMethod(buildConstructor(typeName))
-                        .addMethod(buildIsFunctionCall())
-                        //TODO Enable it when https://issues.apache.org/jira/browse/CASSANDRA-10783 is done
-                        //.addMethod(buildStaticWrapperMethod(boxed))
-                        .build()
-            )
+                        .addMethod(buildIsFunctionCall());
+
+                if (typeName.equals(LIST) || typeName.equals(SET) || typeName.equals(MAP)) {
+                    builder.addAnnotation(AnnotationSpec
+                            .builder(SuppressWarnings.class)
+                            .addMember("value", "$S", "rawtypes")
+                            .build());
+                }
+
+                return builder.build();
+            })
             .collect(Collectors.toList());
 
     }

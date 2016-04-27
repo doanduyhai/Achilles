@@ -105,7 +105,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, Long, Long> id = new SimpleProperty<TestEntityWithComplexTypes, Long, Long>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getId(), (TestEntityWithComplexTypes entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
@@ -116,7 +116,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, String, String> value = new SimpleProperty<TestEntityWithComplexTypes, String, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getValue(), (TestEntityWithComplexTypes entity$, String value$) -> entity$.setValue(value$), "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("value", java.lang.String.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**
@@ -127,7 +127,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String> consistencyLevel = new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getConsistencyLevel(), (TestEntityWithComplexTypes entity$, ConsistencyLevel value$) -> entity$.setConsistencyLevel(value$), "consistencyLevel", "consistencylevel", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("consistencylevel", java.lang.String.class), (settableData$, value$) -> settableData$.set("consistencylevel", value$, java.lang.String.class), new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new EnumNameCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class));
 
   /**
@@ -138,7 +138,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, Date, String> time = new SimpleProperty<TestEntityWithComplexTypes, Date, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTime(), (TestEntityWithComplexTypes entity$, Date value$) -> entity$.setTime(value$), "time", "time", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("time", java.lang.String.class), (settableData$, value$) -> settableData$.set("time", value$, java.lang.String.class), new TypeToken<Date>(){}, new TypeToken<String>(){}, new JSONCodec<>(Date.class, SimpleType.construct(Date.class)));
 
   /**
@@ -149,7 +149,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean> primitiveBoolean = new SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.isPrimitiveBoolean(), (TestEntityWithComplexTypes entity$, Boolean value$) -> entity$.setPrimitiveBoolean(value$), "primitiveBoolean", "primitiveboolean", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.cboolean(), gettableData$ -> gettableData$.get("primitiveboolean", boolean.class), (settableData$, value$) -> settableData$.set("primitiveboolean", value$, boolean.class), new TypeToken<Boolean>(){}, new TypeToken<Boolean>(){}, new FallThroughCodec<>(Boolean.class));
 
   /**
@@ -160,7 +160,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean> objectBoolean = new SimpleProperty<TestEntityWithComplexTypes, Boolean, Boolean>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectBoolean(), (TestEntityWithComplexTypes entity$, Boolean value$) -> entity$.setObjectBoolean(value$), "objectBoolean", "objectboolean", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.cboolean(), gettableData$ -> gettableData$.get("objectboolean", java.lang.Boolean.class), (settableData$, value$) -> settableData$.set("objectboolean", value$, java.lang.Boolean.class), new TypeToken<Boolean>(){}, new TypeToken<Boolean>(){}, new FallThroughCodec<>(Boolean.class));
 
   /**
@@ -171,7 +171,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, Byte, Byte> primitiveByte = new SimpleProperty<TestEntityWithComplexTypes, Byte, Byte>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getPrimitiveByte(), (TestEntityWithComplexTypes entity$, Byte value$) -> entity$.setPrimitiveByte(value$), "primitiveByte", "primitivebyte", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.tinyint(), gettableData$ -> gettableData$.get("primitivebyte", byte.class), (settableData$, value$) -> settableData$.set("primitivebyte", value$, byte.class), new TypeToken<Byte>(){}, new TypeToken<Byte>(){}, new FallThroughCodec<>(Byte.class));
 
   /**
@@ -182,7 +182,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, Byte, Byte> objectByte = new SimpleProperty<TestEntityWithComplexTypes, Byte, Byte>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectByte(), (TestEntityWithComplexTypes entity$, Byte value$) -> entity$.setObjectByte(value$), "objectByte", "objectbyte", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.tinyint(), gettableData$ -> gettableData$.get("objectbyte", java.lang.Byte.class), (settableData$, value$) -> settableData$.set("objectbyte", value$, java.lang.Byte.class), new TypeToken<Byte>(){}, new TypeToken<Byte>(){}, new FallThroughCodec<>(Byte.class));
 
   /**
@@ -193,7 +193,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, byte[], ByteBuffer> primitiveByteArray = new SimpleProperty<TestEntityWithComplexTypes, byte[], ByteBuffer>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getPrimitiveByteArray(), (TestEntityWithComplexTypes entity$, byte[] value$) -> entity$.setPrimitiveByteArray(value$), "primitiveByteArray", "primitivebytearray", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.blob(), gettableData$ -> gettableData$.get("primitivebytearray", java.nio.ByteBuffer.class), (settableData$, value$) -> settableData$.set("primitivebytearray", value$, java.nio.ByteBuffer.class), new TypeToken<byte[]>(){}, new TypeToken<ByteBuffer>(){}, new ByteArrayPrimitiveCodec());
 
   /**
@@ -204,7 +204,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, Byte[], ByteBuffer> objectByteArray = new SimpleProperty<TestEntityWithComplexTypes, Byte[], ByteBuffer>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getObjectByteArray(), (TestEntityWithComplexTypes entity$, Byte[] value$) -> entity$.setObjectByteArray(value$), "objectByteArray", "objectbytearray", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.blob(), gettableData$ -> gettableData$.get("objectbytearray", java.nio.ByteBuffer.class), (settableData$, value$) -> settableData$.set("objectbytearray", value$, java.nio.ByteBuffer.class), new TypeToken<Byte[]>(){}, new TypeToken<ByteBuffer>(){}, new ByteArrayCodec());
 
   /**
@@ -215,7 +215,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, Integer, String> integer = new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getInteger(), (TestEntityWithComplexTypes entity$, Integer value$) -> entity$.setInteger(value$), "integer", "integer", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("integer", java.lang.String.class), (settableData$, value$) -> settableData$.set("integer", value$, java.lang.String.class), new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec());
 
   /**
@@ -247,10 +247,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue> mapUdt = new MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getMapUdt(), (TestEntityWithComplexTypes entity$, Map<Integer, TestUDT> value$) -> entity$.setMapUdt(value$), "mapUdt", "mapudt", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("mapUdt", "mapudt"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new UDTProperty<TestEntityWithComplexTypes, TestUDT>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("mapUdt", "mapudt"), TestUDT.class, info.archinnov.achilles.generated.meta.udt.TestUDT_AchillesMeta.INSTANCE));
 
   /**
@@ -261,10 +258,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SetProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer> okSet = new SetProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getOkSet(), (TestEntityWithComplexTypes entity$, Set<ConsistencyLevel> value$) -> entity$.setOkSet(value$), "okSet", "okset", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, Integer.class, new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("okSet", "okset"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<Integer>(){}, new EnumOrdinalCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class)));
 
   /**
@@ -275,7 +269,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, Map<Integer, List<Integer>>, String> jsonMap = new SimpleProperty<TestEntityWithComplexTypes, Map<Integer, List<Integer>>, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getJsonMap(), (TestEntityWithComplexTypes entity$, Map<Integer, List<Integer>> value$) -> entity$.setJsonMap(value$), "jsonMap", "jsonmap", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.text(), gettableData$ -> gettableData$.get("jsonmap", java.lang.String.class), (settableData$, value$) -> settableData$.set("jsonmap", value$, java.lang.String.class), new TypeToken<Map<Integer, List<Integer>>>(){}, new TypeToken<String>(){}, new JSONCodec<>(Map.class, JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(Map.class,SimpleType.construct(Integer.class),JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(List.class,SimpleType.construct(Integer.class)))));
 
   /**
@@ -286,10 +280,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final MapProperty<TestEntityWithComplexTypes, Integer, Integer, List<Map<Integer, String>>, String> mapWithNestedJson = new MapProperty<TestEntityWithComplexTypes, Integer, Integer, List<Map<Integer, String>>, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getMapWithNestedJson(), (TestEntityWithComplexTypes entity$, Map<Integer, List<Map<Integer, String>>> value$) -> entity$.setMapWithNestedJson(value$), "mapWithNestedJson", "mapwithnestedjson", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("mapWithNestedJson", "mapwithnestedjson"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, List<Map<Integer, String>>, String>(FieldInfo.<TestEntityWithComplexTypes, List<Map<Integer, String>>> of("mapWithNestedJson", "mapwithnestedjson"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<List<Map<Integer, String>>>(){}, new TypeToken<String>(){}, new JSONCodec<>(List.class, JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(List.class,JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(Map.class,SimpleType.construct(Integer.class),SimpleType.construct(String.class))))));
 
   /**
@@ -300,10 +291,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final ListProperty<TestEntityWithComplexTypes, Map<Integer, String>, Map<Integer, String>> listNesting = new ListProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getListNesting(), (TestEntityWithComplexTypes entity$, List<Map<Integer, String>> value$) -> entity$.setListNesting(value$), "listNesting", "listnesting", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, Map.class, new MapProperty<TestEntityWithComplexTypes, Integer, Integer, String, String>(FieldInfo.<TestEntityWithComplexTypes, Map<Integer, String>> of("listNesting", "listnesting"), true, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("listNesting", "listnesting"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, String, String>(FieldInfo.<TestEntityWithComplexTypes, String> of("listNesting", "listnesting"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class))));
 
   /**
@@ -314,10 +302,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final Tuple2Property<TestEntityWithComplexTypes, Integer, List<String>> tupleNesting = new Tuple2Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTupleNesting(), (TestEntityWithComplexTypes entity$, Tuple2<Integer, List<String>> value$) -> entity$.setTupleNesting(value$), "tupleNesting", "tuplenesting", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("tupleNesting", "tuplenesting"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new ListProperty<>(FieldInfo.<TestEntityWithComplexTypes, List<String>> of("tupleNesting", "tuplenesting"), false, false, String.class, new SimpleProperty<TestEntityWithComplexTypes, String, String>(FieldInfo.<TestEntityWithComplexTypes, String> of("tupleNesting", "tuplenesting"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class))));
 
   /**
@@ -328,10 +313,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final Tuple1Property<TestEntityWithComplexTypes, ConsistencyLevel> tuple1 = new Tuple1Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTuple1(), (TestEntityWithComplexTypes entity$, Tuple1<ConsistencyLevel> value$) -> entity$.setTuple1(value$), "tuple1", "tuple1", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("tuple1", "tuple1"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new JSONCodec<>(ConsistencyLevel.class, SimpleType.construct(ConsistencyLevel.class))));
 
   /**
@@ -342,10 +324,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final Tuple2Property<TestEntityWithComplexTypes, ConsistencyLevel, Integer> tuple2 = new Tuple2Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTuple2(), (TestEntityWithComplexTypes entity$, Tuple2<ConsistencyLevel, Integer> value$) -> entity$.setTuple2(value$), "tuple2", "tuple2", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("tuple2", "tuple2"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new JSONCodec<>(ConsistencyLevel.class, SimpleType.construct(ConsistencyLevel.class))), new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("tuple2", "tuple2"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec()));
 
   /**
@@ -356,10 +335,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final MapProperty<TestEntityWithComplexTypes, TestUDT, String, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>, Map<Integer, TupleValue>> complexNestingMap = new MapProperty<TestEntityWithComplexTypes, TestUDT, String, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>, Map<Integer, TupleValue>>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getComplexNestingMap(), (TestEntityWithComplexTypes entity$, Map<TestUDT, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>> value$) -> entity$.setComplexNestingMap(value$), "complexNestingMap", "complexnestingmap", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, true, new SimpleProperty<TestEntityWithComplexTypes, TestUDT, String>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("complexNestingMap", "complexnestingmap"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<TestUDT>(){}, new TypeToken<String>(){}, new JSONCodec<>(TestUDT.class, SimpleType.construct(TestUDT.class))), new MapProperty<TestEntityWithComplexTypes, Integer, Integer, Tuple3<Integer, Integer, ConsistencyLevel>, TupleValue>(FieldInfo.<TestEntityWithComplexTypes, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>> of("complexNestingMap", "complexnestingmap"), true, true, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new Tuple3Property<>(FieldInfo.<TestEntityWithComplexTypes, Tuple3<Integer, Integer, ConsistencyLevel>> of("complexNestingMap", "complexnestingmap"), new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec()), new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("complexNestingMap", "complexnestingmap"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<Integer>(){}, new EnumOrdinalCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class)))));
 
   /**
@@ -390,7 +366,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexTypes, UUID, UUID> timeuuid = new SimpleProperty<TestEntityWithComplexTypes, UUID, UUID>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTimeuuid(), (TestEntityWithComplexTypes entity$, UUID value$) -> entity$.setTimeuuid(value$), "timeuuid", "timeuuid", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.timeuuid(), gettableData$ -> gettableData$.get("timeuuid", java.util.UUID.class), (settableData$, value$) -> settableData$.set("timeuuid", value$, java.util.UUID.class), new TypeToken<UUID>(){}, new TypeToken<UUID>(){}, new FallThroughCodec<>(UUID.class));
 
   /**

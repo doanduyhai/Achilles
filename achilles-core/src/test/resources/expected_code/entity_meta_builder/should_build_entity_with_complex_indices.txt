@@ -66,7 +66,7 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexIndices, Long, Long> id = new SimpleProperty<TestEntityWithComplexIndices, Long, Long>(new FieldInfo<>((TestEntityWithComplexIndices entity$) -> entity$.getId(), (TestEntityWithComplexIndices entity$, Long value$) -> entity$.setId(value$), "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", java.lang.Long.class), (settableData$, value$) -> settableData$.set("id", value$, java.lang.Long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
 
   /**
@@ -77,7 +77,7 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings("serial")
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SimpleProperty<TestEntityWithComplexIndices, String, String> simpleIndex = new SimpleProperty<TestEntityWithComplexIndices, String, String>(new FieldInfo<>((TestEntityWithComplexIndices entity$) -> entity$.getSimpleIndex(), (TestEntityWithComplexIndices entity$, String value$) -> entity$.setSimpleIndex(value$), "simpleIndex", "simpleindex", ColumnType.NORMAL, new ColumnInfo(false), new IndexInfo(IndexType.NORMAL, "simpleindex_index", "", "")), DataType.text(), gettableData$ -> gettableData$.get("simpleindex", java.lang.String.class), (settableData$, value$) -> settableData$.set("simpleindex", value$, java.lang.String.class), new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class));
 
   /**
@@ -88,10 +88,7 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final ListProperty<TestEntityWithComplexIndices, String, String> collectionIndex = new ListProperty<>(new FieldInfo<>((TestEntityWithComplexIndices entity$) -> entity$.getCollectionIndex(), (TestEntityWithComplexIndices entity$, List<String> value$) -> entity$.setCollectionIndex(value$), "collectionIndex", "collectionindex", ColumnType.NORMAL, new ColumnInfo(false), new IndexInfo(IndexType.COLLECTION, "collectionindex_index", "", "")), false, false, String.class, new SimpleProperty<TestEntityWithComplexIndices, String, String>(FieldInfo.<TestEntityWithComplexIndices, String> of("collectionIndex", "collectionindex"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class)));
 
   /**
@@ -102,10 +99,7 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final SetProperty<TestEntityWithComplexIndices, String, String> fullIndexOnCollection = new SetProperty<>(new FieldInfo<>((TestEntityWithComplexIndices entity$) -> entity$.getFullIndexOnCollection(), (TestEntityWithComplexIndices entity$, Set<String> value$) -> entity$.setFullIndexOnCollection(value$), "fullIndexOnCollection", "fullindexoncollection", ColumnType.NORMAL, new ColumnInfo(true), new IndexInfo(IndexType.FULL, "fullindexoncollection_index", "", "")), true, false, String.class, new SimpleProperty<TestEntityWithComplexIndices, String, String>(FieldInfo.<TestEntityWithComplexIndices, String> of("fullIndexOnCollection", "fullindexoncollection"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class)));
 
   /**
@@ -116,10 +110,7 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final MapProperty<TestEntityWithComplexIndices, String, String, String, String> indexOnMapKey = new MapProperty<TestEntityWithComplexIndices, String, String, String, String>(new FieldInfo<>((TestEntityWithComplexIndices entity$) -> entity$.getIndexOnMapKey(), (TestEntityWithComplexIndices entity$, Map<String, String> value$) -> entity$.setIndexOnMapKey(value$), "indexOnMapKey", "indexonmapkey", ColumnType.NORMAL, new ColumnInfo(false), new IndexInfo(IndexType.MAP_KEY, "indexonmapkey_index", "", "")), false, false, new SimpleProperty<TestEntityWithComplexIndices, String, String>(FieldInfo.<TestEntityWithComplexIndices, String> of("indexOnMapKey", "indexonmapkey"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class)), new SimpleProperty<TestEntityWithComplexIndices, String, String>(FieldInfo.<TestEntityWithComplexIndices, String> of("indexOnMapKey", "indexonmapkey"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class)));
 
   /**
@@ -130,10 +121,7 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  @SuppressWarnings({
-      "serial",
-      "unchecked"
-  })
+  @SuppressWarnings({"serial", "unchecked"})
   public static final MapProperty<TestEntityWithComplexIndices, Integer, Integer, String, String> indexOnMapEntry = new MapProperty<TestEntityWithComplexIndices, Integer, Integer, String, String>(new FieldInfo<>((TestEntityWithComplexIndices entity$) -> entity$.getIndexOnMapEntry(), (TestEntityWithComplexIndices entity$, Map<Integer, String> value$) -> entity$.setIndexOnMapEntry(value$), "indexOnMapEntry", "indexonmapentry", ColumnType.NORMAL, new ColumnInfo(false), new IndexInfo(IndexType.MAP_ENTRY, "indexonmapentry_index", "", "")), false, false, new SimpleProperty<TestEntityWithComplexIndices, Integer, Integer>(FieldInfo.<TestEntityWithComplexIndices, Integer> of("indexOnMapEntry", "indexonmapentry"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexIndices, String, String>(FieldInfo.<TestEntityWithComplexIndices, String> of("indexOnMapEntry", "indexonmapentry"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class)));
 
   /**
