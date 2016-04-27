@@ -61,7 +61,7 @@ import java.lang.annotation.*;
  * {@literal @}FunctionRegistry
  * public interface FunctionsWithCodecSystemRegistry {
  *
- *      // CQL function signature = listtojson(consistencylevels list<text>), returns text
+ *      // CQL function signature = listtojson(consistencylevels list&lt;text&gt;), returns text
  *      String listToJson(List<<strong>@Enumerated</strong> ConsistencyLevel> consistencyLevels);
  *
  *      // CQL function signature = getinvalue(input text), returns text

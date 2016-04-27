@@ -18,6 +18,7 @@
 - Support for Bean Validation (JSR-303)
 - Support for **Lightweight Transaction** with dedicated listener interface 
 - Support for **Materialized View** 
+- Support for typed-safe **Function calls**
 - Flexible naming strategy & insert strategy
 - Runtime **Schema Name Provider** for multi-tenant environments
 - Full compatibility with Java 8 **CompletableFuture**
@@ -40,9 +41,9 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
 		<tr>
-			<td>4.1.0</td>
+			<td>4.2.0</td>
 			<td>3.0.0</td>
-			<td>3.3</td>
+			<td>3.5</td>
 		</tr>		
 		<tr>
 			<td>4.0.1 (limited to Cassandra 2.2.3 features)</td>
