@@ -113,6 +113,18 @@ public abstract class AbstractManagerFactoryBuilder<T extends AbstractManagerFac
     }
 
     /**
+     * Define the default Consistency level to be used for all LightWeightTransaction operations
+     * operations
+     *
+     * @return ManagerFactoryBuilder
+     * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#consistency-level" target="_blank">Consistency configuration</a>
+     */
+    public T withDefaultSerialConsistency(ConsistencyLevel defaultSerialConsistency) {
+        configMap.put(CONSISTENCY_LEVEL_SERIAL_DEFAULT, defaultSerialConsistency);
+        return getThis();
+    }
+
+    /**
      * Define the default Consistency level map to be used for all READ
      * operations The map keys represent table names and values represent
      * the corresponding consistency level
@@ -135,6 +147,19 @@ public abstract class AbstractManagerFactoryBuilder<T extends AbstractManagerFac
      */
     public T withDefaultWriteConsistencyMap(Map<String, ConsistencyLevel> writeConsistencyMap) {
         configMap.put(CONSISTENCY_LEVEL_WRITE_MAP, writeConsistencyMap);
+        return getThis();
+    }
+
+    /**
+     * Define the default Consistency level map to be used for all LightWeightTransaction operations
+     * operations The map keys represent table names and values represent
+     * the corresponding consistency level
+     *
+     * @return ManagerFactoryBuilder
+     * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#consistency-level" target="_blank">Consistency configuration</a>
+     */
+    public T withDefaultSerialConsistencyMap(Map<String, ConsistencyLevel> serialConsistencyMap) {
+        configMap.put(CONSISTENCY_LEVEL_SERIAL_MAP, serialConsistencyMap);
         return getThis();
     }
 

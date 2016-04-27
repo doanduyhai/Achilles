@@ -80,7 +80,7 @@ public class ArgumentExtractor {
         configContext.setDefaultSerialConsistencyLevel(initDefaultSerialConsistencyLevel(configurationMap));
         configContext.setReadConsistencyLevelMap(initReadConsistencyMap(configurationMap));
         configContext.setWriteConsistencyLevelMap(initWriteConsistencyMap(configurationMap));
-        configContext.setSerialConsistencyLevelMap(initSeralConsistencyMap(configurationMap));
+        configContext.setSerialConsistencyLevelMap(initSerialConsistencyMap(configurationMap));
         configContext.setBeanValidator(initValidator(configurationMap));
         configContext.setPostLoadBeanValidationEnabled(initPostLoadBeanValidation(configurationMap));
         configContext.setInterceptors(initInterceptors(configurationMap));
@@ -146,7 +146,7 @@ public class ArgumentExtractor {
 
     static Optional<ConsistencyLevel> initDefaultSerialConsistencyLevel(ConfigMap configMap) {
         LOGGER.trace("Extract default write Consistency level from configuration map");
-        return Optional.ofNullable(configMap.getTyped(CONSISTENCY_LEVEL_WRITE_DEFAULT));
+        return Optional.ofNullable(configMap.getTyped(CONSISTENCY_LEVEL_SERIAL_DEFAULT));
     }
 
     public static Map<String, ConsistencyLevel> initReadConsistencyMap(ConfigMap configMap) {
@@ -159,7 +159,7 @@ public class ArgumentExtractor {
         return configMap.getTypedOr(CONSISTENCY_LEVEL_WRITE_MAP, ImmutableMap.<String, ConsistencyLevel>of());
     }
 
-    public static Map<String, ConsistencyLevel> initSeralConsistencyMap(ConfigMap configMap) {
+    public static Map<String, ConsistencyLevel> initSerialConsistencyMap(ConfigMap configMap) {
         LOGGER.trace("Extract serial Consistency level map from configuration map");
         return configMap.getTypedOr(CONSISTENCY_LEVEL_SERIAL_MAP, ImmutableMap.<String, ConsistencyLevel>of());
     }
