@@ -144,7 +144,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
     /***************************************************************************************
      * TypedMap API                                                                        *
      ***************************************************************************************/
-    public CompletableFuture<Tuple2<List<TypedMap>, ExecutionInfo>> getTypeMapsAsyncWithStats() {
+    public CompletableFuture<Tuple2<List<TypedMap>, ExecutionInfo>> getTypedMapsAsyncWithStats() {
         final RuntimeEngine rte = getRte();
         final Options options = getOptions();
 
@@ -163,14 +163,14 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
                     .thenApply(x -> Tuple2.of(mapResultSetToTypedMaps(x), x.getExecutionInfo()));
     }
 
-    public CompletableFuture<List<TypedMap>> getTypeMapsAsync() {
-        return getTypeMapsAsyncWithStats()
+    public CompletableFuture<List<TypedMap>> getTypedMapsAsync() {
+        return getTypedMapsAsyncWithStats()
                 .thenApply(Tuple2::_1);
     }
 
-    public Tuple2<List<TypedMap>, ExecutionInfo> getTypeMapsWithStats() {
+    public Tuple2<List<TypedMap>, ExecutionInfo> getTypedMapsWithStats() {
         try {
-            return Uninterruptibles.getUninterruptibly(getTypeMapsAsyncWithStats());
+            return Uninterruptibles.getUninterruptibly(getTypedMapsAsyncWithStats());
         } catch (ExecutionException e) {
             throw extractCauseFromExecutionException(e);
         }
@@ -178,7 +178,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
 
     public List<TypedMap> getTypedMaps() {
         try {
-            return Uninterruptibles.getUninterruptibly(getTypeMapsAsync());
+            return Uninterruptibles.getUninterruptibly(getTypedMapsAsync());
         } catch (ExecutionException e) {
             throw extractCauseFromExecutionException(e);
         }
