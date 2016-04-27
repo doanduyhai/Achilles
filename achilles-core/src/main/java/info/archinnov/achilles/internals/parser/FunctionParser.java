@@ -17,7 +17,7 @@
 package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.metamodel.functions.InternalSystemFunctionRegistry.FORBIDDEN_KEYSPACES;
-import static info.archinnov.achilles.internals.metamodel.functions.InternalSystemFunctionRegistry.SYSTEM_FUNCTIONS_NAME;
+import static info.archinnov.achilles.internals.metamodel.functions.InternalSystemFunctionRegistry.RESERVED_SYSTEM_FUNCTIONS_NAME;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -89,7 +89,7 @@ public class FunctionParser {
                             parentType, methodName, "returnType");
 
                     // Validate NOT system function comparing only name lowercase
-                    aptUtils.validateFalse(SYSTEM_FUNCTIONS_NAME.contains(methodName.toLowerCase()),
+                    aptUtils.validateFalse(RESERVED_SYSTEM_FUNCTIONS_NAME.contains(methodName.toLowerCase()),
                             "The name of the function '%s' in class '%s' is reserved for system functions", method, parentType);
 
                     return new FunctionSignature(keyspace, parentType, methodName, returnTypeSignature, parameterSignatures);

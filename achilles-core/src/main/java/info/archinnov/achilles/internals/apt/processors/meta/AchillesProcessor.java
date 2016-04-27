@@ -109,17 +109,17 @@ public class AchillesProcessor extends AbstractProcessor {
                 }
 
                 aptUtils.printNote("[Achilles] Generating CQL compatible types (used by the application) as class");
-                for (TypeSpec typeSpec : FunctionParameterTypesCodeGen.buildParameterTypesClasses(aptUtils, udfContext)) {
+                for (TypeSpec typeSpec : FunctionParameterTypesCodeGen.buildParameterTypesClasses(udfContext)) {
                     JavaFile.builder(FUNCTION_PACKAGE, typeSpec)
                             .build().writeTo(aptUtils.filer);
                 }
 
                 aptUtils.printNote("[Achilles] Generating SystemFunctions");
-                JavaFile.builder(FUNCTION_PACKAGE, FunctionsRegistryCodeGen.generateFunctionsRegistryClass(SYSTEM_FUNCTIONS_CLASS,
-                        SYSTEM_FUNCTIONS)).build().writeTo(aptUtils.filer);
+                JavaFile.builder(FUNCTION_PACKAGE, FunctionsRegistryCodeGen.generateSystemFunctionsRegistryClass(SYSTEM_FUNCTIONS_CLASS,
+                        SYSTEM_FUNCTIONS, udfContext.allUsedTypes)).build().writeTo(aptUtils.filer);
 
                 aptUtils.printNote("[Achilles] Generating FunctionsRegistry");
-                JavaFile.builder(FUNCTION_PACKAGE, FunctionsRegistryCodeGen.generateFunctionsRegistryClass(FUNCTIONS_REGISTRY_CLASS,
+                JavaFile.builder(FUNCTION_PACKAGE, FunctionsRegistryCodeGen.generateUserFunctionsRegistryClass(FUNCTIONS_REGISTRY_CLASS,
                         udfContext.functionSignatures)).build().writeTo(aptUtils.filer);
 
 
@@ -208,7 +208,6 @@ public class AchillesProcessor extends AbstractProcessor {
                 .filter(EntityMetaSignature::isTable)
                 .flatMap(x -> x.fieldMetaSignatures.stream())
                 .map(x -> x.sourceType)
-                //.map(TypeUtils::mapToNativeCassandraType)
                 .collect(toSet());
 
         return new FunctionsContext(udfSignatures, CollectionsHelper.appendAll(functionParameterTypes, functionReturnTypes, entityColumnTargetTypes, NATIVE_TYPES));

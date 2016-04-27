@@ -37,7 +37,7 @@ public class InternalSystemFunctionRegistry {
 
 
     public static final List<FunctionSignature> SYSTEM_FUNCTIONS = new ArrayList<>();
-    public static final List<String> SYSTEM_FUNCTIONS_NAME = new ArrayList<>();
+    public static final List<String> RESERVED_SYSTEM_FUNCTIONS_NAME = new ArrayList<>();
     public static final TypeName SYSTEM_FUNCTION_REGISTRY = ClassName.get(InternalSystemFunctionRegistry.class);
     private static final String FQCN_PATTERN = ".+\\.([a-zA-Z0-9]+)".intern();
 
@@ -165,10 +165,13 @@ public class InternalSystemFunctionRegistry {
         SYSTEM_FUNCTIONS.add(new FunctionSignature(empty(), SYSTEM_FUNCTION_REGISTRY, "uuid", uuidReturnSignature, asList()));
         SYSTEM_FUNCTIONS.add(new FunctionSignature(empty(), SYSTEM_FUNCTION_REGISTRY, "now", timeuuidReturnSignature, asList()));
         SYSTEM_FUNCTIONS.add(new FunctionSignature(empty(), SYSTEM_FUNCTION_REGISTRY, "count", new FunctionParamSignature("returnType", OBJECT_LONG, OBJECT_LONG, "long"), asList()));
+        SYSTEM_FUNCTIONS.add(new FunctionSignature(empty(), SYSTEM_FUNCTION_REGISTRY, "fromJson", stringReturnSignature, asList(textInput)));
 
-        SYSTEM_FUNCTIONS_NAME.addAll(SYSTEM_FUNCTIONS.stream().map(x -> x.name.toLowerCase()).collect(toList()));
-        SYSTEM_FUNCTIONS_NAME.add("token");
-        SYSTEM_FUNCTIONS_NAME.add("ttl");
-        SYSTEM_FUNCTIONS_NAME.add("writetime");
+        RESERVED_SYSTEM_FUNCTIONS_NAME.addAll(SYSTEM_FUNCTIONS.stream().map(x -> x.name.toLowerCase()).collect(toList()));
+        RESERVED_SYSTEM_FUNCTIONS_NAME.add("token");
+        RESERVED_SYSTEM_FUNCTIONS_NAME.add("ttl");
+        RESERVED_SYSTEM_FUNCTIONS_NAME.add("writetime");
+        RESERVED_SYSTEM_FUNCTIONS_NAME.add("toJson");
+        RESERVED_SYSTEM_FUNCTIONS_NAME.add("fromJson");
     }
 }

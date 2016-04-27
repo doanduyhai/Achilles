@@ -37,7 +37,7 @@ import info.archinnov.achilles.internals.utils.TypeNameHelper;
 
 public class FunctionParameterTypesCodeGen {
 
-    public static List<TypeSpec> buildParameterTypesClasses(AptUtils aptUtils, FunctionsContext functionContext) {
+    public static List<TypeSpec> buildParameterTypesClasses(FunctionsContext functionContext) {
 
         final Set<TypeName> uniqueTypeNames = functionContext.allUsedTypes
                 .stream()
@@ -47,7 +47,7 @@ public class FunctionParameterTypesCodeGen {
         return uniqueTypeNames
             .stream()
             .map(typeName ->
-                TypeSpec.classBuilder(TypeNameHelper.asString(typeName)+ FUNCTION_TYPE_SUFFIX)
+                TypeSpec.classBuilder(TypeNameHelper.asString(typeName) + FUNCTION_TYPE_SUFFIX)
                         .superclass(genericType(ABSTRACT_CQL_COMPATIBLE_TYPE, typeName))
                         .addSuperinterface(FUNCTION_CALL)
                         .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
