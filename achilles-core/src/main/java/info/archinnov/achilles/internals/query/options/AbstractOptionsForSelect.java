@@ -50,8 +50,8 @@ public abstract class AbstractOptionsForSelect<T extends AbstractOptionsForSelec
     /**
      * Set the given consistency level on the generated statement IF NOT NULL
      */
-    public T withOptionalConsistencyLevel(ConsistencyLevel consistencyLevel) {
-        Optional.ofNullable(consistencyLevel).ifPresent(cl -> getOptions().setCl(Optional.of(consistencyLevel)));
+    public T withOptionalConsistencyLevel(Optional<ConsistencyLevel> consistencyLevel) {
+        getOptions().setCl(consistencyLevel);
         return getThis();
     }
 
@@ -67,8 +67,8 @@ public abstract class AbstractOptionsForSelect<T extends AbstractOptionsForSelec
     /**
      * Set the given serial consistency level on the generated statement IF NOT NULL
      */
-    public T withOptionalSerialConsistencyLevel(ConsistencyLevel serialConsistencyLevel) {
-        Optional.ofNullable(serialConsistencyLevel).ifPresent(cl -> getOptions().setSerialCL(Optional.of(serialConsistencyLevel)));
+    public T withOptionalSerialConsistencyLevel(Optional<ConsistencyLevel> serialConsistencyLevel) {
+        getOptions().setSerialCL(serialConsistencyLevel);
         return getThis();
     }
 
@@ -108,8 +108,8 @@ public abstract class AbstractOptionsForSelect<T extends AbstractOptionsForSelec
     /**
      * Set the given outgoing payload map on the generated statement IF NOT NULL
      */
-    public T withOptionalOutgoingPayload(Map<String, ByteBuffer> outgoingPayload) {
-        Optional.ofNullable(outgoingPayload).ifPresent(cl -> getOptions().setOutgoingPayLoad(Optional.of(outgoingPayload)));
+    public T withOptionalOutgoingPayload(Optional<Map<String, ByteBuffer>> outgoingPayload) {
+        getOptions().setOutgoingPayLoad(outgoingPayload);
         return getThis();
     }
 
@@ -136,16 +136,16 @@ public abstract class AbstractOptionsForSelect<T extends AbstractOptionsForSelec
     /**
      * Set the given paging state on the generated statement IF NOT NULL
      */
-    public T withOptionalPagingState(PagingState pagingState) {
-        Optional.ofNullable(pagingState).ifPresent(cl -> getOptions().setPagingState(Optional.of(pagingState)));
+    public T withOptionalPagingState(Optional<PagingState> pagingState) {
+        getOptions().setPagingState(pagingState);
         return getThis();
     }
 
     /**
      * Set the given paging state string on the generated statement IF NOT NULL
      */
-    public T withOptionalPagingState(String pagingStateString) {
-        Optional.ofNullable(pagingStateString).ifPresent(cl -> getOptions().setPagingState(Optional.of(PagingState.fromString(pagingStateString))));
+    public T withOptionalPagingStateString(Optional<String> pagingStateString) {
+        pagingStateString.ifPresent(cl -> getOptions().setPagingState(Optional.of(PagingState.fromString(pagingStateString.get()))));
         return getThis();
     }
 
@@ -161,8 +161,8 @@ public abstract class AbstractOptionsForSelect<T extends AbstractOptionsForSelec
     /**
      * Set the given retry policy
      */
-    public T withOptionalRetryPolicy(RetryPolicy retryPolicy) {
-        Optional.ofNullable(retryPolicy).ifPresent(cl -> getOptions().setRetryPolicy(Optional.of(retryPolicy)));
+    public T withOptionalRetryPolicy(Optional<RetryPolicy> retryPolicy) {
+        getOptions().setRetryPolicy(retryPolicy);
         return getThis();
     }
 
