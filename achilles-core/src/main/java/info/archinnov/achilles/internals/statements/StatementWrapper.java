@@ -130,7 +130,7 @@ public interface StatementWrapper {
                     }
                 } catch (TraceRetrievalException e) {
                     final String queryString = getBoundStatement().preparedStatement().getQueryString();
-                    trace.append(format(" ERROR: cannot retrieve trace for query {} because it may not be yet available", queryString));
+                    trace.append(format(" ERROR: cannot retrieve trace for query %s because it may not be yet available", queryString));
                 }
                 trace.append("****************************\n\n");
             }

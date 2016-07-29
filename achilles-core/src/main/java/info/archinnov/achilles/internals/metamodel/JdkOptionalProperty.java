@@ -84,7 +84,7 @@ public class JdkOptionalProperty<ENTITY, FROM, TO> extends AbstractProperty<ENTI
             LOGGER.trace(format("Encode raw '%s' optional object %s", fieldName, o));
         }
 
-        Validator.validateTrue(Optional.class.isAssignableFrom(o.getClass()), "The class of object {} to encode should be java.util.Optional", o);
+        Validator.validateTrue(Optional.class.isAssignableFrom(o.getClass()), "The class of object %s to encode should be java.util.Optional", o);
         return encodeFromJava((Optional<FROM>) o);
     }
 

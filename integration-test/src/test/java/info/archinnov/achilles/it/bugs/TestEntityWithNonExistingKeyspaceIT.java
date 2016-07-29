@@ -52,7 +52,7 @@ public class TestEntityWithNonExistingKeyspaceIT {
         //When
 
         expectException.expect(AchillesException.class);
-        expectException.expectMessage(format("The keyspace {} defined on entity {} " +
+        expectException.expectMessage(format("The keyspace %s defined on entity %s " +
                 "does not exist in Cassandra", "non_existing", EntityWithNonExistingKeyspace.class.getCanonicalName()));
 
         ManagerFactoryBuilder

@@ -95,7 +95,7 @@ public class SimpleProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProperty
             LOGGER.trace(format("Encode raw '%s' object %s", fieldName, o));
         }
 
-        Validator.validateTrue(valueFromTypeToken.getRawType().isAssignableFrom(o.getClass()), "The class of object {} to encode should be {}", o, valueFromTypeToken);
+        Validator.validateTrue(valueFromTypeToken.getRawType().isAssignableFrom(o.getClass()), "The class of object %s to encode should be %s", o, valueFromTypeToken);
         return encodeFromJava((VALUEFROM) o);
     }
 
@@ -115,7 +115,7 @@ public class SimpleProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProperty
             LOGGER.trace(format("Decode '%s' raw object %s", fieldName, o));
         }
 
-        Validator.validateTrue(valueToTypeToken.getRawType().isAssignableFrom(o.getClass()), "The class of object {} to decode should be {}", o, valueToTypeToken);
+        Validator.validateTrue(valueToTypeToken.getRawType().isAssignableFrom(o.getClass()), "The class of object %s to decode should be %s", o, valueToTypeToken);
         return valueCodec.decode((VALUETO) o);
     }
 

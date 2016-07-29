@@ -78,7 +78,7 @@ public class Tuple6Property<ENTITY, A, B, C, D, E, F> extends AbstractTuplePrope
             LOGGER.trace(format("Encode raw '%s' tuple6 object %s", fieldName, o));
         }
 
-        Validator.validateTrue(Tuple6.class.isAssignableFrom(o.getClass()), "The class of object {} to encode should be Tuple6", o);
+        Validator.validateTrue(Tuple6.class.isAssignableFrom(o.getClass()), "The class of object %s to encode should be Tuple6", o);
         return encodeFromJava((Tuple6<A, B, C, D, E, F>) o);
     }
 
@@ -97,7 +97,7 @@ public class Tuple6Property<ENTITY, A, B, C, D, E, F> extends AbstractTuplePrope
             LOGGER.trace(format("Decode '%s' tuple6 raw object %s", fieldName, o));
         }
 
-        Validator.validateTrue(TupleValue.class.isAssignableFrom(o.getClass()), "The class of object {} to decode should be {}", o, TupleValue.class.getCanonicalName());
+        Validator.validateTrue(TupleValue.class.isAssignableFrom(o.getClass()), "The class of object %s to decode should be %s", o, TupleValue.class.getCanonicalName());
         final List<DataType> types = tupleType.getComponentTypes();
         return new Tuple6<>(
                 aProperty.decodeFromRaw(extractType((TupleValue) o, types.get(0), aProperty, 0)),

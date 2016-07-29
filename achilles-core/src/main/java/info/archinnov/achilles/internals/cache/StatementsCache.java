@@ -61,7 +61,7 @@ public class StatementsCache {
     public PreparedStatement getStaticCache(CacheKey cacheKey) {
         final PreparedStatement preparedStatement = staticCache.getIfPresent(cacheKey);
         if (preparedStatement == null) {
-            throw new AchillesException(format("Cannot find static cached prepared statement for cache key {}", cacheKey));
+            throw new AchillesException(format("Cannot find static cached prepared statement for cache key %s", cacheKey));
         }
         return preparedStatement;
     }

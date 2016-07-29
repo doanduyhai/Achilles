@@ -96,7 +96,7 @@ public class ComputedProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProper
             LOGGER.trace(format("Decode computed property %s from raw data %s", this.toString(), o));
         }
         final Class<?> cqlClass = computedColumnInfo.cqlClass;
-        Validator.validateTrue(cqlClass.isAssignableFrom(o.getClass()), "The class of object {} to decode should be {}", o, cqlClass.getCanonicalName());
+        Validator.validateTrue(cqlClass.isAssignableFrom(o.getClass()), "The class of object %s to decode should be %s", o, cqlClass.getCanonicalName());
         return valueCodec.decode((VALUETO) o);
     }
 

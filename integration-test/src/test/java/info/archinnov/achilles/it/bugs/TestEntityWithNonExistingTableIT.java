@@ -51,7 +51,7 @@ public class TestEntityWithNonExistingTableIT {
 
         //When
         expectException.expect(AchillesException.class);
-        expectException.expectMessage(format("The table {} defined on entity {} " +
+        expectException.expectMessage(format("The table %s defined on entity %s " +
                 "does not exist in Cassandra", EntityWithNonExistingTable.TABLE, EntityWithNonExistingTable.class.getCanonicalName()));
 
         ManagerFactoryBuilder

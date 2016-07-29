@@ -100,7 +100,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
             LOGGER.trace(format("Encode raw '%s' set object %s", fieldName, o));
         }
 
-        Validator.validateTrue(Set.class.isAssignableFrom(o.getClass()), "The class of object {} to encode should be Set", o);
+        Validator.validateTrue(Set.class.isAssignableFrom(o.getClass()), "The class of object %s to encode should be Set", o);
         return encodeFromJava((Set<VALUEFROM>) o);
     }
 
@@ -138,7 +138,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
                 return null;
         }
 
-        Validator.validateTrue(Set.class.isAssignableFrom(o.getClass()), "The class of object {} to decode should be Set<{}>", o, valueToClass.getCanonicalName());
+        Validator.validateTrue(Set.class.isAssignableFrom(o.getClass()), "The class of object %s to decode should be Set<%s>", o, valueToClass.getCanonicalName());
 
         return new HashSet<>(((Set<VALUETO>) o)
                 .stream()

@@ -108,7 +108,7 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
             LOGGER.trace(format("Encode raw '%s' list object %s", fieldName, o));
         }
 
-        Validator.validateTrue(List.class.isAssignableFrom(o.getClass()), "The class of object {} to encode should be List", o);
+        Validator.validateTrue(List.class.isAssignableFrom(o.getClass()), "The class of object %s to encode should be List", o);
         return encodeFromJava((List<VALUEFROM>) o);
     }
 
@@ -145,7 +145,7 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
                 return null;
         }
 
-        Validator.validateTrue(List.class.isAssignableFrom(o.getClass()), "The class of object {} to decode should be List<{}>", o, List.class.getCanonicalName());
+        Validator.validateTrue(List.class.isAssignableFrom(o.getClass()), "The class of object %s to decode should be List<%s>", o, o);
 
         return new ArrayList<>(((List<VALUETO>) o)
                 .stream()

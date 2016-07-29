@@ -115,7 +115,7 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode raw '%s' map object %s", fieldName, o));
         }
-        Validator.validateTrue(Map.class.isAssignableFrom(o.getClass()), "The class of object {} to encode should be Map", o);
+        Validator.validateTrue(Map.class.isAssignableFrom(o.getClass()), "The class of object %s to encode should be Map", o);
         return encodeFromJava((Map<KEYFROM, VALUEFROM>) o);
     }
 
@@ -152,7 +152,7 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
                 return null;
         }
 
-        Validator.validateTrue(Map.class.isAssignableFrom(o.getClass()), "The class of object {} to decode should be Map<{},{}>", o,
+        Validator.validateTrue(Map.class.isAssignableFrom(o.getClass()), "The class of object %s to decode should be Map<%s,%s>", o,
                 keyProperty.valueToTypeToken, valueProperty.valueToTypeToken);
 
         return new HashMap<>(((Map<KEYTO, VALUETO>) o)

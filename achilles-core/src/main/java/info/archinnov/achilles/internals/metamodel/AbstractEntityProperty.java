@@ -324,7 +324,7 @@ public abstract class AbstractEntityProperty<T> implements
                 .getMetadata()
                 .getKeyspace(keyspace);
 
-        validateNotNull(keyspaceMetadata,"The keyspace {} defined on entity {} does not exist in Cassandra",
+        validateNotNull(keyspaceMetadata,"The keyspace %s defined on entity %s does not exist in Cassandra",
                 keyspace, entityClass.getCanonicalName());
 
         final String tableName = getTableOrViewName();
@@ -332,7 +332,7 @@ public abstract class AbstractEntityProperty<T> implements
         final TableMetadata tableMetadata = keyspaceMetadata
                 .getTable(tableName);
 
-        validateNotNull(tableMetadata,"The table {} defined on entity {} does not exist in Cassandra",
+        validateNotNull(tableMetadata,"The table %s defined on entity %s does not exist in Cassandra",
                 tableName, entityClass.getCanonicalName());
 
         validateDefaultTTL(tableMetadata, staticTTL, entityClass);

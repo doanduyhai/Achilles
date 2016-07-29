@@ -89,7 +89,7 @@ public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue
             LOGGER.trace(format("Encode raw '%s' object %s", fieldName, o));
         }
 
-        Validator.validateTrue(valueClass.isAssignableFrom(o.getClass()), "The class of object {} to encode should be {}", o, valueClass.getCanonicalName());
+        Validator.validateTrue(valueClass.isAssignableFrom(o.getClass()), "The class of object %s to encode should be %s", o, valueClass.getCanonicalName());
         return encodeFromJava((A) o);
     }
 
@@ -108,7 +108,7 @@ public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue
             LOGGER.trace(format("Decode '%s' raw object %s", fieldName, o));
         }
 
-        Validator.validateTrue(UDTValue.class.isAssignableFrom(o.getClass()), "The class of object {} to decode should be {}", o, UDTValue.class.getCanonicalName());
+        Validator.validateTrue(UDTValue.class.isAssignableFrom(o.getClass()), "The class of object %s to decode should be %s", o, UDTValue.class.getCanonicalName());
         return udtClassProperty.createBeanFromUDT((UDTValue) o);
     }
 
