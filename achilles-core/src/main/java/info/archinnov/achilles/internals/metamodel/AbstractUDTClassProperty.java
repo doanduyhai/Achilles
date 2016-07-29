@@ -127,6 +127,9 @@ public abstract class AbstractUDTClassProperty<A>
     @Override
     public void inject(BeanFactory factory) {
         udtFactory = factory;
+        for (AbstractProperty<A, ?, ?> x : componentsProperty) {
+            x.inject(udtFactory);
+        }
     }
 
     @Override

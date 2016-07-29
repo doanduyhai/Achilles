@@ -1,3 +1,8 @@
+CREATE TYPE IF NOT EXISTS test.layer2(
+		layer text,
+		layer3 frozen<test.layer3>);
+CREATE TYPE IF NOT EXISTS test.layer3(
+		layer text);
 CREATE TYPE IF NOT EXISTS test.my_type(
 		name text,
 		list list<text>,
@@ -15,6 +20,10 @@ CREATE TABLE IF NOT EXISTS test.entity_child(
 		child_value text,
 		value text,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.layer(
+		layer text,
+		layer2 frozen<test.layer2>,
+		PRIMARY KEY(layer));
 CREATE TABLE IF NOT EXISTS test.sensor(
 		sensor_id bigint,
 		date bigint,
