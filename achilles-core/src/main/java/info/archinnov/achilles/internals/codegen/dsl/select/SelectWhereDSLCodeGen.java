@@ -33,7 +33,6 @@ import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
-import info.archinnov.achilles.type.tuples.Tuple;
 
 public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
     public static List<TypeSpec> buildWhereClasses(EntityMetaSignature signature) {
@@ -241,16 +240,6 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         StringJoiner paramsJoiner = new StringJoiner(",");
         StringJoiner dataTypeJoiner = new StringJoiner(",");
-        StringJoiner encodedValuesJoiner = new StringJoiner(",");
-
-        fieldInfos
-                .stream()
-                .map(x -> x.fieldName)
-                .forEach(x -> {
-                    dataTypeJoiner.add("meta." + x + ".getDataType()");
-                    encodedValuesJoiner.add(x + "_encoded");
-                });
-
         fieldInfos
                 .stream()
                 .map(x -> x.cqlColumn)
@@ -258,7 +247,6 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         final String params = paramsJoiner.toString();
         final String dataTypes = dataTypeJoiner.toString();
-        final String encodedValues = encodedValuesJoiner.toString();
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>",
@@ -271,13 +259,11 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         for(FieldSignatureInfo x: fieldInfos) {
             builder.addParameter(x.typeName, x.fieldName, Modifier.FINAL)
-                    .addStatement("final Object $L_encoded = meta.$L.encodeFromJava($L)", x.fieldName, x.fieldName, x.fieldName);
+                    .addStatement("boundValues.add($L)", x.fieldName)
+                    .addStatement("encodedValues.add(meta.$L.encodeFromJava($L))", x.fieldName, x.fieldName);
         }
 
-
-        builder.addStatement("boundValues.add($L.Tuple$L.of($L))", Tuple.class.getPackage().getName(), fieldInfos.size(), params)
-                .addStatement("encodedValues.add(tupleType.newValue($L))", encodedValues)
-                .returns(nextType);
+        builder.returns(nextType);
 
         return builder.addStatement("return new $T(where)", nextType).build();
     }

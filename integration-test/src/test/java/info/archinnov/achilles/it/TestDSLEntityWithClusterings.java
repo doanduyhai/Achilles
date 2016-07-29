@@ -145,7 +145,7 @@ public class TestDSLEntityWithClusterings {
 
 
         //When
-        final List<EntityWithClusteringColumns> list = manager
+        List<EntityWithClusteringColumns> list = manager
                 .dsl()
                 .select()
                 .uuid()
@@ -167,6 +167,19 @@ public class TestDSLEntityWithClusterings {
         assertThat(list.get(1).getUuid()).isEqualTo(uuid1);
         assertThat(list.get(1).getDate()).isEqualTo(date2);
         assertThat(list.get(1).getValue()).isEqualTo("val2");
+
+        //When
+        list = manager
+                .dsl()
+                .select()
+                .value()
+                .fromBaseTable()
+                .where()
+                .id_Eq(id)
+                .uuid_And_date_Gte(uuid2, date4)
+                .getList();
+
+        assertThat(list).hasSize(2);
     }
 
     @Test
