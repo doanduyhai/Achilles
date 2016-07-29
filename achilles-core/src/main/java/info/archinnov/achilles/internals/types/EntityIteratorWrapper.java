@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -36,6 +37,7 @@ public class EntityIteratorWrapper<ENTITY> implements Iterator<ENTITY>, AsyncAwa
     private final AbstractEntityProperty<ENTITY> meta;
     private final StatementWrapper statementWrapper;
     private final Options options;
+    private ExecutionInfo executionInfo;
 
     public EntityIteratorWrapper(CompletableFuture<ResultSet> futureRS, AbstractEntityProperty<ENTITY> meta,
                                  StatementWrapper statementWrapper, Options options) {
@@ -46,10 +48,18 @@ public class EntityIteratorWrapper<ENTITY> implements Iterator<ENTITY>, AsyncAwa
             this.delegate = Uninterruptibles.getUninterruptibly(futureRS
                     .thenApply(options::resultSetAsyncListener)
                     .thenApply(statementWrapper::logTrace)
+                    .thenApply(rs -> {
+                        EntityIteratorWrapper.this.executionInfo = rs.getExecutionInfo();
+                        return rs;
+                    })
                     .thenApply(rs -> rs.iterator()));
         } catch (ExecutionException e) {
             throw extractCauseFromExecutionException(e);
         }
+    }
+
+    public ExecutionInfo getExecutionInfo() {
+        return this.executionInfo;
     }
 
     @Override

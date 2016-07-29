@@ -17,6 +17,7 @@
 package info.archinnov.achilles.internals.query.typed;
 
 import static info.archinnov.achilles.internals.query.typed.TypedQueryValidator.validateCorrectTableName;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
@@ -42,6 +43,8 @@ import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
 import info.archinnov.achilles.internals.types.EntityIteratorWrapper;
+import info.archinnov.achilles.internals.types.TypedMapIteratorWrapper;
+import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.interceptor.Event;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
@@ -157,6 +160,38 @@ public class TypedQuery<ENTITY> implements SelectAction<ENTITY>, StatementTypeAw
 
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
         return new EntityIteratorWrapper<>(futureRS, meta, statementWrapper, options);
+    }
+
+    /**
+     * Execute the typed query and return an iterator of entities
+     *
+     * @return Iterator&lt;ENTITY&gt;
+     */
+    @Override
+    public Tuple2<Iterator<ENTITY>, ExecutionInfo> iteratorWithExecutionInfo() {
+        EntityIteratorWrapper iterator = (EntityIteratorWrapper) this.iterator();
+        return Tuple2.of(iterator, iterator.getExecutionInfo());
+    }
+
+    @Override
+    public Iterator<TypedMap> typedMapIterator() {
+        StatementWrapper statementWrapper = new BoundStatementWrapper(getOperationType(boundStatement), meta,
+                boundStatement, encodedBoundValues);
+
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(String.format("Generate iterator for typed query : %s",
+                    statementWrapper.getBoundStatement().preparedStatement().getQueryString()));
+        }
+
+        CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
+
+        return new TypedMapIteratorWrapper(futureRS, statementWrapper, options);
+    }
+
+    @Override
+    public Tuple2<Iterator<TypedMap>, ExecutionInfo> typedMapIteratorWithExecutionInfo() {
+        TypedMapIteratorWrapper iterator = (TypedMapIteratorWrapper) this.typedMapIterator();
+        return Tuple2.of(iterator, iterator.getExecutionInfo());
     }
 
     /**

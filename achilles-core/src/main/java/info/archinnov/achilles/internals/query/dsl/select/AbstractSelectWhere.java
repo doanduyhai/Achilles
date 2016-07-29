@@ -90,6 +90,13 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
         return new EntityIteratorWrapper<>(futureRS, meta, statementWrapper, options);
     }
 
+    @Override
+    public Tuple2<Iterator<ENTITY>, ExecutionInfo> iteratorWithExecutionInfo() {
+        final EntityIteratorWrapper<ENTITY> iterator = (EntityIteratorWrapper<ENTITY>)this.iterator();
+        return Tuple2.of(iterator, iterator.getExecutionInfo());
+    }
+
+    @Override
     public Iterator<TypedMap> typedMapIterator() {
         final RuntimeEngine rte = getRte();
         final Options options = getOptions();
@@ -103,6 +110,12 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
         return new TypedMapIteratorWrapper(futureRS, statementWrapper, options);
+    }
+
+    @Override
+    public Tuple2<Iterator<TypedMap>, ExecutionInfo> typedMapIteratorWithExecutionInfo() {
+        final TypedMapIteratorWrapper iterator = (TypedMapIteratorWrapper)this.typedMapIterator();
+        return Tuple2.of(iterator, iterator.getExecutionInfo());
     }
 
     public CompletableFuture<Tuple2<List<ENTITY>, ExecutionInfo>> getListAsyncWithStats() {

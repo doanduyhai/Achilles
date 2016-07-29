@@ -25,15 +25,42 @@ import com.datastax.driver.core.ExecutionInfo;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import info.archinnov.achilles.internals.query.AsyncAware;
+import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public interface SelectAction<ENTITY> extends AsyncAware {
 
     /**
      * Execute the SELECT action
-     * and return an {@link java.util.Iterator} of entity instances
+     * and return an {@link java.util.Iterator}&lt;ENTITY&gt; of entity instances
+     * <br/>
+     * WARNING: <strong>this method performs a blocking call to the underlying async query</strong>
      */
     Iterator<ENTITY> iterator();
+
+    /**
+     * Execute the SELECT action
+     * and return a {@link info.archinnov.achilles.type.tuples.Tuple2}<{@link java.util.Iterator}&lt;ENTITY&gt;, {@link com.datastax.driver.core.ExecutionInfo}>
+     * <br/>
+     * WARNING: <strong>this method performs a blocking call to the underlying async query</strong>
+     */
+    Tuple2<Iterator<ENTITY>, ExecutionInfo> iteratorWithExecutionInfo();
+
+    /**
+     * Execute the SELECT action
+     * and return an {@link java.util.Iterator}<{@link info.archinnov.achilles.type.TypedMap}>
+     * <br/>
+     * WARNING: <strong>this method performs a blocking call to the underlying async query</strong>
+     */
+    Iterator<TypedMap> typedMapIterator();
+
+    /**
+     * Execute the SELECT action
+     * and return an {@link info.archinnov.achilles.type.tuples.Tuple2}&lt;{@link java.util.Iterator}&lt;{@link info.archinnov.achilles.type.TypedMap}&gt;, {@link com.datastax.driver.core.ExecutionInfo}&gt;
+     * <br/>
+     * WARNING: <strong>this method performs a blocking call to the underlying async query</strong>
+     */
+    Tuple2<Iterator<TypedMap>, ExecutionInfo> typedMapIteratorWithExecutionInfo();
 
     /**
      * Execute the SELECT action

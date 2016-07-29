@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -35,6 +36,8 @@ public class TypedMapIteratorWrapper implements Iterator<TypedMap>, TypedMapAwar
     private final Iterator<Row> delegate;
     private final StatementWrapper statementWrapper;
     private final Options options;
+    private ExecutionInfo executionInfo;
+
 
     public TypedMapIteratorWrapper(CompletableFuture<ResultSet> futureRS, StatementWrapper statementWrapper, Options options) {
         this.statementWrapper = statementWrapper;
@@ -43,10 +46,18 @@ public class TypedMapIteratorWrapper implements Iterator<TypedMap>, TypedMapAwar
             this.delegate = Uninterruptibles.getUninterruptibly(futureRS
                     .thenApply(options::resultSetAsyncListener)
                     .thenApply(statementWrapper::logTrace)
+                    .thenApply(rs -> {
+                        TypedMapIteratorWrapper.this.executionInfo = rs.getExecutionInfo();
+                        return rs;
+                    })
                     .thenApply(rs -> rs.iterator()));
         } catch (ExecutionException e) {
             throw extractCauseFromExecutionException(e);
         }
+    }
+
+    public ExecutionInfo getExecutionInfo() {
+        return this.executionInfo;
     }
 
     @Override
