@@ -41,9 +41,9 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
 		<tr>
-			<td>4.2.0</td>
-			<td>3.0.0</td>
-			<td>3.5</td>
+			<td>4.2.1</td>
+			<td>3.1.0</td>
+			<td>3.7</td>
 		</tr>		
 		<tr>
 			<td>4.0.1 (limited to Cassandra 2.2.3 features)</td>
@@ -63,7 +63,7 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
     </tbody>
 </table>    
 
-> Warning: thre will be no new features for branches older than **4.x.x**. Those branches are
+> Warning: thre will be no new features for branches older than **4.2.x**. Those branches are
 only supported for bug fixes. New features will **not** be back-ported. Please upgrade to the
 latest version of **Achilles** to benefit from new features
 
