@@ -64,7 +64,7 @@ public class FunctionProperty {
                 .filter(x -> x.getArguments()
                         .entrySet()
                         .stream()
-                        .map(entry -> entry.getValue().asFunctionParameterString())
+                        .map(entry -> entry.getValue().toString())
                         .collect(Collectors.toList())
                         .equals(this.parameterDataTypes))
                 .count();
@@ -76,7 +76,7 @@ public class FunctionProperty {
                 .filter(x -> x.getReturnType().asFunctionParameterString().equalsIgnoreCase(this.returnDataType))
                 .filter(x -> x.getArgumentTypes()
                         .stream()
-                        .map(DataType::asFunctionParameterString)
+                        .map(DataType::toString)
                         .collect(Collectors.toList())
                         .equals(this.parameterDataTypes))
                 .count();

@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
@@ -110,7 +111,9 @@ public class AchillesInitializer {
 
         Cluster cluster = Cluster.builder().addContactPoint(host).withPort(cqlPort).withClusterName(clusterName)
                 .withCompression(compression).withLoadBalancingPolicy(loadBalancingPolicy).withRetryPolicy(retryPolicy)
-                .withReconnectionPolicy(reconnectionPolicy).build();
+                .withReconnectionPolicy(reconnectionPolicy)
+                .withProtocolVersion(ProtocolVersion.NEWEST_SUPPORTED)
+                .build();
 
         // Add Cluster for shutdown process
         ServerStarter.CASSANDRA_EMBEDDED.getShutdownHook().addCluster(cluster);

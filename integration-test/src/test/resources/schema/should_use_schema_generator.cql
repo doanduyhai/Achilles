@@ -11,7 +11,7 @@ CREATE TYPE IF NOT EXISTS test.having_nested_type(
 		value text,
 		udtlist list<frozen<test.no_ks>>,
 		nestedudt frozen<test.no_ks>,
-		tuplewithudt frozen<tuple<int, frozen<test.no_ks>>>);
+		tuplewithudt frozen<tuple<int, no_ks>>);
 CREATE TYPE IF NOT EXISTS test.no_ks(
 		id bigint,
 		value text);

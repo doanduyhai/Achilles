@@ -92,7 +92,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <cassandra.version>3.5</cassandra.version>
-        <datastax.driver.core.version>3.0.0</datastax.driver.core.version>
+        <datastax.driver.core.version>3.1.0</datastax.driver.core.version>
         <spring.version>3.2.0.RELEASE</spring.version>
         <fasterxml.jackson.version>2.3.3</fasterxml.jackson.version>
         <commons.lang.version>3.3.2</commons.lang.version>

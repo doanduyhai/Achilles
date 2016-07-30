@@ -134,7 +134,6 @@ public enum ServerStarter {
         log.info("Starting Cassandra...");
 
         System.setProperty("cassandra.triggers_dir", triggersDir);
-        System.setProperty("cassandra-foreground", "true");
         System.setProperty("cassandra.embedded.concurrent.reads", parameters.getTypedOr(CASSANDRA_CONCURRENT_READS, 32).toString());
         System.setProperty("cassandra.embedded.concurrent.writes", parameters.getTypedOr(CASSANDRA_CONCURRENT_WRITES, 32).toString());
         System.setProperty("cassandra-foreground", "true");

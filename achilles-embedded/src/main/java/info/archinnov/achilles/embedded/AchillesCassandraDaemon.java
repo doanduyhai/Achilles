@@ -25,6 +25,7 @@ import org.apache.cassandra.cql3.functions.ThreadAwareSecurityManager;
 import org.apache.cassandra.db.*;
 import org.apache.cassandra.db.commitlog.CommitLog;
 import org.apache.cassandra.exceptions.ConfigurationException;
+import org.apache.cassandra.exceptions.StartupException;
 import org.apache.cassandra.io.FSError;
 import org.apache.cassandra.io.sstable.CorruptSSTableException;
 import org.apache.cassandra.io.util.FileUtils;
@@ -60,7 +61,7 @@ public class AchillesCassandraDaemon extends CassandraDaemon {
      * - disable the SizeEstimatesRecorder (estimate SSTable size, who cares for unit testing ?)
      */
     @Override
-    protected void setup() {
+    protected void setup()  {
         // Delete any failed snapshot deletions on Windows - see CASSANDRA-9658
         if (FBUtilities.isWindows())
             WindowsFailedSnapshotTracker.deleteOldSnapshots();
@@ -97,15 +98,19 @@ public class AchillesCassandraDaemon extends CassandraDaemon {
         // load schema from disk
         Schema.instance.loadFromDisk();
 
-        // clean up debris in the rest of the keyspaces
-        for (String keyspaceName : Schema.instance.getKeyspaces())
-        {
-            // Skip system as we've already cleaned it
-            if (keyspaceName.equals(SystemKeyspace.NAME))
-                continue;
+        try {
+            // clean up debris in the rest of the keyspaces
+            for (String keyspaceName : Schema.instance.getKeyspaces()) {
+                // Skip system as we've already cleaned it
+                if (keyspaceName.equals(SystemKeyspace.NAME))
+                    continue;
 
-            for (CFMetaData cfm : Schema.instance.getTablesAndViews(keyspaceName))
-                ColumnFamilyStore.scrubDataDirectories(cfm);
+                for (CFMetaData cfm : Schema.instance.getTablesAndViews(keyspaceName))
+                    ColumnFamilyStore.scrubDataDirectories(cfm);
+            }
+        } catch (StartupException startupEx) {
+            logger.error("***** Startup exception : " + startupEx.getLocalizedMessage());
+            throw new RuntimeException(startupEx);
         }
 
         Keyspace.setInitialized();
