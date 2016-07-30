@@ -91,6 +91,9 @@ public class AchillesCassandraDaemon extends CassandraDaemon {
             }
         });
 
+        // Populate token metadata before flushing, for token-aware sstable partitioning (#6696)
+        StorageService.instance.populateTokenMetadata();
+
         // load schema from disk
         Schema.instance.loadFromDisk();
 

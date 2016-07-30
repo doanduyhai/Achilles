@@ -219,7 +219,7 @@ public class AchillesTestResourceBuilder {
     private TypedMap buildCassandraParams() {
         cassandraParams.put(SCRIPT_LOCATIONS, scriptLocations);
         cassandraParams.put(SCRIPT_TEMPLATES, scriptTemplates);
-        cassandraParams.put(USE_UNSAFE_CASSANDRA_DAEMON, true);
+        cassandraParams.put(USE_UNSAFE_CASSANDRA_DAEMON, false);
         return cassandraParams;
     }
 }
