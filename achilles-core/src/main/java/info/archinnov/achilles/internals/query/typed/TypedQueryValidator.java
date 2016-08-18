@@ -33,7 +33,7 @@ public class TypedQueryValidator {
     public static void validateCorrectTableName(String queryString, AbstractEntityProperty<?> meta) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Validate that the query string %s is related to the entity meta %s",
-                    queryString));
+                    queryString, meta.toString()));
         }
 
         String tableName = meta.getTableOrViewName().toLowerCase();
