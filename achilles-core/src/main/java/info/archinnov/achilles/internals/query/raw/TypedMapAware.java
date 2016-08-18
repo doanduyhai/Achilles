@@ -18,6 +18,7 @@ package info.archinnov.achilles.internals.query.raw;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ResultSet;
@@ -33,9 +34,9 @@ public interface TypedMapAware {
      */
     default List<TypedMap> mapResultSetToTypedMaps(ResultSet resultSet) {
         final List<TypedMap> result = new ArrayList<>();
-        resultSet
-                .iterator()
-                .forEachRemaining(row -> result.add(mapRowToTypedMap(row)));
+
+        IntStream.range(0, resultSet.getAvailableWithoutFetching())
+                .forEach(index -> result.add(mapRowToTypedMap(resultSet.one())));
         return result;
     }
 

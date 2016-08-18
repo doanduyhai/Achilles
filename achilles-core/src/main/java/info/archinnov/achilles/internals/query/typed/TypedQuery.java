@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -215,10 +216,9 @@ public class TypedQuery<ENTITY> implements SelectAction<ENTITY>, StatementTypeAw
                 .thenApply(options::resultSetAsyncListener)
                 .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
-                .thenApply(rs -> Tuple2.of(rs
-                                .all()
-                                .stream()
-                                .map(row -> {
+                .thenApply(rs -> Tuple2.of(IntStream.range(0, rs.getAvailableWithoutFetching())
+                                .mapToObj(index -> {
+                                    final Row row = rs.one();
                                     options.rowAsyncListener(row);
                                     return meta.createEntityFrom(row);
                                 })

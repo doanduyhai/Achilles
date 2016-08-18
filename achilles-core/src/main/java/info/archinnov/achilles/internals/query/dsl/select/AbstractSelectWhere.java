@@ -23,14 +23,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ExecutionInfo;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.util.concurrent.Uninterruptibles;
 
@@ -137,15 +135,14 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
                 .thenApply(options::resultSetAsyncListener)
                 .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
-                .thenApply(rs -> Tuple2.of(rs
-                                .all()
-                                .stream()
-                                .map(row -> {
-                                    options.rowAsyncListener(row);
-                                    return meta.createEntityFrom(row);
-                                })
-                                .collect(toList()),
-                        rs.getExecutionInfo()))
+                .thenApply(rs -> Tuple2.of(IntStream.range(0, rs.getAvailableWithoutFetching())
+                            .mapToObj(index -> {
+                                final Row row = rs.one();
+                                options.rowAsyncListener(row);
+                                return meta.createEntityFrom(row);
+                            })
+                            .collect(toList()),
+                            rs.getExecutionInfo()))
                 .thenApply(tuple2 -> {
                     for (ENTITY entity : tuple2._1()) {
                         meta.triggerInterceptorsForEvent(Event.POST_LOAD, entity);
