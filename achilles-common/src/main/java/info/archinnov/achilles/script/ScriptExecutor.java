@@ -1,14 +1,26 @@
+/*
+ * Copyright (C) 2012-2016 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package info.archinnov.achilles.script;
 
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
-import com.google.common.util.concurrent.MoreExecutors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static info.archinnov.achilles.internals.statement.StatementHelper.isDMLStatement;
+import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DDL_SCRIPT;
+import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DML_STATEMENT;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.InputStream;
 import java.util.*;
@@ -17,10 +29,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static info.archinnov.achilles.internals.statement.StatementHelper.isDMLStatement;
-import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DDL_SCRIPT;
-import static info.archinnov.achilles.logger.AchillesLoggers.ACHILLES_DML_STATEMENT;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
+import com.google.common.util.concurrent.MoreExecutors;
 
 import info.archinnov.achilles.internals.futures.FutureUtils;
 import info.archinnov.achilles.validation.Validator;
@@ -40,6 +56,7 @@ public class ScriptExecutor {
     private static final String CODE_DELIMITER_START = "^\\s*(?:AS)?\\s*\\$\\$\\s*$";
     private static final String CODE_DELIMITER_END = "^\\s*\\$\\$\\s*;\\s*$";
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([a-z][a-zA-Z0-9_]*)\\}");
+    private static final Pattern SPECIAL_REGEX_CHARS = Pattern.compile("[\\{\\}\\(\\)\\[\\]\\.\\+\\*\\?\\^\\$\\\\\\|]");
 
     private static final Map<String, Object> EMPTY_MAP = new HashMap<>();
 
@@ -151,7 +168,8 @@ public class ScriptExecutor {
                 final String group = matcher.group(1);
                 Validator.validateTrue(variables.containsKey(group),
                         "Cannot find value for variable ${%s} in the variable map provided to ScriptExecutor", group);
-                nextLine = nextLine.replaceFirst("\\$\\{" + group + "\\}", variables.get(group).toString());
+                final String replacement = SPECIAL_REGEX_CHARS.matcher(variables.get(group).toString()).replaceAll("\\\\$0");
+                nextLine = nextLine.replaceFirst("\\$\\{" + group + "\\}", replacement);
 
             }
         }
