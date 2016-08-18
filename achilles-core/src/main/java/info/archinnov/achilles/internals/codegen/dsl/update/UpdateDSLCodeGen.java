@@ -590,8 +590,6 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("where.with($T.incr($S))",
                         QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add(1L)")
-                .addStatement("encodedValues.add(1L)")
                 .returns(newTypeName);
 
         final MethodSpec.Builder incr = MethodSpec.methodBuilder(fieldName + "_Incr")
@@ -610,8 +608,6 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("where.with($T.decr($S))",
                         QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add(1L)")
-                .addStatement("encodedValues.add(1L)")
                 .returns(newTypeName);
 
         final MethodSpec.Builder decr = MethodSpec.methodBuilder(fieldName + "_Decr")
