@@ -85,9 +85,9 @@ public abstract class AbstractUpdateEnd<T extends AbstractUpdateEnd<T, ENTITY>, 
     }
 
     public T usingTimeToLive(int timeToLive) {
-        where.using(QueryBuilder.timestamp(QueryBuilder.bindMarker("ttl")));
-        getBoundValuesInternal().add(timeToLive);
-        getEncodedValuesInternal().add(timeToLive);
+        where.using(QueryBuilder.ttl(QueryBuilder.bindMarker("ttl")));
+        getBoundValuesInternal().add(0, timeToLive);
+        getEncodedValuesInternal().add(0, timeToLive);
         return getThis();
     }
 
