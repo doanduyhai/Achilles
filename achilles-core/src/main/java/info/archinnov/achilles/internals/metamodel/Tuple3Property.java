@@ -79,7 +79,7 @@ public class Tuple3Property<ENTITY, A, B, C> extends AbstractTupleProperty<ENTIT
             LOGGER.trace(format("Decode '%s' tuple3 from gettable object %s", fieldName, gettableData));
         }
 
-        return decodeFromRaw(gettableData.getTupleValue(fieldInfo.cqlColumn));
+        return decodeFromRaw(gettableData.getTupleValue(fieldInfo.quotedCqlColumn));
     }
 
     @Override

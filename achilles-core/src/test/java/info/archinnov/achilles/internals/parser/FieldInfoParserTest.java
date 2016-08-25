@@ -699,6 +699,27 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
     }
 
     @Test
+    public void should_generate_field_info_for_UpperCase() throws Exception {
+        setExec(aptUtils -> {
+            FieldInfoParser parser = new FieldInfoParser(aptUtils);
+            final String className = TestEntityForFieldInfo.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+
+            // @Column("UpperCase")
+            // private String upperCase;
+            VariableElement elm = findFieldInType(typeElement, "upperCase");
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+
+            FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
+
+            assertThat(fieldInfo.codeBlock.toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/method_parser/should_generate_field_info_for_UpperCase.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
     public void should_generate_field_info_for_map() throws Exception {
         setExec(aptUtils -> {
             FieldInfoParser parser = new FieldInfoParser(aptUtils);

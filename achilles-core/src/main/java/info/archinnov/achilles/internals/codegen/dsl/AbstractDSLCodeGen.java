@@ -33,6 +33,7 @@ import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
+import info.archinnov.achilles.internals.utils.NamingHelper;
 import info.archinnov.achilles.type.tuples.Tuple2;
 import info.archinnov.achilles.type.tuples.Tuple4;
 
@@ -105,12 +106,12 @@ public abstract class AbstractDSLCodeGen {
     protected static MethodSpec buildColumnRelation(String relation, TypeName nextType, FieldSignatureInfo fieldInfo) {
         final String methodName = fieldInfo.fieldName + "_" + upperCaseFirst(relation);
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fieldInfo.cqlColumn, relationToSymbolForJavaDoc(relation))
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fieldInfo.quotedCqlColumn, relationToSymbolForJavaDoc(relation))
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(fieldInfo.typeName, fieldInfo.fieldName)
                 .addStatement("where.and($T.$L($S, $T.bindMarker($S)))",
-                        QUERY_BUILDER, relation, fieldInfo.cqlColumn, QUERY_BUILDER, methodName)
+                        QUERY_BUILDER, relation, fieldInfo.quotedCqlColumn, QUERY_BUILDER, methodName)
                 .addStatement("boundValues.add($N)", fieldInfo.fieldName)
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, fieldInfo.fieldName)
                 .returns(nextType);
@@ -122,7 +123,7 @@ public abstract class AbstractDSLCodeGen {
         final String methodName = fieldInfo.fieldName + "_IN";
         final String param = fieldInfo.fieldName;
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L IN ?</strong>", fieldInfo.cqlColumn)
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L IN ?</strong>", fieldInfo.quotedCqlColumn)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(ArrayTypeName.of(fieldInfo.typeName), fieldInfo.fieldName)
@@ -130,7 +131,7 @@ public abstract class AbstractDSLCodeGen {
                 .addStatement("$T.validateTrue($T.isNotEmpty($L), \"Varargs for field '%s' should not be null/empty\", $S)",
                         VALIDATOR, ARRAYS_UTILS, fieldInfo.fieldName, fieldInfo.fieldName)
                 .addStatement("where.and($T.in($S,$T.bindMarker($S)))",
-                        QUERY_BUILDER, fieldInfo.cqlColumn, QUERY_BUILDER, fieldInfo.cqlColumn)
+                        QUERY_BUILDER, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
                 .addStatement("final $T varargs = $T.<Object>asList((Object[])$L)", LIST_OBJECT, ARRAYS, param)
                 .addStatement("final $T encodedVarargs = $T.<$T>stream(($T[])$L).map(x -> meta.$L.encodeFromJava(x)).collect($T.toList())",
                         LIST_OBJECT, ARRAYS, fieldInfo.typeName, fieldInfo.typeName, fieldInfo.fieldName, fieldInfo.fieldName, COLLECTORS)
@@ -385,11 +386,13 @@ public abstract class AbstractDSLCodeGen {
     public static class FieldSignatureInfo {
         public final String fieldName;
         public final String cqlColumn;
+        public final String quotedCqlColumn;
         public final TypeName typeName;
 
         private FieldSignatureInfo(String fieldName, String cqlColumn, TypeName typeName) {
             this.fieldName = fieldName;
             this.cqlColumn = cqlColumn;
+            this.quotedCqlColumn = NamingHelper.maybeQuote(cqlColumn);
             this.typeName = typeName;
         }
 

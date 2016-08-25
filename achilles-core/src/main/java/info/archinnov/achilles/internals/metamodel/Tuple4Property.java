@@ -82,7 +82,7 @@ public class Tuple4Property<ENTITY, A, B, C, D> extends AbstractTupleProperty<EN
             LOGGER.trace(format("Decode '%s' tuple4 from gettable object %s", fieldName, gettableData));
         }
 
-        return decodeFromRaw(gettableData.getTupleValue(fieldInfo.cqlColumn));
+        return decodeFromRaw(gettableData.getTupleValue(fieldInfo.quotedCqlColumn));
     }
 
     @Override

@@ -186,7 +186,7 @@ public class TestEntityForCodecs {
     @Column
     private List<@Frozen Map<@Enumerated ProtocolVersion, List<int[]>>> nestedArrays;
 
-    @Column("\"overRiden\"")
+    @Column("overRiden")
     private String overridenName;
 
     @Column

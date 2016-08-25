@@ -27,7 +27,7 @@ public class UDTWithNoKeyspace {
     @Column
     private Long id;
 
-    @Column
+    @Column("VALUE")
     private String value;
 
     public UDTWithNoKeyspace() {

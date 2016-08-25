@@ -72,7 +72,7 @@ public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue
             LOGGER.trace(format("Encode '%s' UDT value %s to settable object %s",
                     fieldName, udt, settableData));
         }
-        settableData.setUDTValue(fieldInfo.cqlColumn, udt);
+        settableData.setUDTValue(fieldInfo.quotedCqlColumn, udt);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue
             LOGGER.trace(format("Decode '%s' from gettable object %s", fieldName, gettableData));
         }
 
-        return decodeFromRaw(gettableData.getUDTValue(fieldInfo.cqlColumn));
+        return decodeFromRaw(gettableData.getUDTValue(fieldInfo.quotedCqlColumn));
     }
 
     @Override
@@ -128,7 +128,7 @@ public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue
             LOGGER.trace(format("Encode '%s' %s to UDT value %s", fieldName, valueTo, udtValue));
         }
 
-        udtValue.setUDTValue(fieldInfo.cqlColumn, valueTo);
+        udtValue.setUDTValue(fieldInfo.quotedCqlColumn, valueTo);
     }
 
     @Override

@@ -143,6 +143,9 @@ public class TestEntityForFieldInfo {
     @Counter
     private Long staticCounter;
 
+    @Column("UpperCase")
+    private String upperCase;
+
 
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
@@ -199,5 +202,13 @@ public class TestEntityForFieldInfo {
 
     public String setSet(Set<ConsistencyLevel> set) {
         return null;
+    }
+
+    public String getUpperCase() {
+        return upperCase;
+    }
+
+    public void setUpperCase(String upperCase) {
+        this.upperCase = upperCase;
     }
 }

@@ -20,12 +20,14 @@ import com.squareup.javapoet.CodeBlock;
 
 import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.utils.NamingHelper;
 
 public class FieldInfoContext {
 
     public final CodeBlock codeBlock;
     public final String fieldName;
     public final String cqlColumn;
+    public final String quotedCqlColumn;
     public final ColumnType columnType;
     public final ColumnInfo columnInfo;
 
@@ -33,6 +35,7 @@ public class FieldInfoContext {
         this.codeBlock = codeBlock;
         this.fieldName = fieldName;
         this.cqlColumn = cqlColumn;
+        this.quotedCqlColumn = NamingHelper.maybeQuote(cqlColumn);
         this.columnType = columnType;
         this.columnInfo = columnInfo;
     }

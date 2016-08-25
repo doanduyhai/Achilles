@@ -22,45 +22,44 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.assertj.core.api.Assertions;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.datastax.driver.core.Cluster;
-
-import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.manager.EntityWithNestedUDT_Manager;
 import info.archinnov.achilles.internals.entities.EntityWithNestedUDT;
 import info.archinnov.achilles.internals.entities.UDTWithNestedUDT;
 import info.archinnov.achilles.internals.entities.UDTWithNoKeyspace;
-import info.archinnov.achilles.internals.query.crud.FindWithOptions;
+import info.archinnov.achilles.junit.AchillesTestResource;
+import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestEntityWithNestedUdtIT {
 
+    @Rule
+    public AchillesTestResource<ManagerFactory> resource = AchillesTestResourceBuilder
+            .forJunit()
+            .entityClassesToTruncate(EntityWithNestedUDT.class)
+            .truncateBeforeAndAfterTest()
+            .withScript("functions/createFunctions.cql")
+            .build((cluster, statementsCache) -> ManagerFactoryBuilder
+                    .builder(cluster)
+                    .withManagedEntityClasses(EntityWithNestedUDT.class)
+                    .doForceSchemaCreation(true)
+                    .withStatementsCache(statementsCache)
+                    .withDefaultKeyspaceName(DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME)
+            .build());
+
+
+    private EntityWithNestedUDT_Manager manager = resource.getManagerFactory().forEntityWithNestedUDT();
+
     @Test
     public void should_insert_nested_udt() throws Exception {
         //Given
-        final Cluster cluster = CassandraEmbeddedServerBuilder
-                .builder()
-                .useUnsafeCassandraDeamon()
-                .withScript("functions/createFunctions.cql")
-                .buildNativeCluster();
-
-        final ManagerFactory managerFactory = ManagerFactoryBuilder
-                .builder(cluster)
-                .withManagedEntityClasses(EntityWithNestedUDT.class)
-                .doForceSchemaCreation(true)
-                .withDefaultKeyspaceName(DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME)
-                .build();
-
-        final EntityWithNestedUDT_Manager manager = managerFactory.forEntityWithNestedUDT();
-
-        //When
         final Long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
         final EntityWithNestedUDT entity = new EntityWithNestedUDT();
         final UDTWithNoKeyspace udtWithNoKeySpace = new UDTWithNoKeyspace();
@@ -75,6 +74,7 @@ public class TestEntityWithNestedUdtIT {
         entity.setUdt(udtWithNoKeySpace);
         entity.setComplexUDT(udtWithNestedUDT);
 
+        //When
         manager.crud().insert(entity).execute();
 
         //Then
@@ -83,4 +83,37 @@ public class TestEntityWithNestedUdtIT {
         assertThat(found.getUdt()).isEqualTo(udtWithNoKeySpace);
         assertThat(found.getComplexUDT()).isEqualTo(udtWithNestedUDT);
     }
+
+    @Test
+    public void should_update_nested_udt() throws Exception {
+        //Given
+        final Long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        final EntityWithNestedUDT entity = new EntityWithNestedUDT();
+        final UDTWithNoKeyspace udtWithNoKeySpace = new UDTWithNoKeyspace();
+        udtWithNoKeySpace.setId(id);
+        udtWithNoKeySpace.setValue("udt_with_no_keyspace");
+
+        entity.setId(id);
+        entity.setUdt(udtWithNoKeySpace);
+
+        manager.crud().insert(entity);
+
+        //When
+        udtWithNoKeySpace.setValue("new_udt_value");
+
+        manager
+                .dsl()
+                .update()
+                .fromBaseTable()
+                .udt_Set(udtWithNoKeySpace)
+                .where()
+                .id_Eq(id)
+                .execute();
+
+        //Then
+        final EntityWithNestedUDT found = manager.crud().findById(id).get();
+        assertThat(found.getUdt().getValue()).isEqualTo("new_udt_value");
+
+    }
+
 }

@@ -38,6 +38,7 @@ import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
 import info.archinnov.achilles.internals.strategy.types_nesting.NestedTypesStrategy;
+import info.archinnov.achilles.internals.utils.NamingHelper;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.*;
 
@@ -123,7 +124,7 @@ public class FieldParser {
         final CodecInfo codecInfo = codecFactory.createCodec(sourceType, annotationTree, context, Optional.empty());
         final TypeName rawTargetType = getRawType(codecInfo.targetType);
         final TypedMap computed = extractTypedMap(annotationTree, Computed.class).get();
-        final String alias = computed.getTyped("alias");
+        final String alias = NamingHelper.maybeQuote(computed.getTyped("alias"));
 
         CodeBlock extractor = context.buildExtractor
                 ? CodeBlock.builder().add("gettableData$$ -> gettableData$$.$L", TypeUtils.gettableDataGetter(rawTargetType, alias)).build()
@@ -164,11 +165,11 @@ public class FieldParser {
         }
 
         CodeBlock gettable = context.buildExtractor
-                ? CodeBlock.builder().add("gettableData$$ -> gettableData$$.$L", TypeUtils.gettableDataGetter(rawTargetType, context.cqlColumn)).build()
+                ? CodeBlock.builder().add("gettableData$$ -> gettableData$$.$L", TypeUtils.gettableDataGetter(rawTargetType, context.quotedCqlColumn)).build()
                 : NO_GETTER;
 
         CodeBlock settable = context.buildExtractor
-                ? CodeBlock.builder().add("(settableData$$, value$$) -> settableData$$.$L", TypeUtils.settableDataSetter(rawTargetType, context.cqlColumn)).build()
+                ? CodeBlock.builder().add("(settableData$$, value$$) -> settableData$$.$L", TypeUtils.settableDataSetter(rawTargetType, context.quotedCqlColumn)).build()
                 : NO_UDT_SETTER;
 
 

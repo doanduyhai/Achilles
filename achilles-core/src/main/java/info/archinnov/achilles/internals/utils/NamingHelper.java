@@ -22,4 +22,12 @@ public class NamingHelper {
         return name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
+    public static String maybeQuote(String rawName) {
+        String toLower = rawName.toLowerCase();
+        return toLower.equals(rawName)
+                && !rawName.trim().startsWith("\"")
+                && !rawName.trim().endsWith("\"")
+                ? rawName
+                : "\"" + rawName + "\"";
+    }
 }

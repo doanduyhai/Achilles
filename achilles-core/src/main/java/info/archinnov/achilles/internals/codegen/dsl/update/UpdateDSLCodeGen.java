@@ -238,11 +238,11 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
     private static MethodSpec buildMethodForSimpleUpdate(TypeName newTypeName, FieldMetaSignature parsingResult,
                                                          ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
-        final String cqlColumn = parsingResult.context.cqlColumn;
+        final String cqlColumn = parsingResult.context.quotedCqlColumn;
         final TypeName sourceType = parsingResult.sourceType;
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(fieldName + "_Set")
-                .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ?</strong>", fieldName)
+                .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ?</strong>", cqlColumn)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(sourceType, fieldName, Modifier.FINAL)
@@ -266,13 +266,13 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                                                               ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String param = fieldName + "_element";
-        final String cqlColumn = parsingResult.context.cqlColumn;
+        final String cqlColumn = parsingResult.context.quotedCqlColumn;
         final TypeName sourceType = parsingResult.sourceType;
         final TypeName nestedType = aptUtils.extractTypeArgument(sourceType, 0);
 
         List<MethodSpec> updateMethods = new ArrayList<>();
         final MethodSpec.Builder appendTo = MethodSpec.methodBuilder(fieldName + "_AppendTo")
-                .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + [?]</strong>", fieldName, fieldName)
+                .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + [?]</strong>", cqlColumn, cqlColumn)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(nestedType, param, Modifier.FINAL)
@@ -412,13 +412,13 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                                                              ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String param = fieldName + "_element";
-        final String cqlColumn = parsingResult.context.cqlColumn;
+        final String cqlColumn = parsingResult.context.quotedCqlColumn;
         final TypeName sourceType = parsingResult.sourceType;
         final TypeName nestedType = aptUtils.extractTypeArgument(sourceType, 0);
 
         List<MethodSpec> updateMethods = new ArrayList<>();
         final MethodSpec.Builder addTo = MethodSpec.methodBuilder(fieldName + "_AddTo")
-                .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + {?}</strong>", fieldName, fieldName)
+                .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + {?}</strong>", cqlColumn, cqlColumn)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(nestedType, param, Modifier.FINAL)
@@ -501,14 +501,14 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         final String fieldName = parsingResult.context.fieldName;
         final String paramKey = fieldName + "_key";
         final String paramValue = fieldName + "_value";
-        final String cqlColumn = parsingResult.context.cqlColumn;
+        final String cqlColumn = parsingResult.context.quotedCqlColumn;
         final TypeName sourceType = parsingResult.sourceType;
         final TypeName nestedKeyType = aptUtils.extractTypeArgument(sourceType, 0);
         final TypeName nestedValueType = aptUtils.extractTypeArgument(sourceType, 1);
 
         List<MethodSpec> updateMethods = new ArrayList<>();
         final MethodSpec.Builder putTo = MethodSpec.methodBuilder(fieldName + "_PutTo")
-                .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L[?] = ?</strong>", fieldName)
+                .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L[?] = ?</strong>", cqlColumn)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(nestedKeyType, paramKey, Modifier.FINAL)
                 .addParameter(nestedValueType, paramValue, Modifier.FINAL)
@@ -580,13 +580,13 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                                                                  ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String param = fieldName + "_increment";
-        final String cqlColumn = parsingResult.context.cqlColumn;
+        final String cqlColumn = parsingResult.context.quotedCqlColumn;
         final TypeName sourceType = parsingResult.sourceType;
 
         List<MethodSpec> updateMethods = new ArrayList<>();
 
         final MethodSpec.Builder incrOne = MethodSpec.methodBuilder(fieldName + "_Incr")
-                .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + 1</strong>", fieldName, fieldName)
+                .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + 1</strong>", cqlColumn, cqlColumn)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("where.with($T.incr($S))",
                         QUERY_BUILDER, cqlColumn)

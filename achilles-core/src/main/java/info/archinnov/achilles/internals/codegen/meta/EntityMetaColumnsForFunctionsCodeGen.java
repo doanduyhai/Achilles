@@ -49,10 +49,9 @@ public class EntityMetaColumnsForFunctionsCodeGen  {
     }
 
     private static final FieldSpec buildField(FieldMetaSignature fieldMetaSignature) {
-//        final TypeName targetType = TypeUtils.mapToNativeCassandraType(fieldMetaSignature.targetType.box());
         final TypeName typeNameForFunctionParam = TypeUtils.determineTypeForFunctionParam(fieldMetaSignature.sourceType);
         final String fieldName = SNAKE_CASE_NAMING.apply(fieldMetaSignature.context.fieldName).toUpperCase();
-        final String cqlColumn = fieldMetaSignature.context.cqlColumn;
+        final String cqlColumn = fieldMetaSignature.context.quotedCqlColumn;
         return FieldSpec.builder(typeNameForFunctionParam, fieldName, Modifier.PUBLIC, Modifier.FINAL)
                 .addJavadoc("<br/>\n")
                 .addJavadoc("Field to be used for <em>manager.dsl().select().function(...)</em> call\n")

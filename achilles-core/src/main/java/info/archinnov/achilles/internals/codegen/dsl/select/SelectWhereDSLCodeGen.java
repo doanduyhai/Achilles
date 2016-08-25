@@ -390,16 +390,16 @@ public class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         return MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ? AND $L $L ?</strong>",
-                        fieldInfo.cqlColumn, relationToSymbolForJavaDoc(relation1),
-                        fieldInfo.cqlColumn, relationToSymbolForJavaDoc(relation2))
+                        fieldInfo.quotedCqlColumn, relationToSymbolForJavaDoc(relation1),
+                        fieldInfo.quotedCqlColumn, relationToSymbolForJavaDoc(relation2))
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(fieldInfo.typeName, param1)
                 .addParameter(fieldInfo.typeName, param2)
                 .addStatement("where.and($T.$L($S,$T.bindMarker($S)))",
-                        QUERY_BUILDER, relation1, fieldInfo.cqlColumn, QUERY_BUILDER, column1)
+                        QUERY_BUILDER, relation1, fieldInfo.quotedCqlColumn, QUERY_BUILDER, column1)
                 .addStatement("where.and($T.$L($S,$T.bindMarker($S)))",
-                        QUERY_BUILDER, relation2, fieldInfo.cqlColumn, QUERY_BUILDER, column2)
+                        QUERY_BUILDER, relation2, fieldInfo.quotedCqlColumn, QUERY_BUILDER, column2)
                 .addStatement("boundValues.add($L)", param1)
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, param1)
                 .addStatement("boundValues.add($L)", param2)

@@ -159,9 +159,9 @@ public class SelectDSLCodeGen extends AbstractDSLCodeGen {
     private static MethodSpec buildSelectColumnMethod(TypeName newTypeName, FieldMetaSignature parsingResult, String fieldName, ReturnType returnType) {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(parsingResult.context.fieldName)
-                .addJavadoc("Generate a SELECT ... <strong>$L</strong> ...", parsingResult.context.cqlColumn)
+                .addJavadoc("Generate a SELECT ... <strong>$L</strong> ...", parsingResult.context.quotedCqlColumn)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addStatement("$L.column($S)", fieldName, parsingResult.context.cqlColumn)
+                .addStatement("$L.column($S)", fieldName, parsingResult.context.quotedCqlColumn)
                 .returns(newTypeName);
 
         if (returnType == NEW) {

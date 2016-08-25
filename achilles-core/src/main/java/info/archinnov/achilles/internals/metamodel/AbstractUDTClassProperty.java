@@ -118,7 +118,7 @@ public abstract class AbstractUDTClassProperty<A>
         }
 
         for (AbstractProperty<A, ?, ?> x : componentsProperty) {
-            type.addColumn(x.fieldInfo.cqlColumn, x.buildType());
+            type.addColumn(x.fieldInfo.quotedCqlColumn, x.buildType());
         }
 
         return type.getQueryString().replaceFirst("\t+", "") + ";";

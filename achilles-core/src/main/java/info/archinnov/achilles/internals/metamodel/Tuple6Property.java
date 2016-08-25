@@ -88,7 +88,7 @@ public class Tuple6Property<ENTITY, A, B, C, D, E, F> extends AbstractTuplePrope
             LOGGER.trace(format("Decode '%s' tuple6 from gettable object %s", fieldName, gettableData));
         }
 
-        return decodeFromRaw(gettableData.getTupleValue(fieldInfo.cqlColumn));
+        return decodeFromRaw(gettableData.getTupleValue(fieldInfo.quotedCqlColumn));
     }
 
     @Override

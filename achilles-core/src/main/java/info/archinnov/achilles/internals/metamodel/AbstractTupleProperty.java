@@ -19,7 +19,6 @@ package info.archinnov.achilles.internals.metamodel;
 
 import static java.lang.String.format;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,7 +35,6 @@ import com.google.common.reflect.TypeToken;
 
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
-import info.archinnov.achilles.internals.injectable.InjectUserAndTupleTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
@@ -71,7 +69,7 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode tuple value %s to settable object %s", tuple, settableData));
         }
-        settableData.setTupleValue(fieldInfo.cqlColumn, tuple);
+        settableData.setTupleValue(fieldInfo.quotedCqlColumn, tuple);
     }
 
     @Override
@@ -80,7 +78,7 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode tuple value %s to udt value %s", tupleValue, udtValue));
         }
-        udtValue.setTupleValue(fieldInfo.cqlColumn, tupleValue);
+        udtValue.setTupleValue(fieldInfo.quotedCqlColumn, tupleValue);
     }
 
      @Override

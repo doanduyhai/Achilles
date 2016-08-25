@@ -183,7 +183,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
 
         parsingResults
                 .stream()
-                .map(x -> Tuple2.of(x.context.fieldName, x.context.cqlColumn))
+                .map(x -> Tuple2.of(x.context.fieldName, x.context.quotedCqlColumn))
                 .forEach(x -> builder.addStatement("map.put($S, $S)", x._1(), x._2()));
 
         builder.addStatement("return map");

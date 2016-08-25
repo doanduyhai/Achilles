@@ -69,23 +69,23 @@ public class SchemaCreator {
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
-            table.addPartitionKey(x.fieldInfo.cqlColumn, x.buildType());
+            table.addPartitionKey(x.fieldInfo.quotedCqlColumn, x.buildType());
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
-            table.addClusteringColumn(x.fieldInfo.cqlColumn, x.buildType());
+            table.addClusteringColumn(x.fieldInfo.quotedCqlColumn, x.buildType());
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.staticColumns) {
-            table.addStaticColumn(x.fieldInfo.cqlColumn, x.buildType());
+            table.addStaticColumn(x.fieldInfo.quotedCqlColumn, x.buildType());
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.normalColumns) {
-            table.addColumn(x.fieldInfo.cqlColumn, x.buildType());
+            table.addColumn(x.fieldInfo.quotedCqlColumn, x.buildType());
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.counterColumns) {
-            table.addColumn(x.fieldInfo.cqlColumn, x.buildType());
+            table.addColumn(x.fieldInfo.quotedCqlColumn, x.buildType());
         }
 
         final Create.Options options = table.withOptions();
@@ -93,7 +93,7 @@ public class SchemaCreator {
         if (entityProperty.clusteringColumns.size() > 0 || entityProperty.staticTTL.isPresent()) {
             entityProperty.clusteringColumns
                     .stream()
-                    .map(x -> Tuple2.of(x.fieldInfo.cqlColumn, (ClusteringColumnInfo) x.fieldInfo.columnInfo))
+                    .map(x -> Tuple2.of(x.fieldInfo.quotedCqlColumn, (ClusteringColumnInfo) x.fieldInfo.columnInfo))
                     .forEach(x -> options.clusteringOrder(x._1(), x._2().direction));
 
             if (entityProperty.staticTTL.isPresent()) {
@@ -110,7 +110,7 @@ public class SchemaCreator {
             entityProperty.allColumns
                     .stream()
                     .filter(x -> x.fieldInfo.indexInfo.type != IndexType.NONE)
-                    .map(x -> Tuple2.of(x.fieldInfo.cqlColumn, x.fieldInfo.indexInfo))
+                    .map(x -> Tuple2.of(x.fieldInfo.quotedCqlColumn, x.fieldInfo.indexInfo))
                     .forEach(tuple -> schemas.add(tuple._2().generate(keyspace, tableName, tuple._1())));
         }
 
@@ -150,7 +150,7 @@ public class SchemaCreator {
 
 
         final StringJoiner columns = new StringJoiner(",");
-        viewProperty.allColumns.forEach(x -> columns.add(x.fieldInfo.cqlColumn));
+        viewProperty.allColumns.forEach(x -> columns.add(x.fieldInfo.quotedCqlColumn));
 
         viewScript.append(columns.toString()).append("\n");
         viewScript.append("FROM ").append(baseTableName).append("\n");
@@ -159,15 +159,15 @@ public class SchemaCreator {
         viewPksProperty.addAll(viewProperty.clusteringColumns);
 
         final StringJoiner whereClause = new StringJoiner(" AND ");
-        viewPksProperty.forEach(x -> whereClause.add(x.fieldInfo.cqlColumn + " IS NOT NULL"));
+        viewPksProperty.forEach(x -> whereClause.add(x.fieldInfo.quotedCqlColumn + " IS NOT NULL"));
 
         viewScript.append("WHERE ").append(whereClause).append("\n");
 
         final StringJoiner partitionKeys = new StringJoiner(",", "(", ")");
         final StringJoiner clusteringColumns = new StringJoiner(",");
 
-        viewProperty.partitionKeys.forEach(x -> partitionKeys.add(x.fieldInfo.cqlColumn));
-        viewProperty.clusteringColumns.forEach(x -> clusteringColumns.add(x.fieldInfo.cqlColumn));
+        viewProperty.partitionKeys.forEach(x -> partitionKeys.add(x.fieldInfo.quotedCqlColumn));
+        viewProperty.clusteringColumns.forEach(x -> clusteringColumns.add(x.fieldInfo.quotedCqlColumn));
 
 
         viewScript.append("PRIMARY KEY")
@@ -179,7 +179,7 @@ public class SchemaCreator {
             StringJoiner clusteringOrder = new StringJoiner(",");
             viewProperty.clusteringColumns
                     .stream()
-                    .forEach(x -> clusteringOrder.add(x.fieldInfo.cqlColumn +
+                    .forEach(x -> clusteringOrder.add(x.fieldInfo.quotedCqlColumn +
                             " " +
                             ((ClusteringColumnInfo) x.fieldInfo.columnInfo).clusteringOrder.name()));
 

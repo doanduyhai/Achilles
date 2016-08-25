@@ -14,7 +14,7 @@ CREATE TYPE IF NOT EXISTS test.having_nested_type(
 		tuplewithudt frozen<tuple<int, no_ks>>);
 CREATE TYPE IF NOT EXISTS test.no_ks(
 		id bigint,
-		value text);
+		"VALUE" text);
 CREATE TABLE IF NOT EXISTS test.entity_child(
 		id bigint,
 		child_value text,
@@ -41,6 +41,15 @@ CREATE TABLE IF NOT EXISTS test.table_with_bytebuffer(
 		id bigint,
 		value blob,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.entity_with_case_sensitive_pk(
+		"partitionKey" bigint,
+		"clusteringColumn" bigint,
+		"listString" list<text>,
+		"mapIntString" map<int, text>,
+		"setString" set<text>,
+		"udtWithNoKeyspace" frozen<test.no_ks>,
+		PRIMARY KEY("partitionKey", "clusteringColumn"))
+	WITH CLUSTERING ORDER BY("clusteringColumn" ASC);
 CREATE TABLE IF NOT EXISTS test.entity_with_clusterings(
 		id bigint,
 		uuid uuid,

@@ -54,7 +54,7 @@ public class SchemaValidator {
                                            Class<T> entityClass) {
 
         for (AbstractProperty<T, ?, ?> x : properties) {
-            final String cqlColumn = x.fieldInfo.cqlColumn;
+            final String cqlColumn = x.fieldInfo.quotedCqlColumn;
             final ColumnMetadata columnMeta = metadata.getColumn(cqlColumn);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(format("Validating column %s for table %s",

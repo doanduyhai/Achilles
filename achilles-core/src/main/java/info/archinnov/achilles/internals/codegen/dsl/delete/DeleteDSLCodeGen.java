@@ -188,9 +188,9 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
     private static MethodSpec buildDeleteColumnMethod(TypeName deleteTypeName, FieldMetaSignature parsingResult, ReturnType returnType) {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(parsingResult.context.fieldName)
-                .addJavadoc("Generate DELETE <strong>$L</strong> ...", parsingResult.context.cqlColumn)
+                .addJavadoc("Generate DELETE <strong>$L</strong> ...", parsingResult.context.quotedCqlColumn)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addStatement("delete.column($S)", parsingResult.context.cqlColumn)
+                .addStatement("delete.column($S)", parsingResult.context.quotedCqlColumn)
                 .returns(deleteTypeName);
 
         if (returnType == ReturnType.NEW) {

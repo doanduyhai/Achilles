@@ -27,6 +27,7 @@ import com.google.common.reflect.TypeToken;
 
 import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.utils.NamingHelper;
 
 public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
         implements InjectUserAndTupleTypeFactory, InjectBeanFactory,
@@ -66,7 +67,7 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
     abstract VALUETO encodeFromRawInternal(Object o);
 
     public VALUEFROM decodeFromGettable(GettableData gettableData) {
-        if (gettableData.isNull(getColumnForSelect()) && !isOptional()) return null;
+        if (gettableData.isNull(NamingHelper.maybeQuote(getColumnForSelect())) && !isOptional()) return null;
         return decodeFromGettableInternal(gettableData);
     }
 

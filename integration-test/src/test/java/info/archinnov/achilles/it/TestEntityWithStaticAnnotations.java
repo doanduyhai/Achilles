@@ -18,7 +18,6 @@ package info.archinnov.achilles.it;
 
 import static com.datastax.driver.core.ConsistencyLevel.LOCAL_ONE;
 import static com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.lang3.RandomUtils;
@@ -29,6 +28,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
@@ -137,9 +138,10 @@ public class TestEntityWithStaticAnnotations {
 
         Thread.sleep(1000);
 
-        Row actual = session.execute("SELECT * FROM entity_static_annotations WHERE partition_key = " + id).one();
+        Row actual = session.execute("SELECT * FROM my_static_keyspace.entity_static_annotations WHERE partition_key = " + id)
+                .one();
         assertThat(actual).isNotNull();
-        assertThat(actual.getString("overriden")).isEqualTo("overriden_val");
+        assertThat(actual.getString("\"overRiden\"")).isEqualTo("overriden_val");
 
         logAsserter.assertConsistencyLevels(LOCAL_QUORUM);
     }

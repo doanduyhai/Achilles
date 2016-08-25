@@ -38,6 +38,7 @@ import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.utils.NamingHelper;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -80,7 +81,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
             LOGGER.trace(format("Encode '%s' set value %s to settable object %s",
                     fieldName, valueTos, settableData));
         }
-        settableData.setSet(fieldInfo.cqlColumn, valueTos);
+        settableData.setSet(fieldInfo.quotedCqlColumn, valueTos);
     }
 
     @Override
@@ -106,7 +107,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
 
     @Override
     public Set<VALUEFROM> decodeFromGettable(GettableData gettableData) {
-        if (gettableData.isNull(getColumnForSelect()) && !emptyCollectionIfNull) return null;
+        if (gettableData.isNull(NamingHelper.maybeQuote(getColumnForSelect())) && !emptyCollectionIfNull) return null;
         return decodeFromGettableInternal(gettableData);
     }
 
@@ -116,7 +117,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
             LOGGER.trace(format("Decode '%s' set from gettable object %s", fieldName, gettableData));
         }
 
-        return decodeFromRaw(gettableData.getSet(fieldInfo.cqlColumn, valueProperty.valueToTypeToken));
+        return decodeFromRaw(gettableData.getSet(fieldInfo.quotedCqlColumn, valueProperty.valueToTypeToken));
     }
 
 
@@ -170,7 +171,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' set %s to UDT value %s", fieldName, valueTo, udtValue));
         }
-        udtValue.setSet(fieldInfo.cqlColumn, valueTo);
+        udtValue.setSet(fieldInfo.quotedCqlColumn, valueTo);
     }
 
     @Override

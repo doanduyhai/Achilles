@@ -20,10 +20,12 @@ import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.accessors.Getter;
 import info.archinnov.achilles.internals.parser.accessors.Setter;
+import info.archinnov.achilles.internals.utils.NamingHelper;
 
 public class FieldInfo<ENTITY, VALUEFROM> {
     public final String fieldName;
     public final String cqlColumn;
+    public final String quotedCqlColumn;
     public final ColumnType columnType;
     public final ColumnInfo columnInfo;
     public final IndexInfo indexInfo;
@@ -35,6 +37,7 @@ public class FieldInfo<ENTITY, VALUEFROM> {
                      ColumnType columnType, ColumnInfo columnInfo, IndexInfo indexInfo) {
         this.fieldName = fieldName;
         this.cqlColumn = cqlColumn;
+        this.quotedCqlColumn = NamingHelper.maybeQuote(cqlColumn);
         this.getter = getter;
         this.setter = setter;
         this.columnType = columnType;
@@ -44,6 +47,7 @@ public class FieldInfo<ENTITY, VALUEFROM> {
 
     private FieldInfo(String cqlColumn, String fieldName) {
         this.cqlColumn = cqlColumn;
+        this.quotedCqlColumn = NamingHelper.maybeQuote(cqlColumn);
         this.fieldName = fieldName;
         this.getter = null;
         this.setter = null;

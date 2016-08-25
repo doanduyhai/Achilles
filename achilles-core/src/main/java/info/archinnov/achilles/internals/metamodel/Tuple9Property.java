@@ -98,7 +98,7 @@ public class Tuple9Property<ENTITY, A, B, C, D, E, F, G, H, I> extends AbstractT
             LOGGER.trace(format("Decode '%s' tuple9 from gettable object %s", fieldName, gettableData));
         }
 
-        return decodeFromRaw(gettableData.getTupleValue(fieldInfo.cqlColumn));
+        return decodeFromRaw(gettableData.getTupleValue(fieldInfo.quotedCqlColumn));
     }
 
     @Override

@@ -59,7 +59,7 @@ public class PreparedStatementGenerator {
         final Optional<String> keyspace = entityProperty.getKeyspace();
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.allColumns) {
-            select.column(x.fieldInfo.cqlColumn);
+            select.column(x.fieldInfo.quotedCqlColumn);
         }
 
         entityProperty
@@ -92,11 +92,11 @@ public class PreparedStatementGenerator {
         final Select.Where where = from.where();
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
-            where.and(eq(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn)));
+            where.and(eq(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn)));
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
-            where.and(eq(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn)));
+            where.and(eq(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn)));
         }
 
         return where;
@@ -122,16 +122,18 @@ public class PreparedStatementGenerator {
         final Delete.Where deleteByPartition = from.where();
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
+            final String quotedCqlColumn = x.fieldInfo.quotedCqlColumn;
             final String cqlColumn = x.fieldInfo.cqlColumn;
-            deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
-            deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
-            deleteByPartition.and(eq(cqlColumn, bindMarker(cqlColumn)));
+            deleteByKeys.and(eq(quotedCqlColumn, bindMarker(cqlColumn)));
+            deleteByKeysIfExists.and(eq(quotedCqlColumn, bindMarker(cqlColumn)));
+            deleteByPartition.and(eq(quotedCqlColumn, bindMarker(cqlColumn)));
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
+            final String quotedCqlColumn = x.fieldInfo.quotedCqlColumn;
             final String cqlColumn = x.fieldInfo.cqlColumn;
-            deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
-            deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
+            deleteByKeys.and(eq(quotedCqlColumn, bindMarker(cqlColumn)));
+            deleteByKeysIfExists.and(eq(quotedCqlColumn, bindMarker(cqlColumn)));
         }
 
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, DELETE),
@@ -162,13 +164,11 @@ public class PreparedStatementGenerator {
         final Delete.Where deleteByKeys = from.where();
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
-            final String cqlColumn = x.fieldInfo.cqlColumn;
-            deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
+            deleteByKeys.and(eq(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn)));
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
-            final String cqlColumn = x.fieldInfo.cqlColumn;
-            deleteByKeys.and(eq(cqlColumn, bindMarker(cqlColumn)));
+            deleteByKeys.and(eq(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn)));
         }
 
         return deleteByKeys;
@@ -188,13 +188,11 @@ public class PreparedStatementGenerator {
         final Delete.Where deleteByKeysIfExists = from.ifExists().where();
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
-            final String cqlColumn = x.fieldInfo.cqlColumn;
-            deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
+            deleteByKeysIfExists.and(eq(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn)));
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
-            final String cqlColumn = x.fieldInfo.cqlColumn;
-            deleteByKeysIfExists.and(eq(cqlColumn, bindMarker(cqlColumn)));
+            deleteByKeysIfExists.and(eq(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn)));
         }
 
         return deleteByKeysIfExists;
@@ -216,8 +214,7 @@ public class PreparedStatementGenerator {
         final Delete.Where deleteByPartition = from.where();
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
-            final String cqlColumn = x.fieldInfo.cqlColumn;
-            deleteByPartition.and(eq(cqlColumn, bindMarker(cqlColumn)));
+            deleteByPartition.and(eq(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn)));
         }
 
         return deleteByPartition;
@@ -253,7 +250,7 @@ public class PreparedStatementGenerator {
         final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.allColumns) {
-            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+            insert.value(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn));
         }
 
         return insert.using(ttl(bindMarker("ttl")));
@@ -270,11 +267,11 @@ public class PreparedStatementGenerator {
         final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
-            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+            insert.value(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn));
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.staticColumns) {
-            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+            insert.value(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn));
         }
 
         return insert.using(ttl(bindMarker("ttl")));
@@ -288,7 +285,7 @@ public class PreparedStatementGenerator {
         final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.allColumns) {
-            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+            insert.value(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn));
         }
 
         return insert.ifNotExists().using(ttl(bindMarker("ttl")));
@@ -305,11 +302,11 @@ public class PreparedStatementGenerator {
         final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
-            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+            insert.value(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn));
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.staticColumns) {
-            insert.value(x.fieldInfo.cqlColumn, bindMarker(x.fieldInfo.cqlColumn));
+            insert.value(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn));
         }
 
         return insert.ifNotExists().using(ttl(bindMarker("ttl")));

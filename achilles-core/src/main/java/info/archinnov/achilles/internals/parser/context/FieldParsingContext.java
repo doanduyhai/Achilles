@@ -36,6 +36,7 @@ public class FieldParsingContext {
     public final String fieldName;
     public final String className;
     public final String cqlColumn;
+    public final String quotedCqlColumn;
     public final EntityParsingContext entityContext;
     public final CodeBlock fieldInfoCode;
     public final TypeName entityRawType;
@@ -54,6 +55,7 @@ public class FieldParsingContext {
         this.columnType = null;
         this.columnInfo = null;
         this.cqlColumn = null;
+        this.quotedCqlColumn = null;
         this.entityRawType = null;
         this.fieldInfoCode = null;
         this.buildExtractor = false;
@@ -68,6 +70,7 @@ public class FieldParsingContext {
         this.columnInfo = fieldInfoContext.columnInfo;
         this.className = entityContext.className;
         this.cqlColumn = fieldInfoContext.cqlColumn;
+        this.quotedCqlColumn = fieldInfoContext.quotedCqlColumn;
         this.buildExtractor = true;
     }
 
