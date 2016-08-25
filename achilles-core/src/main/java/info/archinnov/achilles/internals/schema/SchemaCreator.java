@@ -215,7 +215,7 @@ public class SchemaCreator {
 
         for(String schema: schemas) {
             if (ACHILLES_DML_LOGGER.isDebugEnabled()) {
-                ACHILLES_DML_LOGGER.debug(schema);
+                ACHILLES_DML_LOGGER.debug(schema + "\n");
             }
             final ResultSet resultSet = session.execute(schema);
             resultSet.getExecutionInfo().isSchemaInAgreement();
@@ -236,6 +236,11 @@ public class SchemaCreator {
         final String udtKeyspace = udtClassProperty.staticKeyspace.orElse(session.getLoggedKeyspace());
         final SchemaContext schemaContext = new SchemaContext(udtKeyspace, true, true);
         final String udtSchema = udtClassProperty.generateSchema(schemaContext);
+
+        if (ACHILLES_DML_LOGGER.isDebugEnabled()) {
+            ACHILLES_DML_LOGGER.debug(udtSchema + "\n");
+        }
+
         final ResultSet resultSet = session.execute(udtSchema);
         resultSet.getExecutionInfo().isSchemaInAgreement();
     }
