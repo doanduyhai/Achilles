@@ -151,7 +151,7 @@ public enum ServerStarter {
         final AtomicReference<CassandraDaemon> daemonRef = new AtomicReference<>();
         executor.execute(() -> {
             if (useUnsafeCassandra) {
-                LOGGER.warn("******* WARNING, starting unsafe embedded Cassandra deamon. This should be only used for unit testing or development and not for production !");
+                LOGGER.warn("******* WARNING, starting unsafe embedded Cassandra daemon. This should be only used for unit testing or development and not for production !");
             }
 
             CassandraDaemon cassandraDaemon = useUnsafeCassandra == true

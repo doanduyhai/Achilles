@@ -36,7 +36,6 @@ public class TestEntityHavingUDTWithNoKeyspaceIT {
         //Given
         final Cluster cluster = CassandraEmbeddedServerBuilder
                 .builder()
-                .useUnsafeCassandraDeamon()
                 .withScript("functions/createFunctions.cql")
                 .buildNativeCluster();
 

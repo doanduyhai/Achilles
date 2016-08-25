@@ -55,7 +55,6 @@ public class MultiLayerNestingIT {
        //Given
        final Cluster cluster = CassandraEmbeddedServerBuilder
                .builder()
-               .useUnsafeCassandraDeamon()
                .withScript("functions/createFunctions.cql")
                .buildNativeCluster();
 
