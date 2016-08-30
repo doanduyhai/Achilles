@@ -1,0 +1,6 @@
+stable SASI with Support LIKE operator in prepared statements (CASSANDRA-11456)
+Add static column support to SASI index (CASSANDRA-11183)
+Allow per-partition LIMIT clause in CQL (CASSANDRA-7017)
+Support for non-frozen user-defined types, updating
+   individual fields of user-defined types (CASSANDRA-7423)
+

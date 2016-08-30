@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.strategy.types_nesting;
+package info.archinnov.achilles.internals.parser.validator;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
 
@@ -29,7 +29,7 @@ import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 
-public interface NestedTypesStrategy {
+public interface NestedTypesValidator {
 
     void validate(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass);
 

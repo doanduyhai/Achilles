@@ -50,86 +50,88 @@ public class TypeValidatorTest {
     @Mock
     private AptUtils aptUtils;
 
+    private TypeValidator typeValidator = new TypeValidator() {};
+
     @Test
     public void should_validate_primitiveByte() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("primitiveByte").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
     }
 
     @Test
     public void should_validate_objectByte() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("objectByte").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils).validateTrue(eq(true), anyString(), anyVararg());
     }
 
     @Test
     public void should_validate_primitiveByteArray() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("primitiveByteArray").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils).validateTrue(eq(true), anyString(), anyVararg());
     }
 
     @Test
     public void should_validate_objectByteArray() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("objectByteArray").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils).validateTrue(eq(true), anyString(), anyVararg());
     }
 
     @Test
     public void should_validate_listString() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("listString").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(2)).validateTrue(eq(true), anyString(), anyVararg());
     }
 
     @Test
     public void should_validate_setByte() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("setByte").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(2)).validateTrue(eq(true), anyString(), anyVararg());
     }
 
     @Test
     public void should_validate_mapByteArray() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("mapByteArray").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(3)).validateTrue(eq(true), anyString(), anyVararg());
     }
 
     @Test
     public void should_validate_tuple1() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("tuple1").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(2)).validateTrue(eq(true), anyString(), anyVararg());
     }
 
     @Test
     public void should_validate_tuple2() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("tuple2").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(4)).validateTrue(eq(true), anyString(), anyVararg());
     }
 
     @Test
     public void should_validate_tuple3() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("tuple3").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(4)).validateTrue(eq(true), anyString(), anyVararg());
     }
 
     @Test
     public void should_validate_tupleValue() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("tupleValue").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(1)).validateTrue(eq(true), anyString(), anyVararg());
     }
 
     @Test
     public void should_fail_on_invalidType() throws Exception {
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("invalidType").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(1)).validateTrue(eq(false), messageCaptor.capture(), objectCaptor.capture(), objectCaptor.capture());
 
         assertThat(messageCaptor.getValue()).isEqualTo("Type '%s' in '%s' is not a valid type for CQL");
@@ -140,7 +142,7 @@ public class TypeValidatorTest {
     public void should_fail_on_invalidTypeNestedType() throws Exception {
         String consistencyLevel = ConsistencyLevel.class.getCanonicalName();
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("invalidTypeNestedType").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(3)).validateTrue(eq(true), anyString(), anyVararg());
         verify(aptUtils, times(1)).validateTrue(eq(false), messageCaptor.capture(), objectCaptor.capture(), objectCaptor.capture());
 
@@ -152,7 +154,7 @@ public class TypeValidatorTest {
     public void should_fail_on_invalidUpperBound() throws Exception {
         String consistencyLevel = ConsistencyLevel.class.getCanonicalName();
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("invalidUpperBound").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(1)).validateTrue(eq(true), anyString(), anyVararg());
         verify(aptUtils, times(1)).validateTrue(eq(false), messageCaptor.capture(), objectCaptor.capture(), objectCaptor.capture());
 
@@ -164,7 +166,7 @@ public class TypeValidatorTest {
     public void should_fail_on_invalidLowerBound() throws Exception {
         String object = Object.class.getCanonicalName();
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("invalidLowerBound").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(1)).validateTrue(eq(true), anyString(), anyVararg());
         verify(aptUtils, times(1)).validateTrue(eq(false), messageCaptor.capture(), objectCaptor.capture(), objectCaptor.capture());
 
@@ -176,7 +178,7 @@ public class TypeValidatorTest {
     public void should_fail_on_invalidWildCard() throws Exception {
         String object = Object.class.getCanonicalName();
         final TypeName typeName = TypeName.get(TestTypes.class.getDeclaredField("invalidWildCard").getGenericType());
-        TypeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
+        typeValidator.validateAllowedTypes(aptUtils, typeName, typeName);
         verify(aptUtils, times(1)).validateTrue(eq(true), anyString(), anyVararg());
         verify(aptUtils, times(1)).validateTrue(eq(false), messageCaptor.capture(), objectCaptor.capture(), objectCaptor.capture());
 

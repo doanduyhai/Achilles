@@ -46,6 +46,7 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 public class FieldInfoParserTest extends AbstractTestProcessor {
 
     private final InternalNamingStrategy strategy = new SnakeCaseNaming();
+    private GlobalParsingContext globalParsingContext = GlobalParsingContext.defaultContext();
 
     @Before
     public void setUp() {
@@ -63,7 +64,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @PartitionKey(1) private Long id;
             VariableElement elm = findFieldInType(typeElement, "id");
 
-            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(elm, "id", typeName);
+            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(globalParsingContext, elm, "id", typeName);
             assertThat(codeBlock._1().toString()).isEqualTo("info.archinnov.achilles.internals.metamodel.columns.ColumnType.PARTITION");
         });
         launchTest();
@@ -80,7 +81,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @ClusteringColumn(1) private String clust1;
             VariableElement elm = findFieldInType(typeElement, "clust1");
 
-            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(elm, "clust1", typeName);
+            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(globalParsingContext, elm, "clust1", typeName);
             assertThat(codeBlock._1().toString()).isEqualTo("info.archinnov.achilles.internals.metamodel.columns.ColumnType.CLUSTERING");
         });
         launchTest();
@@ -97,7 +98,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @Static private int staticCol;
             VariableElement elm = findFieldInType(typeElement, "staticCol");
 
-            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(elm, "staticCol", typeName);
+            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(globalParsingContext, elm, "staticCol", typeName);
             assertThat(codeBlock._1().toString()).isEqualTo("info.archinnov.achilles.internals.metamodel.columns.ColumnType.STATIC");
         });
         launchTest();
@@ -114,7 +115,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @Computed(function = "writetime", targettargetColumnsaticCol") private Long computed;
             VariableElement elm = findFieldInType(typeElement, "computed");
 
-            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(elm, "computed", typeName);
+            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(globalParsingContext, elm, "computed", typeName);
             assertThat(codeBlock._1().toString()).isEqualTo("info.archinnov.achilles.internals.metamodel.columns.ColumnType.COMPUTED");
         });
         launchTest();
@@ -131,7 +132,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @Column private String normal;
             VariableElement elm = findFieldInType(typeElement, "normal");
 
-            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(elm, "normal", typeName);
+            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(globalParsingContext, elm, "normal", typeName);
             assertThat(codeBlock._1().toString()).isEqualTo("info.archinnov.achilles.internals.metamodel.columns.ColumnType.NORMAL");
         });
         launchTest();
@@ -148,7 +149,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @Counter private Long counter;
             VariableElement elm = findFieldInType(typeElement, "counter");
 
-            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(elm, "counter", typeName);
+            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(globalParsingContext, elm, "counter", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("info.archinnov.achilles.internals.metamodel.columns.ColumnType.COUNTER");
         });
@@ -166,7 +167,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @Static @Counter private Long staticCounter;
             VariableElement elm = findFieldInType(typeElement, "staticCounter");
 
-            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(elm, "staticCounter", typeName);
+            final Tuple2<CodeBlock, ColumnType> codeBlock = parser.buildColumnType(globalParsingContext, elm, "staticCounter", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("info.archinnov.achilles.internals.metamodel.columns.ColumnType.STATIC_COUNTER");
         });
@@ -184,7 +185,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @PartitionKey(1) @ClusteringColumn(1) private Long partitionAndClustering;
             VariableElement elm = findFieldInType(typeElement, "partitionAndClustering");
 
-            parser.buildColumnType(elm, "partitionAndClustering", typeName);
+            parser.buildColumnType(globalParsingContext, elm, "partitionAndClustering", typeName);
         });
         failTestWithMessage("Field 'partitionAndClustering' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
@@ -202,7 +203,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             //  @PartitionKey(1) @Static private Long partitionAndStatic;
             VariableElement elm = findFieldInType(typeElement, "partitionAndStatic");
 
-            parser.buildColumnType(elm, "partitionAndStatic", typeName);
+            parser.buildColumnType(globalParsingContext, elm, "partitionAndStatic", typeName);
         });
         failTestWithMessage("Field 'partitionAndStatic' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
@@ -220,7 +221,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @PartitionKey(1) @Computed(function = "xx", targettargetColumnsx"}) private Long partitionAndComputed;
             VariableElement elm = findFieldInType(typeElement, "partitionAndComputed");
 
-            parser.buildColumnType(elm, "partitionAndComputed", typeName);
+            parser.buildColumnType(globalParsingContext, elm, "partitionAndComputed", typeName);
         });
         failTestWithMessage("Field 'partitionAndComputed' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
@@ -238,7 +239,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @ClusteringColumn(0) @Static private String clusteringAndStatic;
             VariableElement elm = findFieldInType(typeElement, "clusteringAndStatic");
 
-            parser.buildColumnType(elm, "clusteringAndStatic", typeName);
+            parser.buildColumnType(globalParsingContext, elm, "clusteringAndStatic", typeName);
         });
         failTestWithMessage("Field 'clusteringAndStatic' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
@@ -256,7 +257,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @ClusteringColumn(0) @Computed(function = "xx", targettargetColumnsx"}) private String clusteringAndComputed;
             VariableElement elm = findFieldInType(typeElement, "clusteringAndComputed");
 
-            parser.buildColumnType(elm, "clusteringAndComputed", typeName);
+            parser.buildColumnType(globalParsingContext, elm, "clusteringAndComputed", typeName);
         });
         failTestWithMessage("Field 'clusteringAndComputed' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
@@ -274,7 +275,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @Static @Computed(function = "writetime", targettargetColumnsaticCol") private int staticAndComputed;
             VariableElement elm = findFieldInType(typeElement, "staticAndComputed");
 
-            parser.buildColumnType(elm, "staticAndComputed", typeName);
+            parser.buildColumnType(globalParsingContext, elm, "staticAndComputed", typeName);
         });
         failTestWithMessage("Field 'staticAndComputed' in class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
@@ -291,8 +292,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @PartitionKey(0) private Long wrongPartitionOrder;
             VariableElement elm = findFieldInType(typeElement, "wrongPartitionOrder");
-            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
-            parser.buildColumnInfo(annotationTree, elm, "wrongPartitionOrder", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, elm);
+            parser.buildColumnInfo(globalParsingContext, annotationTree, elm, "wrongPartitionOrder", typeName);
         });
         failTestWithMessage("@PartitionKey order on field 'wrongPartitionOrder' of class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
@@ -309,8 +310,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @ClusteringColumn(0) private String wrongClusteringOrder;
             VariableElement elm = findFieldInType(typeElement, "wrongClusteringOrder");
-            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
-            parser.buildColumnInfo(annotationTree, elm, "wrongClusteringOrder", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
+            parser.buildColumnInfo(globalParsingContext, annotationTree,  elm, "wrongClusteringOrder", typeName);
         });
         failTestWithMessage("@ClusteringColumn order on field 'wrongClusteringOrder' of class " +
                 "'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo' " +
@@ -327,8 +328,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @PartitionKey(1) private Long id;
             VariableElement elm = findFieldInType(typeElement, "id");
-            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "id", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(globalParsingContext, annotationTree,  elm, "id", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo(1, false)");
         });
@@ -345,8 +346,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @ClusteringColumn(value = 2, asc = false) private int clust2;
             VariableElement elm = findFieldInType(typeElement, "clust2");
-            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "clust2", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(globalParsingContext, annotationTree,  elm, "clust2", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo(2, false, com.datastax.driver.core.ClusteringOrder.DESC)");
         });
@@ -363,8 +364,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @Static private int staticCol;
             VariableElement elm = findFieldInType(typeElement, "staticCol");
-            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "staticCol", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(globalParsingContext, annotationTree,  elm, "staticCol", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ColumnInfo(false)");
         });
@@ -382,8 +383,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             // @Computed(function = "writetime", alias = "writetime", targettargetColumnstaticCol","normal"}, cqlClass = Long.class)
             // private Long computed;
             VariableElement elm = findFieldInType(typeElement, "computed");
-            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "computed", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(globalParsingContext, annotationTree,  elm, "computed", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo(\"writetime\", \"writetime\", java.util.Arrays.asList(new String[]{\"staticCol\",\"normal\"}), java.lang.Long.class)");
         });
@@ -401,8 +402,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @Column private String normal;
             VariableElement elm = findFieldInType(typeElement, "normal");
-            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "normal", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(globalParsingContext, annotationTree,  elm, "normal", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ColumnInfo(false)");
         });
@@ -419,8 +420,8 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             // @Column @Frozen private TestUDT udt;
             VariableElement elm = findFieldInType(typeElement, "udt");
-            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
-            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(annotationTree, elm, "udt", typeName);
+            AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
+            final Tuple2<CodeBlock, ColumnInfo> codeBlock = parser.buildColumnInfo(globalParsingContext, annotationTree,  elm, "udt", typeName);
             assertThat(codeBlock._1().toString().trim().replaceAll("\n", ""))
                     .isEqualTo("new info.archinnov.achilles.internals.metamodel.columns.ColumnInfo(true)");
         });
@@ -433,10 +434,10 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
             // @Index private List<String> indexedList;
             VariableElement elm = findFieldInType(typeElement, "indexedList");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
@@ -451,11 +452,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // private List<@Index(name = "list_index") String> nestedIndexList;
             VariableElement elm = findFieldInType(typeElement, "nestedIndexList");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
@@ -470,11 +471,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // private List<String> notIndexedList;
             VariableElement elm = findFieldInType(typeElement, "notIndexedList");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
@@ -489,11 +490,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // @Index(indexClass = TestEntityForFieldInfo.class) private Map<Integer, String> indexedEntryMap;
             VariableElement elm = findFieldInType(typeElement, "indexedEntryMap");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
@@ -509,11 +510,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // private Map<@Index Integer, String> indexedKeyMap;
             VariableElement elm = findFieldInType(typeElement, "indexedKeyMap");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
@@ -529,11 +530,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // private Map<Integer, @Index String> indexedValueMap;
             VariableElement elm = findFieldInType(typeElement, "indexedValueMap");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
@@ -549,11 +550,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // private Map<@Index Integer, @Index String> duplicatedIndicesForMap;
             VariableElement elm = findFieldInType(typeElement, "duplicatedIndicesForMap");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             parser.buildIndexInfo(annotationTree, elm, context);
 
@@ -568,11 +569,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // private Map<Integer, String> notIndexedMap;
             VariableElement elm = findFieldInType(typeElement, "notIndexedMap");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
@@ -587,10 +588,10 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
             // @Index private TestUDT indexedUdt;
             VariableElement elm = findFieldInType(typeElement, "indexedUdt");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
@@ -606,11 +607,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // @Index @Frozen private List<String> indexedFrozenList;
             VariableElement elm = findFieldInType(typeElement, "indexedFrozenList");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
@@ -626,10 +627,10 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             final FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
             // @Column private String normal;
             VariableElement elm = findFieldInType(typeElement, "normal");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context);
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
@@ -644,11 +645,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // @Enumerated(value = NAME) private ConsistencyLevel consistencyLevel
             VariableElement elm = findFieldInType(typeElement, "consistencyLevel");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
 
@@ -664,11 +665,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // private boolean primitiveBoolean;
             VariableElement elm = findFieldInType(typeElement, "primitiveBoolean");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
 
@@ -684,11 +685,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // private Boolean objectBoolean;
             VariableElement elm = findFieldInType(typeElement, "objectBoolean");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
 
@@ -704,12 +705,12 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // @Column("UpperCase")
             // private String upperCase;
             VariableElement elm = findFieldInType(typeElement, "upperCase");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
 
@@ -725,7 +726,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             /*
                 @EmptyCollectionIfNull
@@ -736,7 +737,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
                                                             @Enumerated(value = ORDINAL) ConsistencyLevel>>> map;
              */
             VariableElement elm = findFieldInType(typeElement, "map");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
 
@@ -752,11 +753,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // @Codec(value = IntToStringCodec.class) private Integer integer;
             VariableElement elm = findFieldInType(typeElement, "integer");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             parser.buildFieldInfo(elm, annotationTree, context);
         });
@@ -769,11 +770,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // private TestUdt testUdt;
             VariableElement elm = findFieldInType(typeElement, "testUdt");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, elm);
 
             parser.buildFieldInfo(elm, annotationTree, context);
         });
@@ -786,11 +787,11 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             FieldInfoParser parser = new FieldInfoParser(aptUtils);
             final String className = TestEntityForFieldInfo.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext context = new EntityParsingContext(typeElement, ClassName.get(TestEntityForFieldInfo.class), strategy, globalParsingContext);
 
             // private Set<@Enumerated(value = ORDINAL) ConsistencyLevel> set;
             VariableElement elm = findFieldInType(typeElement, "set");
-            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
             parser.buildFieldInfo(elm, annotationTree, context);
         });

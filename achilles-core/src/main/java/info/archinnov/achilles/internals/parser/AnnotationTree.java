@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.*;
-import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateCompatibleCodecAnnotationsOnField;
 import static java.util.stream.Collectors.toList;
 
 import java.lang.annotation.Annotation;
@@ -42,11 +41,11 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.SymbolMetadata;
 import com.sun.tools.javac.code.TargetType;
-import com.sun.tools.javac.util.*;
 
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.context.CodecContext;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.context.IndexInfoContext;
 import info.archinnov.achilles.internals.parser.context.RuntimeCodecContext;
 import info.archinnov.achilles.type.TypedMap;
@@ -212,7 +211,7 @@ public class AnnotationTree {
         }
     }
 
-    public static AnnotationTree buildFrom(AptUtils aptUtils, VariableElement varElm) {
+    public static AnnotationTree buildFrom(AptUtils aptUtils, GlobalParsingContext parsingContext, VariableElement varElm) {
         final String fieldName = varElm.getSimpleName().toString();
         final Name className = enclosingClass(varElm).getQualifiedName();
         final TypeMirror currentType = varElm.asType();
@@ -226,7 +225,7 @@ public class AnnotationTree {
         final Counter counter = varElm.getAnnotation(Counter.class);
         final TimeUUID timeUUID = varElm.getAnnotation(TimeUUID.class);
 
-        validateCompatibleCodecAnnotationsOnField(aptUtils, fieldName, className, frozen, json, enumerated, codec, runtimeCodec, computed, counter, timeUUID);
+        parsingContext.fieldValidator().validateCompatibleCodecAnnotationsOnField(aptUtils, fieldName, className, frozen, json, enumerated, codec, runtimeCodec, computed, counter, timeUUID);
 
         final List<? extends TypeMirror> nestedTypes = currentType.getKind() == TypeKind.DECLARED ?
                 MoreTypes.asDeclared(currentType).getTypeArguments() : Arrays.asList();

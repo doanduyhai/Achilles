@@ -49,9 +49,10 @@ public class UDTMetaCodeGenTest extends AbstractTestProcessor
 
             final UDTMetaCodeGen builder = new UDTMetaCodeGen(aptUtils);
 
+            final GlobalParsingContext globalContext = GlobalParsingContext.defaultContext();
             final EntityParsingContext context = new EntityParsingContext(typeElement,
-                    ClassName.get(TestUDT.class), new LowerCaseNaming(), new GlobalParsingContext());
-            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, new GlobalParsingContext());
+                    ClassName.get(TestUDT.class), new LowerCaseNaming(), globalContext);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, globalContext);
 
             final TypeSpec typeSpec = builder.buildUDTClassProperty(typeElement, context, parsingResults);
 

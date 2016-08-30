@@ -43,6 +43,8 @@ import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSens
 @RunWith(MockitoJUnitRunner.class)
 public class EntityParserTest extends AbstractTestProcessor {
 
+    private final GlobalParsingContext globalParsingContext = GlobalParsingContext.defaultContext();
+
     @Test
     public void should_generate_meta_signature_for_complex_types_javac() throws Exception {
         //Given
@@ -50,7 +52,7 @@ public class EntityParserTest extends AbstractTestProcessor {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithComplexTypes.class.getCanonicalName());
-                final EntityMetaCodeGen.EntityMetaSignature metaSignature = parser.parseEntity(typeElement, new GlobalParsingContext());
+                final EntityMetaCodeGen.EntityMetaSignature metaSignature = parser.parseEntity(typeElement, globalParsingContext);
 
                 assertThat(metaSignature).isNotNull();
             } catch (Exception ex) {
@@ -75,7 +77,7 @@ public class EntityParserTest extends AbstractTestProcessor {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestViewSensorByType.class.getCanonicalName());
-                final EntityMetaCodeGen.EntityMetaSignature metaSignature = parser.parseView(typeElement, new GlobalParsingContext());
+                final EntityMetaCodeGen.EntityMetaSignature metaSignature = parser.parseView(typeElement, globalParsingContext);
 
                 assertThat(metaSignature).isNotNull();
             } catch (Exception ex) {
@@ -101,7 +103,7 @@ public class EntityParserTest extends AbstractTestProcessor {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestViewSensorByType.class.getCanonicalName());
-                final EntityMetaCodeGen.EntityMetaSignature metaSignature = parser.parseView(typeElement, new GlobalParsingContext());
+                final EntityMetaCodeGen.EntityMetaSignature metaSignature = parser.parseView(typeElement, globalParsingContext);
 
                 assertThat(metaSignature).isNotNull();
             } catch (Exception ex) {
@@ -129,7 +131,7 @@ public class EntityParserTest extends AbstractTestProcessor {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithComplexTypes.class.getCanonicalName());
-                final EntityMetaCodeGen.EntityMetaSignature metaSignature = parser.parseEntity(typeElement, new GlobalParsingContext());
+                final EntityMetaCodeGen.EntityMetaSignature metaSignature = parser.parseEntity(typeElement, globalParsingContext);
 
                 assertThat(metaSignature).isNotNull();
             } catch (Exception ex) {

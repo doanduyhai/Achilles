@@ -22,9 +22,9 @@ import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.apt.AptUtils;
 
-public class TypeValidator {
+public interface TypeValidator {
 
-    public static void validateAllowedTypes(AptUtils aptUtils, TypeName parentType, TypeName type) {
+    default void validateAllowedTypes(AptUtils aptUtils, TypeName parentType, TypeName type) {
         if (type.isPrimitive()) {
             return;
         } else if (type instanceof ParameterizedTypeName) {
@@ -47,7 +47,7 @@ public class TypeValidator {
         }
     }
 
-    public static void validateAllowedTypesForFunction(AptUtils aptUtils, String className, String methodName, TypeName type) {
+    default void validateAllowedTypesForFunction(AptUtils aptUtils, String className, String methodName, TypeName type) {
         if (type.isPrimitive()) {
             validateAllowedTypesForFunction(aptUtils, className, methodName, type.box());
         } else if (type instanceof ParameterizedTypeName) {

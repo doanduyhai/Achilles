@@ -21,8 +21,6 @@ import static com.datastax.driver.core.ClusteringOrder.DESC;
 import static info.archinnov.achilles.internals.apt.AptUtils.*;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateAllowedFrozen;
-import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateCompatibleColumnAnnotationsOnField;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -43,6 +41,7 @@ import info.archinnov.achilles.internals.metamodel.columns.*;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.context.IndexInfoContext;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
@@ -67,8 +66,8 @@ public class FieldInfoParser {
         final ExecutableElement getter = aptUtils.findGetter(classElm, elm, deriveGetterName(elm));
         final ExecutableElement setter = aptUtils.findSetter(classElm, elm, deriveSetterName(elm));
 
-        final Tuple2<CodeBlock, ColumnType> columnTypeCode = buildColumnType(elm, fieldName, rawEntityClass);
-        final Tuple2<CodeBlock, ColumnInfo> columnInfoCode = buildColumnInfo(annotationTree, elm, fieldName, rawEntityClass);
+        final Tuple2<CodeBlock, ColumnType> columnTypeCode = buildColumnType(context.globalContext, elm, fieldName, rawEntityClass);
+        final Tuple2<CodeBlock, ColumnInfo> columnInfoCode = buildColumnInfo(context.globalContext, annotationTree, elm, fieldName, rawEntityClass);
         final CodeBlock indexInfoCode = buildIndexInfo(annotationTree, elm, context);
 
         CodeBlock getterLambda = CodeBlock.builder()
@@ -102,7 +101,7 @@ public class FieldInfoParser {
         return setter;
     }
 
-    protected Tuple2<CodeBlock, ColumnType> buildColumnType(VariableElement elm, String fieldName, TypeName rawEntityClass) {
+    protected Tuple2<CodeBlock, ColumnType> buildColumnType(GlobalParsingContext context, VariableElement elm, String fieldName, TypeName rawEntityClass) {
         final CodeBlock.Builder builder = CodeBlock.builder();
         final Optional<PartitionKey> partitionKey = Optional.ofNullable(elm.getAnnotation(PartitionKey.class));
         final Optional<ClusteringColumn> clusteringColumn = Optional.ofNullable(elm.getAnnotation(ClusteringColumn.class));
@@ -110,7 +109,7 @@ public class FieldInfoParser {
         final Optional<Computed> computed = Optional.ofNullable(elm.getAnnotation(Computed.class));
         final Optional<Counter> counter = Optional.ofNullable(elm.getAnnotation(Counter.class));
 
-        validateCompatibleColumnAnnotationsOnField(aptUtils, fieldName, rawEntityClass, partitionKey, clusteringColumn, staticColumn, computed, counter);
+        context.fieldValidator().validateCompatibleColumnAnnotationsOnField(aptUtils, fieldName, rawEntityClass, partitionKey, clusteringColumn, staticColumn, computed, counter);
 
         if (partitionKey.isPresent()) {
             builder.add("$T.$L", COLUMN_TYPE, PARTITION.name());
@@ -136,14 +135,14 @@ public class FieldInfoParser {
         }
     }
 
-    protected Tuple2<CodeBlock, ColumnInfo> buildColumnInfo(AnnotationTree annotationTree, VariableElement elm, String fieldName, TypeName rawEntityClass) {
+    protected Tuple2<CodeBlock, ColumnInfo> buildColumnInfo(GlobalParsingContext context, AnnotationTree annotationTree, VariableElement elm, String fieldName, TypeName rawEntityClass) {
         final CodeBlock.Builder builder = CodeBlock.builder();
         final boolean isFrozen = containsAnnotation(annotationTree, Frozen.class);
         final Optional<TypedMap> partitionKey = extractTypedMap(annotationTree, PartitionKey.class);
         final Optional<TypedMap> clusteringColumn = extractTypedMap(annotationTree, ClusteringColumn.class);
         final Optional<TypedMap> computed = extractTypedMap(annotationTree, Computed.class);
 
-        validateAllowedFrozen(isFrozen, aptUtils, elm, fieldName, rawEntityClass);
+        context.fieldValidator().validateAllowedFrozen(isFrozen, aptUtils, elm, fieldName, rawEntityClass);
 
         if (partitionKey.isPresent()) {
             final int order = partitionKey.get().getTyped("order");

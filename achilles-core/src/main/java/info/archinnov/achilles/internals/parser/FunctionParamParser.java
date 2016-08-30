@@ -338,7 +338,7 @@ public class FunctionParamParser {
         final TypeMirror typeMirror = annotationTree.getCurrentType();
         final TypeName udtTypeName = TypeName.get(typeMirror);
         final TypeElement typeElement = aptUtils.asTypeElement(typeMirror);
-        udtParser.validateUDT(udtTypeName, typeElement);
+        udtParser.validateUDT(context, udtTypeName, typeElement);
 
         final Optional<Strategy> strategy = aptUtils.getAnnotationOnClass(typeElement, Strategy.class);
         final UDT udt = aptUtils.getAnnotationOnClass(typeElement, UDT.class).get();
@@ -356,7 +356,7 @@ public class FunctionParamParser {
 
     private TypeName buildOrGetCodecFromRegistry(GlobalParsingContext context, AnnotationTree annotationTree, TypeName parentType,
                                                  TypeName sourceType, String methodName, String paramName) {
-        return codecFactory.determineTargetCQLType(annotationTree, parentType, sourceType, methodName, paramName,
+        return codecFactory.determineTargetCQLType(context, annotationTree, parentType, sourceType, methodName, paramName,
                 Optional.ofNullable(context.getCodecFor(sourceType))) ;
     }
 }

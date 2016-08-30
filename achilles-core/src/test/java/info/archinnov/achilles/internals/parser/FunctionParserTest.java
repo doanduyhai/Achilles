@@ -43,7 +43,7 @@ import info.archinnov.achilles.internals.utils.CollectionsHelper;
 @RunWith(MockitoJUnitRunner.class)
 public class FunctionParserTest extends AbstractTestProcessor {
 
-    private final GlobalParsingContext context = new GlobalParsingContext();
+    private final GlobalParsingContext context = GlobalParsingContext.defaultContext();
 
     @Test
     public void should_parse_function() throws Exception {
