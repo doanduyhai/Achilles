@@ -67,7 +67,7 @@ public class FunctionParser {
                     final List<FunctionParamSignature> parameterSignatures = new ArrayList<>(parameters.size());
                     for (int i = 0; i< parameters.size(); i++) {
                         final VariableElement parameter = parameters.get(i);
-                        context.nestedTypesStrategy.validate(aptUtils, annotationTrees.get(i), method.toString(), parentType);
+                        context.nestedTypesValidator().validate(aptUtils, annotationTrees.get(i), method.toString(), parentType);
                         final FunctionParamSignature functionParamSignature = paramParser
                                 .parseParam(context, annotationTrees.get(i), parentType, methodName, parameter.getSimpleName().toString());
                         parameterSignatures.add(functionParamSignature);

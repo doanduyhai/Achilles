@@ -18,8 +18,6 @@ package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateAllowedType;
-import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateCounter;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -37,7 +35,6 @@ import info.archinnov.achilles.internals.parser.CodecFactory.CodecInfo;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
-import info.archinnov.achilles.internals.strategy.types_nesting.NestedTypesStrategy;
 import info.archinnov.achilles.internals.utils.NamingHelper;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.*;
@@ -60,14 +57,13 @@ public class FieldParser {
     }
 
     public FieldMetaSignature parse(VariableElement elm, EntityParsingContext entityContext) {
-        final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, elm);
+        final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, entityContext.globalContext, elm);
         final FieldInfoContext fieldInfoContext = fieldInfoParser.buildFieldInfo(elm, annotationTree, entityContext);
         final FieldParsingContext context = new FieldParsingContext(entityContext, getRawType(entityContext.entityType), fieldInfoContext);
 
         // Perform nested type checking with regard to @Frozen if not a tuple type
         // Tuple types are frozen by default
-        final NestedTypesStrategy nestedTypesStrategy = context.entityContext.globalContext.nestedTypesStrategy;
-        nestedTypesStrategy.validate(aptUtils, annotationTree, context.fieldName, context.entityRawType);
+        entityContext.globalContext.nestedTypesValidator().validate(aptUtils, annotationTree, context.fieldName, context.entityRawType);
 
         return parseType(annotationTree, context, TypeName.get(elm.asType()));
     }
@@ -151,8 +147,8 @@ public class FieldParser {
 
         final TypeName rawTargetType = getRawType(codecInfo.targetType);
 
-        validateAllowedType(aptUtils, rawTargetType, context);
-        validateCounter(aptUtils, rawTargetType, annotationTree.getAnnotations().keySet(), context);
+        context.fieldValidator().validateAllowedType(aptUtils, rawTargetType, context);
+        context.fieldValidator().validateCounter(aptUtils, rawTargetType, annotationTree.getAnnotations().keySet(), context);
 
         final CodeBlock dataType;
 

@@ -16,10 +16,11 @@
 
 package info.archinnov.achilles.internals.apt.processors.meta;
 
-import static info.archinnov.achilles.internals.apt.AptUtils.isAnnotationOfType;
+import static info.archinnov.achilles.internals.apt.AptUtils.*;
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.MATERIALIZED_VIEW;
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDF_UDA;
 import static info.archinnov.achilles.internals.metamodel.functions.InternalSystemFunctionRegistry.SYSTEM_FUNCTIONS;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.validator.BeanValidator.validateViewsAgainstBaseTable;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -51,6 +52,8 @@ import com.squareup.javapoet.TypeSpec;
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internals.apt.AptUtils;
+import info.archinnov.achilles.internals.cassandra_version.CassandraFeature;
+import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryBuilderCodeGen;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryCodeGen;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryCodeGen.ManagersAndDSLClasses;
@@ -61,7 +64,6 @@ import info.archinnov.achilles.internals.parser.context.FunctionSignature;
 import info.archinnov.achilles.internals.parser.CodecRegistryParser;
 import info.archinnov.achilles.internals.parser.EntityParser;
 import info.archinnov.achilles.internals.parser.FunctionParser;
-import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.FunctionsContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
@@ -89,13 +91,19 @@ public class AchillesProcessor extends AbstractProcessor {
         if (!this.processed) {
 
             try {
-                final GlobalParsingContext parsingContext = parseCodecRegistry(annotations, roundEnv);
+
+                final GlobalParsingContext parsingContext = initGlobalParsingContext(annotations, roundEnv);
+
+                validateCassandraVersionAgainstUsedAnnotations(annotations, parsingContext);
+
+                parseCodecRegistry(parsingContext, annotations, roundEnv);
 
                 final List<EntityMetaSignature> tableAndViewSignatures = discoverAndValidateTablesAndViews(annotations, roundEnv, parsingContext);
 
                 final FunctionsContext udfContext = parseAndValidateFunctionRegistry(parsingContext, annotations, roundEnv, tableAndViewSignatures);
 
                 final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance();
+
                 final ManagersAndDSLClasses managersAndDSLClasses = ManagerFactoryCodeGen.buildInstance(aptUtils, tableAndViewSignatures, udfContext, parsingContext);
 
                 aptUtils.printNote("[Achilles] Reading previously generated source files (if exist)");
@@ -181,13 +189,33 @@ public class AchillesProcessor extends AbstractProcessor {
         return true;
     }
 
+    private void validateCassandraVersionAgainstUsedAnnotations(Set<? extends TypeElement> annotations, GlobalParsingContext parsingContext) {
+        final InternalCassandraVersion version = parsingContext.cassandraVersion;
+        if (containsElementsAnnotatedBy(annotations, FunctionRegistry.class) && !version.supportsFeature(UDF_UDA)) {
+            aptUtils.printError(format("Cassandra version %s does not support feature %s so @FunctionRegistry cannot be used", version.name(), UDF_UDA.name()));
+        }
+
+        if (containsElementsAnnotatedBy(annotations, MaterializedView.class) && !version.supportsFeature(MATERIALIZED_VIEW)) {
+            aptUtils.printError(format("Cassandra version %s does not support feature %s so @MaterializedView cannot be used", version.name(), MATERIALIZED_VIEW.name()));
+        }
+    }
+
+    private GlobalParsingContext initGlobalParsingContext(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        if (countElementsAnnotatedBy(annotations, CompileTimeConfig.class) > 1L) {
+            aptUtils.printError(format("Cannot declare more than one @%s in a single compilation unit", CompileTimeConfig.class.getSimpleName()));
+        }
+
+        return getTypesAnnotatedByAsStream(annotations, roundEnv, CompileTimeConfig.class)
+                .map(typeElement -> aptUtils.getAnnotationOnClass(typeElement, CompileTimeConfig.class).get())
+                .findFirst()
+                .map(annot -> GlobalParsingContext.fromCompileTimeConfig(annot))
+                .orElse(GlobalParsingContext.defaultContext());
+    }
+
     private FunctionsContext parseAndValidateFunctionRegistry(GlobalParsingContext context, Set<? extends TypeElement> annotations,
                                                               RoundEnvironment roundEnv, List<EntityMetaSignature> tableAndViewSignatures) {
-        final List<FunctionSignature> udfSignatures = annotations
-                .stream()
-                .filter(annotation -> isAnnotationOfType(annotation, FunctionRegistry.class))
-                .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotation).stream())
-                .map(MoreElements::asType)
+
+        final List<FunctionSignature> udfSignatures = getTypesAnnotatedByAsStream(annotations, roundEnv, FunctionRegistry.class)
                 .flatMap(x -> FunctionParser.parseFunctionRegistryAndValidateTypes(aptUtils, x, context).stream())
                 .collect(toList());
 
@@ -208,30 +236,17 @@ public class AchillesProcessor extends AbstractProcessor {
                 .filter(EntityMetaSignature::isTable)
                 .flatMap(x -> x.fieldMetaSignatures.stream())
                 .map(x -> x.sourceType)
-                //.map(TypeUtils::mapToNativeCassandraType)
                 .collect(toSet());
 
         return new FunctionsContext(udfSignatures, CollectionsHelper.appendAll(functionParameterTypes, functionReturnTypes, entityColumnTargetTypes, NATIVE_TYPES));
     }
 
-    private List<EntityMetaSignature> discoverAndValidateTablesAndViews(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv, GlobalParsingContext parsingContext) {
-        final List<TypeElement> tableTypes = annotations
-                .stream()
-                .filter(annotation -> isAnnotationOfType(annotation, Table.class))
-                .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotation).stream())
-                .map(MoreElements::asType)
-                .collect(toList());
-
-        final List<TypeElement> viewTypes = annotations
-                .stream()
-                .filter(annotation -> isAnnotationOfType(annotation, MaterializedView.class))
-                .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotation).stream())
-                .map(MoreElements::asType)
-                .collect(toList());
-
+    private List<EntityMetaSignature> discoverAndValidateTablesAndViews(Set<? extends TypeElement> annotatedTypes, RoundEnvironment roundEnv, GlobalParsingContext parsingContext) {
+        final List<TypeElement> tableTypes = getTypesAnnotatedBy(annotatedTypes, roundEnv, Table.class);
+        final List<TypeElement> viewTypes = getTypesAnnotatedBy(annotatedTypes, roundEnv, MaterializedView.class);
         final List<TypeElement> types = CollectionsHelper.appendAll(tableTypes, viewTypes);
 
-        validateEntityNames(types);
+        parsingContext.beanValidator().validateEntityNames(aptUtils, types);
 
         final List<EntityMetaSignature> tableSignatures = tableTypes
                 .stream()
@@ -245,39 +260,15 @@ public class AchillesProcessor extends AbstractProcessor {
 
         final List<EntityMetaSignature> tableAndViewSignatures = CollectionsHelper.appendAll(tableSignatures, viewSignatures);
 
-        validateViewsAgainstBaseTable(aptUtils, viewSignatures, tableSignatures);
+        if (parsingContext.supportsFeature(CassandraFeature.MATERIALIZED_VIEW)) {
+            parsingContext.beanValidator().validateViewsAgainstBaseTable(aptUtils, viewSignatures, tableSignatures);
+        }
+
         return tableAndViewSignatures;
     }
 
-    private GlobalParsingContext parseCodecRegistry(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        final GlobalParsingContext parsingContext = new GlobalParsingContext();
-        parseCodecRegistry(parsingContext, annotations, roundEnv);
-        return parsingContext;
-    }
-
-    private void validateEntityNames(List<TypeElement> entityTypes) {
-        Map<String, String> entities = new HashedMap();
-        for (TypeElement entityType : entityTypes) {
-            final String className = entityType.getSimpleName().toString();
-            final String FQCN = entityType.getQualifiedName().toString();
-            if (entities.containsKey(className)) {
-                final String existingFQCN = entities.get(className);
-                aptUtils.printError("%s and %s both share the same class name, it is forbidden by Achilles",
-                        FQCN, existingFQCN);
-                throw new IllegalStateException(format("%s and %s both share the same class name, it is forbidden by Achilles",
-                        FQCN, existingFQCN));
-            } else {
-                entities.put(className, FQCN);
-            }
-        }
-    }
-
     private void parseCodecRegistry(GlobalParsingContext parsingContext, Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        final boolean hasCompileTimeCodecRegistry = annotations
-                .stream()
-                .filter(annotation -> isAnnotationOfType(annotation, CodecRegistry.class))
-                .findFirst().isPresent();
-        if (hasCompileTimeCodecRegistry) {
+        if (containsElementsAnnotatedBy(annotations, CodecRegistry.class)) {
             aptUtils.printNote("[Achilles] Parsing compile-time codec registry");
             new CodecRegistryParser(aptUtils).parseCodecs(roundEnv, parsingContext);
         }
@@ -288,7 +279,8 @@ public class AchillesProcessor extends AbstractProcessor {
         return Sets.newHashSet(Table.class.getCanonicalName(),
                 MaterializedView.class.getCanonicalName(),
                 CodecRegistry.class.getCanonicalName(),
-                FunctionRegistry.class.getCanonicalName());
+                FunctionRegistry.class.getCanonicalName(),
+                CompileTimeConfig.class.getCanonicalName());
     }
 
     @Override

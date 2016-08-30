@@ -21,8 +21,6 @@ import static com.squareup.javapoet.TypeName.INT;
 import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.validator.BeanValidator.*;
-import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateCorrectKeysOrder;
 import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 import static java.util.stream.Collectors.toList;
@@ -46,6 +44,7 @@ import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
+import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
@@ -79,30 +78,33 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
             aptUtils.validateTrue(viewBaseClass.isPresent(),"Missing @MaterializedView annotation on entity class '%s'", rawClassTypeName);
         }
 
-        validateIsAConcreteNonFinalClass(aptUtils, elm);
-        validateHasPublicConstructor(aptUtils, rawClassTypeName, elm);
-        validateNoDuplicateNames(aptUtils, rawClassTypeName, fieldMetaSignatures);
-        validateHasPartitionKey(aptUtils, rawClassTypeName, fieldMetaSignatures);
+        final BeanValidator beanValidator = globalParsingContext.beanValidator();
+        final FieldValidator fieldValidator = globalParsingContext.fieldValidator();
 
-        final boolean isCounter = BeanValidator.isCounterTable(aptUtils, rawClassTypeName, fieldMetaSignatures);
+        beanValidator.validateIsAConcreteNonFinalClass(aptUtils, elm);
+        beanValidator.validateHasPublicConstructor(aptUtils, rawClassTypeName, elm);
+        beanValidator.validateNoDuplicateNames(aptUtils, rawClassTypeName, fieldMetaSignatures);
+        beanValidator.validateHasPartitionKey(aptUtils, rawClassTypeName, fieldMetaSignatures);
+
+        final boolean isCounter = beanValidator.isCounterTable(aptUtils, rawClassTypeName, fieldMetaSignatures);
 
         if (entityType == EntityType.TABLE) {
-            validateStaticColumns(aptUtils, rawClassTypeName, fieldMetaSignatures);
+            beanValidator.validateStaticColumns(aptUtils, rawClassTypeName, fieldMetaSignatures);
         } else if (entityType == EntityType.VIEW) {
-            validateNoStaticColumnsForView(aptUtils, rawClassTypeName, fieldMetaSignatures);
+            beanValidator.validateNoStaticColumnsForView(aptUtils, rawClassTypeName, fieldMetaSignatures);
             aptUtils.validateFalse(isCounter, "The class '%s' cannot have counter columns because it is a materialized view", rawClassTypeName);
         }
 
-        validateComputed(aptUtils, rawClassTypeName, fieldMetaSignatures);
-        validateCqlColumnNotReservedWords(aptUtils, rawClassTypeName, fieldMetaSignatures);
+        beanValidator.validateComputed(aptUtils, rawClassTypeName, fieldMetaSignatures);
+        beanValidator.validateCqlColumnNotReservedWords(aptUtils, rawClassTypeName, fieldMetaSignatures);
 
-        validateCorrectKeysOrder(aptUtils, rawClassTypeName, fieldMetaSignatures
+        fieldValidator.validateCorrectKeysOrder(aptUtils, rawClassTypeName, fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.PARTITION)
                 .map(x -> Tuple2.of(x.context.fieldName, (KeyColumnInfo) x.context.columnInfo))
                 .collect(toList()), "@PartitionKey");
 
-        validateCorrectKeysOrder(aptUtils, rawClassTypeName, fieldMetaSignatures
+        fieldValidator.validateCorrectKeysOrder(aptUtils, rawClassTypeName, fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == CLUSTERING)
                 .map(x -> Tuple2.of(x.context.fieldName, (KeyColumnInfo) x.context.columnInfo))

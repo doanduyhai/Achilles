@@ -1,0 +1,4 @@
+Support filtering on non-PRIMARY KEY columns in the CREATE
+   MATERIALIZED VIEW statement's WHERE clause (CASSANDRA-10368)
+
+Add support for GROUP BY to SELECT statement (CASSANDRA-10707)

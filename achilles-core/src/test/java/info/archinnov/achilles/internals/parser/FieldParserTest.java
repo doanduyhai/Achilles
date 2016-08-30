@@ -57,6 +57,7 @@ public class FieldParserTest extends AbstractTestProcessor {
 
     private static final String TUPLE_VALUE_CLASSNAME = "com.datastax.driver.core.TupleValue";
     private final InternalNamingStrategy strategy = new SnakeCaseNaming();
+    private final GlobalParsingContext globalParsingContext = GlobalParsingContext.defaultContext();
 
     @Before
     public void setUp() {
@@ -69,7 +70,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private boolean primitiveBoolean
             VariableElement elm = findFieldInType(typeElement, "primitiveBoolean");
@@ -89,7 +90,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private boolean objectBoolean
             VariableElement elm = findFieldInType(typeElement, "objectBoolean");
@@ -109,7 +110,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private byte[] primitiveByteArray;
             VariableElement elm = findFieldInType(typeElement, "primitiveByteArray");
@@ -129,7 +130,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Byte[] objectByteArray;
             VariableElement elm = findFieldInType(typeElement, "objectByteArray");
@@ -149,7 +150,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // @Enumerated(value = NAME) private ConsistencyLevel consistencyLevel
             VariableElement elm = findFieldInType(typeElement, "consistencyLevel");
@@ -169,7 +170,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private @JSON Date time
             VariableElement elm = findFieldInType(typeElement, "time");
@@ -189,7 +190,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private String value
             VariableElement elm = findFieldInType(typeElement, "value");
@@ -209,7 +210,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // @Codec(IntToStringCodec.class) private Integer okInteger;
             VariableElement elm = findFieldInType(typeElement, "okInteger");
@@ -229,7 +230,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Set<@Enumerated(value = ORDINAL) Double> okSet
             VariableElement elm = findFieldInType(typeElement, "okSet");
@@ -250,7 +251,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // @JSON private Map<@JSON Integer, List<Integer>> jsonMap;
             VariableElement elm = findFieldInType(typeElement, "jsonMap");
@@ -270,7 +271,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Map<Integer, @JSON List<Map<Integer, String>>> mapWithNestedJson;
             VariableElement elm = findFieldInType(typeElement, "mapWithNestedJson");
@@ -290,7 +291,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private List<Map<Integer,String>> listNesting;
             VariableElement elm = findFieldInType(typeElement, "listNesting");
@@ -310,7 +311,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Set<Map<Integer,String>> setNesting;
             VariableElement elm = findFieldInType(typeElement, "setNesting");
@@ -330,7 +331,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Map<Integer,List<String>> mapNesting
             VariableElement elm = findFieldInType(typeElement, "mapNesting");
@@ -350,7 +351,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Tuple2<Integer, List<String>> tupleNesting;
             VariableElement elm = findFieldInType(typeElement, "tupleNesting");
@@ -370,7 +371,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Map<Integer, Tuple2<Integer, String>> nestedTuple;
             VariableElement elm = findFieldInType(typeElement, "nestedTuple");
@@ -390,7 +391,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             /**
              *  @EmptyCollectionIfNull
@@ -417,7 +418,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Tuple1<@JSON ConsistencyLevel> tuple1;
             VariableElement elm = findFieldInType(typeElement, "tuple1");
@@ -437,7 +438,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Tuple2<@JSON ConsistencyLevel, @Codec(IntToStringCodec.class) Integer> tuple2;
             VariableElement elm = findFieldInType(typeElement, "tuple2");
@@ -457,7 +458,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             /*
              private Tuple3<@JSON ConsistencyLevel,@Codec(IntToStringCodec.class) Integer,
@@ -480,7 +481,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             /*
              private Tuple4<@JSON ConsistencyLevel,@Codec(IntToStringCodec.class) Integer,
@@ -503,7 +504,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             /*
              private Tuple5<@JSON ConsistencyLevel,@Codec(IntToStringCodec.class) Integer,
@@ -526,7 +527,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             /*
              private Tuple6<@JSON ConsistencyLevel,@Codec(IntToStringCodec.class) Integer,
@@ -549,7 +550,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             /*
              private Tuple7<@JSON ConsistencyLevel,@Codec(IntToStringCodec.class) Integer,
@@ -572,7 +573,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             /*
              private Tuple8<@JSON ConsistencyLevel,@Codec(IntToStringCodec.class) Integer,
@@ -595,7 +596,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             /*
              private Tuple9<@JSON ConsistencyLevel,@Codec(IntToStringCodec.class) Integer,
@@ -618,7 +619,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             /*
              private Tuple10<@JSON ConsistencyLevel,@Codec(IntToStringCodec.class) Integer,
@@ -641,7 +642,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private TestUDT simpleUdt;
             VariableElement elm = findFieldInType(typeElement, "simpleUdt");
@@ -661,7 +662,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private List<TestUDT> listUdt;
             VariableElement elm = findFieldInType(typeElement, "listUdt");
@@ -681,7 +682,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Set<TestUDT> setUdt;
             VariableElement elm = findFieldInType(typeElement, "setUdt");
@@ -701,7 +702,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Map<Integer, TestUDT> mapUdt;
             VariableElement elm = findFieldInType(typeElement, "mapUdt");
@@ -721,7 +722,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // private Map<@JSON Integer, double[]> mapOfDoubleArray;
             VariableElement elm = findFieldInType(typeElement, "mapOfDoubleArray");
@@ -741,7 +742,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             //  private List<@Frozen Map<@Enumerated ProtocolVersion, List<int[]>>> nestedArrays;
             VariableElement elm = findFieldInType(typeElement, "nestedArrays");
@@ -761,7 +762,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // @Computed(function = "writetime",  alias = "writetime", targettargetColumnsap"}, cqlClass = Long.class)
             // private Long writeTime;
@@ -782,7 +783,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // @Computed(function = "writetime",  alias = "writetime", targettargetColumnsap"}, cqlClass = String.class)
             // @info.archinnov.achilles.annotations.Codec(IntToStringCodec.class)
@@ -804,7 +805,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             //@RuntimeCodec(codecName = "protocol_version", cqlClass = String.class)
             //@Column
@@ -823,7 +824,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_simple_codec_from_registry() throws Exception {
 
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            final GlobalParsingContext globalContext = globalParsingContext;
             new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -851,7 +852,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_json_codec_from_registry() throws Exception {
 
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            final GlobalParsingContext globalContext = globalParsingContext;
             new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -879,7 +880,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_enumerated_codec_from_registry() throws Exception {
 
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            final GlobalParsingContext globalContext = globalParsingContext;
             new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -907,7 +908,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_codec_from_registry() throws Exception {
 
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            final GlobalParsingContext globalContext = globalParsingContext;
             new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -936,7 +937,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_codec_overriding_registry() throws Exception {
 
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            final GlobalParsingContext globalContext = globalParsingContext;
             new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -966,7 +967,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_optional_string() throws Exception {
 
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            final GlobalParsingContext globalContext = globalParsingContext;
             new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -995,7 +996,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_optional_protocol_version_from_codec_registry() throws Exception {
 
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            final GlobalParsingContext globalContext = globalParsingContext;
             new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -1024,7 +1025,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_optional_protocol_version_from_inline_codec() throws Exception {
 
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            final GlobalParsingContext globalContext = globalParsingContext;
             new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -1053,7 +1054,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_parse_list_optional_string() throws Exception {
 
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            final GlobalParsingContext globalContext = globalParsingContext;
             new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -1082,7 +1083,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     public void should_fail_parsing_codec_from_registry() throws Exception {
 
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext();
+            final GlobalParsingContext globalContext = globalParsingContext;
             new CodecRegistryParser(aptUtils).parseCodecs(env, globalContext);
         });
 
@@ -1102,7 +1103,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // @Column("\"overRiden\"")
             // private String overridenName;
@@ -1123,7 +1124,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // @Column
             // private Instant jdkInstant;
@@ -1144,7 +1145,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // @Column
             // private java.time.LocalDate jdkLocalDate;
@@ -1165,7 +1166,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // @Column
             // private java.time.LocalTime jdkLocalTime;
@@ -1186,7 +1187,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, new GlobalParsingContext());
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
 
             // @Column
             // private ZonedDateTime jdkZonedDateTime;

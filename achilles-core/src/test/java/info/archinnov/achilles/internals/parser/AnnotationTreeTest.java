@@ -40,6 +40,7 @@ import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.apt_utils.AptAssertOK;
 import info.archinnov.achilles.internals.parser.context.CodecContext;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForAnnotationTree;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT;
@@ -48,7 +49,8 @@ import info.archinnov.achilles.type.tuples.Tuple3;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AnnotationTreeTest extends AbstractTestProcessor {
-    
+
+    private GlobalParsingContext globalParsingContext = GlobalParsingContext.defaultContext();
     @Test
     public void should_build_annotation_tree_for_map_javac() throws Exception {
 
@@ -65,7 +67,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement mapElt = findFieldByName(typeElement, "map");
 
                 // Map<@JSON @Frozen Integer, ...
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, mapElt);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, mapElt);
                 Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
 
                 assertThat(annotationTree).isNotNull();
@@ -148,7 +150,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement mapElt = findFieldByName(typeElement, "map");
 
                 // Map<@JSON @Frozen Integer, ...
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, mapElt);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, mapElt);
                 Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
 
                 assertThat(annotationTree).isNotNull();
@@ -226,25 +228,25 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement setElm = findFieldByName(typeElement, "set");
 
                 //   @Enumerated(value = Enumerated.Encoding.NAME) private Long id;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, idElm);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, idElm);
                 Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Long.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(Enumerated.class.getSimpleName());
 
                 // private @JSON Date time;
-                annotationTree = AnnotationTree.buildFrom(aptUtils, timeElm);
+                annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, timeElm);
                 annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Date.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(JSON.class.getSimpleName());
 
                 // private List<Integer> list;
-                annotationTree = AnnotationTree.buildFrom(aptUtils, listElm);
+                annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, listElm);
                 annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(List.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).isEmpty();
 
                 // private Set<@Enumerated(value = Enumerated.Encoding.NAME) Double> set;
-                annotationTree = AnnotationTree.buildFrom(aptUtils, setElm);
+                annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, setElm);
                 annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Set.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).isEmpty();
@@ -284,25 +286,25 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement setElm = findFieldByName(typeElement, "set");
 
                 //   @Enumerated(value = Enumerated.Encoding.NAME) private Long id;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, idElm);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, idElm);
                 Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Long.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(Enumerated.class.getSimpleName());
 
                 // private @JSON Date time;
-                annotationTree = AnnotationTree.buildFrom(aptUtils, timeElm);
+                annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, timeElm);
                 annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Date.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(JSON.class.getSimpleName());
 
                 // private List<Integer> list;
-                annotationTree = AnnotationTree.buildFrom(aptUtils, listElm);
+                annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, listElm);
                 annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(List.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).isEmpty();
 
                 // private Set<@Enumerated(value = Enumerated.Encoding.NAME) Double> set;
-                annotationTree = AnnotationTree.buildFrom(aptUtils, setElm);
+                annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, setElm);
                 annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Set.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).isEmpty();
@@ -340,7 +342,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement jsonMap = findFieldByName(typeElement, "jsonMap");
 
                 // @JSON private Map<@JSON Integer, List<Integer>> jsonMap;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, jsonMap);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, jsonMap);
                 Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Map.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(JSON.class.getSimpleName());
@@ -373,7 +375,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement jsonMap = findFieldByName(typeElement, "jsonMap");
 
                 // @JSON private Map<@JSON Integer, List<Integer>> jsonMap;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, jsonMap);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, jsonMap);
                 Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Map.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(JSON.class.getSimpleName());
@@ -407,7 +409,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement mapWithNestedJson = findFieldByName(typeElement, "mapWithNestedJson");
 
                 // private Map<Integer, @JSON List<Map<Integer, String>>> mapWithNestedJson;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, mapWithNestedJson);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, mapWithNestedJson);
                 Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Map.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).isEmpty();
@@ -452,7 +454,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement mapWithNestedJson = findFieldByName(typeElement, "mapWithNestedJson");
 
                 // private Map<Integer, @JSON List<Map<Integer, String>>> mapWithNestedJson;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, mapWithNestedJson);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, mapWithNestedJson);
                 Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Map.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).isEmpty();
@@ -498,7 +500,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement level1NestingElm = findFieldByName(typeElement, "level1Nesting");
 
                 // private List<Map<Integer,String>> level1Nesting;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, level1NestingElm);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, level1NestingElm);
                 Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(List.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).isEmpty();
@@ -547,7 +549,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement level1NestingElm = findFieldByName(typeElement, "level1Nesting");
 
                 // private List<Map<Integer,String>> level1Nesting;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, level1NestingElm);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, level1NestingElm);
                 Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(List.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).isEmpty();
@@ -597,7 +599,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement mapWithCodec = findFieldByName(typeElement, "mapWithCodec");
 
                 // private Map<@Codec(IntToStringCodec.class) Integer, String> mapWithCodec;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, mapWithCodec).next();
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, mapWithCodec).next();
                 final Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Integer.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(Codec.class.getSimpleName());
@@ -632,7 +634,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 final VariableElement mapWithCodec = findFieldByName(typeElement, "mapWithCodec");
 
                 // private Map<@Codec(IntToStringCodec.class) Integer, String> mapWithCodec;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, mapWithCodec).next();
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, mapWithCodec).next();
                 final Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Integer.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(Codec.class.getSimpleName());
@@ -669,7 +671,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
 
                 // @Computed(function = "writetime", alias = "writetime_col", cqlClass = Long.class, targetColumns = {"id", "value"})
                 // private Long writetime;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, writetime);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, writetime);
                 final Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Long.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(Computed.class.getSimpleName());
@@ -706,7 +708,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
 
                 // @Computed(function = "writetime", alias = "writetime_col", cqlClass = Long.class, targetColumns = {"id", "value"})
                 // private Long writetime;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, writetime);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, writetime);
                 final Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(Long.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(Computed.class.getSimpleName());
@@ -744,7 +746,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
 
                 // @ClusteringColumn(value = 2, asc = false)
                 // private UUID clusteringCol;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, clusteringCol);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, clusteringCol);
                 final Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(UUID.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(ClusteringColumn.class.getSimpleName());
@@ -779,7 +781,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
 
                 // @ClusteringColumn(value = 2, asc = false)
                 // private UUID clusteringCol;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, clusteringCol);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, clusteringCol);
                 final Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(UUID.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(ClusteringColumn.class.getSimpleName());
@@ -816,7 +818,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
 
                 // @Frozen
                 // private TestUDT testUdt;
-                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, testUdt);
+                AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, globalParsingContext, testUdt);
                 final Set<String> annotationNames = getAnnotationNames(annotationTree.getAnnotations());
                 assertThat(isTypeOf(TestUDT.class, annotationTree.getCurrentType())).isTrue();
                 assertThat(annotationNames).containsOnly(Frozen.class.getSimpleName());

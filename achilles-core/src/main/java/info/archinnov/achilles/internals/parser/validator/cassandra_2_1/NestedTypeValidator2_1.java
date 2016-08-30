@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.strategy.types_nesting;
+package info.archinnov.achilles.internals.parser.validator.cassandra_2_1;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
 
@@ -31,9 +31,10 @@ import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
+import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
 import info.archinnov.achilles.type.tuples.*;
 
-public class FrozenNestedTypeStrategy implements NestedTypesStrategy {
+public class NestedTypeValidator2_1 implements NestedTypesValidator {
 
     @Override
     public void validate(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {

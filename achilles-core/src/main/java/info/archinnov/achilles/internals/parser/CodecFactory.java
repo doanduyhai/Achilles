@@ -19,10 +19,7 @@ package info.archinnov.achilles.internals.parser;
 import static com.google.auto.common.MoreTypes.asDeclared;
 import static info.archinnov.achilles.internals.apt.AptUtils.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.validator.FieldValidator.validateCodec;
-import static info.archinnov.achilles.internals.parser.validator.TypeValidator.validateAllowedTypes;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.reducing;
 import static java.util.stream.Collectors.toList;
 
 import java.lang.reflect.ParameterizedType;
@@ -44,22 +41,18 @@ import info.archinnov.achilles.annotations.Enumerated.Encoding;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.context.CodecContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.context.RuntimeCodecContext;
-import info.archinnov.achilles.internals.parser.validator.TypeValidator;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 
 public class CodecFactory {
 
-    private final Elements elementUtils;
-    private final Types typeUtils;
     private final AptUtils aptUtils;
 
 
     public CodecFactory(AptUtils aptUtils) {
-        this.elementUtils = aptUtils.elementUtils;
-        this.typeUtils = aptUtils.typeUtils;
         this.aptUtils = aptUtils;
     }
 
@@ -139,12 +132,12 @@ public class CodecFactory {
             targetType = ClassName.get(String.class);
             return new CodecInfo(codec, sourceType, targetType);
         } else if (codecFromType.isPresent()) {
-            final Tuple2<TypeName, CodeBlock> tuple2 = codecCodeGen(codecFromType.get(), sourceType, computedCQLClass, isCounter);
+            final Tuple2<TypeName, CodeBlock> tuple2 = codecCodeGen(context, codecFromType.get(), sourceType, computedCQLClass, isCounter);
             targetType = tuple2._1();
             codec = tuple2._2();
             return new CodecInfo(codec, sourceType, targetType);
         } else if(runtimeCodec.isPresent()) {
-            final Tuple2<TypeName, CodeBlock> tuple2 = runtimeCodecCodeGen(runtimeCodec.get(), computedCQLClass, isCounter);
+            final Tuple2<TypeName, CodeBlock> tuple2 = runtimeCodecCodeGen(context, runtimeCodec.get(), computedCQLClass, isCounter);
             targetType = tuple2._1();
             codec = tuple2._2();
             return new CodecInfo(codec, sourceType, targetType);
@@ -176,15 +169,15 @@ public class CodecFactory {
                             "CQL class '%s' of @Computed field '%s' of class '%s' should be same as field class '%s'",
                             computedCQLClass.get(), fieldName, className, sourceType);
                 }
-                validateAllowedTypes(aptUtils, sourceType, sourceType);
+                context.typeValidator().validateAllowedTypes(aptUtils, sourceType, sourceType);
                 codec = CodeBlock.builder().add("new $T<>($T.class)", FALL_THROUGH_CODEC, getRawType(sourceType).box()).build();
                 return new CodecInfo(codec, sourceType, targetType);
             }
         }
     }
 
-    public TypeName determineTargetCQLType(AnnotationTree annotationTree, TypeName parentType, TypeName sourceType,
-        String methodName, String paramName, Optional<CodecInfo> codecFromRegistry) {
+    public TypeName determineTargetCQLType(GlobalParsingContext context, AnnotationTree annotationTree, TypeName parentType, TypeName sourceType,
+                                           String methodName, String paramName, Optional<CodecInfo> codecFromRegistry) {
         TypeName targetType = sourceType;
         TypeMirror typeMirror = annotationTree.getCurrentType();
 
@@ -202,11 +195,11 @@ public class CodecFactory {
             return ClassName.get(String.class);
         } else if (codecFromType.isPresent()) {
             final CodecContext codecContext = codecFromType.get().getTyped("codecContext");
-            validateCodec(aptUtils, codecContext, sourceType, computedCQLClass, isCounter);
+            context.fieldValidator().validateCodec(aptUtils, codecContext, sourceType, computedCQLClass, isCounter);
             return codecContext.targetType.box();
         } else if(runtimeCodec.isPresent()) {
             final RuntimeCodecContext runtimeCodecContext = runtimeCodec.get().getTyped("runtimeCodecContext");
-            validateCodec(aptUtils, runtimeCodecContext, runtimeCodecContext.sourceType, computedCQLClass, isCounter);
+            context.fieldValidator().validateCodec(aptUtils, runtimeCodecContext, runtimeCodecContext.sourceType, computedCQLClass, isCounter);
             return runtimeCodecContext.targetType.box();
         } else if (enumerated.isPresent()) {
             final TypedMap typedMap = enumerated.get();
@@ -236,30 +229,30 @@ public class CodecFactory {
             if (codecFromRegistry.isPresent()) {
                 return codecFromRegistry.get().targetType.box();
             } else {
-                TypeValidator.validateAllowedTypesForFunction(aptUtils, parentType.toString(), methodName, sourceType);
+                context.typeValidator().validateAllowedTypesForFunction(aptUtils, parentType.toString(), methodName, sourceType);
                 return targetType;
             }
         }
     }
 
-    private Tuple2<TypeName, CodeBlock> codecCodeGen(TypedMap annotationInfo, TypeName sourceType,
+    private Tuple2<TypeName, CodeBlock> codecCodeGen(FieldParsingContext context, TypedMap annotationInfo, TypeName sourceType,
                                                      Optional<TypeName> computedCQLClass, boolean isCounter) {
 
         final CodecContext codecContext = annotationInfo.getTyped("codecContext");
-        validateCodec(aptUtils, codecContext, sourceType, computedCQLClass, isCounter);
+        context.fieldValidator().validateCodec(aptUtils, codecContext, sourceType, computedCQLClass, isCounter);
         CodeBlock codec = CodeBlock.builder().add("new $T()", codecContext.codecType).build();
 
         return new Tuple2<>(codecContext.targetType.box(), codec);
     }
 
-    private Tuple2<TypeName, CodeBlock> runtimeCodecCodeGen(TypedMap annotationInfo,
+    private Tuple2<TypeName, CodeBlock> runtimeCodecCodeGen(FieldParsingContext context, TypedMap annotationInfo,
                                                             Optional<TypeName> computedCQLClass, boolean isCounter) {
 
         final RuntimeCodecContext runtimeCodecContext = annotationInfo.getTyped("runtimeCodecContext");
         final TypeName sourceType = runtimeCodecContext.sourceType;
         final TypeName targetType = runtimeCodecContext.targetType;
 
-        validateCodec(aptUtils, runtimeCodecContext, sourceType, computedCQLClass, isCounter);
+        context.fieldValidator().validateCodec(aptUtils, runtimeCodecContext, sourceType, computedCQLClass, isCounter);
 
         final CodeBlock codecNameCode = runtimeCodecContext.codecName.isPresent()
                  ? CodeBlock.builder().add("$T.<$T>of($S)", OPTIONAL, STRING, runtimeCodecContext.codecName.get()).build()

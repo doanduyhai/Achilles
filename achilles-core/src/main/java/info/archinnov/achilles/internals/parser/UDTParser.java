@@ -18,8 +18,6 @@ package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.validator.BeanValidator.validateHasPublicConstructor;
-import static info.archinnov.achilles.internals.parser.validator.BeanValidator.validateIsAConcreteNonFinalClass;
 
 import java.util.List;
 import javax.lang.model.element.TypeElement;
@@ -36,6 +34,7 @@ import info.archinnov.achilles.internals.codegen.meta.UDTMetaCodeGen;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
 public class UDTParser extends AbstractBeanParser {
 
@@ -52,7 +51,7 @@ public class UDTParser extends AbstractBeanParser {
         final TypeName rawUdtTypeName = getRawType(udtTypeName);
         final TypeElement typeElement = aptUtils.asTypeElement(typeMirror);
 
-        validateUDT(rawUdtTypeName, typeElement);
+        validateUDT(context.entityContext.globalContext, rawUdtTypeName, typeElement);
 
         if (!context.hasProcessedUDT(rawUdtTypeName)) {
             final TypeSpec udtClassPropertyCode = buildUDTClassProperty(typeElement, fieldParser, context.entityContext);
@@ -72,13 +71,13 @@ public class UDTParser extends AbstractBeanParser {
                 udtTypeName, JAVA_DRIVER_UDT_VALUE_TYPE, propertyType, typeCode);
     }
 
-    void validateUDT(TypeName udtTypeName, TypeElement typeElement) {
-        validateIsAConcreteNonFinalClass(aptUtils, typeElement);
+    void validateUDT(GlobalParsingContext context, TypeName udtTypeName, TypeElement typeElement) {
+        context.beanValidator().validateIsAConcreteNonFinalClass(aptUtils, typeElement);
         final boolean isSupportedType = TypeUtils.ALLOWED_TYPES.contains(udtTypeName);
         aptUtils.validateFalse(isSupportedType,
                 "Type '%s' cannot be annotated with '%s' because it is a supported type",
                 udtTypeName, UDT.class.getCanonicalName());
-        validateHasPublicConstructor(aptUtils, udtTypeName, typeElement);
+        context.beanValidator().validateHasPublicConstructor(aptUtils, udtTypeName, typeElement);
     }
 
     TypeSpec buildUDTClassProperty(TypeElement elm, FieldParser fieldParser, EntityParsingContext context) {

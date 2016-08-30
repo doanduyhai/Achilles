@@ -52,7 +52,7 @@ public class CodecRegistryParser extends AbstractBeanParser{
                 final String className = typeElm.getQualifiedName().toString();
                 extractCandidateFields(typeElm, FieldFilter.CODEC_RELATED_ANNOTATIONS).forEach(varElm -> {
                     final TypeName typeName = getRawType(TypeName.get(varElm.asType()));
-                    final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, varElm);
+                    final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils, parsingContext, varElm);
                     final FieldParsingContext fieldParsingContext = FieldParsingContext
                             .forConfig(parsingContext, typeElm, typeName, className, varElm.getSimpleName().toString());
 

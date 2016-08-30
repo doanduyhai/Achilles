@@ -30,6 +30,9 @@ import info.archinnov.achilles.annotations.Enumerated.Encoding;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.parser.CodecFactory;
+import info.archinnov.achilles.internals.parser.validator.BeanValidator;
+import info.archinnov.achilles.internals.parser.validator.FieldValidator;
+import info.archinnov.achilles.internals.parser.validator.TypeValidator;
 import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 
 public class FieldParsingContext {
@@ -127,6 +130,18 @@ public class FieldParsingContext {
 
     public void addUDTMeta(TypeName rawUdtType, TypeSpec typeSpec) {
         entityContext.globalContext.udtTypes.put(rawUdtType, typeSpec);
+    }
+
+    public BeanValidator beanValidator() {
+        return entityContext.globalContext.beanValidator();
+    }
+
+    public TypeValidator typeValidator() {
+        return entityContext.globalContext.typeValidator();
+    }
+
+    public FieldValidator fieldValidator() {
+        return entityContext.globalContext.fieldValidator();
     }
 
     public boolean hasCodecFor(TypeName typeName) {

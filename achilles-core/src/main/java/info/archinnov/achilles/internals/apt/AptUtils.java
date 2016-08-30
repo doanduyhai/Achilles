@@ -18,12 +18,15 @@ package info.archinnov.achilles.internals.apt;
 
 import static com.google.auto.common.MoreTypes.asDeclared;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
+import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -45,6 +48,8 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacElements;
 
+import info.archinnov.achilles.annotations.CodecRegistry;
+import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
@@ -119,6 +124,17 @@ public class AptUtils {
                 .findAny().isPresent();
     }
 
+    public static long countElementsAnnotatedBy(Set<? extends TypeElement> typeElements, Class<? extends Annotation> annotationClass) {
+        return typeElements
+                .stream()
+                .filter(annotation -> isAnnotationOfType(annotation, annotationClass))
+                .count();
+    }
+
+    public static boolean containsElementsAnnotatedBy(Set<? extends TypeElement> typeElements, Class<? extends Annotation> annotationClass) {
+        return countElementsAnnotatedBy(typeElements, annotationClass) > 0;
+    }
+
     public static boolean containsAnnotation(AnnotationTree annotationTree, Class<? extends Annotation> annotationClass) {
         return annotationTree
                 .getAnnotations()
@@ -126,6 +142,21 @@ public class AptUtils {
                 .stream()
                 .filter(x -> x.equals(annotationClass))
                 .findAny().isPresent();
+    }
+
+    public static List<TypeElement> getTypesAnnotatedBy(Set<? extends TypeElement> annotatedTypes,
+        RoundEnvironment roundEnv, Class<? extends  Annotation> annotationClass) {
+        return getTypesAnnotatedByAsStream(annotatedTypes, roundEnv, annotationClass)
+                .collect(toList());
+    }
+
+    public static Stream<TypeElement> getTypesAnnotatedByAsStream(Set<? extends TypeElement> annotatedTypes,
+                                                                  RoundEnvironment roundEnv, Class<? extends  Annotation> annotationClass) {
+        return annotatedTypes
+                .stream()
+                .filter(annotation -> isAnnotationOfType(annotation, annotationClass))
+                .flatMap(annotation -> roundEnv.getElementsAnnotatedWith(annotationClass).stream())
+                .map(MoreElements::asType);
     }
 
     public static Optional<TypedMap> extractTypedMap(AnnotationTree annotationTree, Class<? extends Annotation> annotationClass) {

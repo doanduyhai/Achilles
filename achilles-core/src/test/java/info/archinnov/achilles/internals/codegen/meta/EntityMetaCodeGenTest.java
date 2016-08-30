@@ -17,12 +17,10 @@
 package info.archinnov.achilles.internals.codegen.meta;
 
 import static info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer.getTypeParsingResults;
-import static info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter.IMPLICIT_ENTITY_FIELD_FILTER;
-import static info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter.IMPLICIT_UDT_FIELD_FILTER;
 import static info.archinnov.achilles.type.strategy.InsertStrategy.ALL_FIELDS;
-import static info.archinnov.achilles.type.strategy.NamingStrategy.SNAKE_CASE;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.rmi.Naming;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 
@@ -33,6 +31,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
+import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
 import info.archinnov.achilles.internals.parser.FieldParser;
@@ -42,13 +41,16 @@ import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewCoun
 import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorByType;
 import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewStatic;
 import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewWithEntityAnnotation;
-import info.archinnov.achilles.internals.strategy.types_nesting.FrozenNestedTypeStrategy;
+import info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter;
+import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
+import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
+import info.archinnov.achilles.type.strategy.InsertStrategy;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMetaCodeGenTest extends AbstractTestProcessor
         implements TypeParsingResultConsumer {
 
-    private static final GlobalParsingContext context = new GlobalParsingContext();
+    private static final GlobalParsingContext context = GlobalParsingContext.defaultContext();
 
     @Test
     public void should_build_entity_with_simple_partition_key() throws Exception {
@@ -248,12 +250,13 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final String className = TestEntityWithImplicitFieldParsing.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
-            final GlobalParsingContext context = new GlobalParsingContext(ALL_FIELDS, SNAKE_CASE,
-                    IMPLICIT_ENTITY_FIELD_FILTER, IMPLICIT_UDT_FIELD_FILTER, new FrozenNestedTypeStrategy());
+            GlobalParsingContext globalParsingContext = new GlobalParsingContext(InternalCassandraVersion.V3_0,
+                    InsertStrategy.ALL_FIELDS, new SnakeCaseNaming(), FieldFilter.IMPLICIT_ENTITY_FIELD_FILTER,
+                    FieldFilter.IMPLICIT_UDT_FIELD_FILTER);
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, globalParsingContext);
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, globalParsingContext, parsingResults).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_implicit_field_parsing.txt"));
