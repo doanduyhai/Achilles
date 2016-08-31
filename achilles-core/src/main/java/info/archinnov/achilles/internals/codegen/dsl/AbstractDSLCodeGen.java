@@ -38,21 +38,22 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 import info.archinnov.achilles.type.tuples.Tuple4;
 
 
-public abstract class AbstractDSLCodeGen {
+public interface AbstractDSLCodeGen {
 
-    protected static final String EQ = "eq";
-    protected static final String GT = "gt";
-    protected static final String GTE = "gte";
-    protected static final String LT = "lt";
-    protected static final String LTE = "lte";
-    public static Comparator<Tuple2<String, PartitionKeyInfo>> TUPLE2_PARTITION_KEY_SORTER =
+    String EQ = "eq";
+    String GT = "gt";
+    String GTE = "gte";
+    String LT = "lt";
+    String LTE = "lte";
+
+    Comparator<Tuple2<String, PartitionKeyInfo>> TUPLE2_PARTITION_KEY_SORTER =
             (o1, o2) -> o1._2().order.compareTo(o2._2().order);
-    public static Comparator<Tuple4<String, String, TypeName, PartitionKeyInfo>> TUPLE4_PARTITION_KEY_SORTER =
+    Comparator<Tuple4<String, String, TypeName, PartitionKeyInfo>> TUPLE4_PARTITION_KEY_SORTER =
             (o1, o2) -> o1._4().order.compareTo(o2._4().order);
-    public static Comparator<Tuple4<String, String, TypeName, ClusteringColumnInfo>> TUPLE4_CLUSTERING_COLUMN_SORTER =
+    Comparator<Tuple4<String, String, TypeName, ClusteringColumnInfo>> TUPLE4_CLUSTERING_COLUMN_SORTER =
             (o1, o2) -> o1._4().order.compareTo(o2._4().order);
 
-    protected static List<ClassSignatureInfo> buildClassesSignatureForWhereClause(EntityMetaSignature signature,
+    static List<ClassSignatureInfo> buildClassesSignatureForWhereClause(EntityMetaSignature signature,
                                                                                   ClassSignatureParams classSignatureParams,
                                                                                   List<FieldSignatureInfo> partitionKeys,
                                                                                   List<FieldSignatureInfo> clusteringColumns,
@@ -94,7 +95,7 @@ public abstract class AbstractDSLCodeGen {
         return signatures;
     }
 
-    protected static MethodSpec buildWhereConstructor(TypeName whereType) {
+    default MethodSpec buildWhereConstructor(TypeName whereType) {
         return MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(whereType, "where")
@@ -103,7 +104,7 @@ public abstract class AbstractDSLCodeGen {
 
     }
 
-    protected static MethodSpec buildColumnRelation(String relation, TypeName nextType, FieldSignatureInfo fieldInfo) {
+    default MethodSpec buildColumnRelation(String relation, TypeName nextType, FieldSignatureInfo fieldInfo) {
         final String methodName = fieldInfo.fieldName + "_" + upperCaseFirst(relation);
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fieldInfo.quotedCqlColumn, relationToSymbolForJavaDoc(relation))
@@ -119,7 +120,7 @@ public abstract class AbstractDSLCodeGen {
         return builder.addStatement("return new $T(where)", nextType).build();
     }
 
-    protected static MethodSpec buildColumnInVarargs(TypeName nextType, FieldSignatureInfo fieldInfo) {
+    default MethodSpec buildColumnInVarargs(TypeName nextType, FieldSignatureInfo fieldInfo) {
         final String methodName = fieldInfo.fieldName + "_IN";
         final String param = fieldInfo.fieldName;
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
@@ -141,7 +142,7 @@ public abstract class AbstractDSLCodeGen {
         return builder.addStatement("return new $T(where)", nextType).build();
     }
 
-    protected static MethodSpec buildGetThis(TypeName currentType) {
+    static MethodSpec buildGetThis(TypeName currentType) {
         return MethodSpec
                 .methodBuilder("getThis")
                 .addAnnotation(Override.class)
@@ -151,7 +152,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static MethodSpec buildGetMetaInternal(TypeName currentType) {
+    default MethodSpec buildGetMetaInternal(TypeName currentType) {
 
         return MethodSpec
                 .methodBuilder("getMetaInternal")
@@ -162,7 +163,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static MethodSpec buildGetEntityClass(EntityMetaSignature signature) {
+    default MethodSpec buildGetEntityClass(EntityMetaSignature signature) {
         return MethodSpec
                 .methodBuilder("getEntityClass")
                 .addAnnotation(Override.class)
@@ -172,7 +173,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static MethodSpec buildGetRte() {
+    default MethodSpec buildGetRte() {
         return MethodSpec
                 .methodBuilder("getRte")
                 .addAnnotation(Override.class)
@@ -182,7 +183,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static MethodSpec buildGetOptions() {
+    default MethodSpec buildGetOptions() {
         return MethodSpec
                 .methodBuilder("getOptions")
                 .addAnnotation(Override.class)
@@ -192,7 +193,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static MethodSpec buildGetBoundValuesInternal() {
+    default MethodSpec buildGetBoundValuesInternal() {
         return MethodSpec
                 .methodBuilder("getBoundValuesInternal")
                 .addAnnotation(Override.class)
@@ -202,7 +203,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static MethodSpec buildGetEncodedBoundValuesInternal() {
+    default MethodSpec buildGetEncodedBoundValuesInternal() {
         return MethodSpec
                 .methodBuilder("getEncodedValuesInternal")
                 .addAnnotation(Override.class)
@@ -212,7 +213,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static boolean hasCounter(EntityMetaSignature signature) {
+    default boolean hasCounter(EntityMetaSignature signature) {
         return signature
                 .fieldMetaSignatures
                 .stream()
@@ -220,19 +221,19 @@ public abstract class AbstractDSLCodeGen {
                 .count() > 0;
     }
 
-    protected static FieldSpec buildExactEntityMetaField(EntityMetaSignature signature) {
+    default FieldSpec buildExactEntityMetaField(EntityMetaSignature signature) {
         String entityMetaClassName = signature.className + META_SUFFIX;
         TypeName entityMetaExactType = ClassName.get(ENTITY_META_PACKAGE, entityMetaClassName);
         return FieldSpec.builder(entityMetaExactType, "meta", Modifier.FINAL, Modifier.PROTECTED).build();
     }
 
-    protected static FieldSpec buildEntityClassField(EntityMetaSignature signature) {
+    default FieldSpec buildEntityClassField(EntityMetaSignature signature) {
         return FieldSpec.builder(classTypeOf(signature.entityRawClass), "entityClass", Modifier.FINAL, Modifier.PROTECTED)
                 .initializer("$T.class", signature.entityRawClass)
                 .build();
     }
 
-    protected static MethodSpec buildAllColumns(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
+    static MethodSpec buildAllColumns(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
         return MethodSpec.methodBuilder("allColumns_FromBaseTable")
                 .addJavadoc("Generate ... * FROM ...")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -243,7 +244,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static MethodSpec buildAllColumnsWithSchemaProvider(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
+    static MethodSpec buildAllColumnsWithSchemaProvider(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
         return MethodSpec.methodBuilder("allColumns_From")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addJavadoc("Generate ... * FROM ... using the given SchemaNameProvider")
@@ -256,7 +257,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static MethodSpec buildFrom(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
+    static MethodSpec buildFrom(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
         return MethodSpec.methodBuilder("fromBaseTable")
                 .addJavadoc("Generate a ... <strong>FROM xxx</strong> ... ")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -267,7 +268,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static MethodSpec buildFromWithSchemaProvider(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
+    static MethodSpec buildFromWithSchemaProvider(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
         return MethodSpec.methodBuilder("from")
                 .addJavadoc("Generate a ... <strong>FROM xxx</strong> ... using the given SchemaNameProvider")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -280,7 +281,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    protected static List<FieldSignatureInfo> getPartitionKeysSignatureInfo(List<FieldMetaSignature> parsingResults) {
+    default List<FieldSignatureInfo> getPartitionKeysSignatureInfo(List<FieldMetaSignature> parsingResults) {
         return new ArrayList<>(parsingResults
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.PARTITION)
@@ -290,7 +291,7 @@ public abstract class AbstractDSLCodeGen {
                 .collect(toList()));
     }
 
-    protected static List<FieldSignatureInfo> getClusteringColsSignatureInfo(List<FieldMetaSignature> parsingResults) {
+    default List<FieldSignatureInfo> getClusteringColsSignatureInfo(List<FieldMetaSignature> parsingResults) {
         return new ArrayList<>(parsingResults
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.CLUSTERING)
@@ -300,7 +301,7 @@ public abstract class AbstractDSLCodeGen {
                 .collect(toList()));
     }
 
-    protected static void buildLWtConditionMethods(EntityMetaSignature signature, ClassSignatureInfo currentSignature, boolean hasCounter, TypeSpec.Builder builder) {
+    default void buildLWtConditionMethods(EntityMetaSignature signature, ClassSignatureInfo currentSignature, boolean hasCounter, TypeSpec.Builder builder) {
         if (!hasCounter) {
             signature.fieldMetaSignatures.stream()
                     .filter(x -> x.context.columnType == ColumnType.NORMAL || x.context.columnType == ColumnType.STATIC)
@@ -317,7 +318,7 @@ public abstract class AbstractDSLCodeGen {
         }
     }
 
-    private static MethodSpec buildLWTConditionOnColumn(String relation, FieldSignatureInfo fieldSignatureInfo, TypeName currentType) {
+    default MethodSpec buildLWTConditionOnColumn(String relation, FieldSignatureInfo fieldSignatureInfo, TypeName currentType) {
         String methodName = "if" + upperCaseFirst(fieldSignatureInfo.fieldName) + "_" + upperCaseFirst(relation);
         return MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate an ... <strong>IF $L $L ?</strong>", fieldSignatureInfo.fieldName, relationToSymbolForJavaDoc(relation))
@@ -334,7 +335,7 @@ public abstract class AbstractDSLCodeGen {
 
     }
 
-    private static MethodSpec buildLWTNotEqual(FieldSignatureInfo fieldSignatureInfo, TypeName currentType) {
+    default MethodSpec buildLWTNotEqual(FieldSignatureInfo fieldSignatureInfo, TypeName currentType) {
         String methodName = "if" + upperCaseFirst(fieldSignatureInfo.fieldName) + "_NotEq";
         return MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate an  ... <strong>IF $L != ?</strong>", fieldSignatureInfo.fieldName)
@@ -351,7 +352,7 @@ public abstract class AbstractDSLCodeGen {
 
     }
 
-    protected static String relationToSymbolForJavaDoc(String relation) {
+    default String relationToSymbolForJavaDoc(String relation) {
         switch (relation) {
             case EQ:
                 return "=";
@@ -369,21 +370,21 @@ public abstract class AbstractDSLCodeGen {
         }
     }
 
-    protected static String formatColumnTuplesForJavadoc(String columnTuples) {
+    default String formatColumnTuplesForJavadoc(String columnTuples) {
         return "(" + columnTuples.replaceAll("\"","") + ")";
     }
 
-    public enum ReturnType {
+    enum ReturnType {
         NEW,
         THIS
     }
 
-    public enum WhereClauseFor {
+    enum WhereClauseFor {
         STATIC,
         NORMAL
     }
 
-    public static class FieldSignatureInfo {
+    class FieldSignatureInfo {
         public final String fieldName;
         public final String cqlColumn;
         public final String quotedCqlColumn;
@@ -401,7 +402,7 @@ public abstract class AbstractDSLCodeGen {
         }
     }
 
-    public static class ClassSignatureInfo {
+    class ClassSignatureInfo {
         public final TypeName classType;
         public final TypeName returnClassType;
         public final TypeName superType;
@@ -420,7 +421,7 @@ public abstract class AbstractDSLCodeGen {
         }
     }
 
-    public static class ClassSignatureParams {
+    class ClassSignatureParams {
         public final String dslSuffix;
         public final String whereDslSuffix;
         public final String endDslSuffix;

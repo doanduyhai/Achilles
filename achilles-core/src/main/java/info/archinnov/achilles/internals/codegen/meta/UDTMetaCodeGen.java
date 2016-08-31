@@ -37,7 +37,7 @@ import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 
-public class UDTMetaCodeGen extends AbstractBeanMetaCodeGen {
+public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
 
     private final AptUtils aptUtils;
 

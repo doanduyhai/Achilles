@@ -21,7 +21,6 @@ import static info.archinnov.achilles.internals.cassandra_version.CassandraFeatu
 import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDF_UDA;
 import static info.archinnov.achilles.internals.metamodel.functions.InternalSystemFunctionRegistry.SYSTEM_FUNCTIONS;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -39,10 +38,8 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FileUtils;
 
-import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Sets;
 import com.squareup.javapoet.JavaFile;
@@ -100,7 +97,9 @@ public class AchillesProcessor extends AbstractProcessor {
 
                 final List<EntityMetaSignature> tableAndViewSignatures = discoverAndValidateTablesAndViews(annotations, roundEnv, parsingContext);
 
-                final FunctionsContext udfContext = parseAndValidateFunctionRegistry(parsingContext, annotations, roundEnv, tableAndViewSignatures);
+                final FunctionsContext udfContext = parsingContext.supportsFeature(UDF_UDA)
+                    ? parseAndValidateFunctionRegistry(parsingContext, annotations, roundEnv, tableAndViewSignatures)
+                    : FunctionsContext.noFunction();
 
                 final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance();
 
@@ -126,9 +125,11 @@ public class AchillesProcessor extends AbstractProcessor {
                 JavaFile.builder(FUNCTION_PACKAGE, FunctionsRegistryCodeGen.generateFunctionsRegistryClass(SYSTEM_FUNCTIONS_CLASS,
                         SYSTEM_FUNCTIONS)).build().writeTo(aptUtils.filer);
 
-                aptUtils.printNote("[Achilles] Generating FunctionsRegistry");
-                JavaFile.builder(FUNCTION_PACKAGE, FunctionsRegistryCodeGen.generateFunctionsRegistryClass(FUNCTIONS_REGISTRY_CLASS,
-                        udfContext.functionSignatures)).build().writeTo(aptUtils.filer);
+                if (parsingContext.supportsFeature(UDF_UDA)) {
+                    aptUtils.printNote("[Achilles] Generating FunctionsRegistry");
+                    JavaFile.builder(FUNCTION_PACKAGE, FunctionsRegistryCodeGen.generateFunctionsRegistryClass(FUNCTIONS_REGISTRY_CLASS,
+                            udfContext.functionSignatures)).build().writeTo(aptUtils.filer);
+                }
 
 
                 aptUtils.printNote("[Achilles] Generating ManagerFactoryBuilder");
@@ -191,19 +192,21 @@ public class AchillesProcessor extends AbstractProcessor {
 
     private void validateCassandraVersionAgainstUsedAnnotations(Set<? extends TypeElement> annotations, GlobalParsingContext parsingContext) {
         final InternalCassandraVersion version = parsingContext.cassandraVersion;
-        if (containsElementsAnnotatedBy(annotations, FunctionRegistry.class) && !version.supportsFeature(UDF_UDA)) {
-            aptUtils.printError(format("Cassandra version %s does not support feature %s so @FunctionRegistry cannot be used", version.name(), UDF_UDA.name()));
-        }
+        aptUtils.validateFalse(containsElementsAnnotatedBy(annotations, FunctionRegistry.class)
+                && !version.supportsFeature(UDF_UDA),
+                "Cassandra version %s does not support feature %s so @FunctionRegistry cannot be used",
+                version.name(), UDF_UDA.name());
 
-        if (containsElementsAnnotatedBy(annotations, MaterializedView.class) && !version.supportsFeature(MATERIALIZED_VIEW)) {
-            aptUtils.printError(format("Cassandra version %s does not support feature %s so @MaterializedView cannot be used", version.name(), MATERIALIZED_VIEW.name()));
-        }
+        aptUtils.validateFalse(containsElementsAnnotatedBy(annotations, MaterializedView.class)
+                && !version.supportsFeature(MATERIALIZED_VIEW),
+                "Cassandra version %s does not support feature %s so @MaterializedView cannot be used",
+                version.name(), MATERIALIZED_VIEW.name());
     }
 
     private GlobalParsingContext initGlobalParsingContext(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        if (countElementsAnnotatedBy(annotations, CompileTimeConfig.class) > 1L) {
-            aptUtils.printError(format("Cannot declare more than one @%s in a single compilation unit", CompileTimeConfig.class.getSimpleName()));
-        }
+        aptUtils.validateFalse(countElementsAnnotatedBy(annotations, CompileTimeConfig.class) > 1L,
+                "Cannot declare more than one @%s in a single compilation unit",
+                CompileTimeConfig.class.getSimpleName());
 
         return getTypesAnnotatedByAsStream(annotations, roundEnv, CompileTimeConfig.class)
                 .map(typeElement -> aptUtils.getAnnotationOnClass(typeElement, CompileTimeConfig.class).get())
@@ -253,10 +256,12 @@ public class AchillesProcessor extends AbstractProcessor {
                 .map(x -> entityParser.parseEntity(x, parsingContext))
                 .collect(toList());
 
-        final List<EntityMetaSignature> viewSignatures = viewTypes
-                .stream()
-                .map(x -> entityParser.parseView(x, parsingContext))
-                .collect(toList());
+        final List<EntityMetaSignature> viewSignatures = parsingContext.supportsFeature(MATERIALIZED_VIEW)
+                ? viewTypes
+                    .stream()
+                    .map(x -> entityParser.parseView(x, parsingContext))
+                    .collect(toList())
+                : Collections.EMPTY_LIST;
 
         final List<EntityMetaSignature> tableAndViewSignatures = CollectionsHelper.appendAll(tableSignatures, viewSignatures);
 

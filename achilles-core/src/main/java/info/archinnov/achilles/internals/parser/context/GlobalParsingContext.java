@@ -35,6 +35,12 @@ import com.squareup.javapoet.TypeSpec;
 import info.archinnov.achilles.annotations.CompileTimeConfig;
 import info.archinnov.achilles.internals.cassandra_version.CassandraFeature;
 import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
+import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
 import info.archinnov.achilles.internals.parser.CodecFactory.CodecInfo;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
@@ -106,6 +112,30 @@ public class GlobalParsingContext {
 
     public NestedTypesValidator nestedTypesValidator() {
         return cassandraVersion.nestedTypesValidator();
+    }
+
+    public SelectDSLCodeGen selectDSLCodeGen() {
+        return cassandraVersion.selectDslCodeGen();
+    }
+
+    public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
+        return cassandraVersion.selectWhereDSLCodeGen();
+    }
+
+    public UpdateDSLCodeGen updateDSLCodeGen() {
+        return cassandraVersion.updateDslCodeGen();
+    }
+
+    public UpdateWhereDSLCodeGen updateWhereDSLCodeGen() {
+        return cassandraVersion.updateWhereDslCodeGen();
+    }
+
+    public DeleteDSLCodeGen deleteDSLCodeGen() {
+        return cassandraVersion.deleteDslCodeGen();
+    }
+
+    public DeleteWhereDSLCodeGen deleteWhereDSLCodeGen() {
+        return cassandraVersion.deleteWhereDslCodeGen();
     }
 
     public boolean supportsFeature(CassandraFeature feature) {

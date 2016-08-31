@@ -127,13 +127,7 @@ public interface BeanValidator {
     }
 
     default void validateNoStaticColumnsForView(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
-        final boolean hasStatic = parsingResults
-                .stream()
-                .filter(x -> (x.context.columnType == ColumnType.STATIC || x.context.columnType == ColumnType.STATIC_COUNTER))
-                .count() > 0;
-
-
-        aptUtils.validateFalse(hasStatic, "The class '%s' cannot have static columns because it is a materialized view", rawClassType);
+        // No op
     }
 
     default void validateHasPartitionKey(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {

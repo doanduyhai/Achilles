@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.delete;
 
+import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import java.util.ArrayList;
@@ -29,9 +30,9 @@ import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 
 
-public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
+public interface DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
 
-    public static List<TypeSpec> buildWhereClasses(EntityMetaSignature signature) {
+    default List<TypeSpec> buildWhereClasses(EntityMetaSignature signature) {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
@@ -59,7 +60,7 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         return partitionKeysWhereClasses;
     }
 
-    public static List<TypeSpec> buildWhereClassesForStatic(EntityMetaSignature signature) {
+    default List<TypeSpec> buildWhereClassesForStatic(EntityMetaSignature signature) {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(DELETE_STATIC_DSL_SUFFIX,
@@ -82,7 +83,7 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
     }
 
 
-    private static TypeSpec buildDeleteEndClass(EntityMetaSignature signature,
+    default TypeSpec buildDeleteEndClass(EntityMetaSignature signature,
                                                 ClassSignatureInfo lastSignature,
                                                 boolean hasCounter) {
 
@@ -104,7 +105,7 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    private static List<TypeSpec> buildWhereClassesForPartitionKeys(List<FieldSignatureInfo> partitionKeys,
+    default List<TypeSpec> buildWhereClassesForPartitionKeys(List<FieldSignatureInfo> partitionKeys,
                                                                     List<ClassSignatureInfo> classesSignature,
                                                                     boolean hasClusterings) {
         if (partitionKeys.isEmpty()) {
@@ -128,7 +129,7 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         }
     }
 
-    private static TypeSpec buildDeleteWhereForPartitionKey(FieldSignatureInfo partitionInfo,
+    default TypeSpec buildDeleteWhereForPartitionKey(FieldSignatureInfo partitionInfo,
                                                             ClassSignatureInfo classSignature,
                                                             ClassSignatureInfo nextSignature,
                                                             boolean hasClusterings) {
@@ -147,7 +148,7 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
     }
 
 
-    private static List<TypeSpec> buildWhereClassesForClusteringColumns(List<FieldSignatureInfo> clusteringCols,
+    default List<TypeSpec> buildWhereClassesForClusteringColumns(List<FieldSignatureInfo> clusteringCols,
                                                                         List<ClassSignatureInfo> classesSignature) {
         if (clusteringCols.isEmpty()) {
             return new ArrayList<>();
@@ -165,7 +166,7 @@ public class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         }
     }
 
-    private static TypeSpec buildDeleteWhereForClusteringColumn(FieldSignatureInfo clusteringColumnInfo,
+    default TypeSpec buildDeleteWhereForClusteringColumn(FieldSignatureInfo clusteringColumnInfo,
                                                                 ClassSignatureInfo classSignature,
                                                                 ClassSignatureInfo nextSignature) {
 

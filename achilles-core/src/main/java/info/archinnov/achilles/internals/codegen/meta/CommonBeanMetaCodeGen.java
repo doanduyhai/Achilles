@@ -27,9 +27,9 @@ import com.squareup.javapoet.MethodSpec;
 import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 
-public abstract class AbstractBeanMetaCodeGen {
+public interface CommonBeanMetaCodeGen {
 
-    protected MethodSpec buildGetStaticNamingStrategy(Optional<Strategy> strategy) {
+    default MethodSpec buildGetStaticNamingStrategy(Optional<Strategy> strategy) {
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("getStaticNamingStrategy")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
@@ -45,7 +45,7 @@ public abstract class AbstractBeanMetaCodeGen {
         }
     }
 
-    protected MethodSpec emptyOption(MethodSpec.Builder builder) {
+    default MethodSpec emptyOption(MethodSpec.Builder builder) {
         return builder
                 .addStatement("return $T.empty()", OPTIONAL)
                 .build();

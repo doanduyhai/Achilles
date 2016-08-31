@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.update;
 
+import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
@@ -35,13 +36,12 @@ import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
+public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
-
-    public static Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
+    Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
             (o1, o2) -> o1._2().order.compareTo(o2._2().order);
 
-    public static TypeSpec buildUpdateClass(AptUtils aptUtils, EntityMetaSignature signature) {
+    default TypeSpec buildUpdateClass(AptUtils aptUtils, EntityMetaSignature signature, UpdateWhereDSLCodeGen updateWhereDSLCodeGen) {
 
         final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
@@ -75,12 +75,12 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                         updateColumnsTypeName, candidateColumns));
 
 
-        UpdateWhereDSLCodeGen.buildWhereClasses(signature).forEach(builder::addType);
+        updateWhereDSLCodeGen.buildWhereClasses(signature).forEach(builder::addType);
 
         return builder.build();
     }
 
-    public static TypeSpec buildUpdateStaticClass(AptUtils aptUtils, EntityMetaSignature signature) {
+    default TypeSpec buildUpdateStaticClass(AptUtils aptUtils, EntityMetaSignature signature, UpdateWhereDSLCodeGen updateWhereDSLCodeGen) {
 
         final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
@@ -113,12 +113,12 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                         updateStaticColumnsTypeName, candidateColumns));
 
 
-        UpdateWhereDSLCodeGen.buildWhereClassesForStatic(signature).forEach(builder::addType);
+        updateWhereDSLCodeGen.buildWhereClassesForStatic(signature).forEach(builder::addType);
 
         return builder.build();
     }
 
-    private static MethodSpec buildUpdateConstructor(EntityMetaSignature signature) {
+    default MethodSpec buildUpdateConstructor(EntityMetaSignature signature) {
         String metaClassName = signature.className + META_SUFFIX;
         TypeName metaClassType = ClassName.get(ENTITY_META_PACKAGE, metaClassName);
 
@@ -132,7 +132,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
     }
 
-    private static MethodSpec buildFromSchemaProviderMethod(TypeName updateFromTypeName) {
+    default MethodSpec buildFromSchemaProviderMethod(TypeName updateFromTypeName) {
         return MethodSpec.methodBuilder("from")
                 .addJavadoc("Generate an UPDATE <strong>FROM</strong> ... using the given SchemaNameProvider")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -145,7 +145,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .build();
     }
 
-    private static MethodSpec buildFromBaseTableMethod(TypeName updateFromTypeName) {
+    default MethodSpec buildFromBaseTableMethod(TypeName updateFromTypeName) {
         return MethodSpec.methodBuilder("fromBaseTable")
                 .addJavadoc("Generate an UPDATE <strong>FROM</strong> ...")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -157,7 +157,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .build();
     }
 
-    private static TypeSpec buildUpdateFrom(AptUtils aptUtils, EntityMetaSignature signature,
+    default TypeSpec buildUpdateFrom(AptUtils aptUtils, EntityMetaSignature signature,
                                             String updateFromClassName,
                                             TypeName updateColumnsTypeName,
                                             List<ColumnType> candidateColumns) {
@@ -180,7 +180,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    private static TypeSpec buildUpdateColumns(AptUtils aptUtils, EntityMetaSignature signature,
+    default TypeSpec buildUpdateColumns(AptUtils aptUtils, EntityMetaSignature signature,
                                                String updateColumnsClassName,
                                                TypeName updateColumnsTypeName,
                                                TypeName updateWhereTypeName,
@@ -211,7 +211,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
     }
 
-    private static List<MethodSpec> buildUpdateColumnMethods(AptUtils aptUtils,
+    default List<MethodSpec> buildUpdateColumnMethods(AptUtils aptUtils,
                                                              TypeName nextTypeName,
                                                              FieldMetaSignature parsingResult,
                                                              ReturnType returnType) {
@@ -235,7 +235,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
     }
 
-    private static MethodSpec buildMethodForSimpleUpdate(TypeName newTypeName, FieldMetaSignature parsingResult,
+    default MethodSpec buildMethodForSimpleUpdate(TypeName newTypeName, FieldMetaSignature parsingResult,
                                                          ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String cqlColumn = parsingResult.context.quotedCqlColumn;
@@ -261,7 +261,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         return builder.returns(newTypeName).build();
     }
 
-    private static List<MethodSpec> buildMethodsForListUpdate(AptUtils aptUtils, TypeName newTypeName,
+    default List<MethodSpec> buildMethodsForListUpdate(AptUtils aptUtils, TypeName newTypeName,
                                                               FieldMetaSignature parsingResult,
                                                               ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
@@ -407,7 +407,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         return updateMethods;
     }
 
-    private static List<MethodSpec> buildMethodsForSetUpdate(AptUtils aptUtils, TypeName newTypeName,
+    default List<MethodSpec> buildMethodsForSetUpdate(AptUtils aptUtils, TypeName newTypeName,
                                                              FieldMetaSignature parsingResult,
                                                              ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
@@ -495,7 +495,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         return updateMethods;
     }
 
-    private static List<MethodSpec> buildMethodsForMapUpdate(AptUtils aptUtils, TypeName newTypeName,
+    default List<MethodSpec> buildMethodsForMapUpdate(AptUtils aptUtils, TypeName newTypeName,
                                                              FieldMetaSignature parsingResult,
                                                              ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
@@ -575,7 +575,7 @@ public class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         return updateMethods;
     }
 
-    private static List<MethodSpec> buildMethodsForCounterUpdate(TypeName newTypeName,
+    default List<MethodSpec> buildMethodsForCounterUpdate(TypeName newTypeName,
                                                                  FieldMetaSignature parsingResult,
                                                                  ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;

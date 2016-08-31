@@ -17,13 +17,11 @@
 package info.archinnov.achilles.internals.codegen;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
@@ -49,7 +47,7 @@ public class ManagerFactoryCodeGen {
 
         for(EntityMetaSignature x: signatures) {
             TypeName managerType = ClassName.get(MANAGER_PACKAGE, x.className + MANAGER_SUFFIX);
-            final ManagerAndDSLClasses managerAndDSLClasses = ManagerCodeGen.buildManager(aptUtils, x);
+            final ManagerAndDSLClasses managerAndDSLClasses = ManagerCodeGen.buildManager(parsingContext, aptUtils, x);
             managerClasses.add(managerAndDSLClasses.managerClass);
             dslClasses.addAll(managerAndDSLClasses.dslClasses);
             final FieldSpec entityPropertyMeta = FieldSpec

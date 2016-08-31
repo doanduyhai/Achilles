@@ -28,13 +28,11 @@ import javax.lang.model.element.Modifier;
 import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.apt.AptUtils;
-import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteDSLCodeGen;
-import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
-import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.TypeUtils;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.type.tuples.Tuple3;
 
 public class ManagerCodeGen {
@@ -44,7 +42,7 @@ public class ManagerCodeGen {
     public static final Comparator<Tuple3<String, TypeName, ClusteringColumnInfo>> CLUSTERING_COLUMN_SORTER =
             (o1, o2) -> o1._3().order.compareTo(o2._3().order);
 
-    static ManagerAndDSLClasses buildManager(AptUtils aptUtils, EntityMetaSignature signature) {
+    static ManagerAndDSLClasses buildManager(GlobalParsingContext context, AptUtils aptUtils, EntityMetaSignature signature) {
 
         final List<TypeSpec> classes = new ArrayList<>();
 
@@ -89,18 +87,18 @@ public class ManagerCodeGen {
             dslClass.addMethod(buildDeleteMethod(signature))
                     .addMethod(buildUpdateMethod(signature));
 
-            classes.add(DeleteDSLCodeGen.buildDeleteClass(signature));
-            classes.add(UpdateDSLCodeGen.buildUpdateClass(aptUtils, signature));
+            classes.add(context.deleteDSLCodeGen().buildDeleteClass(signature, context.deleteWhereDSLCodeGen()));
+            classes.add(context.updateDSLCodeGen().buildUpdateClass(aptUtils, signature, context.updateWhereDSLCodeGen()));
 
             if (signature.hasStatic()) {
-                classes.add(DeleteDSLCodeGen.buildDeleteStaticClass(signature));
-                classes.add(UpdateDSLCodeGen.buildUpdateStaticClass(aptUtils, signature));
+                classes.add(context.deleteDSLCodeGen().buildDeleteStaticClass(signature, context.deleteWhereDSLCodeGen()));
+                classes.add(context.updateDSLCodeGen().buildUpdateStaticClass(aptUtils, signature, context.updateWhereDSLCodeGen()));
                 dslClass.addMethod(buildDeleteStaticMethod(signature));
                 dslClass.addMethod(buildUpdateStaticMethod(signature));
             }
         }
 
-        classes.add(SelectDSLCodeGen.buildSelectClass(signature));
+        classes.add(context.selectDSLCodeGen().buildSelectClass(signature, context.selectWhereDSLCodeGen()));
 
         // Query
         final TypeSpec.Builder queryClass = TypeSpec.classBuilder(signature.className + QUERY_SUFFIX)

@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.delete;
 
+import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
@@ -36,13 +37,12 @@ import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
+public interface DeleteDSLCodeGen extends AbstractDSLCodeGen {
 
-
-    public static Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
+    Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
             (o1, o2) -> o1._2().order.compareTo(o2._2().order);
 
-    public static TypeSpec buildDeleteClass(EntityMetaSignature signature) {
+    default TypeSpec buildDeleteClass(EntityMetaSignature signature, DeleteWhereDSLCodeGen deleteWhereDSLCodeGen) {
 
         final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
@@ -81,12 +81,12 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
         builder.addMethod(buildAllColumnsWithSchemaProvider(deleteFromTypeName, DELETE_WHERE, "delete"));
 
 
-        DeleteWhereDSLCodeGen.buildWhereClasses(signature).forEach(builder::addType);
+        deleteWhereDSLCodeGen.buildWhereClasses(signature).forEach(builder::addType);
 
         return builder.build();
     }
 
-    public static TypeSpec buildDeleteStaticClass(EntityMetaSignature signature) {
+    default TypeSpec buildDeleteStaticClass(EntityMetaSignature signature, DeleteWhereDSLCodeGen deleteWhereDSLCodeGen) {
 
         final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
@@ -121,12 +121,12 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .forEach(x -> builder.addMethod(buildDeleteColumnMethod(deleteStaticColumnsTypeName, x, ReturnType.NEW)));
 
 
-        DeleteWhereDSLCodeGen.buildWhereClassesForStatic(signature).forEach(builder::addType);
+        deleteWhereDSLCodeGen.buildWhereClassesForStatic(signature).forEach(builder::addType);
 
         return builder.build();
     }
 
-    private static MethodSpec buildDeleteConstructor(EntityMetaSignature signature) {
+    default MethodSpec buildDeleteConstructor(EntityMetaSignature signature) {
         String metaClassName = signature.className + META_SUFFIX;
         TypeName metaClassType = ClassName.get(ENTITY_META_PACKAGE, metaClassName);
 
@@ -140,7 +140,7 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
 
     }
 
-    private static TypeSpec buildDeleteColumns(EntityMetaSignature signature,
+    default TypeSpec buildDeleteColumns(EntityMetaSignature signature,
                                                String deleteColumnClass,
                                                TypeName deleteColumnsTypeName,
                                                TypeName deleteFromTypeName,
@@ -165,7 +165,7 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    private static TypeSpec buildDeleteFrom(EntityMetaSignature signature,
+    default TypeSpec buildDeleteFrom(EntityMetaSignature signature,
                                             String deleteFromClassName,
                                             TypeName deleteWhereTypeName) {
 
@@ -185,7 +185,7 @@ public class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .build();
     }
 
-    private static MethodSpec buildDeleteColumnMethod(TypeName deleteTypeName, FieldMetaSignature parsingResult, ReturnType returnType) {
+    default MethodSpec buildDeleteColumnMethod(TypeName deleteTypeName, FieldMetaSignature parsingResult, ReturnType returnType) {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(parsingResult.context.fieldName)
                 .addJavadoc("Generate DELETE <strong>$L</strong> ...", parsingResult.context.quotedCqlColumn)

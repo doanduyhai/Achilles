@@ -18,6 +18,8 @@ package info.archinnov.achilles.internals.codegen.meta;
 
 import static com.squareup.javapoet.TypeName.BOOLEAN;
 import static com.squareup.javapoet.TypeName.INT;
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.MATERIALIZED_VIEW;
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDF_UDA;
 import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
@@ -38,6 +40,7 @@ import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
+import info.archinnov.achilles.internals.cassandra_version.CassandraFeature;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
 import info.archinnov.achilles.internals.metamodel.columns.*;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
@@ -48,7 +51,7 @@ import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
+public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
 
     public static final Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
             (o1, o2) -> o1._2().order.compareTo(o2._2().order);
@@ -90,7 +93,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
 
         if (entityType == EntityType.TABLE) {
             beanValidator.validateStaticColumns(aptUtils, rawClassTypeName, fieldMetaSignatures);
-        } else if (entityType == EntityType.VIEW) {
+        } else if (entityType == EntityType.VIEW && globalParsingContext.supportsFeature(MATERIALIZED_VIEW)) {
             beanValidator.validateNoStaticColumnsForView(aptUtils, rawClassTypeName, fieldMetaSignatures);
             aptUtils.validateFalse(isCounter, "The class '%s' cannot have counter columns because it is a materialized view", rawClassTypeName);
         }
@@ -158,7 +161,7 @@ public class EntityMetaCodeGen extends AbstractBeanMetaCodeGen {
                     .addMethod(buildGetStaticInsertStrategy(strategy))
                     .addMethod(buildStaticColumns(fieldMetaSignatures, rawBeanType))
                     .addMethod(buildCounterColumns(fieldMetaSignatures, rawBeanType));
-        } else if (entityType == EntityType.VIEW) {
+        } else if (entityType == EntityType.VIEW && globalParsingContext.supportsFeature(MATERIALIZED_VIEW)) {
             builder.superclass(genericType(ABSTRACT_VIEW_PROPERTY, rawBeanType))
                     .addMethod(buildStaticKeyspace(aptUtils.getAnnotationOnClass(elm, MaterializedView.class).get().keyspace()))
                     .addMethod(buildStaticTableOrViewName(aptUtils.getAnnotationOnClass(elm, MaterializedView.class).get().view()))

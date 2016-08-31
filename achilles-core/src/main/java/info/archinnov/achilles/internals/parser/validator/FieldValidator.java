@@ -38,8 +38,6 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 
 public interface FieldValidator {
 
-    TypeValidator defaultTypeValidator = new TypeValidator() {};
-
     default void checkNoMutuallyExclusiveAnnotations(AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
                                                             List<Optional<? extends Annotation>> annotations) {
         annotations
@@ -148,7 +146,7 @@ public interface FieldValidator {
         aptUtils.validateTrue(checkForKeyOrdering == sumOfOrders, "The %s ordering is wrong in class '%s'", type, rawClassName);
     }
 
-    default CodecContext validateCodec(AptUtils aptUtils, CodecContext codecContext, TypeName sourceType,
+    default CodecContext validateCodec(AptUtils aptUtils, TypeValidator typeValidator, CodecContext codecContext, TypeName sourceType,
                                              Optional<TypeName> cqlClass, boolean isCounter) {
         final String codecClass = codecContext.codecType.toString();
 
@@ -163,7 +161,7 @@ public interface FieldValidator {
                     "Codec '%s' target type '%s' should be Long/long because the column is annotated with @Counter",
                     codecClass, codecContext.targetType);
         }
-        defaultTypeValidator.validateAllowedTypes(aptUtils, sourceType, codecContext.targetType);
+        typeValidator.validateAllowedTypes(aptUtils, sourceType, codecContext.targetType);
 
         return codecContext;
     }
