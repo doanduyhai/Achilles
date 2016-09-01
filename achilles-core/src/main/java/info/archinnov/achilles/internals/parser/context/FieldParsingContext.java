@@ -30,10 +30,13 @@ import info.archinnov.achilles.annotations.Enumerated.Encoding;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.parser.CodecFactory;
+import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.parser.validator.TypeValidator;
 import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
+import info.archinnov.achilles.internals.utils.NamingHelper;
 
 public class FieldParsingContext {
     public final String fieldName;
@@ -132,8 +135,16 @@ public class FieldParsingContext {
         entityContext.globalContext.udtTypes.put(rawUdtType, typeSpec);
     }
 
-    public BeanValidator beanValidator() {
-        return entityContext.globalContext.beanValidator();
+    public void addUDTMetaSignature(TypeName rawUdtType, UDTMetaSignature udtMetaSignature) {
+        entityContext.globalContext.udtMetaSignatures.put(rawUdtType, udtMetaSignature);
+    }
+
+    public UDTMetaSignature getUDTMetaSignature(TypeName rawUdtType) {
+        return entityContext.globalContext.udtMetaSignatures.get(rawUdtType);
+    }
+
+    public String udtClassName() {
+        return NamingHelper.upperCaseFirst(this.fieldName) + "_UDT";
     }
 
     public TypeValidator typeValidator() {
@@ -142,10 +153,6 @@ public class FieldParsingContext {
 
     public FieldValidator fieldValidator() {
         return entityContext.globalContext.fieldValidator();
-    }
-
-    public boolean hasCodecFor(TypeName typeName) {
-        return entityContext.hasCodecFor(typeName);
     }
 
     public CodecFactory.CodecInfo getCodecFor(TypeName typeName) {

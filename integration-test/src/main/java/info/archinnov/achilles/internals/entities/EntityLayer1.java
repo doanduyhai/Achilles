@@ -34,7 +34,7 @@ public class EntityLayer1 {
     public EntityLayer1() {
     }
 
-    public EntityLayer1(String layer, @Frozen Layer2 layer2) {
+    public EntityLayer1(String layer, Layer2 layer2) {
         this.layer = layer;
         this.layer2 = layer2;
     }

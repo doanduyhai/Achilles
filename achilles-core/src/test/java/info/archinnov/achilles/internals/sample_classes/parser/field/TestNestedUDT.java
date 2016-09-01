@@ -14,42 +14,37 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.entities;
-
-import java.util.Objects;
+package info.archinnov.achilles.internals.sample_classes.parser.field;
 
 import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.Frozen;
 import info.archinnov.achilles.annotations.UDT;
+import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 
-@UDT
-public class Layer3 {
+@APUnitTest
+@UDT(keyspace = "test", name = "my_nested_type")
+public class TestNestedUDT {
+
     @Column
-    private String layer;
+    private String val;
 
-    public Layer3(){}
+    @Column
+    @Frozen
+    private TestUDT udt;
 
-    public Layer3(String layer) {
-        this.layer = layer;
+    public String getVal() {
+        return val;
     }
 
-    public String getLayer() {
-        return layer;
+    public void setVal(String val) {
+        this.val = val;
     }
 
-    public void setLayer(String layer) {
-        this.layer = layer;
+    public TestUDT getUdt() {
+        return udt;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Layer3 layer3 = (Layer3) o;
-        return Objects.equals(layer, layer3.layer);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(layer);
+    public void setUdt(TestUDT udt) {
+        this.udt = udt;
     }
 }

@@ -35,6 +35,7 @@ import info.archinnov.achilles.internals.entities.UDTWithNestedUDT;
 import info.archinnov.achilles.internals.entities.UDTWithNoKeyspace;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
+import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -113,7 +114,44 @@ public class TestEntityWithNestedUdtIT {
         //Then
         final EntityWithNestedUDT found = manager.crud().findById(id).get();
         assertThat(found.getUdt().getValue()).isEqualTo("new_udt_value");
+    }
 
+    @Test
+    public void should_select_some_udt_columns() throws Exception {
+        //Given
+        final Long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        final EntityWithNestedUDT entity = new EntityWithNestedUDT();
+        final UDTWithNoKeyspace udtWithNoKeySpace = new UDTWithNoKeyspace();
+        udtWithNoKeySpace.setId(id);
+        udtWithNoKeySpace.setValue("udt_with_no_keyspace");
+        final UDTWithNestedUDT udtWithNestedUDT = new UDTWithNestedUDT();
+        udtWithNestedUDT.setValue("value");
+        udtWithNestedUDT.setNestedUDT(udtWithNoKeySpace);
+        udtWithNestedUDT.setUdtList(Arrays.asList(udtWithNoKeySpace));
+        udtWithNestedUDT.setTupleWithUDT(new Tuple2<>(1, udtWithNoKeySpace));
+        entity.setId(id);
+        entity.setUdt(udtWithNoKeySpace);
+        entity.setComplexUDT(udtWithNestedUDT);
+
+        manager.crud().insert(entity).execute();
+
+        //When
+        final TypedMap found = manager.dsl()
+                .select()
+                .complexUDT().value()
+                .complexUDT().udt().value()
+                .udt().value()
+                .fromBaseTable()
+                .where()
+                .id_Eq(id)
+                .getTypedMap();
+
+
+        //Then
+        assertThat(found).isNotNull();
+        assertThat(found.<String>getTyped("complexudt.value")).isEqualTo("value");
+        assertThat(found.<String>getTyped("complexudt.nestedudt.VALUE")).isEqualTo("udt_with_no_keyspace");
+        assertThat(found.<String>getTyped("udt.VALUE")).isEqualTo("udt_with_no_keyspace");
     }
 
 }

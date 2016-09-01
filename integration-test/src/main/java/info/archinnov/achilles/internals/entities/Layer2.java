@@ -16,6 +16,8 @@
 
 package info.archinnov.achilles.internals.entities;
 
+import java.util.Objects;
+
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Frozen;
 import info.archinnov.achilles.annotations.UDT;
@@ -50,5 +52,19 @@ public class Layer2 {
 
     public void setLayer3(Layer3 layer3) {
         this.layer3 = layer3;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Layer2 layer2 = (Layer2) o;
+        return Objects.equals(layer, layer2.layer) &&
+                Objects.equals(layer3, layer2.layer3);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(layer, layer3);
     }
 }

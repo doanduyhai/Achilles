@@ -540,12 +540,20 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
             return className + SELECT_DSL_SUFFIX;
         }
 
+        public String classNameInsideSelect(String className) {
+            return selectClassName() + "_" + className;
+        }
+
         public String selectFromReturnType() {
             return selectClassName() + "." + className + SELECT_FROM_DSL_SUFFIX;
         }
 
         public String selectColumnsReturnType() {
             return selectClassName() + "." + className + SELECT_COLUMNS_DSL_SUFFIX;
+        }
+
+        public String classNameInsideSelectColumns(String className) {
+            return selectColumnsReturnType() + "_" + className;
         }
 
         public String selectWhereReturnType(String fieldName) {

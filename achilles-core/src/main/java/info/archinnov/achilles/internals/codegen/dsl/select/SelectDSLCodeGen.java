@@ -25,6 +25,7 @@ import java.util.StringJoiner;
 import javax.lang.model.element.Modifier;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.squareup.javapoet.*;
 
@@ -34,6 +35,7 @@ import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
+import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
@@ -63,8 +65,14 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
 
         signature.fieldMetaSignatures
                 .stream()
-                .filter(x -> x.context.columnType != ColumnType.COMPUTED)
+                .filter(x -> x.context.columnType != ColumnType.COMPUTED && !x.isUDT())
                 .forEach(x -> selectClassBuilder.addMethod(buildSelectColumnMethod(selectColumnsTypeName, x, "select", NEW)));
+
+        signature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.isUDT())
+                .forEach(x -> buildSelectUDTClassAndMethods(selectClassBuilder, selectColumnsTypeName,
+                        signature.selectClassName(), "", x, "select", NEW));
 
         signature.fieldMetaSignatures
                 .stream()
@@ -73,8 +81,8 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
 
         selectClassBuilder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypeName, "select", NEW));
 
-        selectClassBuilder.addMethod(AbstractDSLCodeGen.buildAllColumns(selectFromTypeName, SELECT_WHERE, "select"));
-        selectClassBuilder.addMethod(AbstractDSLCodeGen.buildAllColumnsWithSchemaProvider(selectFromTypeName, SELECT_WHERE, "select"));
+        selectClassBuilder.addMethod(buildAllColumns(selectFromTypeName, SELECT_WHERE, "select"));
+        selectClassBuilder.addMethod(buildAllColumnsWithSchemaProvider(selectFromTypeName, SELECT_WHERE, "select"));
 
 
         selectWhereDSLCodeGen.buildWhereClasses(signature).forEach(selectClassBuilder::addType);
@@ -102,31 +110,36 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
 
         TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, signature.selectFromReturnType());
 
-        final TypeSpec.Builder builder = TypeSpec.classBuilder(signature.className + SELECT_COLUMNS_DSL_SUFFIX)
+        final TypeSpec.Builder selectColumnsBuilder = TypeSpec.classBuilder(signature.className + SELECT_COLUMNS_DSL_SUFFIX)
                 .superclass(ABSTRACT_SELECT_COLUMNS)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
-                        .addModifiers(Modifier.PUBLIC)
-                        .addParameter(SELECT_COLUMNS, "selection")
-                        .addStatement("super(selection)")
-                        .build());
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(SELECT_COLUMNS, "selection")
+                .addStatement("super(selection)")
+                .build());
 
         signature.fieldMetaSignatures
                 .stream()
-                .filter(x -> x.context.columnType != ColumnType.COMPUTED)
-                .forEach(x -> builder.addMethod(buildSelectColumnMethod(selectColumnsTypeName, x, "selection", THIS)));
+                .filter(x -> x.context.columnType != ColumnType.COMPUTED && !x.isUDT())
+                .forEach(x -> selectColumnsBuilder.addMethod(buildSelectColumnMethod(selectColumnsTypeName, x, "selection", THIS)));
+
+        signature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.isUDT())
+                .forEach(x -> buildSelectUDTClassAndMethods(selectColumnsBuilder, selectColumnsTypeName, signature.selectColumnsReturnType(), "", x, "selection", THIS));
 
         signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.COMPUTED)
-                .forEach(x -> builder.addMethod(buildSelectComputedColumnMethod(selectColumnsTypeName, x, "selection", THIS)));
+                .forEach(x -> selectColumnsBuilder.addMethod(buildSelectComputedColumnMethod(selectColumnsTypeName, x, "selection", THIS)));
 
-        builder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypeName, "selection", THIS));
+        selectColumnsBuilder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypeName, "selection", THIS));
 
-        builder.addMethod(AbstractDSLCodeGen.buildFrom(selectFromTypeName, SELECT_WHERE, "selection"));
-        builder.addMethod(AbstractDSLCodeGen.buildFromWithSchemaProvider(selectFromTypeName, SELECT_WHERE, "selection"));
+        selectColumnsBuilder.addMethod(AbstractDSLCodeGen.buildFrom(selectFromTypeName, SELECT_WHERE, "selection"));
+        selectColumnsBuilder.addMethod(AbstractDSLCodeGen.buildFromWithSchemaProvider(selectFromTypeName, SELECT_WHERE, "selection"));
 
-        return builder.build();
+        return selectColumnsBuilder.build();
     }
 
     default TypeSpec buildSelectFrom(EntityMetaSignature signature, String firstPartitionKey) {
@@ -156,18 +169,84 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .build();
     }
 
-    default MethodSpec buildSelectColumnMethod(TypeName newTypeName, FieldMetaSignature parsingResult, String fieldName, ReturnType returnType) {
+    default MethodSpec buildSelectColumnMethod(TypeName newTypeName, FieldMetaSignature parsingResult, String selectVariable, ReturnType returnType) {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(parsingResult.context.fieldName)
                 .addJavadoc("Generate a SELECT ... <strong>$L</strong> ...", parsingResult.context.quotedCqlColumn)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addStatement("$L.column($S)", fieldName, parsingResult.context.quotedCqlColumn)
+                .addStatement("$L.column($S)", selectVariable, parsingResult.context.quotedCqlColumn)
                 .returns(newTypeName);
 
         if (returnType == NEW) {
             return builder.addStatement("return new $T(select)", newTypeName).build();
         } else {
             return builder.addStatement("return this").build();
+        }
+    }
+
+
+    default void buildSelectUDTClassAndMethods(TypeSpec.Builder parentClassBuilder, TypeName returnClassTypeName, String parentClassName,
+                                               String parentQuotedCqlColumn, FieldMetaSignature fieldSignature, String selectVariable, ReturnType returnType) {
+        final UDTMetaSignature udtMetaSignature = fieldSignature.udtMetaSignature.get();
+        final String udtClassName = parentClassName + "." + fieldSignature.context.udtClassName();
+        TypeName udtClassTypeName = ClassName.get(DSL_PACKAGE, udtClassName);
+        final String quotedCqlColumn = StringUtils.isBlank(parentQuotedCqlColumn)
+                ? fieldSignature.context.quotedCqlColumn
+                : parentQuotedCqlColumn + "." + fieldSignature.context.quotedCqlColumn;
+
+        final TypeSpec.Builder udtClassBuilder = TypeSpec
+                .classBuilder(fieldSignature.context.udtClassName())
+                .addModifiers(Modifier.PUBLIC);
+
+        udtMetaSignature.fieldMetaSignatures
+                .stream()
+                .filter(x -> !x.isUDT())
+                .forEach(x -> udtClassBuilder.addMethod(buildSelectUDTColumnMethod(returnClassTypeName,
+                        selectVariable,
+                        x.context.fieldName,
+                        quotedCqlColumn + "." + x.context.quotedCqlColumn,
+                        returnType)));
+
+        udtMetaSignature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.isUDT())
+                .forEach(x -> buildSelectUDTClassAndMethods(udtClassBuilder, returnClassTypeName, udtClassName, quotedCqlColumn, x, selectVariable, returnType));
+
+        final MethodSpec.Builder allColumnsMethodBuilder = MethodSpec.methodBuilder("allColumns")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addJavadoc("Generate a SELECT ... <strong>$L</strong> ...", quotedCqlColumn)
+                .addStatement("$L.raw($S)", selectVariable, quotedCqlColumn)
+                .returns(returnClassTypeName);
+
+        if (returnType == NEW) {
+            allColumnsMethodBuilder.addStatement("return new $T($L)", returnClassTypeName, selectVariable);
+        } else {
+            allColumnsMethodBuilder.addStatement("return $T.this", returnClassTypeName);
+        }
+
+        udtClassBuilder.addMethod(allColumnsMethodBuilder.build());
+        parentClassBuilder.addMethod(MethodSpec.methodBuilder(udtMetaSignature.fieldName)
+                .addJavadoc("Generate a SELECT ... <strong>$L(.?)</strong> ...", udtMetaSignature.quotedCqlColumn)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addStatement("return new $T()", udtClassTypeName)
+                .returns(udtClassTypeName)
+                .build());
+        parentClassBuilder.addType(udtClassBuilder.build());
+    }
+
+    default MethodSpec buildSelectUDTColumnMethod(TypeName newTypeName, String selectVariable,
+                                                  String fieldName, String quotedCqlColumn, ReturnType returnType) {
+
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder(fieldName)
+                .addJavadoc("Generate a SELECT ... <strong>$L</strong> ...", quotedCqlColumn)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addStatement("$L.raw($S)", selectVariable, quotedCqlColumn)
+                .returns(newTypeName);
+
+        if (returnType == NEW) {
+            return builder.addStatement("return new $T(select)", newTypeName).build();
+        } else {
+            return builder.addStatement("return $T.this", newTypeName).build();
         }
     }
 

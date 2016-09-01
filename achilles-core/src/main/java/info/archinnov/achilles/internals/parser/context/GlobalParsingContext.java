@@ -42,6 +42,8 @@ import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGe
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
 import info.archinnov.achilles.internals.parser.CodecFactory.CodecInfo;
+import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
@@ -74,6 +76,7 @@ public class GlobalParsingContext {
     public final FieldFilter fieldFilter;
     public final FieldFilter udtFieldFilter;
     public final Map<TypeName, TypeSpec> udtTypes = new HashMap<>();
+    public final Map<TypeName, UDTMetaSignature> udtMetaSignatures = new HashMap<>();
     public final Map<TypeName, CodecInfo> codecRegistry = new HashMap<>();
 
     public static GlobalParsingContext fromCompileTimeConfig(CompileTimeConfig compileTimeConfig) {

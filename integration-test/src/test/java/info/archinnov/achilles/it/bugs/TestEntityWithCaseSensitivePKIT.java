@@ -110,7 +110,7 @@ public class TestEntityWithCaseSensitivePKIT {
                 .list()
                 .set()
                 .map()
-                .udt()
+                .udt().allColumns()
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)

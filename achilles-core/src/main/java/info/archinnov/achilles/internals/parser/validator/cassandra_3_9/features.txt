@@ -1,2 +1,2 @@
 Add Change-Data-Capture (CASSANDRA-8844)
-Allow terms in selection clause (CASSANDRA-10783)
+Allow terms in selection clause (CASSANDRA-10783) //Literal value in UDF

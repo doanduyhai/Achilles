@@ -213,6 +213,10 @@ public class TestEntityForCodecs {
     @Column
     private List<Optional<String>> listOfOptional;
 
+    @Column
+    @Frozen
+    private TestNestedUDT nestedUDT;
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -664,6 +668,14 @@ public class TestEntityForCodecs {
 
     public void setListOfOptional(List<Optional<String>> listOfOptional) {
         this.listOfOptional = listOfOptional;
+    }
+
+    public TestNestedUDT getNestedUDT() {
+        return nestedUDT;
+    }
+
+    public void setNestedUDT(TestNestedUDT nestedUDT) {
+        this.nestedUDT = nestedUDT;
     }
 }
 

@@ -20,6 +20,7 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import java.util.List;
+import java.util.Optional;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
@@ -32,6 +33,7 @@ import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.meta.UDTMetaCodeGen;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
+import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
@@ -54,9 +56,13 @@ public class UDTParser extends AbstractBeanParser {
         validateUDT(context.entityContext.globalContext, rawUdtTypeName, typeElement);
 
         if (!context.hasProcessedUDT(rawUdtTypeName)) {
-            final TypeSpec udtClassPropertyCode = buildUDTClassProperty(typeElement, fieldParser, context.entityContext);
+            final List<FieldMetaSignature> parsingResults = parseFields(typeElement, fieldParser, context.entityContext.globalContext);
+            TypeSpec udtClassPropertyCode = udtMetaCodeGen.buildUDTClassProperty(typeElement, context.entityContext, parsingResults);
             context.addUDTMeta(rawUdtTypeName, udtClassPropertyCode);
+            context.addUDTMetaSignature(rawUdtTypeName, new UDTMetaSignature(context.fieldName, context.quotedCqlColumn, parsingResults));
         }
+
+        Optional<UDTMetaSignature> udtMetaSignature = Optional.of(context.getUDTMetaSignature(rawUdtTypeName));
 
         CodeBlock typeCode = CodeBlock.builder().add("new $T<$T, $T>($L, $T.class, $L.INSTANCE)",
                 UDT_PROPERTY,
@@ -68,7 +74,7 @@ public class UDTParser extends AbstractBeanParser {
                 .build();
         final ParameterizedTypeName propertyType = genericType(UDT_PROPERTY, context.entityRawType, rawUdtTypeName);
         return new FieldMetaSignature(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
-                udtTypeName, JAVA_DRIVER_UDT_VALUE_TYPE, propertyType, typeCode);
+                udtTypeName, JAVA_DRIVER_UDT_VALUE_TYPE, propertyType, typeCode, udtMetaSignature);
     }
 
     void validateUDT(GlobalParsingContext context, TypeName udtTypeName, TypeElement typeElement) {
@@ -78,10 +84,5 @@ public class UDTParser extends AbstractBeanParser {
                 "Type '%s' cannot be annotated with '%s' because it is a supported type",
                 udtTypeName, UDT.class.getCanonicalName());
         context.beanValidator().validateHasPublicConstructor(aptUtils, udtTypeName, typeElement);
-    }
-
-    TypeSpec buildUDTClassProperty(TypeElement elm, FieldParser fieldParser, EntityParsingContext context) {
-        final List<FieldMetaSignature> parsingResults = parseFields(elm, fieldParser, context.globalContext);
-        return udtMetaCodeGen.buildUDTClassProperty(elm, context, parsingResults);
     }
 }

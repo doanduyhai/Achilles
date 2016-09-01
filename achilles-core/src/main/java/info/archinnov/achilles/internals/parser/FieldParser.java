@@ -567,6 +567,22 @@ public class FieldParser {
         final public TypeName targetType;
         final public CodeBlock typeCode;
         final public TypeName propertyType;
+        final public Optional<UDTMetaSignature> udtMetaSignature;
+
+        public boolean isUDT() {
+            return udtMetaSignature.isPresent();
+        }
+
+        public FieldMetaSignature(FieldParsingContext context, AnnotationTree annotationTree, TypeName sourceType, TypeName targetType,
+                                  TypeName propertyType, CodeBlock typeCode, Optional<UDTMetaSignature> udtMetaSignature) {
+            this.context = context;
+            this.annotationTree = annotationTree;
+            this.sourceType = sourceType;
+            this.targetType = targetType;
+            this.propertyType = propertyType;
+            this.typeCode = typeCode;
+            this.udtMetaSignature = udtMetaSignature;
+        }
 
         public FieldMetaSignature(FieldParsingContext context, AnnotationTree annotationTree, TypeName sourceType, TypeName targetType,
                                   TypeName propertyType, CodeBlock typeCode) {
@@ -576,6 +592,7 @@ public class FieldParser {
             this.targetType = targetType;
             this.propertyType = propertyType;
             this.typeCode = typeCode;
+            this.udtMetaSignature = Optional.empty();
         }
 
         public FieldSpec buildPropertyAsField() {
@@ -634,6 +651,18 @@ public class FieldParser {
             return this.context.equalsTo(o.context) &&
                     Objects.equals(this.sourceType, o.sourceType) &&
                     Objects.equals(this.targetType, o.targetType);
+        }
+    }
+
+    public static class UDTMetaSignature {
+        final public String fieldName;
+        final public String quotedCqlColumn;
+        final public List<FieldMetaSignature> fieldMetaSignatures;
+
+        public UDTMetaSignature(String fieldName, String quotedCqlColumn, List<FieldMetaSignature> fieldMetaSignatures) {
+            this.fieldName = fieldName;
+            this.quotedCqlColumn = quotedCqlColumn;
+            this.fieldMetaSignatures = fieldMetaSignatures;
         }
     }
 

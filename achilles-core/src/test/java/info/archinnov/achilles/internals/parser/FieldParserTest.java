@@ -656,6 +656,27 @@ public class FieldParserTest extends AbstractTestProcessor {
     }
 
     @Test
+    public void should_parse_nested_udt() throws Exception {
+
+        setExec(aptUtils -> {
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
+
+            // private TestNestedUDT nestedUDT;
+            VariableElement elm = findFieldInType(typeElement, "nestedUDT");
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo(UDTValue.class.getCanonicalName());
+            assertThat(parsingResult.udtMetaSignature.isPresent()).isTrue();
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_udt.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
     public void should_parse_list_udt() throws Exception {
 
         setExec(aptUtils -> {
