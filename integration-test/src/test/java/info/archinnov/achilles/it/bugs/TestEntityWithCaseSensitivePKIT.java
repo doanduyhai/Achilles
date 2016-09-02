@@ -113,7 +113,7 @@ public class TestEntityWithCaseSensitivePKIT {
                 .udt().allColumns()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .getOne();
 
         //Then
@@ -141,8 +141,8 @@ public class TestEntityWithCaseSensitivePKIT {
                 .list().list_AppendTo("3")
                 .map().map_PutTo(3, "3")
                 .where()
-                .id_Eq(id)
-                .clust_Eq(10L)
+                .id().Eq(id)
+                .clust().Eq(10L)
                 .execute();
 
         //Then
@@ -173,8 +173,8 @@ public class TestEntityWithCaseSensitivePKIT {
                 .udt()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
-                .clust_Eq(10L)
+                .id().Eq(id)
+                .clust().Eq(10L)
                 .execute();
 
         //Then

@@ -291,7 +291,7 @@ public class TestEntityWithComplexTypes {
                 .writeTimeWithCodec()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .getOne();
 
         //Then

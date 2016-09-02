@@ -245,7 +245,7 @@ public class TestInterceptorsSimpleEntity {
                 .simpleMap()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Gte_And_Lt(date1, date9)
                 .getList();
 
@@ -294,7 +294,7 @@ public class TestInterceptorsSimpleEntity {
                 .simpleMap()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Gte_And_Lt(date1, date9)
                 .iterator();
 

@@ -93,7 +93,7 @@ public class TestDSLSimpleEntity {
                 .value()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Eq(date)
                 .getOne();
 
@@ -137,7 +137,7 @@ public class TestDSLSimpleEntity {
                 .simpleMap()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Gte_And_Lt(date1, date9)
                 .getList();
 
@@ -221,7 +221,7 @@ public class TestDSLSimpleEntity {
                 .simpleMap()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Gte_And_Lt(date1, date9)
                 .withConsistencyLevel(TWO)
                 .withRetryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE)
@@ -250,7 +250,7 @@ public class TestDSLSimpleEntity {
                 .value()
                 .fromBaseTable()
                 .where()
-                .id_IN(id1, id2)
+                .id().IN(id1, id2)
                 .date().IN(date1, date2)
                 .getList();
 
@@ -296,7 +296,7 @@ public class TestDSLSimpleEntity {
                 .value()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().IN(date1, date2, date3, date6)
                 .orderByDateDescending()
                 .limit(3)
@@ -338,7 +338,7 @@ public class TestDSLSimpleEntity {
                 .value()
                 .fromBaseTable()
                 .where()
-                .id_IN(id1, id2)
+                .id().IN(id1, id2)
                 .date().IN(date1, date2);
 
 
@@ -380,7 +380,7 @@ public class TestDSLSimpleEntity {
                 .select()
                 .allColumns_From(provider)
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Eq(date)
                 .getOne();
 
@@ -425,7 +425,7 @@ public class TestDSLSimpleEntity {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Gt_And_Lte(date1, date9)
                 .orderByDateDescending()
                 .withFetchSize(2)
@@ -462,8 +462,8 @@ public class TestDSLSimpleEntity {
             .simpleMap()
             .fromBaseTable()
             .where()
-            .id_Eq(id)
-            .date_Eq(date)
+            .id().Eq(id)
+            .date().Eq(date)
             .execute();
 
         //Then
@@ -490,8 +490,8 @@ public class TestDSLSimpleEntity {
                 .simpleMap()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .withConsistencyLevel(TWO)
                 .withRetryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE)
                 .executeWithStats();
@@ -529,8 +529,8 @@ public class TestDSLSimpleEntity {
                 .delete()
                 .allColumns_From(provider)
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -555,8 +555,8 @@ public class TestDSLSimpleEntity {
                 .value()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .withConsistencyLevel(QUORUM)
                 .withRetryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE)
                 .execute();
@@ -595,8 +595,8 @@ public class TestDSLSimpleEntity {
                 .value()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .ifExists()
                 .withResultSetAsyncListener(rs -> {
                     assertThat(rs.wasApplied()).isFalse();
@@ -622,13 +622,13 @@ public class TestDSLSimpleEntity {
                 .value()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
-                .date_Eq(date);
+                .id().Eq(id)
+                .date().Eq(date);
 
 
         //Then
         final String expectedQuery = "DELETE simplemap,value FROM " + DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME + ".simple " +
-                "WHERE id=:id_Eq AND date=:date_Eq;";
+                "WHERE id=:id AND date=:date;";
 
         assertThat(dsl.getStatementAsString()).isEqualTo(expectedQuery);
         assertThat(dsl.getBoundValues()).containsExactly(id, date);
@@ -650,8 +650,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .consistencyList().consistencyList_AppendTo(ALL)
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -673,8 +673,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .consistencyList().consistencyList_AppendAllTo(asList(TWO, THREE))
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -696,8 +696,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .consistencyList().consistencyList_PrependTo(ALL)
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -719,8 +719,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .consistencyList().consistencyList_PrependAllTo(asList(TWO, THREE))
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -742,8 +742,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .consistencyList().consistencyList_RemoveAtIndex(0)
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -768,8 +768,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .consistencyList().consistencyList_RemoveFrom(QUORUM)
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -791,8 +791,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .consistencyList().consistencyList_RemoveAllFrom(asList(LOCAL_ONE, QUORUM))
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -814,8 +814,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .consistencyList().consistencyList_Set(asList(TWO, THREE))
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -838,8 +838,8 @@ public class TestDSLSimpleEntity {
                 .consistencyList().consistencyList_SetAtIndex(0, ONE)
                 .consistencyList().consistencyList_SetAtIndex(1, TWO)
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -861,8 +861,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .simpleSet().simpleSet_AddTo(3.0D)
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -884,8 +884,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .simpleSet().simpleSet_AddAllTo(Sets.newHashSet(3.0, 4.0))
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -907,8 +907,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .simpleSet().simpleSet_RemoveFrom(1.0d)
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -931,8 +931,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .simpleSet().simpleSet_RemoveAllFrom(Sets.newHashSet(1.0d, 2.0d))
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -954,8 +954,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .simpleSet().simpleSet_Set(Sets.newHashSet(3.0))
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -977,8 +977,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .simpleMap().simpleMap_PutTo(30, "thirty")
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -1002,8 +1002,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .simpleMap().simpleMap_RemoveByKey(20)
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -1027,8 +1027,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .simpleMap().simpleMap_AddAllTo(ImmutableMap.of(20, "new_twenty", 30, "thirty"))
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -1053,8 +1053,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .simpleMap().simpleMap_Set(ImmutableMap.of(20, "new_twenty", 30, "thirty"))
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -1079,8 +1079,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .value().Set("new value")
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .ifExists()
                 .withLwtResultListener(new LWTResultListener() {
                     @Override
@@ -1117,8 +1117,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .value().Set("new value")
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .withConsistencyLevel(TWO)
                 .withRetryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE)
                 .executeWithStats();
@@ -1146,8 +1146,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .value().Set("new value")
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .if_Value().Eq("0 AM")
                 .withLwtResultListener(new LWTResultListener() {
                     @Override
@@ -1191,8 +1191,8 @@ public class TestDSLSimpleEntity {
                 .fromBaseTable()
                 .value().Set("new value")
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .withConsistencyLevel(THREE)
                 .withRetryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE)
                 .withTracing()
@@ -1231,8 +1231,8 @@ public class TestDSLSimpleEntity {
                 })
                 .value().Set("new value")
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .execute();
 
         //Then
@@ -1256,15 +1256,15 @@ public class TestDSLSimpleEntity {
                 .simpleSet().simpleSet_AddTo(3.0)
                 .simpleMap().simpleMap_PutTo(30, "thirty")
                 .where()
-                .id_Eq(id)
-                .date_Eq(date);
+                .id().Eq(id)
+                .date().Eq(date);
 
         //Then
         final String expectedQuery = "UPDATE " + DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME + ".simple SET value=:value," +
                 "consistencylist=consistencylist+:consistencylist," +
                 "simpleset=simpleset+:simpleset," +
                 "simplemap[:simpleMap_key]=:simpleMap_value " +
-                "WHERE id=:id_Eq AND date=:date_Eq;";
+                "WHERE id=:id AND date=:date;";
 
         assertThat(dsl.getStatementAsString()).isEqualTo(expectedQuery);
         assertThat(dsl.getBoundValues()).containsExactly("new value", asList(ALL), Sets.newHashSet(3.0), 30, "thirty", id, date);

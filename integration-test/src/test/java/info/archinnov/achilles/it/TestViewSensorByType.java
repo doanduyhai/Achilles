@@ -99,7 +99,7 @@ public class TestViewSensorByType {
                 .value()
                 .fromBaseTable()
                 .where()
-                .type_Eq(SensorType.TEMPERATURE)
+                .type().Eq(SensorType.TEMPERATURE)
                 .sensorId().Eq(id)
                 .date().Gte_And_Lte(20160215L, 20160218L)
                 .getList();

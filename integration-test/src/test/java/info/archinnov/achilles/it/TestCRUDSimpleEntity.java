@@ -536,8 +536,8 @@ public class TestCRUDSimpleEntity {
                 .delete()
                 .allColumns_FromBaseTable()
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .if_SimpleSet().Eq(Sets.newHashSet(1.0, 2.0))
                 .withLwtResultListener(lwtResultListener)
                 .execute();
@@ -574,8 +574,8 @@ public class TestCRUDSimpleEntity {
                 .delete()
                 .allColumns_FromBaseTable()
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .if_Value().Lt("_")
                 .withLwtResultListener(lwtResultListener)
                 .execute();
@@ -612,8 +612,8 @@ public class TestCRUDSimpleEntity {
                 .delete()
                 .allColumns_FromBaseTable()
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .if_ConsistencyList().NotEq(Arrays.asList(ALL))
                 .withLwtResultListener(lwtResultListener)
                 .execute();

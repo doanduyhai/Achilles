@@ -106,7 +106,7 @@ public class TestAsyncDSLSimpleEntity {
                 .simpleMap()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Gte_And_Lt(date1, date9)
                 .withResultSetAsyncListener(rs -> {
                     LOGGER.info(CALLED);
@@ -141,8 +141,8 @@ public class TestAsyncDSLSimpleEntity {
                 .simpleMap()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .withResultSetAsyncListener(rs -> {
                     LOGGER.info(CALLED);
                     latch.countDown();
@@ -175,8 +175,8 @@ public class TestAsyncDSLSimpleEntity {
                 .fromBaseTable()
                 .value().Set("new value")
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .if_Value().Eq("0 AM")
                 .withLwtResultListener(new LWTResultListener() {
                     @Override

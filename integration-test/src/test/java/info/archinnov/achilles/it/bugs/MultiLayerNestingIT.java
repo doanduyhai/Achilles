@@ -87,7 +87,7 @@ public class MultiLayerNestingIT {
                 .layer2().layer3().allColumns()
                 .fromBaseTable()
                 .where()
-                .layer_Eq(entity.getLayer())
+                .layer().Eq(entity.getLayer())
                 .getTypedMap();
 
         //Then

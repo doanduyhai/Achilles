@@ -78,8 +78,8 @@ public class TestDSLUpdateWithTTLAndTimestamp {
                 .value().Set("new value")
                 .consistencyList().consistencyList_Set(Arrays.asList(ConsistencyLevel.ALL))
                 .where()
-                .id_Eq(id)
-                .date_Eq(date)
+                .id().Eq(id)
+                .date().Eq(date)
                 .usingTimeToLive(1)
                 .usingTimestamp(new Date().getTime())
                 .execute();

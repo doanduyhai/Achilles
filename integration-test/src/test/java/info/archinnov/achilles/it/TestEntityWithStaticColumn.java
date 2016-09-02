@@ -195,7 +195,7 @@ public class TestEntityWithStaticColumn {
                 .staticCol()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .getOne();
 
         //Then
@@ -219,7 +219,7 @@ public class TestEntityWithStaticColumn {
                 .fromBaseTable()
                 .staticCol().Set("updated_static")
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .if_StaticCol().Eq("static_val")
                 .execute();
 
@@ -245,7 +245,7 @@ public class TestEntityWithStaticColumn {
                 .staticCol()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .execute();
 
         //Then

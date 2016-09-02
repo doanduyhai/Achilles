@@ -169,7 +169,7 @@ public class TestALLEntityAsChild {
                 .anotherValue()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .getOne();
 
         //Then
@@ -191,7 +191,7 @@ public class TestALLEntityAsChild {
                 .anotherValue()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .execute();
 
         //Then
@@ -214,7 +214,7 @@ public class TestALLEntityAsChild {
                 .fromBaseTable()
                 .anotherValue().Set("another_child_val")
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .execute();
 
         //Then

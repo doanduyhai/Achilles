@@ -106,17 +106,15 @@ public abstract class AbstractDSLCodeGen {
 
     }
 
-    public MethodSpec buildColumnRelation(String relation, TypeName nextType, FieldSignatureInfo fieldInfo, FieldNamePrefix fieldNamePrefix) {
-        final String methodName = fieldNamePrefix == FieldNamePrefix.YES
-                ? fieldInfo.fieldName + "_" + upperCaseFirst(relation)
-                : upperCaseFirst(relation);
+    public MethodSpec buildColumnRelation(String relation, TypeName nextType, FieldSignatureInfo fieldInfo) {
+        final String methodName = upperCaseFirst(relation);
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fieldInfo.quotedCqlColumn, relationToSymbolForJavaDoc(relation))
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(fieldInfo.typeName, fieldInfo.fieldName)
                 .addStatement("where.and($T.$L($S, $T.bindMarker($S)))",
-                        QUERY_BUILDER, relation, fieldInfo.quotedCqlColumn, QUERY_BUILDER, methodName)
+                        QUERY_BUILDER, relation, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
                 .addStatement("boundValues.add($N)", fieldInfo.fieldName)
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, fieldInfo.fieldName)
                 .returns(nextType);
@@ -124,10 +122,8 @@ public abstract class AbstractDSLCodeGen {
         return builder.addStatement("return new $T(where)", nextType).build();
     }
 
-    public MethodSpec buildColumnInVarargs(TypeName nextType, FieldSignatureInfo fieldInfo, FieldNamePrefix fieldNamePrefix) {
-        final String methodName = fieldNamePrefix == FieldNamePrefix.YES
-                ? fieldInfo.fieldName + "_IN"
-                : "IN";
+    public MethodSpec buildColumnInVarargs(TypeName nextType, FieldSignatureInfo fieldInfo) {
+        final String methodName = "IN";
         final String param = fieldInfo.fieldName;
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L IN ?</strong>", fieldInfo.quotedCqlColumn)
@@ -287,6 +283,14 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
+    public MethodSpec buildRelationMethod(String fieldName, TypeName relationClassTypeName) {
+        return MethodSpec.methodBuilder(fieldName)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addStatement("return new $T()", relationClassTypeName)
+                .returns(relationClassTypeName)
+                .build();
+    }
+
     public List<FieldSignatureInfo> getPartitionKeysSignatureInfo(List<FieldMetaSignature> parsingResults) {
         return new ArrayList<>(parsingResults
                 .stream()
@@ -402,10 +406,6 @@ public abstract class AbstractDSLCodeGen {
     public enum WhereClauseFor {
         STATIC,
         NORMAL
-    }
-
-    public enum FieldNamePrefix {
-        YES, NO
     }
 
     public static class FieldSignatureInfo {

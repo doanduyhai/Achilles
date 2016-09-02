@@ -108,7 +108,7 @@ public class TestEntityWithNestedUdtIT {
                 .fromBaseTable()
                 .udt().Set(udtWithNoKeySpace)
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .execute();
 
         //Then
@@ -143,7 +143,7 @@ public class TestEntityWithNestedUdtIT {
                 .udt().value()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .getTypedMap();
 
 

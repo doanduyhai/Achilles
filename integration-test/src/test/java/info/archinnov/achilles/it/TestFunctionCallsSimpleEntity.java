@@ -101,7 +101,7 @@ public class TestFunctionCallsSimpleEntity {
                 .function(writetime(SimpleEntity_AchillesMeta.COLUMNS.VALUE), "writetimeOfValue")
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Eq(date)
                 .getTypedMap();
 
@@ -127,7 +127,7 @@ public class TestFunctionCallsSimpleEntity {
                 .function(max(writetime(SimpleEntity_AchillesMeta.COLUMNS.VALUE)), "maxWritetimeOfValue")
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Eq(date)
                 .getTypedMap();
 
@@ -152,7 +152,7 @@ public class TestFunctionCallsSimpleEntity {
                 .function(SystemFunctions.castAsText(SystemFunctions.writetime(SimpleEntity_AchillesMeta.COLUMNS.VALUE)), "writetimeOfValueAsString")
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Eq(date)
                 .getTypedMap();
 
@@ -177,7 +177,7 @@ public class TestFunctionCallsSimpleEntity {
                 .function(FunctionsRegistry.convertToLong(castAsText(writetime(SimpleEntity_AchillesMeta.COLUMNS.VALUE))), "casted")
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Eq(date)
                 .getTypedMap();
 
@@ -202,7 +202,7 @@ public class TestFunctionCallsSimpleEntity {
                 .function(FunctionsRegistry.convertConsistencyLevelList(SimpleEntity_AchillesMeta.COLUMNS.CONSISTENCY_LIST), "consistency_levels")
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Eq(date)
                 .getTypedMap();
 
@@ -230,7 +230,7 @@ public class TestFunctionCallsSimpleEntity {
                 .function(writetime(max(SimpleEntity_AchillesMeta.COLUMNS.VALUE)), "maxWritetimeOfValue")
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .date().Eq(date)
                 .getTypedMap();
 
@@ -259,7 +259,7 @@ public class TestFunctionCallsSimpleEntity {
                 .function(FunctionsRegistry.stringifyComplexNestingMap(EntityWithComplexTypes_AchillesMeta.COLUMNS.COMPLEX_NESTING_MAP), "complex_map")
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .getTypedMap();
 
         //Then

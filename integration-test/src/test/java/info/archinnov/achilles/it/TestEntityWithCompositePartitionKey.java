@@ -128,8 +128,8 @@ public class TestEntityWithCompositePartitionKey {
                 .value()
                 .fromBaseTable()
                 .where()
-                .id_IN(id1, id2)
-                .uuid_IN(uuid1, uuid3)
+                .id().IN(id1, id2)
+                .uuid().IN(uuid1, uuid3)
                 .getList();
 
         //Then

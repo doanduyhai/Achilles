@@ -49,10 +49,9 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                         WhereClauseFor.NORMAL);
 
         final ClassSignatureInfo lastSignature = classesSignature.get(classesSignature.size() - 1);
-
-        final List<TypeSpec> partitionKeysWhereClasses = buildWhereClassesForPartitionKeys(partitionKeys, classesSignature);
-        final List<TypeSpec> clusteringColsWhereClasses = buildWhereClassesForClusteringColumns(signature, firstClustering, clusteringCols,
-                classesSignature, lastSignature);
+        final List<TypeSpec> partitionKeysWhereClasses = buildWhereClassesForPartitionKeys(signature.selectClassName(), partitionKeys, classesSignature);
+        final List<TypeSpec> clusteringColsWhereClasses = buildWhereClassesForClusteringColumns(signature.selectClassName(), signature, firstClustering,
+                clusteringCols, classesSignature, lastSignature);
 
         final TypeSpec selectEndClass = buildSelectEndClass(signature, lastSignature, firstClustering);
 
@@ -121,38 +120,52 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
     }
 
 
-    public List<TypeSpec> buildWhereClassesForPartitionKeys(List<FieldSignatureInfo> partitionKeys,
-                                                                    List<ClassSignatureInfo> classesSignature) {
+    public List<TypeSpec> buildWhereClassesForPartitionKeys(String rootClassName,
+                                                            List<FieldSignatureInfo> partitionKeys,
+                                                            List<ClassSignatureInfo> classesSignature) {
         if (partitionKeys.isEmpty()) {
             return new ArrayList<>();
         } else {
             final FieldSignatureInfo partitionKeyInfo = partitionKeys.remove(0);
             final ClassSignatureInfo classSignature = classesSignature.remove(0);
-            final TypeSpec typeSpec = buildSelectWhereForPartitionKey(partitionKeyInfo, classSignature, classesSignature.get(0));
-            final List<TypeSpec> typeSpecs = buildWhereClassesForPartitionKeys(partitionKeys, classesSignature);
+            final TypeSpec typeSpec = buildSelectWhereForPartitionKey(rootClassName, partitionKeyInfo, classSignature, classesSignature.get(0));
+            final List<TypeSpec> typeSpecs = buildWhereClassesForPartitionKeys(rootClassName, partitionKeys, classesSignature);
             typeSpecs.add(0, typeSpec);
             return typeSpecs;
         }
     }
 
-    public TypeSpec buildSelectWhereForPartitionKey(FieldSignatureInfo partitionInfo,
-                                                            ClassSignatureInfo classSignature,
-                                                            ClassSignatureInfo nextSignature) {
+    public TypeSpec buildSelectWhereForPartitionKey(String rootClassName,
+                                                    FieldSignatureInfo partitionInfo,
+                                                    ClassSignatureInfo classSignature,
+                                                    ClassSignatureInfo nextSignature) {
+
+        TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, rootClassName
+                + "." + classSignature.className
+                + "." + DSL_RELATION);
+
+        final TypeSpec relationClass = TypeSpec.classBuilder(DSL_RELATION)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo))
+                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo))
+                .build();
+
         return TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(SELECT_WHERE))
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo, FieldNamePrefix.YES))
-                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo, FieldNamePrefix.YES))
+                .addType(relationClass)
+                .addMethod(buildRelationMethod(partitionInfo.fieldName, relationClassTypeName))
                 .build();
     }
 
 
-    public List<TypeSpec> buildWhereClassesForClusteringColumns(EntityMetaSignature signature,
-                                                                        Optional<FieldSignatureInfo> firstClusteringCol,
-                                                                        List<FieldSignatureInfo> clusteringCols,
-                                                                        List<ClassSignatureInfo> classesSignature,
-                                                                        ClassSignatureInfo lastSignature) {
+    public List<TypeSpec> buildWhereClassesForClusteringColumns(String rootClassName,
+                                                                EntityMetaSignature signature,
+                                                                Optional<FieldSignatureInfo> firstClusteringCol,
+                                                                List<FieldSignatureInfo> clusteringCols,
+                                                                List<ClassSignatureInfo> classesSignature,
+                                                                ClassSignatureInfo lastSignature) {
         if (clusteringCols.isEmpty()) {
             return new ArrayList<>();
         } else {
@@ -160,23 +173,24 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
             final List<ClassSignatureInfo> copyClassesSignature = new ArrayList<>(classesSignature);
             clusteringCols.remove(0);
             classesSignature.remove(0);
-            final TypeSpec currentType = buildSelectWhereForClusteringColumn(signature, firstClusteringCol, copyClusteringCols, copyClassesSignature, lastSignature);
-            final List<TypeSpec> typeSpecs = buildWhereClassesForClusteringColumns(signature, firstClusteringCol, clusteringCols, classesSignature, lastSignature);
+            final TypeSpec currentType = buildSelectWhereForClusteringColumn(rootClassName, signature, firstClusteringCol, copyClusteringCols, copyClassesSignature, lastSignature);
+            final List<TypeSpec> typeSpecs = buildWhereClassesForClusteringColumns(rootClassName, signature, firstClusteringCol, clusteringCols, classesSignature, lastSignature);
             typeSpecs.add(0, currentType);
             return typeSpecs;
         }
     }
 
-    public TypeSpec buildSelectWhereForClusteringColumn(EntityMetaSignature signature,
-                                                                Optional<FieldSignatureInfo> firstClusteringCol,
-                                                                List<FieldSignatureInfo> clusteringCols,
-                                                                List<ClassSignatureInfo> classesSignature,
-                                                                ClassSignatureInfo lastSignature) {
+    public TypeSpec buildSelectWhereForClusteringColumn(String rootClassName,
+                                                        EntityMetaSignature signature,
+                                                        Optional<FieldSignatureInfo> firstClusteringCol,
+                                                        List<FieldSignatureInfo> clusteringCols,
+                                                        List<ClassSignatureInfo> classesSignature,
+                                                        ClassSignatureInfo lastSignature) {
 
         final ClassSignatureInfo classSignature = classesSignature.get(0);
         final ClassSignatureInfo nextSignature = classesSignature.get(1);
         final FieldSignatureInfo clusteringColumnInfo = clusteringCols.get(0);
-        final TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, signature.selectClassName()
+        final TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, rootClassName
                 + "." + classSignature.className
                 + "." + DSL_RELATION);
 
@@ -195,12 +209,12 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         TypeSpec relationClass = TypeSpec.classBuilder(DSL_RELATION)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
-                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
-                .addMethod(buildColumnRelation(GT, lastSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
-                .addMethod(buildColumnRelation(GTE, lastSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
-                .addMethod(buildColumnRelation(LT, lastSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
-                .addMethod(buildColumnRelation(LTE, lastSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildColumnRelation(GT, lastSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildColumnRelation(GTE, lastSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildColumnRelation(LT, lastSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildColumnRelation(LTE, lastSignature.returnClassType, clusteringColumnInfo))
                 .addMethod(buildDoubleColumnRelation(GT, LT, lastSignature.returnClassType, clusteringColumnInfo))
                 .addMethod(buildDoubleColumnRelation(GT, LTE, lastSignature.returnClassType, clusteringColumnInfo))
                 .addMethod(buildDoubleColumnRelation(GTE, LT, lastSignature.returnClassType, clusteringColumnInfo))
@@ -208,12 +222,7 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .build();
 
         builder.addType(relationClass);
-        builder.addMethod(MethodSpec.methodBuilder(clusteringColumnInfo.fieldName)
-                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L(.?)</strong>", clusteringColumnInfo.quotedCqlColumn)
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addStatement("return new $T()", relationClassTypeName)
-                .returns(relationClassTypeName)
-                .build());
+        builder.addMethod(buildRelationMethod(clusteringColumnInfo.fieldName, relationClassTypeName));
 
         // Tuple notation (col1, col2, ..., colN) < (:col1, :col2, ..., :colN)
         for (int i = 2; i <= clusteringCols.size(); i++) {
@@ -252,11 +261,7 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                     .build();
 
             builder.addType(multiRelationClass);
-            builder.addMethod(MethodSpec.methodBuilder(multiRelationName)
-                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                    .addStatement("return new $T()", multiRelationClassTypeName)
-                    .returns(multiRelationClassTypeName)
-                    .build());
+            builder.addMethod(buildRelationMethod(multiRelationName, multiRelationClassTypeName));
         }
 
         maybeBuildOrderingBy(classSignature, firstClusteringCol, builder);

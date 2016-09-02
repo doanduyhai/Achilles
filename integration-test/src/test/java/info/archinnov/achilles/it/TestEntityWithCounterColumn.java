@@ -90,7 +90,7 @@ public class TestEntityWithCounterColumn {
                 .fromBaseTable()
                 .count().count_Incr(incr)
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .execute();
 
         //Then
@@ -151,7 +151,7 @@ public class TestEntityWithCounterColumn {
                 .delete()
                 .allColumns_FromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .execute();
 
         //Then

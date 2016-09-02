@@ -23,6 +23,9 @@ import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
@@ -46,11 +49,11 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         boolean hasCounter = hasCounter(signature);
         final ClassSignatureInfo lastSignature = classesSignature.get(classesSignature.size() - 1);
 
-        final List<TypeSpec> partitionKeysWhereClasses = buildWhereClassesForPartitionKeys(partitionKeys,
-                classesSignature, clusteringCols.size() > 0);
+        final List<TypeSpec> partitionKeysWhereClasses = buildWhereClassesForPartitionKeys(signature.deleteClassName(),
+                partitionKeys, classesSignature, clusteringCols.size() > 0);
 
-        final List<TypeSpec> clusteringColsWhereClasses = buildWhereClassesForClusteringColumns(clusteringCols,
-                classesSignature);
+        final List<TypeSpec> clusteringColsWhereClasses = buildWhereClassesForClusteringColumns(signature.deleteClassName(),
+                clusteringCols, classesSignature);
 
         final TypeSpec deleteEndClass = buildDeleteEndClass(signature, lastSignature, hasCounter);
 
@@ -73,7 +76,8 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         boolean hasCounter = hasCounter(signature);
         final ClassSignatureInfo lastSignature = classesSignature.get(classesSignature.size() - 1);
 
-        final List<TypeSpec> partitionKeysWhereClasses = buildWhereClassesForPartitionKeys(partitionKeys, classesSignature, false);
+        final List<TypeSpec> partitionKeysWhereClasses = buildWhereClassesForPartitionKeys(signature.deleteStaticClassName(),
+                partitionKeys, classesSignature, false);
 
         final TypeSpec deleteEndClass = buildDeleteEndClass(signature, lastSignature, hasCounter);
 
@@ -104,9 +108,10 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    public List<TypeSpec> buildWhereClassesForPartitionKeys(List<FieldSignatureInfo> partitionKeys,
-                                                                    List<ClassSignatureInfo> classesSignature,
-                                                                    boolean hasClusterings) {
+    public List<TypeSpec> buildWhereClassesForPartitionKeys(String rootClassName,
+                                                            List<FieldSignatureInfo> partitionKeys,
+                                                            List<ClassSignatureInfo> classesSignature,
+                                                            boolean hasClusterings) {
         if (partitionKeys.isEmpty()) {
             return new ArrayList<>();
         } else {
@@ -117,10 +122,10 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
             partitionKeys.remove(0);
             classesSignature.remove(0);
 
-            final TypeSpec typeSpec = buildDeleteWhereForPartitionKey(partitionKeyInfo, currentSignature,
+            final TypeSpec typeSpec = buildDeleteWhereForPartitionKey(rootClassName, partitionKeyInfo, currentSignature,
                     nextSignature, hasClusterings);
 
-            final List<TypeSpec> typeSpecs = buildWhereClassesForPartitionKeys(partitionKeys,
+            final List<TypeSpec> typeSpecs = buildWhereClassesForPartitionKeys(rootClassName, partitionKeys,
                     classesSignature, hasClusterings);
 
             typeSpecs.add(0, typeSpec);
@@ -128,27 +133,38 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         }
     }
 
-    public TypeSpec buildDeleteWhereForPartitionKey(FieldSignatureInfo partitionInfo,
-                                                            ClassSignatureInfo classSignature,
-                                                            ClassSignatureInfo nextSignature,
-                                                            boolean hasClusterings) {
+    public TypeSpec buildDeleteWhereForPartitionKey(String rootClassName,
+                                                    FieldSignatureInfo partitionInfo,
+                                                    ClassSignatureInfo classSignature,
+                                                    ClassSignatureInfo nextSignature,
+                                                    boolean hasClusterings) {
 
-        final TypeSpec.Builder builder = TypeSpec.classBuilder(classSignature.className)
+        TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, rootClassName
+                + "." + classSignature.className
+                + "." + DSL_RELATION);
+
+        final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(DSL_RELATION)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo));
+
+        if (!hasClusterings) {
+            relationClassBuilder.addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo));
+        }
+
+        return TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(DELETE_WHERE))
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo, FieldNamePrefix.YES));
+                .addType(relationClassBuilder.build())
+                .addMethod(buildRelationMethod(partitionInfo.fieldName, relationClassTypeName))
+                .build();
 
-        if (!hasClusterings) {
-            builder.addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo, FieldNamePrefix.YES));
-        }
-
-        return builder.build();
     }
 
 
-    public List<TypeSpec> buildWhereClassesForClusteringColumns(List<FieldSignatureInfo> clusteringCols,
-                                                                        List<ClassSignatureInfo> classesSignature) {
+    public List<TypeSpec> buildWhereClassesForClusteringColumns(String rootClassName,
+                                                                List<FieldSignatureInfo> clusteringCols,
+                                                                List<ClassSignatureInfo> classesSignature) {
         if (clusteringCols.isEmpty()) {
             return new ArrayList<>();
         } else {
@@ -157,25 +173,34 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
             final FieldSignatureInfo clusteringColumnInfo = clusteringCols.get(0);
             clusteringCols.remove(0);
             classesSignature.remove(0);
-            final TypeSpec currentType = buildDeleteWhereForClusteringColumn(clusteringColumnInfo, classSignature,
+            final TypeSpec currentType = buildDeleteWhereForClusteringColumn(rootClassName, clusteringColumnInfo, classSignature,
                     nextSignature);
-            final List<TypeSpec> typeSpecs = buildWhereClassesForClusteringColumns(clusteringCols, classesSignature);
+            final List<TypeSpec> typeSpecs = buildWhereClassesForClusteringColumns(rootClassName, clusteringCols, classesSignature);
             typeSpecs.add(0, currentType);
             return typeSpecs;
         }
     }
 
-    public TypeSpec buildDeleteWhereForClusteringColumn(FieldSignatureInfo clusteringColumnInfo,
+    public TypeSpec buildDeleteWhereForClusteringColumn(String rootClassName, FieldSignatureInfo clusteringColumnInfo,
                                                                 ClassSignatureInfo classSignature,
                                                                 ClassSignatureInfo nextSignature) {
 
-        final TypeSpec.Builder builder = TypeSpec.classBuilder(classSignature.className)
+        TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, rootClassName
+                + "." + classSignature.className
+                + "." + DSL_RELATION);
+
+        final TypeSpec relationClass = TypeSpec.classBuilder(DSL_RELATION)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo))
+                .build();
+
+        return TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(DELETE_WHERE))
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.YES));
-
-        return builder.build();
+                .addType(relationClass)
+                .addMethod(buildRelationMethod(clusteringColumnInfo.fieldName, relationClassTypeName))
+                .build();
     }
 }
 

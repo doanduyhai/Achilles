@@ -97,7 +97,7 @@ public class TestEntityWithStaticCounterColumn {
                 .fromBaseTable()
                 .staticCount().staticCount_Incr(staticCount)
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .execute();
 
         //Then
@@ -165,7 +165,7 @@ public class TestEntityWithStaticCounterColumn {
                 .staticCount()
                 .fromBaseTable()
                 .where()
-                .id_Eq(id)
+                .id().Eq(id)
                 .execute();
 
         //Then

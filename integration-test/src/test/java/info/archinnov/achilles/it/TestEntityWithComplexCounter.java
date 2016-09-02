@@ -100,8 +100,8 @@ public class TestEntityWithComplexCounter {
                 .fromBaseTable()
                 .counterWithCodec().counterWithCodec_Incr(codecCount + "")
                 .where()
-                .id_Eq(id)
-                .uuid_Eq(uuid)
+                .id().Eq(id)
+                .uuid().Eq(uuid)
                 .execute();
 
         //Then
