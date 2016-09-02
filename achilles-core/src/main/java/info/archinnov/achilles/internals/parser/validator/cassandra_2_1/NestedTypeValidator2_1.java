@@ -34,7 +34,7 @@ import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
 import info.archinnov.achilles.type.tuples.*;
 
-public class NestedTypeValidator2_1 implements NestedTypesValidator {
+public class NestedTypeValidator2_1 extends NestedTypesValidator {
 
     @Override
     public void validate(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {

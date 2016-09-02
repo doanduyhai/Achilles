@@ -40,7 +40,6 @@ import info.archinnov.achilles.internals.entities.EntityWithStaticColumn;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
-import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener;
 import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener.LWTResult;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 
@@ -218,10 +217,10 @@ public class TestEntityWithStaticColumn {
                 .dsl()
                 .updateStatic()
                 .fromBaseTable()
-                .staticCol_Set("updated_static")
+                .staticCol().Set("updated_static")
                 .where()
                 .id_Eq(id)
-                .ifStaticCol_Eq("static_val")
+                .if_StaticCol().Eq("static_val")
                 .execute();
 
         //Then

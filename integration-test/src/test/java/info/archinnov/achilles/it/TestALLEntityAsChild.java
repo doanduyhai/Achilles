@@ -212,7 +212,7 @@ public class TestALLEntityAsChild {
                 .dsl()
                 .update()
                 .fromBaseTable()
-                .anotherValue_Set("another_child_val")
+                .anotherValue().Set("another_child_val")
                 .where()
                 .id_Eq(id)
                 .execute();

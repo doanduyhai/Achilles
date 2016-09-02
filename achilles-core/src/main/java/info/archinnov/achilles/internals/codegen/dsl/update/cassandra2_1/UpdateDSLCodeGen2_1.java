@@ -18,5 +18,5 @@ package info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_1;
 
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 
-public class UpdateDSLCodeGen2_1 implements UpdateDSLCodeGen {
+public class UpdateDSLCodeGen2_1 extends UpdateDSLCodeGen {
 }

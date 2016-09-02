@@ -25,7 +25,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,8 +81,8 @@ public class TestDSLEntityWithClusterings {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .uuid_Eq(uuid)
-                .date_Eq(date)
+                .uuid().Eq(uuid)
+                .date().Eq(date)
                 .getOne();
 
         //Then
@@ -154,7 +153,7 @@ public class TestDSLEntityWithClusterings {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .uuid_And_date_Gte_And_Lt(uuid1, date2, uuid2, date4)
+                .uuid_And_date().Gte_And_Lt(uuid1, date2, uuid2, date4)
                 .getList();
 
         //Then
@@ -176,7 +175,7 @@ public class TestDSLEntityWithClusterings {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .uuid_And_date_Gte(uuid2, date4)
+                .uuid_And_date().Gte(uuid2, date4)
                 .getList();
 
         assertThat(list).hasSize(2);
@@ -242,7 +241,7 @@ public class TestDSLEntityWithClusterings {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .uuid_And_date_Gt_And_uuid_Lt(uuid1, date2, uuid2)
+                .uuid_And_date().uuid_And_date_Gt_And_uuid_Lt(uuid1, date2, uuid2)
                 .getList();
 
         //Then
@@ -308,8 +307,8 @@ public class TestDSLEntityWithClusterings {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .uuid_IN(uuid1, uuid2)
-                .date_Gte_And_Lte(date3, date5)
+                .uuid().IN(uuid1, uuid2)
+                .date().Gte_And_Lte(date3, date5)
                 .getList();
 
         //Then
@@ -379,8 +378,8 @@ public class TestDSLEntityWithClusterings {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .uuid_IN(uuid1, uuid2)
-                .date_IN(date3, date5)
+                .uuid().IN(uuid1, uuid2)
+                .date().IN(date3, date5)
                 .getList();
 
         //Then
@@ -451,8 +450,8 @@ public class TestDSLEntityWithClusterings {
                 .fromBaseTable()
                 .where()
                 .id_IN(id1, id2)
-                .uuid_Eq(uuid)
-                .date_IN(date3, date5)
+                .uuid().Eq(uuid)
+                .date().IN(date3, date5)
                 .getList();
 
         //Then
@@ -516,7 +515,7 @@ public class TestDSLEntityWithClusterings {
                 .dsl()
                 .update()
                 .fromBaseTable()
-                .value_Set("new_value")
+                .value().Set("new_value")
                 .where()
                 .id_IN(id1, id2)
                 .uuid_Eq(uuid)

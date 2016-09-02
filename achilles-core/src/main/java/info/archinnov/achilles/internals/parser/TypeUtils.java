@@ -76,11 +76,14 @@ import info.archinnov.achilles.validation.Validator;
 public class TypeUtils {
 
     public static final String META_SUFFIX = "_AchillesMeta";
+    public static final String DSL_RELATION_SUFFIX = "_Relation";
+    public static final String DSL_RELATION = "Relation";
     public static final String SELECT_COLUMNS_DSL_SUFFIX = "_SelectColumns";
     public static final String SELECT_DSL_SUFFIX = "_Select";
     public static final String SELECT_FROM_DSL_SUFFIX = "_SelectFrom";
     public static final String SELECT_WHERE_DSL_SUFFIX = "_SelectWhere";
     public static final String SELECT_END_DSL_SUFFIX = "_SelectEnd";
+
     public static final String DELETE_DSL_SUFFIX = "_Delete";
     public static final String DELETE_STATIC_DSL_SUFFIX = "_DeleteStatic";
     public static final String DELETE_COLUMNS_DSL_SUFFIX = "_DeleteColumns";

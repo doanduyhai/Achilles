@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.delete;
 
-import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import java.util.ArrayList;
@@ -30,9 +29,9 @@ import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 
 
-public interface DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
+public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
 
-    default List<TypeSpec> buildWhereClasses(EntityMetaSignature signature) {
+    public List<TypeSpec> buildWhereClasses(EntityMetaSignature signature) {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
@@ -60,7 +59,7 @@ public interface DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         return partitionKeysWhereClasses;
     }
 
-    default List<TypeSpec> buildWhereClassesForStatic(EntityMetaSignature signature) {
+    public List<TypeSpec> buildWhereClassesForStatic(EntityMetaSignature signature) {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(DELETE_STATIC_DSL_SUFFIX,
@@ -83,7 +82,7 @@ public interface DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
     }
 
 
-    default TypeSpec buildDeleteEndClass(EntityMetaSignature signature,
+    public TypeSpec buildDeleteEndClass(EntityMetaSignature signature,
                                                 ClassSignatureInfo lastSignature,
                                                 boolean hasCounter) {
 
@@ -100,12 +99,12 @@ public interface DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildGetEncodedBoundValuesInternal())
                 .addMethod(buildGetThis(lastSignature.returnClassType));
 
-        buildLWtConditionMethods(signature, lastSignature, hasCounter, builder);
+        buildLWtConditionMethods(signature, lastSignature.className, lastSignature, hasCounter, builder);
 
         return builder.build();
     }
 
-    default List<TypeSpec> buildWhereClassesForPartitionKeys(List<FieldSignatureInfo> partitionKeys,
+    public List<TypeSpec> buildWhereClassesForPartitionKeys(List<FieldSignatureInfo> partitionKeys,
                                                                     List<ClassSignatureInfo> classesSignature,
                                                                     boolean hasClusterings) {
         if (partitionKeys.isEmpty()) {
@@ -129,7 +128,7 @@ public interface DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         }
     }
 
-    default TypeSpec buildDeleteWhereForPartitionKey(FieldSignatureInfo partitionInfo,
+    public TypeSpec buildDeleteWhereForPartitionKey(FieldSignatureInfo partitionInfo,
                                                             ClassSignatureInfo classSignature,
                                                             ClassSignatureInfo nextSignature,
                                                             boolean hasClusterings) {
@@ -138,17 +137,17 @@ public interface DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(DELETE_WHERE))
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo, FieldNamePrefix.YES));
 
         if (!hasClusterings) {
-            builder.addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo));
+            builder.addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo, FieldNamePrefix.YES));
         }
 
         return builder.build();
     }
 
 
-    default List<TypeSpec> buildWhereClassesForClusteringColumns(List<FieldSignatureInfo> clusteringCols,
+    public List<TypeSpec> buildWhereClassesForClusteringColumns(List<FieldSignatureInfo> clusteringCols,
                                                                         List<ClassSignatureInfo> classesSignature) {
         if (clusteringCols.isEmpty()) {
             return new ArrayList<>();
@@ -166,7 +165,7 @@ public interface DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         }
     }
 
-    default TypeSpec buildDeleteWhereForClusteringColumn(FieldSignatureInfo clusteringColumnInfo,
+    public TypeSpec buildDeleteWhereForClusteringColumn(FieldSignatureInfo clusteringColumnInfo,
                                                                 ClassSignatureInfo classSignature,
                                                                 ClassSignatureInfo nextSignature) {
 
@@ -174,7 +173,7 @@ public interface DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(DELETE_WHERE))
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.YES));
 
         return builder.build();
     }

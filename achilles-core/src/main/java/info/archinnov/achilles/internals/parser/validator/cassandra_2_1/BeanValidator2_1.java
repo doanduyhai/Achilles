@@ -18,5 +18,5 @@ package info.archinnov.achilles.internals.parser.validator.cassandra_2_1;
 
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 
-public class BeanValidator2_1 implements BeanValidator {
+public class BeanValidator2_1 extends BeanValidator {
 }

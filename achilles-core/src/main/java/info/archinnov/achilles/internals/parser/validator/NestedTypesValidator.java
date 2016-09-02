@@ -29,11 +29,11 @@ import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 
-public interface NestedTypesValidator {
+public abstract class NestedTypesValidator {
 
-    void validate(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass);
+    public abstract void validate(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass);
 
-    default void validateMapKeys(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
+    public void validateMapKeys(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
         final TypeMirror currentType = aptUtils.erasure(annotationTree.getCurrentType());
         if (aptUtils.isAssignableFrom(Map.class, currentType)) {
             final AnnotationTree next = annotationTree.next();
@@ -49,7 +49,7 @@ public interface NestedTypesValidator {
         }
     }
 
-    default void validateIndexAnnotation(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
+    public void validateIndexAnnotation(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
         if (annotationTree.depth() > 2) {
             aptUtils.validateFalse(containsAnnotation(annotationTree, Index.class),
                     "@Index annotation cannot be nested for depth > 2 for field '%s' of class '%s'",

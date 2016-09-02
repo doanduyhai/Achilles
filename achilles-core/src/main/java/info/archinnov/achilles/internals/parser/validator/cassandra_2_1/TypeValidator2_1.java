@@ -18,7 +18,7 @@ package info.archinnov.achilles.internals.parser.validator.cassandra_2_1;
 
 import info.archinnov.achilles.internals.parser.validator.TypeValidator;
 
-public class TypeValidator2_1 implements TypeValidator {
+public class TypeValidator2_1 extends TypeValidator {
 
 
 }

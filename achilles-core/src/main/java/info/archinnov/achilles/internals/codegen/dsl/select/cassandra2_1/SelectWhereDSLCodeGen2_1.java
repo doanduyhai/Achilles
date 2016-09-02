@@ -18,5 +18,5 @@ package info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_1;
 
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
 
-public class SelectWhereDSLCodeGen2_1 implements SelectWhereDSLCodeGen {
+public class SelectWhereDSLCodeGen2_1 extends SelectWhereDSLCodeGen {
 }

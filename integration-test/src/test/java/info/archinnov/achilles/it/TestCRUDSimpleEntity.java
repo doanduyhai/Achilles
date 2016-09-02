@@ -538,7 +538,7 @@ public class TestCRUDSimpleEntity {
                 .where()
                 .id_Eq(id)
                 .date_Eq(date)
-                .ifSimpleSet_Eq(Sets.newHashSet(1.0, 2.0))
+                .if_SimpleSet().Eq(Sets.newHashSet(1.0, 2.0))
                 .withLwtResultListener(lwtResultListener)
                 .execute();
 
@@ -576,7 +576,7 @@ public class TestCRUDSimpleEntity {
                 .where()
                 .id_Eq(id)
                 .date_Eq(date)
-                .ifValue_Lt("_")
+                .if_Value().Lt("_")
                 .withLwtResultListener(lwtResultListener)
                 .execute();
 
@@ -614,7 +614,7 @@ public class TestCRUDSimpleEntity {
                 .where()
                 .id_Eq(id)
                 .date_Eq(date)
-                .ifConsistencyList_NotEq(Arrays.asList(ALL))
+                .if_ConsistencyList().NotEq(Arrays.asList(ALL))
                 .withLwtResultListener(lwtResultListener)
                 .execute();
 

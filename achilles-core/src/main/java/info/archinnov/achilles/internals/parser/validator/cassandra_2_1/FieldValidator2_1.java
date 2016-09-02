@@ -18,5 +18,5 @@ package info.archinnov.achilles.internals.parser.validator.cassandra_2_1;
 
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 
-public class FieldValidator2_1 implements FieldValidator {
+public class FieldValidator2_1 extends FieldValidator {
 }

@@ -34,7 +34,7 @@ import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 
-public class BeanValidator3_0 implements BeanValidator {
+public class BeanValidator3_0 extends BeanValidator {
 
     @Override
     public void validateViewsAgainstBaseTable(AptUtils aptUtils, List<EntityMetaCodeGen.EntityMetaSignature> viewSignatures, List<EntityMetaCodeGen.EntityMetaSignature> entitySignatures) {

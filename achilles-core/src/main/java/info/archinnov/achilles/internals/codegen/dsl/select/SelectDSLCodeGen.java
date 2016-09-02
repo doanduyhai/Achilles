@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.select;
 
-import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType.NEW;
 import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType.THIS;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
@@ -38,9 +37,9 @@ import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
+public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
 
-    default TypeSpec buildSelectClass(EntityMetaSignature signature, SelectWhereDSLCodeGen selectWhereDSLCodeGen) {
+    public TypeSpec buildSelectClass(EntityMetaSignature signature, SelectWhereDSLCodeGen selectWhereDSLCodeGen) {
 
         final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
@@ -85,12 +84,12 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
         selectClassBuilder.addMethod(buildAllColumnsWithSchemaProvider(selectFromTypeName, SELECT_WHERE, "select"));
 
 
-        selectWhereDSLCodeGen.buildWhereClasses(signature).forEach(selectClassBuilder::addType);
+        selectWhereDSLCodeGen.buildWhereClasses(signature, selectWhereDSLCodeGen).forEach(selectClassBuilder::addType);
 
         return selectClassBuilder.build();
     }
 
-    default MethodSpec buildSelectConstructor(EntityMetaSignature signature) {
+    public MethodSpec buildSelectConstructor(EntityMetaSignature signature) {
         String metaClassName = signature.className + META_SUFFIX;
         TypeName metaClassType = ClassName.get(ENTITY_META_PACKAGE, metaClassName);
 
@@ -104,7 +103,7 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    default TypeSpec buildSelectColumns(EntityMetaSignature signature) {
+    public TypeSpec buildSelectColumns(EntityMetaSignature signature) {
 
         TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsReturnType());
 
@@ -136,13 +135,13 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
 
         selectColumnsBuilder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypeName, "selection", THIS));
 
-        selectColumnsBuilder.addMethod(AbstractDSLCodeGen.buildFrom(selectFromTypeName, SELECT_WHERE, "selection"));
-        selectColumnsBuilder.addMethod(AbstractDSLCodeGen.buildFromWithSchemaProvider(selectFromTypeName, SELECT_WHERE, "selection"));
+        selectColumnsBuilder.addMethod(buildFrom(selectFromTypeName, SELECT_WHERE, "selection"));
+        selectColumnsBuilder.addMethod(buildFromWithSchemaProvider(selectFromTypeName, SELECT_WHERE, "selection"));
 
         return selectColumnsBuilder.build();
     }
 
-    default TypeSpec buildSelectFrom(EntityMetaSignature signature, String firstPartitionKey) {
+    public TypeSpec buildSelectFrom(EntityMetaSignature signature, String firstPartitionKey) {
         TypeName selectWhereTypeName = ClassName.get(DSL_PACKAGE, signature.selectWhereReturnType(firstPartitionKey));
 
         TypeName selectEndTypeName = ClassName.get(DSL_PACKAGE, signature.selectEndReturnType());
@@ -169,7 +168,7 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .build();
     }
 
-    default MethodSpec buildSelectColumnMethod(TypeName newTypeName, FieldMetaSignature parsingResult, String selectVariable, ReturnType returnType) {
+    public MethodSpec buildSelectColumnMethod(TypeName newTypeName, FieldMetaSignature parsingResult, String selectVariable, ReturnType returnType) {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(parsingResult.context.fieldName)
                 .addJavadoc("Generate a SELECT ... <strong>$L</strong> ...", parsingResult.context.quotedCqlColumn)
@@ -185,7 +184,7 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
     }
 
 
-    default void buildSelectUDTClassAndMethods(TypeSpec.Builder parentClassBuilder, TypeName returnClassTypeName, String parentClassName,
+    public void buildSelectUDTClassAndMethods(TypeSpec.Builder parentClassBuilder, TypeName returnClassTypeName, String parentClassName,
                                                String parentQuotedCqlColumn, FieldMetaSignature fieldSignature, String selectVariable, ReturnType returnType) {
         final UDTMetaSignature udtMetaSignature = fieldSignature.udtMetaSignature.get();
         final String udtClassName = parentClassName + "." + fieldSignature.context.udtClassName();
@@ -234,7 +233,7 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
         parentClassBuilder.addType(udtClassBuilder.build());
     }
 
-    default MethodSpec buildSelectUDTColumnMethod(TypeName newTypeName, String selectVariable,
+    public MethodSpec buildSelectUDTColumnMethod(TypeName newTypeName, String selectVariable,
                                                   String fieldName, String quotedCqlColumn, ReturnType returnType) {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(fieldName)
@@ -250,7 +249,7 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
         }
     }
 
-    default MethodSpec buildSelectFunctionCallMethod(TypeName newTypeName, String fieldName, ReturnType returnType) {
+    public MethodSpec buildSelectFunctionCallMethod(TypeName newTypeName, String fieldName, ReturnType returnType) {
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("function")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .returns(newTypeName)
@@ -324,7 +323,7 @@ public interface SelectDSLCodeGen extends AbstractDSLCodeGen {
     }
 
 
-    default MethodSpec buildSelectComputedColumnMethod(TypeName newTypeName, FieldMetaSignature parsingResult, String fieldName, ReturnType returnType) {
+    public MethodSpec buildSelectComputedColumnMethod(TypeName newTypeName, FieldMetaSignature parsingResult, String fieldName, ReturnType returnType) {
 
         final ComputedColumnInfo columnInfo = (ComputedColumnInfo) parsingResult.context.columnInfo;
         StringJoiner joiner = new StringJoiner(",", fieldName + ".fcall($S,", ").as($S)");

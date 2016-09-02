@@ -21,15 +21,66 @@ package info.archinnov.achilles.type;
  */
 public enum CassandraVersion {
 
+
     CASSANDRA_2_1_X,
+    /**
+     * New features:
+     * <br/>
+     * <ul>
+     *     <li>User Defined Function, User Defined Aggregate</li>
+     *     <li>JSON Syntax</li>
+     * </ul>
+     */
     CASSANDRA_2_2_X,
+    /**
+     * New features:
+     * <br/>
+     * <ul>
+     *     <li>Materialized Views</li>
+     *     <li>Allow custom indexes with 0,1 or multiple target columns (CASSANDRA-10124)</li>
+     *     <li>Support for IN restrictions on any partition key component or clustering key
+     *          as well as support for EQ and IN multicolumn restrictions has been added to
+     *          UPDATE and DELETE statement</li>
+     *     <li>Support for single-column and multi-colum slice restrictions (>, >=, <= and <)
+     *          has been added to DELETE statements</li>
+     * </ul>
+     */
     CASSANDRA_3_0_X,
     CASSANDRA_3_1,
+    /**
+     * New features:
+     * <br/>
+     * <ul>
+     *     <li>Add support for type casting in selection clause (CASSANDRA-10310)</li>
+     * </ul>
+     */
     CASSANDRA_3_2,
     CASSANDRA_3_3,
     CASSANDRA_3_4,
     CASSANDRA_3_5,
+    /**
+     * New features:
+     * <br/>
+     * <ul>
+     *     <li>Stable SASI with Support LIKE operator in prepared statements (CASSANDRA-11456)</li>
+     *     <li>Add static column support to SASI index (CASSANDRA-11183)</li>
+     *     <li>Allow per-partition LIMIT clause in CQL (CASSANDRA-7017)</li>
+     *     <li>Support for non-frozen user-defined types, updating individual fields of user-defined types (CASSANDRA-7423)</li>
+     *     <li></li>
+     *     <li></li>
+     *     <li></li>
+     * </ul>
+     *
+     */
     CASSANDRA_3_6,
     CASSANDRA_3_7,
+    /**
+     * New features:
+     * <br/>
+     * <ul>
+     *     <li>Allow literal values in UDF/UDA parameters (CASSANDRA-10783)</li>
+     * </ul>
+     *
+     */
     CASSANDRA_3_9
 }

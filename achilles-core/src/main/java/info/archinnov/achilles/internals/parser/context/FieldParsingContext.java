@@ -41,6 +41,7 @@ import info.archinnov.achilles.internals.utils.NamingHelper;
 public class FieldParsingContext {
     public final String fieldName;
     public final String className;
+    public final String simpleClassName;
     public final String cqlColumn;
     public final String quotedCqlColumn;
     public final EntityParsingContext entityContext;
@@ -56,8 +57,9 @@ public class FieldParsingContext {
 
     private FieldParsingContext(GlobalParsingContext parsingContext, TypeElement typeElement, TypeName typeName, String className, String fieldName) {
         this.className = className;
+        this.simpleClassName = className.replaceAll("([^.]+\\.)" ,"");
         this.fieldName = fieldName;
-        this.entityContext = new EntityParsingContext(typeElement, typeName, new LowerCaseNaming(), parsingContext);
+        this.entityContext = new EntityParsingContext(typeElement, typeName, parsingContext.namingStrategy, parsingContext);
         this.columnType = null;
         this.columnInfo = null;
         this.cqlColumn = null;
@@ -75,6 +77,7 @@ public class FieldParsingContext {
         this.columnType = fieldInfoContext.columnType;
         this.columnInfo = fieldInfoContext.columnInfo;
         this.className = entityContext.className;
+        this.simpleClassName = className.replaceAll("([^.]+\\.)" ,"");
         this.cqlColumn = fieldInfoContext.cqlColumn;
         this.quotedCqlColumn = fieldInfoContext.quotedCqlColumn;
         this.buildExtractor = true;

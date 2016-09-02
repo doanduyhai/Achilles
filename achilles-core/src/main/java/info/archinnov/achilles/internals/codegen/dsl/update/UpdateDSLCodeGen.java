@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.update;
 
-import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
@@ -36,12 +35,12 @@ import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
+public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
-    Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
+    public static final Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
             (o1, o2) -> o1._2().order.compareTo(o2._2().order);
 
-    default TypeSpec buildUpdateClass(AptUtils aptUtils, EntityMetaSignature signature, UpdateWhereDSLCodeGen updateWhereDSLCodeGen) {
+    public TypeSpec buildUpdateClass(AptUtils aptUtils, EntityMetaSignature signature, UpdateWhereDSLCodeGen updateWhereDSLCodeGen) {
 
         final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
@@ -80,7 +79,7 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    default TypeSpec buildUpdateStaticClass(AptUtils aptUtils, EntityMetaSignature signature, UpdateWhereDSLCodeGen updateWhereDSLCodeGen) {
+    public TypeSpec buildUpdateStaticClass(AptUtils aptUtils, EntityMetaSignature signature, UpdateWhereDSLCodeGen updateWhereDSLCodeGen) {
 
         final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
@@ -118,7 +117,7 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    default MethodSpec buildUpdateConstructor(EntityMetaSignature signature) {
+    public MethodSpec buildUpdateConstructor(EntityMetaSignature signature) {
         String metaClassName = signature.className + META_SUFFIX;
         TypeName metaClassType = ClassName.get(ENTITY_META_PACKAGE, metaClassName);
 
@@ -132,7 +131,7 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
     }
 
-    default MethodSpec buildFromSchemaProviderMethod(TypeName updateFromTypeName) {
+    public MethodSpec buildFromSchemaProviderMethod(TypeName updateFromTypeName) {
         return MethodSpec.methodBuilder("from")
                 .addJavadoc("Generate an UPDATE <strong>FROM</strong> ... using the given SchemaNameProvider")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -145,7 +144,7 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .build();
     }
 
-    default MethodSpec buildFromBaseTableMethod(TypeName updateFromTypeName) {
+    public MethodSpec buildFromBaseTableMethod(TypeName updateFromTypeName) {
         return MethodSpec.methodBuilder("fromBaseTable")
                 .addJavadoc("Generate an UPDATE <strong>FROM</strong> ...")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -157,7 +156,7 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .build();
     }
 
-    default TypeSpec buildUpdateFrom(AptUtils aptUtils, EntityMetaSignature signature,
+    public TypeSpec buildUpdateFrom(AptUtils aptUtils, EntityMetaSignature signature,
                                             String updateFromClassName,
                                             TypeName updateColumnsTypeName,
                                             List<ColumnType> candidateColumns) {
@@ -174,13 +173,12 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
         signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> candidateColumns.contains(x.context.columnType))
-                .forEach(x -> buildUpdateColumnMethods(aptUtils, updateColumnsTypeName, x, ReturnType.NEW)
-                .forEach(builder::addMethod));
+                .forEach(x -> buildUpdateColumnMethods(aptUtils, builder, updateFromClassName, updateColumnsTypeName, x, ReturnType.NEW));
 
         return builder.build();
     }
 
-    default TypeSpec buildUpdateColumns(AptUtils aptUtils, EntityMetaSignature signature,
+    public TypeSpec buildUpdateColumns(AptUtils aptUtils, EntityMetaSignature signature,
                                                String updateColumnsClassName,
                                                TypeName updateColumnsTypeName,
                                                TypeName updateWhereTypeName,
@@ -198,8 +196,7 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
         signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> candidateColumns.contains(x.context.columnType))
-                .forEach(x -> buildUpdateColumnMethods(aptUtils, updateColumnsTypeName, x, ReturnType.THIS)
-                .forEach(builder::addMethod));
+                .forEach(x -> buildUpdateColumnMethods(aptUtils, builder, updateColumnsClassName, updateColumnsTypeName, x, ReturnType.THIS));
 
         builder.addMethod(MethodSpec.methodBuilder("where")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -211,10 +208,11 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
     }
 
-    default List<MethodSpec> buildUpdateColumnMethods(AptUtils aptUtils,
-                                                             TypeName nextTypeName,
-                                                             FieldMetaSignature parsingResult,
-                                                             ReturnType returnType) {
+    public void buildUpdateColumnMethods(AptUtils aptUtils, TypeSpec.Builder parentBuilder,
+                                          String parentClassName,
+                                          TypeName nextTypeName,
+                                          FieldMetaSignature parsingResult,
+                                          ReturnType returnType) {
 
         final ColumnType columnType = parsingResult.context.columnType;
         final boolean isCounterColumn = columnType == COUNTER || columnType == STATIC_COUNTER;
@@ -222,26 +220,26 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
         final TypeName rawTargetType = getRawType(parsingResult.targetType);
 
         if (rawTargetType.equals(LIST)) {
-            return buildMethodsForListUpdate(aptUtils, nextTypeName, parsingResult, returnType);
+            buildMethodsForListUpdate(aptUtils, parentBuilder, parentClassName, nextTypeName, parsingResult, returnType);
         } else if (rawTargetType.equals(SET)) {
-            return buildMethodsForSetUpdate(aptUtils, nextTypeName, parsingResult, returnType);
+            buildMethodsForSetUpdate(aptUtils, parentBuilder, parentClassName, nextTypeName, parsingResult, returnType);
         } else if (rawTargetType.equals(MAP)) {
-            return buildMethodsForMapUpdate(aptUtils, nextTypeName, parsingResult, returnType);
+            buildMethodsForMapUpdate(aptUtils, parentBuilder, parentClassName, nextTypeName, parsingResult, returnType);
         } else if (isCounterColumn) {
-            return buildMethodsForCounterUpdate(nextTypeName, parsingResult, returnType);
+            buildMethodsForCounterUpdate(parentBuilder, parentClassName, nextTypeName, parsingResult, returnType);
         } else {
-            return Arrays.asList(buildMethodForSimpleUpdate(nextTypeName, parsingResult, returnType));
+            buildMethodForSimpleUpdate(parentBuilder, parentClassName, nextTypeName, parsingResult, returnType);
         }
-
     }
 
-    default MethodSpec buildMethodForSimpleUpdate(TypeName newTypeName, FieldMetaSignature parsingResult,
-                                                         ReturnType returnType) {
+    public void buildMethodForSimpleUpdate(TypeSpec.Builder parentBuilder, String updateColumnsClassName, TypeName newTypeName,
+                                            FieldMetaSignature parsingResult, ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String cqlColumn = parsingResult.context.quotedCqlColumn;
         final TypeName sourceType = parsingResult.sourceType;
 
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder(fieldName + "_Set")
+
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("Set")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ?</strong>", cqlColumn)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -249,21 +247,22 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.set($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName);
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
             builder.addStatement("return new $T(where)", newTypeName);
         } else {
-            builder.addStatement("return this");
-
+            builder.addStatement("return $T.this", newTypeName);
         }
 
-        return builder.returns(newTypeName).build();
+        createRelationClassesForColumns(parentBuilder, updateColumnsClassName, parsingResult, fieldName, Arrays.asList(builder.build()));
     }
 
-    default List<MethodSpec> buildMethodsForListUpdate(AptUtils aptUtils, TypeName newTypeName,
-                                                              FieldMetaSignature parsingResult,
-                                                              ReturnType returnType) {
+
+    public void buildMethodsForListUpdate(AptUtils aptUtils, TypeSpec.Builder parentBuilder, String parentClassName,
+                                            TypeName newTypeName, FieldMetaSignature parsingResult,
+                                            ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String param = fieldName + "_element";
         final String cqlColumn = parsingResult.context.quotedCqlColumn;
@@ -383,15 +382,15 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
             removeAllFrom.addStatement("return new $T(where)", newTypeName);
             set.addStatement("return new $T(where)", newTypeName);
         } else {
-            appendTo.addStatement("return this");
-            appendAllTo.addStatement("return this");
-            prependTo.addStatement("return this");
-            prependAllTo.addStatement("return this");
-            setAtIndex.addStatement("return this");
-            removeAtIndex.addStatement("return this");
-            removeFrom.addStatement("return this");
-            removeAllFrom.addStatement("return this");
-            set.addStatement("return this");
+            appendTo.addStatement("return $T.this", newTypeName);
+            appendAllTo.addStatement("return $T.this", newTypeName);
+            prependTo.addStatement("return $T.this", newTypeName);
+            prependAllTo.addStatement("return $T.this", newTypeName);
+            setAtIndex.addStatement("return $T.this", newTypeName);
+            removeAtIndex.addStatement("return $T.this", newTypeName);
+            removeFrom.addStatement("return $T.this", newTypeName);
+            removeAllFrom.addStatement("return $T.this", newTypeName);
+            set.addStatement("return $T.this", newTypeName);
         }
 
         updateMethods.add(appendTo.build());
@@ -404,12 +403,12 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
         updateMethods.add(removeAllFrom.build());
         updateMethods.add(set.build());
 
-        return updateMethods;
+        createRelationClassesForColumns(parentBuilder, parentClassName, parsingResult, fieldName, updateMethods);
     }
 
-    default List<MethodSpec> buildMethodsForSetUpdate(AptUtils aptUtils, TypeName newTypeName,
-                                                             FieldMetaSignature parsingResult,
-                                                             ReturnType returnType) {
+    public void buildMethodsForSetUpdate(AptUtils aptUtils, TypeSpec.Builder parentBuilder, String parentClassName,
+                                            TypeName newTypeName, FieldMetaSignature parsingResult,
+                                            ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String param = fieldName + "_element";
         final String cqlColumn = parsingResult.context.quotedCqlColumn;
@@ -479,11 +478,11 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
             removeAllFrom.addStatement("return new $T(where)", newTypeName);
             set.addStatement("return new $T(where)", newTypeName);
         } else {
-            addTo.addStatement("return this");
-            addAllTo.addStatement("return this");
-            removeFrom.addStatement("return this");
-            removeAllFrom.addStatement("return this");
-            set.addStatement("return this");
+            addTo.addStatement("return $T.this", newTypeName);
+            addAllTo.addStatement("return $T.this", newTypeName);
+            removeFrom.addStatement("return $T.this", newTypeName);
+            removeAllFrom.addStatement("return $T.this", newTypeName);
+            set.addStatement("return $T.this", newTypeName);
         }
 
         updateMethods.add(addTo.build());
@@ -492,12 +491,12 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
         updateMethods.add(removeAllFrom.build());
         updateMethods.add(set.build());
 
-        return updateMethods;
+        createRelationClassesForColumns(parentBuilder, parentClassName, parsingResult, fieldName, updateMethods);
     }
 
-    default List<MethodSpec> buildMethodsForMapUpdate(AptUtils aptUtils, TypeName newTypeName,
-                                                             FieldMetaSignature parsingResult,
-                                                             ReturnType returnType) {
+    public void buildMethodsForMapUpdate(AptUtils aptUtils, TypeSpec.Builder parentBuilder, String parentClassName,
+                                                      TypeName newTypeName, FieldMetaSignature parsingResult,
+                                                      ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String paramKey = fieldName + "_key";
         final String paramValue = fieldName + "_value";
@@ -561,10 +560,10 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
             removeByKey.addStatement("return new $T(where)", newTypeName);
             set.addStatement("return new $T(where)", newTypeName);
         } else {
-            putTo.addStatement("return this");
-            addAllTo.addStatement("return this");
-            removeByKey.addStatement("return this");
-            set.addStatement("return this");
+            putTo.addStatement("return $T.this", newTypeName);
+            addAllTo.addStatement("return $T.this", newTypeName);
+            removeByKey.addStatement("return $T.this", newTypeName);
+            set.addStatement("return $T.this", newTypeName);
         }
 
         updateMethods.add(putTo.build());
@@ -572,12 +571,12 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
         updateMethods.add(removeByKey.build());
         updateMethods.add(set.build());
 
-        return updateMethods;
+        createRelationClassesForColumns(parentBuilder, parentClassName, parsingResult, fieldName, updateMethods);
     }
 
-    default List<MethodSpec> buildMethodsForCounterUpdate(TypeName newTypeName,
-                                                                 FieldMetaSignature parsingResult,
-                                                                 ReturnType returnType) {
+    public void buildMethodsForCounterUpdate(TypeSpec.Builder parentBuilder, String parentClassName, TypeName newTypeName,
+                                             FieldMetaSignature parsingResult,
+                                             ReturnType returnType) {
         final String fieldName = parsingResult.context.fieldName;
         final String param = fieldName + "_increment";
         final String cqlColumn = parsingResult.context.quotedCqlColumn;
@@ -627,10 +626,10 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
             decrOne.addStatement("return new $T(where)", newTypeName);
             decr.addStatement("return new $T(where)", newTypeName);
         } else {
-            incrOne.addStatement("return this");
-            incr.addStatement("return this");
-            decrOne.addStatement("return this");
-            decr.addStatement("return this");
+            incrOne.addStatement("return $T.this", newTypeName);
+            incr.addStatement("return $T.this", newTypeName);
+            decrOne.addStatement("return $T.this", newTypeName);
+            decr.addStatement("return $T.this", newTypeName);
         }
 
         updateMethods.add(incrOne.build());
@@ -638,7 +637,26 @@ public interface UpdateDSLCodeGen extends AbstractDSLCodeGen {
         updateMethods.add(decrOne.build());
         updateMethods.add(decr.build());
 
-        return updateMethods;
+        createRelationClassesForColumns(parentBuilder, parentClassName, parsingResult, fieldName, updateMethods);
+    }
+
+
+    public void createRelationClassesForColumns(TypeSpec.Builder parentBuilder, String parentClassName, FieldMetaSignature parsingResult, String fieldName, List<MethodSpec> methods) {
+        TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + parsingResult.relationClassnameForUpdate());
+
+        final TypeSpec.Builder builder = TypeSpec.classBuilder(parsingResult.relationClassnameForUpdate())
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+
+        methods.forEach(builder::addMethod);
+
+        final TypeSpec relationClass = builder.build();
+
+        parentBuilder.addType(relationClass);
+        parentBuilder.addMethod(MethodSpec.methodBuilder(fieldName)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addStatement("return new $T()", relationClassTypeName)
+                .returns(relationClassTypeName)
+                .build());
     }
 
 }

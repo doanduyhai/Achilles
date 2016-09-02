@@ -106,7 +106,7 @@ public class TestEntityWithNestedUdtIT {
                 .dsl()
                 .update()
                 .fromBaseTable()
-                .udt_Set(udtWithNoKeySpace)
+                .udt().Set(udtWithNoKeySpace)
                 .where()
                 .id_Eq(id)
                 .execute();

@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.select;
 
-import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 import static java.util.stream.Collectors.toList;
@@ -27,17 +26,14 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 
-public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
+public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
-    default List<TypeSpec> buildWhereClasses(EntityMetaSignature signature) {
+    public List<TypeSpec> buildWhereClasses(EntityMetaSignature signature, SelectWhereDSLCodeGen selectWhereDSLCodeGen) {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
@@ -49,7 +45,7 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 ABSTRACT_SELECT_WHERE_PARTITION, ABSTRACT_SELECT_WHERE);
 
         final List<ClassSignatureInfo> classesSignature =
-                AbstractDSLCodeGen.buildClassesSignatureForWhereClause(signature, classSignatureParams, partitionKeys, clusteringCols,
+                selectWhereDSLCodeGen.buildClassesSignatureForWhereClause(signature, classSignatureParams, partitionKeys, clusteringCols,
                         WhereClauseFor.NORMAL);
 
         final ClassSignatureInfo lastSignature = classesSignature.get(classesSignature.size() - 1);
@@ -65,7 +61,7 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         return partitionKeysWhereClasses;
     }
 
-    default TypeSpec buildSelectEndClass(EntityMetaSignature signature, ClassSignatureInfo lastSignature, Optional<FieldSignatureInfo> firstClustering) {
+    public TypeSpec buildSelectEndClass(EntityMetaSignature signature, ClassSignatureInfo lastSignature, Optional<FieldSignatureInfo> firstClustering) {
 
         final TypeSpec.Builder builder = TypeSpec.classBuilder(lastSignature.className)
                 .superclass(lastSignature.superType)
@@ -78,14 +74,14 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildGetBoundValuesInternal())
                 .addMethod(buildGetEncodedBoundValuesInternal())
                 .addMethod(buildLimit(lastSignature))
-                .addMethod(AbstractDSLCodeGen.buildGetThis(lastSignature.returnClassType));
+                .addMethod(buildGetThis(lastSignature.returnClassType));
 
         maybeBuildOrderingBy(lastSignature, firstClustering, builder);
 
         return builder.build();
     }
 
-    default void maybeBuildOrderingBy(ClassSignatureInfo lastSignature, Optional<FieldSignatureInfo> firstClustering, TypeSpec.Builder builder) {
+    public void maybeBuildOrderingBy(ClassSignatureInfo lastSignature, Optional<FieldSignatureInfo> firstClustering, TypeSpec.Builder builder) {
         if (firstClustering.isPresent()) {
 
             final FieldSignatureInfo fieldSignatureInfo = firstClustering.get();
@@ -111,7 +107,7 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         }
     }
 
-    default MethodSpec buildLimit(ClassSignatureInfo lastSignature) {
+    public MethodSpec buildLimit(ClassSignatureInfo lastSignature) {
         return MethodSpec.methodBuilder("limit")
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>LIMIT :limit</strong>")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -125,7 +121,7 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
     }
 
 
-    default List<TypeSpec> buildWhereClassesForPartitionKeys(List<FieldSignatureInfo> partitionKeys,
+    public List<TypeSpec> buildWhereClassesForPartitionKeys(List<FieldSignatureInfo> partitionKeys,
                                                                     List<ClassSignatureInfo> classesSignature) {
         if (partitionKeys.isEmpty()) {
             return new ArrayList<>();
@@ -139,20 +135,20 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         }
     }
 
-    default TypeSpec buildSelectWhereForPartitionKey(FieldSignatureInfo partitionInfo,
+    public TypeSpec buildSelectWhereForPartitionKey(FieldSignatureInfo partitionInfo,
                                                             ClassSignatureInfo classSignature,
                                                             ClassSignatureInfo nextSignature) {
         return TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(SELECT_WHERE))
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo))
-                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo))
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo, FieldNamePrefix.YES))
+                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo, FieldNamePrefix.YES))
                 .build();
     }
 
 
-    default List<TypeSpec> buildWhereClassesForClusteringColumns(EntityMetaSignature signature,
+    public List<TypeSpec> buildWhereClassesForClusteringColumns(EntityMetaSignature signature,
                                                                         Optional<FieldSignatureInfo> firstClusteringCol,
                                                                         List<FieldSignatureInfo> clusteringCols,
                                                                         List<ClassSignatureInfo> classesSignature,
@@ -171,7 +167,7 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         }
     }
 
-    default TypeSpec buildSelectWhereForClusteringColumn(EntityMetaSignature signature,
+    public TypeSpec buildSelectWhereForClusteringColumn(EntityMetaSignature signature,
                                                                 Optional<FieldSignatureInfo> firstClusteringCol,
                                                                 List<FieldSignatureInfo> clusteringCols,
                                                                 List<ClassSignatureInfo> classesSignature,
@@ -180,6 +176,9 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         final ClassSignatureInfo classSignature = classesSignature.get(0);
         final ClassSignatureInfo nextSignature = classesSignature.get(1);
         final FieldSignatureInfo clusteringColumnInfo = clusteringCols.get(0);
+        final TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, signature.selectClassName()
+                + "." + classSignature.className
+                + "." + DSL_RELATION);
 
         final TypeSpec.Builder builder = TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
@@ -192,24 +191,46 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildGetOptions())
                 .addMethod(buildGetBoundValuesInternal())
                 .addMethod(buildGetEncodedBoundValuesInternal())
-                .addMethod(buildLimit(classSignature))
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo))
-                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, clusteringColumnInfo))
-                .addMethod(buildColumnRelation(GT, lastSignature.returnClassType, clusteringColumnInfo))
-                .addMethod(buildColumnRelation(GTE, lastSignature.returnClassType, clusteringColumnInfo))
-                .addMethod(buildColumnRelation(LT, lastSignature.returnClassType, clusteringColumnInfo))
-                .addMethod(buildColumnRelation(LTE, lastSignature.returnClassType, clusteringColumnInfo))
+                .addMethod(buildLimit(classSignature));
+
+        TypeSpec relationClass = TypeSpec.classBuilder(DSL_RELATION)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
+                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
+                .addMethod(buildColumnRelation(GT, lastSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
+                .addMethod(buildColumnRelation(GTE, lastSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
+                .addMethod(buildColumnRelation(LT, lastSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
+                .addMethod(buildColumnRelation(LTE, lastSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.NO))
                 .addMethod(buildDoubleColumnRelation(GT, LT, lastSignature.returnClassType, clusteringColumnInfo))
                 .addMethod(buildDoubleColumnRelation(GT, LTE, lastSignature.returnClassType, clusteringColumnInfo))
                 .addMethod(buildDoubleColumnRelation(GTE, LT, lastSignature.returnClassType, clusteringColumnInfo))
-                .addMethod(buildDoubleColumnRelation(GTE, LTE, lastSignature.returnClassType, clusteringColumnInfo));
+                .addMethod(buildDoubleColumnRelation(GTE, LTE, lastSignature.returnClassType, clusteringColumnInfo))
+                .build();
 
+        builder.addType(relationClass);
+        builder.addMethod(MethodSpec.methodBuilder(clusteringColumnInfo.fieldName)
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L(.?)</strong>", clusteringColumnInfo.quotedCqlColumn)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addStatement("return new $T()", relationClassTypeName)
+                .returns(relationClassTypeName)
+                .build());
 
         // Tuple notation (col1, col2, ..., colN) < (:col1, :col2, ..., :colN)
         for (int i = 2; i <= clusteringCols.size(); i++) {
             final List<FieldSignatureInfo> fieldInfos = clusteringCols.stream().limit(i).collect(toList());
             final List<FieldSignatureInfo> fieldInfosMinusOne = clusteringCols.stream().limit(i - 1).collect(toList());
-            builder.addMethod(buildTuplesColumnRelation(GT, lastSignature.returnClassType, fieldInfos))
+
+            String multiRelationName = fieldInfos
+                    .stream().map(x -> x.fieldName).reduce((a, b) -> a + "_And_" + b)
+                    .get();
+
+            TypeName multiRelationClassTypeName = ClassName.get(DSL_PACKAGE, signature.selectClassName()
+                            + "." + classSignature.className
+                            + "." + multiRelationName + DSL_RELATION_SUFFIX);
+
+            TypeSpec multiRelationClass = TypeSpec.classBuilder(multiRelationName + DSL_RELATION_SUFFIX)
+                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                    .addMethod(buildTuplesColumnRelation(GT, lastSignature.returnClassType, fieldInfos))
                     .addMethod(buildTuplesColumnRelation(GTE, lastSignature.returnClassType, fieldInfos))
                     .addMethod(buildTuplesColumnRelation(LT, lastSignature.returnClassType, fieldInfos))
                     .addMethod(buildTuplesColumnRelation(LTE, lastSignature.returnClassType, fieldInfos))
@@ -227,7 +248,15 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                     .addMethod(buildAsymmetricColumnDoubleRelation(GT, LT, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos))
                     .addMethod(buildAsymmetricColumnDoubleRelation(GT, LTE, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos))
                     .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LT, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos))
-                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LTE, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos));
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LTE, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos))
+                    .build();
+
+            builder.addType(multiRelationClass);
+            builder.addMethod(MethodSpec.methodBuilder(multiRelationName)
+                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                    .addStatement("return new $T()", multiRelationClassTypeName)
+                    .returns(multiRelationClassTypeName)
+                    .build());
         }
 
         maybeBuildOrderingBy(classSignature, firstClusteringCol, builder);
@@ -235,16 +264,14 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    default MethodSpec buildTuplesColumnRelation(String relation, TypeName nextType, List<FieldSignatureInfo> fieldInfos) {
-        final String methodName = fieldInfos
-                .stream().map(x -> x.fieldName).reduce((a, b) -> a + "_And_" + b)
-                .get() + "_" + upperCaseFirst(relation);
+    public MethodSpec buildTuplesColumnRelation(String relation, TypeName nextType, List<FieldSignatureInfo> fieldInfos) {
+        final String methodName = upperCaseFirst(relation);
 
         StringJoiner paramsJoiner = new StringJoiner(",");
         StringJoiner dataTypeJoiner = new StringJoiner(",");
         fieldInfos
                 .stream()
-                .map(x -> x.cqlColumn)
+                .map(x -> x.quotedCqlColumn)
                 .forEach(x -> paramsJoiner.add("\"" + x + "\""));
 
         final String params = paramsJoiner.toString();
@@ -270,12 +297,8 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         return builder.addStatement("return new $T(where)", nextType).build();
     }
 
-    default MethodSpec buildSymmetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos) {
-        final String methodName = fieldInfos
-                .stream()
-                .map(x -> x.fieldName)
-                .reduce((a, b) -> a + "_And_" + b)
-                .get() + "_" + upperCaseFirst(relation1) + "_And_" + upperCaseFirst(relation2);
+    public MethodSpec buildSymmetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos) {
+        final String methodName = upperCaseFirst(relation1) + "_And_" + upperCaseFirst(relation2);
 
         StringJoiner paramsJoinerRelation1AsString = new StringJoiner(",");
         StringJoiner paramsJoinerRelation2AsString = new StringJoiner(",");
@@ -283,7 +306,7 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
         fieldInfos
                 .stream()
-                .map(x -> x.cqlColumn)
+                .map(x -> x.quotedCqlColumn)
                 .forEach(x -> {
                     paramsJoinerRelation1AsString.add("\"" + x + "\"");
                     paramsJoinerRelation2AsString.add("\"" + x + "\"");
@@ -322,30 +345,30 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         return builder.addStatement("return new $T(where)", nextType).build();
     }
 
-    default MethodSpec buildAsymmetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos1, List<FieldSignatureInfo> fieldInfos2) {
+    public MethodSpec buildAsymmetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos1, List<FieldSignatureInfo> fieldInfos2) {
         final String methodName =
                 fieldInfos1
                         .stream()
                         .map(x -> x.fieldName)
                         .reduce((a, b) -> a + "_And_" + b)
                         .get() + "_" + upperCaseFirst(relation1) + "_And_" +
-                        fieldInfos2
-                                .stream()
-                                .map(x -> x.fieldName)
-                                .reduce((a, b) -> a + "_And_" + b)
-                                .get() + "_" + upperCaseFirst(relation2);
+                fieldInfos2
+                        .stream()
+                        .map(x -> x.fieldName)
+                        .reduce((a, b) -> a + "_And_" + b)
+                        .get() + "_" + upperCaseFirst(relation2);
 
         StringJoiner paramsJoinerRelation1AsString = new StringJoiner(",");
         StringJoiner paramsJoinerRelation2AsString = new StringJoiner(",");
 
         fieldInfos1
                 .stream()
-                .map(x -> x.cqlColumn)
+                .map(x -> x.quotedCqlColumn)
                 .forEach(x -> paramsJoinerRelation1AsString.add("\"" + x + "\""));
 
         fieldInfos2
                 .stream()
-                .map(x -> x.cqlColumn)
+                .map(x -> x.quotedCqlColumn)
                 .forEach(x -> paramsJoinerRelation2AsString.add("\"" + x + "\""));
 
         final String paramsRelation1AsString = paramsJoinerRelation1AsString.toString();
@@ -383,8 +406,8 @@ public interface SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
     }
 
 
-    default MethodSpec buildDoubleColumnRelation(String relation1, String relation2, TypeName nextType, FieldSignatureInfo fieldInfo) {
-        final String methodName = fieldInfo.fieldName + "_" + upperCaseFirst(relation1) + "_And_" + upperCaseFirst(relation2);
+    public MethodSpec buildDoubleColumnRelation(String relation1, String relation2, TypeName nextType, FieldSignatureInfo fieldInfo) {
+        final String methodName = upperCaseFirst(relation1) + "_And_" + upperCaseFirst(relation2);
         final String param1 = fieldInfo.fieldName + "_" + upperCaseFirst(relation1);
         final String param2 = fieldInfo.fieldName + "_" + upperCaseFirst(relation2);
         final String column1 = fieldInfo.cqlColumn + "_" + upperCaseFirst(relation2);

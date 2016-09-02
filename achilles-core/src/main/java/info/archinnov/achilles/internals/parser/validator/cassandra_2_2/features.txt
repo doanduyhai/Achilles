@@ -1,3 +1,0 @@
-UDF/UDA
-JSON syntax
-

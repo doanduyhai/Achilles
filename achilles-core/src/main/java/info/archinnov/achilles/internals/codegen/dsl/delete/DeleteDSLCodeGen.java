@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.delete;
 
-import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
@@ -37,12 +36,12 @@ import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-public interface DeleteDSLCodeGen extends AbstractDSLCodeGen {
+public abstract class DeleteDSLCodeGen extends AbstractDSLCodeGen {
 
-    Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
+    public static final Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
             (o1, o2) -> o1._2().order.compareTo(o2._2().order);
 
-    default TypeSpec buildDeleteClass(EntityMetaSignature signature, DeleteWhereDSLCodeGen deleteWhereDSLCodeGen) {
+    public TypeSpec buildDeleteClass(EntityMetaSignature signature, DeleteWhereDSLCodeGen deleteWhereDSLCodeGen) {
 
         final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
@@ -86,7 +85,7 @@ public interface DeleteDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    default TypeSpec buildDeleteStaticClass(EntityMetaSignature signature, DeleteWhereDSLCodeGen deleteWhereDSLCodeGen) {
+    public TypeSpec buildDeleteStaticClass(EntityMetaSignature signature, DeleteWhereDSLCodeGen deleteWhereDSLCodeGen) {
 
         final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
@@ -126,7 +125,7 @@ public interface DeleteDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    default MethodSpec buildDeleteConstructor(EntityMetaSignature signature) {
+    public MethodSpec buildDeleteConstructor(EntityMetaSignature signature) {
         String metaClassName = signature.className + META_SUFFIX;
         TypeName metaClassType = ClassName.get(ENTITY_META_PACKAGE, metaClassName);
 
@@ -140,7 +139,7 @@ public interface DeleteDSLCodeGen extends AbstractDSLCodeGen {
 
     }
 
-    default TypeSpec buildDeleteColumns(EntityMetaSignature signature,
+    public TypeSpec buildDeleteColumns(EntityMetaSignature signature,
                                                String deleteColumnClass,
                                                TypeName deleteColumnsTypeName,
                                                TypeName deleteFromTypeName,
@@ -165,7 +164,7 @@ public interface DeleteDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    default TypeSpec buildDeleteFrom(EntityMetaSignature signature,
+    public TypeSpec buildDeleteFrom(EntityMetaSignature signature,
                                             String deleteFromClassName,
                                             TypeName deleteWhereTypeName) {
 
@@ -185,7 +184,7 @@ public interface DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .build();
     }
 
-    default MethodSpec buildDeleteColumnMethod(TypeName deleteTypeName, FieldMetaSignature parsingResult, ReturnType returnType) {
+    public MethodSpec buildDeleteColumnMethod(TypeName deleteTypeName, FieldMetaSignature parsingResult, ReturnType returnType) {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(parsingResult.context.fieldName)
                 .addJavadoc("Generate DELETE <strong>$L</strong> ...", parsingResult.context.quotedCqlColumn)

@@ -246,7 +246,7 @@ public class TestInterceptorsSimpleEntity {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .date_Gte_And_Lt(date1, date9)
+                .date().Gte_And_Lt(date1, date9)
                 .getList();
 
         //Then
@@ -295,7 +295,7 @@ public class TestInterceptorsSimpleEntity {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .date_Gte_And_Lt(date1, date9)
+                .date().Gte_And_Lt(date1, date9)
                 .iterator();
 
         //Then

@@ -41,15 +41,15 @@ import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-public interface BeanValidator {
+public abstract class BeanValidator {
 
-    List<String> RESERVED_KEYWORDS = Arrays.asList(
+    public final List<String> RESERVED_KEYWORDS = Arrays.asList(
             ("add,allow,alter,and,any,apply,asc,authorize,batch,begin,by,columnfamily,create,delete,desc,drop,each_quorum,from,grant,in,index,inet,infinity," +
                     "insert,into,keyspace,keyspaces,limit,local_one,local_quorum,modify,nan,norecursive,of,on,order,primary,quorum,rename,revoke,schema," +
                     "select,set,table,three,to,token,truncate,two,unlogged,update,use,using,where,with")
                     .split(","));
 
-    default void validateEntityNames(AptUtils aptUtils, List<TypeElement> entityTypes) {
+    public void validateEntityNames(AptUtils aptUtils, List<TypeElement> entityTypes) {
         Map<String, String> entities = new HashedMap();
         for (TypeElement entityType : entityTypes) {
             final String className = entityType.getSimpleName().toString();
@@ -66,7 +66,7 @@ public interface BeanValidator {
         }
     }
 
-    default void validateIsAConcreteNonFinalClass(AptUtils aptUtils, TypeElement typeElement) {
+    public void validateIsAConcreteNonFinalClass(AptUtils aptUtils, TypeElement typeElement) {
         final Name name = typeElement.getQualifiedName();
         aptUtils.validateTrue(typeElement.getKind() == ElementKind.CLASS, "Bean type '%s' should be a class", name);
         final Set<Modifier> modifiers = typeElement.getModifiers();
@@ -74,7 +74,7 @@ public interface BeanValidator {
         aptUtils.validateFalse(modifiers.contains(Modifier.FINAL), "Bean type '%s' should not be final", name);
     }
 
-    default void validateHasPublicConstructor(AptUtils aptUtils, TypeName typeName, TypeElement typeElement) {
+    public void validateHasPublicConstructor(AptUtils aptUtils, TypeName typeName, TypeElement typeElement) {
         final long constructorCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
                 .stream()
                 .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
@@ -83,7 +83,7 @@ public interface BeanValidator {
         aptUtils.validateTrue(constructorCount == 1, "Bean type '%s' should have a public constructor", typeName);
     }
 
-    default void validateNoDuplicateNames(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
+    public void validateNoDuplicateNames(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
         Map<String, String> mapping = new HashMap<>();
         parsingResults
                 .stream()
@@ -101,7 +101,7 @@ public interface BeanValidator {
                 });
     }
 
-    default void validateCqlColumnNotReservedWords(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
+    public void validateCqlColumnNotReservedWords(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
         parsingResults
                 .stream()
                 .map(x -> Tuple2.of(x.context.cqlColumn, x.context.fieldName))
@@ -110,7 +110,7 @@ public interface BeanValidator {
                         x._1(), x._2(), rawClassType));
     }
 
-    default void validateStaticColumns(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
+    public void validateStaticColumns(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
         final boolean hasStatic = parsingResults
                 .stream()
                 .filter(x -> (x.context.columnType == ColumnType.STATIC || x.context.columnType == ColumnType.STATIC_COUNTER))
@@ -126,11 +126,11 @@ public interface BeanValidator {
         }
     }
 
-    default void validateNoStaticColumnsForView(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
+    public void validateNoStaticColumnsForView(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
         // No op
     }
 
-    default void validateHasPartitionKey(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
+    public void validateHasPartitionKey(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
         final boolean hasPartitionKey = parsingResults
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.PARTITION)
@@ -140,7 +140,7 @@ public interface BeanValidator {
                 "The class '%s' should have at least 1 partition key (@PartitionKey)", rawClassType);
     }
 
-    default boolean isCounterTable(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
+    public boolean isCounterTable(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
         final boolean hasCounter = parsingResults
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.COUNTER)
@@ -162,7 +162,7 @@ public interface BeanValidator {
         return hasCounter || hasStaticCounter;
     }
 
-    default void validateComputed(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
+    public void validateComputed(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
         List<String> fieldNames = parsingResults
                 .stream()
                 .map(x -> x.context.fieldName)
@@ -195,7 +195,7 @@ public interface BeanValidator {
                 });
     }
 
-    default void validateViewsAgainstBaseTable(AptUtils aptUtils, List<EntityMetaSignature> viewSignatures, List<EntityMetaSignature> entitySignatures) {
+    public void validateViewsAgainstBaseTable(AptUtils aptUtils, List<EntityMetaSignature> viewSignatures, List<EntityMetaSignature> entitySignatures) {
         // No op by default
     }
 

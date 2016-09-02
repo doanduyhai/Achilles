@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.update;
 
-import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import java.util.ArrayList;
@@ -29,16 +28,16 @@ import com.squareup.javapoet.TypeSpec;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 
-public interface UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
+public abstract class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
 
-    MethodSpec WHERE_CONSTRUCTOR = MethodSpec.constructorBuilder()
+    public static final MethodSpec WHERE_CONSTRUCTOR = MethodSpec.constructorBuilder()
             .addModifiers(Modifier.PUBLIC)
             .addParameter(UPDATE_WHERE, "where")
             .addStatement("super(where)")
             .build();
 
 
-    default List<TypeSpec> buildWhereClasses(EntityMetaSignature signature) {
+    public List<TypeSpec> buildWhereClasses(EntityMetaSignature signature) {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
@@ -64,7 +63,7 @@ public interface UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
         return partitionKeysWhereClasses;
     }
 
-    default List<TypeSpec> buildWhereClassesForStatic(EntityMetaSignature signature) {
+    public List<TypeSpec> buildWhereClassesForStatic(EntityMetaSignature signature) {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
@@ -87,7 +86,7 @@ public interface UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
         return partitionKeysWhereClasses;
     }
 
-    default TypeSpec buildUpdateEndClass(EntityMetaSignature signature,
+    public TypeSpec buildUpdateEndClass(EntityMetaSignature signature,
                                                 ClassSignatureInfo lastSignature,
                                                 boolean hasCounter) {
 
@@ -103,12 +102,12 @@ public interface UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildGetEncodedBoundValuesInternal())
                 .addMethod(buildGetThis(lastSignature.returnClassType));
 
-        buildLWtConditionMethods(signature, lastSignature, hasCounter, builder);
+        buildLWtConditionMethods(signature, lastSignature.className, lastSignature, hasCounter, builder);
 
         return builder.build();
     }
 
-    default List<TypeSpec> buildWhereClassesForPartitionKeys(List<FieldSignatureInfo> partitionKeys,
+    public List<TypeSpec> buildWhereClassesForPartitionKeys(List<FieldSignatureInfo> partitionKeys,
                                                                     List<ClassSignatureInfo> classesSignature) {
         if (partitionKeys.isEmpty()) {
             return new ArrayList<>();
@@ -125,7 +124,7 @@ public interface UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
         }
     }
 
-    default TypeSpec buildUpdateWhereForPartitionKey(FieldSignatureInfo partitionInfo,
+    public TypeSpec buildUpdateWhereForPartitionKey(FieldSignatureInfo partitionInfo,
                                                             ClassSignatureInfo classSignature,
                                                             ClassSignatureInfo nextSignature) {
 
@@ -134,14 +133,14 @@ public interface UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(WHERE_CONSTRUCTOR)
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo))
-                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo, FieldNamePrefix.YES))
+                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo, FieldNamePrefix.YES));
 
         return builder.build();
     }
 
 
-    default List<TypeSpec> buildWhereClassesForClusteringColumns(List<FieldSignatureInfo> clusteringCols,
+    public List<TypeSpec> buildWhereClassesForClusteringColumns(List<FieldSignatureInfo> clusteringCols,
                                                                         List<ClassSignatureInfo> classesSignature) {
         if (clusteringCols.isEmpty()) {
             return new ArrayList<>();
@@ -159,7 +158,7 @@ public interface UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
         }
     }
 
-    default TypeSpec buildUpdateWhereForClusteringColumn(FieldSignatureInfo clusteringColumnInfo,
+    public TypeSpec buildUpdateWhereForClusteringColumn(FieldSignatureInfo clusteringColumnInfo,
                                                                 ClassSignatureInfo classSignature,
                                                                 ClassSignatureInfo nextSignature) {
 
@@ -167,7 +166,7 @@ public interface UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(WHERE_CONSTRUCTOR)
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo, FieldNamePrefix.YES));
 
         return builder.build();
     }

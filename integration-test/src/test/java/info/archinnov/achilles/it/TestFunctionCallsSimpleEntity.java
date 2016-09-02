@@ -102,7 +102,7 @@ public class TestFunctionCallsSimpleEntity {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .date_Eq(date)
+                .date().Eq(date)
                 .getTypedMap();
 
         //Then
@@ -128,7 +128,7 @@ public class TestFunctionCallsSimpleEntity {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .date_Eq(date)
+                .date().Eq(date)
                 .getTypedMap();
 
         //Then
@@ -153,7 +153,7 @@ public class TestFunctionCallsSimpleEntity {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .date_Eq(date)
+                .date().Eq(date)
                 .getTypedMap();
 
         //Then
@@ -178,7 +178,7 @@ public class TestFunctionCallsSimpleEntity {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .date_Eq(date)
+                .date().Eq(date)
                 .getTypedMap();
 
         //Then
@@ -203,7 +203,7 @@ public class TestFunctionCallsSimpleEntity {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .date_Eq(date)
+                .date().Eq(date)
                 .getTypedMap();
 
         //Then
@@ -231,7 +231,7 @@ public class TestFunctionCallsSimpleEntity {
                 .fromBaseTable()
                 .where()
                 .id_Eq(id)
-                .date_Eq(date)
+                .date().Eq(date)
                 .getTypedMap();
 
     }

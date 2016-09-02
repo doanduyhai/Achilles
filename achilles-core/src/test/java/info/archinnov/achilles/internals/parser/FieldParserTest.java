@@ -671,7 +671,7 @@ public class FieldParserTest extends AbstractTestProcessor {
             assertThat(parsingResult.targetType.toString()).isEqualTo(UDTValue.class.getCanonicalName());
             assertThat(parsingResult.udtMetaSignature.isPresent()).isTrue();
             assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
-                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_udt.txt"));
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_nested_udt.txt"));
         });
         launchTest();
     }

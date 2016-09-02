@@ -18,6 +18,7 @@ package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -593,6 +594,16 @@ public class FieldParser {
             this.propertyType = propertyType;
             this.typeCode = typeCode;
             this.udtMetaSignature = Optional.empty();
+        }
+//
+//        public String relationFQCNForUpdate() {
+//            return context.simpleClassName + UPDATE_DSL_SUFFIX + "."
+//                    + context.simpleClassName + UPDATE_COLUMNS_DSL_SUFFIX + "."
+//                    + upperCaseFirst(context.fieldName) + DSL_RELATION_SUFFIX;
+//        }
+
+        public String relationClassnameForUpdate() {
+            return upperCaseFirst(context.fieldName) + DSL_RELATION_SUFFIX;
         }
 
         public FieldSpec buildPropertyAsField() {

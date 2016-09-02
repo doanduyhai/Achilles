@@ -18,5 +18,5 @@ package info.archinnov.achilles.internals.codegen.dsl.delete.cassandra2_1;
 
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteDSLCodeGen;
 
-public class DeleteDSLCodeGen2_1 implements DeleteDSLCodeGen {
+public class DeleteDSLCodeGen2_1 extends DeleteDSLCodeGen {
 }

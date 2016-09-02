@@ -36,9 +36,9 @@ import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 
-public interface FieldValidator {
+public abstract class FieldValidator {
 
-    default void checkNoMutuallyExclusiveAnnotations(AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
+    public void checkNoMutuallyExclusiveAnnotations(AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
                                                             List<Optional<? extends Annotation>> annotations) {
         annotations
             .stream()
@@ -58,7 +58,7 @@ public interface FieldValidator {
         });
     }
 
-    default void checkNoMutuallyExclusiveCodecAnnotations(AptUtils aptUtils, String fieldName, Name rawEntityClass,
+    public void checkNoMutuallyExclusiveCodecAnnotations(AptUtils aptUtils, String fieldName, Name rawEntityClass,
                                                             List<? extends Annotation> annotations) {
         final ArrayList<Annotation> shifted = new ArrayList<>(annotations);
         final Annotation first = shifted.remove(0);
@@ -76,7 +76,7 @@ public interface FieldValidator {
         }
     }
 
-    default void checkNoMutuallyExclusiveCodecAnnotations(AptUtils aptUtils, String fieldName, Name rawEntityClass,
+    public void checkNoMutuallyExclusiveCodecAnnotations(AptUtils aptUtils, String fieldName, Name rawEntityClass,
                                                                  Annotation left, List<? extends Annotation> right) {
         if (left != null) {
             for(int i=0; i<right.size(); i++) {
@@ -91,7 +91,7 @@ public interface FieldValidator {
         }
     }
 
-    default void validateCompatibleColumnAnnotationsOnField(AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
+    public void validateCompatibleColumnAnnotationsOnField(AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
                                                                   Optional<PartitionKey> partitionKey, Optional<ClusteringColumn> clusteringColumn,
                                                                   Optional<Static> staticColumn, Optional<Computed> computed,
                                                                   Optional<Counter> counter) {
@@ -100,7 +100,7 @@ public interface FieldValidator {
         checkNoMutuallyExclusiveAnnotations(aptUtils, fieldName, rawEntityClass, asList(computed, counter));
     }
 
-    default void validateCompatibleCodecAnnotationsOnField(AptUtils aptUtils, String fieldName, Name className,
+    public void validateCompatibleCodecAnnotationsOnField(AptUtils aptUtils, String fieldName, Name className,
                                                                  Frozen frozen, JSON json, Enumerated enumerated, Codec codec,
                                                                  RuntimeCodec runtimeCodec,
                                                                  Computed computed, Counter counter, TimeUUID timeUUID) {
@@ -113,7 +113,7 @@ public interface FieldValidator {
 
     }
 
-    default void validateAllowedFrozen(boolean isFrozen, AptUtils aptUtils, VariableElement elm, String fieldName, TypeName rawClass) {
+    public void validateAllowedFrozen(boolean isFrozen, AptUtils aptUtils, VariableElement elm, String fieldName, TypeName rawClass) {
         if (isFrozen) {
             aptUtils.validateTrue(aptUtils.isCompositeTypeForCassandra(elm.asType()),
                     "@Frozen annotation on field '%s' of class '%s' is only allowed for collections and UDT",
@@ -121,13 +121,13 @@ public interface FieldValidator {
         }
     }
 
-    default void validateAllowedType(AptUtils aptUtils, TypeName rawTargetType, FieldParsingContext context) {
+    public void validateAllowedType(AptUtils aptUtils, TypeName rawTargetType, FieldParsingContext context) {
         aptUtils.validateTrue(ALLOWED_TYPES.contains(rawTargetType),
                 "Impossible to parse type '%s' from field '%s' of class '%s'. It should be a supported type",
                 rawTargetType.toString(), context.fieldName, context.className);
     }
 
-    default void validateCounter(AptUtils aptUtils, TypeName targetType, Set<Class<? extends Annotation>> annotations, FieldParsingContext context) {
+    public void validateCounter(AptUtils aptUtils, TypeName targetType, Set<Class<? extends Annotation>> annotations, FieldParsingContext context) {
         if (containsAnnotation(annotations, Counter.class)) {
             aptUtils.validateTrue(targetType.box().equals(TypeName.LONG.box()),
                     "Field '%s' of class '%s' annotated with @Counter should be of type Long/long",
@@ -135,7 +135,7 @@ public interface FieldValidator {
         }
     }
 
-    default void validateCorrectKeysOrder(AptUtils aptUtils, TypeName rawClassName, List<Tuple2<String, KeyColumnInfo>> keyTuples, String type) {
+    public void validateCorrectKeysOrder(AptUtils aptUtils, TypeName rawClassName, List<Tuple2<String, KeyColumnInfo>> keyTuples, String type) {
         /**
          * Math formula : sum of N consecutive integers = N * (N+1)/2
          */
@@ -146,7 +146,7 @@ public interface FieldValidator {
         aptUtils.validateTrue(checkForKeyOrdering == sumOfOrders, "The %s ordering is wrong in class '%s'", type, rawClassName);
     }
 
-    default CodecContext validateCodec(AptUtils aptUtils, TypeValidator typeValidator, CodecContext codecContext, TypeName sourceType,
+    public CodecContext validateCodec(AptUtils aptUtils, TypeValidator typeValidator, CodecContext codecContext, TypeName sourceType,
                                              Optional<TypeName> cqlClass, boolean isCounter) {
         final String codecClass = codecContext.codecType.toString();
 
