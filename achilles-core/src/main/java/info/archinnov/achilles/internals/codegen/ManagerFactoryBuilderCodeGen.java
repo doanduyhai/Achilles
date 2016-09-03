@@ -20,17 +20,17 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
+
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
+import info.archinnov.achilles.internals.utils.NamingHelper;
 
 public class ManagerFactoryBuilderCodeGen {
 
-    public static TypeSpec buildInstance() {
+    public static TypeSpec buildInstance(GlobalParsingContext context) {
 
-        return TypeSpec.classBuilder(MANAGER_FACTORY_BUILDER_CLASS)
-                .superclass(genericType(ABSTRACT_MANAGER_FACTORY_BUILDER, MANAGER_FACTORY_BUILDER))
+        return TypeSpec.classBuilder(context.managerFactoryBuilderClassName())
+                .superclass(genericType(ABSTRACT_MANAGER_FACTORY_BUILDER, context.managerFactoryBuilderTypeName()))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                         // private ManagerFactoryBuilder(Cluster cluster) {super(cluster);}
                 .addMethod(MethodSpec
@@ -45,7 +45,7 @@ public class ManagerFactoryBuilderCodeGen {
                         .addAnnotation(Override.class)
                         .addModifiers(Modifier.PROTECTED)
                         .addStatement("return this")
-                        .returns(MANAGER_FACTORY_BUILDER)
+                        .returns(context.managerFactoryBuilderTypeName())
                         .build())
                 /*
                     public static ManagerFactoryBuilder builder(Cluster cluster) {
@@ -53,13 +53,13 @@ public class ManagerFactoryBuilderCodeGen {
                     }
                  */
                 .addMethod(MethodSpec.methodBuilder("builder")
-                        .addJavadoc("Create a @{link $T} instance", MANAGER_FACTORY_BUILDER)
+                        .addJavadoc("Create a @{link $T} instance", context.managerFactoryBuilderTypeName())
                         .addJavadoc("@param cluster native @{link $T} object", CLUSTER)
-                        .addJavadoc("@return $T", MANAGER_FACTORY_BUILDER)
+                        .addJavadoc("@return $T", context.managerFactoryBuilderTypeName())
                         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                         .addParameter(CLUSTER, "cluster")
-                        .addStatement("return new $T($N)", MANAGER_FACTORY_BUILDER, "cluster")
-                        .returns(MANAGER_FACTORY_BUILDER)
+                        .addStatement("return new $T($N)", context.managerFactoryBuilderTypeName(), "cluster")
+                        .returns(context.managerFactoryBuilderTypeName())
                         .build())
                 /*
                     public static ManagerFactory build(Cluster cluster, Map<ConfigurationParameters, Object> configurationMap) {
@@ -67,16 +67,16 @@ public class ManagerFactoryBuilderCodeGen {
                     }
                  */
                 .addMethod(MethodSpec.methodBuilder("build")
-                        .addJavadoc("Build a @{link $T} instance", MANAGER_FACTORY)
+                        .addJavadoc("Build a @{link $T} instance", context.managerFactoryTypeName())
                         .addJavadoc("@param cluster native @{link $T} object", CLUSTER)
                         .addJavadoc("@param configurationMap Achilles configuration map")
-                        .addJavadoc("@return $T", MANAGER_FACTORY)
+                        .addJavadoc("@return $T", context.managerFactoryTypeName())
                         .addModifiers(Modifier.PUBLIC)
                         .addParameter(CLUSTER, "cluster")
                         .addParameter(genericType(MAP, CONFIGURATION_PARAMETERS, TypeName.OBJECT), "configurationMap")
-                        .addStatement("return new $T($N, buildConfigContext($N, $T.fromMap($N)))", MANAGER_FACTORY,
+                        .addStatement("return new $T($N, buildConfigContext($N, $T.fromMap($N)))", context.managerFactoryTypeName(),
                                 "cluster", "cluster", CONFIG_MAP, "configurationMap")
-                        .returns(MANAGER_FACTORY)
+                        .returns(context.managerFactoryTypeName())
                         .build())
                 /*
                     public PersistenceManagerFactory build() {
@@ -84,13 +84,13 @@ public class ManagerFactoryBuilderCodeGen {
                     }
                  */
                 .addMethod(MethodSpec.methodBuilder("build")
-                        .addJavadoc("Build a @{link $T} instance", MANAGER_FACTORY)
-                        .addJavadoc("@return $T", MANAGER_FACTORY)
+                        .addJavadoc("Build a @{link $T} instance", context.managerFactoryTypeName())
+                        .addJavadoc("@return $T", context.managerFactoryTypeName())
                         .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "unchecked").build())
                         .addModifiers(Modifier.PUBLIC)
-                        .addStatement("return new $T(this.$L, buildConfigContext(this.$L, this.$L))", MANAGER_FACTORY,
+                        .addStatement("return new $T(this.$L, buildConfigContext(this.$L, this.$L))", context.managerFactoryTypeName(),
                                 "cluster", "cluster", "configMap")
-                        .returns(MANAGER_FACTORY)
+                        .returns(context.managerFactoryTypeName())
                         .build())
                 .build();
     }

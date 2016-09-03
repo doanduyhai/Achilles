@@ -34,13 +34,15 @@ import info.archinnov.achilles.internals.parser.context.FunctionSignature.Functi
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.context.FunctionsContext;
 import info.archinnov.achilles.internals.parser.context.FunctionSignature;
+import info.archinnov.achilles.internals.utils.NamingHelper;
 
 public class ManagerFactoryCodeGen {
 
-    public static ManagersAndDSLClasses buildInstance(AptUtils aptUtils, List<EntityMetaSignature> signatures, FunctionsContext functionsContext, GlobalParsingContext parsingContext) {
+    public static ManagersAndDSLClasses buildInstance(AptUtils aptUtils, List<EntityMetaSignature> signatures, FunctionsContext functionsContext,
+                                                      GlobalParsingContext parsingContext) {
         List<TypeSpec> managerClasses = new ArrayList<>();
         List<TypeSpec> dslClasses = new ArrayList<>();
-        final TypeSpec.Builder builder = TypeSpec.classBuilder(MANAGER_FACTORY_CLASS)
+        final TypeSpec.Builder builder = TypeSpec.classBuilder(parsingContext.managerFactoryClassName())
                 .superclass(ABSTRACT_MANAGER_FACTORY)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildConstructor(signatures, functionsContext));

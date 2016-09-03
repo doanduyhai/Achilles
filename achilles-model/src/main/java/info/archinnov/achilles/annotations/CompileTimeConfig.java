@@ -23,6 +23,13 @@ import info.archinnov.achilles.type.strategy.ColumnMappingStrategy;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.strategy.NamingStrategy;
 
+/**
+ *
+ *
+ *
+ *
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Documented
@@ -35,4 +42,6 @@ public @interface CompileTimeConfig {
     ColumnMappingStrategy columnMappingStrategy() default ColumnMappingStrategy.EXPLICIT;
 
     CassandraVersion cassandraVersion() default CassandraVersion.CASSANDRA_2_1_X;
+
+    String projectName() default "";
 }

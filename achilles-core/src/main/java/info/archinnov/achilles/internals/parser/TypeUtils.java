@@ -114,11 +114,10 @@ public class TypeUtils {
     public static final String ENTITY_META_PACKAGE = "info.archinnov.achilles.generated.meta.entity";
     public static final String UDT_META_PACKAGE = "info.archinnov.achilles.generated.meta.udt";
     public static final String MANAGER_PACKAGE = "info.archinnov.achilles.generated.manager";
-    public static final String PROXY_PACKAGE = "info.archinnov.achilles.generated.proxy";
     public static final String FUNCTION_PACKAGE = "info.archinnov.achilles.generated.function";
     public static final String DSL_PACKAGE = "info.archinnov.achilles.generated.dsl";
-    public static final String MANAGER_FACTORY_BUILDER_CLASS = "ManagerFactoryBuilder";
-    public static final String MANAGER_FACTORY_CLASS = "ManagerFactory";
+    public static final String MANAGER_FACTORY_BUILDER_CLASS_NAME = "ManagerFactoryBuilder";
+    public static final String MANAGER_FACTORY_CLASS_NAME = "ManagerFactory";
     public static final String FUNCTIONS_REGISTRY_CLASS = "FunctionsRegistry";
     public static final String SYSTEM_FUNCTIONS_CLASS = "SystemFunctions";
     public static final String COLUMNS_FOR_FUNCTIONS_CLASS = "ColumnsForFunctions";
@@ -205,9 +204,9 @@ public class TypeUtils {
     public static final ClassName ABSTRACT_MANAGER_FACTORY_BUILDER = ClassName.get(AbstractManagerFactoryBuilder.class);
     public static final ClassName CONFIGURATION_PARAMETERS = ClassName.get(ConfigurationParameters.class);
     public static final ClassName CONFIGURATION_CONTEXT = ClassName.get(ConfigurationContext.class);
-    public static final ClassName MANAGER_FACTORY_BUILDER = ClassName.get(GENERATED_PACKAGE, MANAGER_FACTORY_BUILDER_CLASS);
+    public static final ClassName MANAGER_FACTORY_BUILDER_TYPE_NAME = ClassName.get(GENERATED_PACKAGE, MANAGER_FACTORY_BUILDER_CLASS_NAME);
     public static final ClassName ABSTRACT_MANAGER_FACTORY = ClassName.get(AbstractManagerFactory.class);
-    public static final ClassName MANAGER_FACTORY = ClassName.get(GENERATED_PACKAGE, MANAGER_FACTORY_CLASS);
+    public static final ClassName MANAGER_FACTORY_TYPE_NAME = ClassName.get(GENERATED_PACKAGE, MANAGER_FACTORY_CLASS_NAME);
     public static final ClassName ABSTRACT_MANAGER = ClassName.get(AbstractManager.class);
     public static final ClassName ABSTRACT_ENTITY_PROPERTY = ClassName.get(AbstractEntityProperty.class);
     public static final ClassName ABSTRACT_VIEW_PROPERTY = ClassName.get(AbstractViewProperty.class);

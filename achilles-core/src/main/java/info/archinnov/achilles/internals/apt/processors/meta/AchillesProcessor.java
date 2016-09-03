@@ -101,13 +101,13 @@ public class AchillesProcessor extends AbstractProcessor {
                     ? parseAndValidateFunctionRegistry(parsingContext, annotations, roundEnv, tableAndViewSignatures)
                     : FunctionsContext.noFunction();
 
-                final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance();
+                final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance(parsingContext);
 
                 final ManagersAndDSLClasses managersAndDSLClasses = ManagerFactoryCodeGen.buildInstance(aptUtils, tableAndViewSignatures, udfContext, parsingContext);
 
                 aptUtils.printNote("[Achilles] Reading previously generated source files (if exist)");
                 try {
-                    final FileObject resource = aptUtils.filer.getResource(StandardLocation.SOURCE_OUTPUT, GENERATED_PACKAGE, MANAGER_FACTORY_BUILDER_CLASS);
+                    final FileObject resource = aptUtils.filer.getResource(StandardLocation.SOURCE_OUTPUT, GENERATED_PACKAGE, parsingContext.managerFactoryBuilderClassName());
                     final File generatedSourceFolder = new File(resource.toUri().getRawPath().replaceAll("(.+/info/archinnov/achilles/generated/).+", "$1"));
                     aptUtils.printNote("[Achilles] Cleaning previously generated source files folder : '%s'", generatedSourceFolder.getPath());
                     FileUtils.deleteDirectory(generatedSourceFolder);

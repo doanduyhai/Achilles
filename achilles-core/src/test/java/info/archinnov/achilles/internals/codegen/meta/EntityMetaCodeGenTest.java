@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.rmi.Naming;
 import java.util.List;
+import java.util.Optional;
 import javax.lang.model.element.TypeElement;
 
 import org.junit.Test;
@@ -252,7 +253,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             GlobalParsingContext globalParsingContext = new GlobalParsingContext(InternalCassandraVersion.V3_0,
                     InsertStrategy.ALL_FIELDS, new SnakeCaseNaming(), FieldFilter.IMPLICIT_ENTITY_FIELD_FILTER,
-                    FieldFilter.IMPLICIT_UDT_FIELD_FILTER);
+                    FieldFilter.IMPLICIT_UDT_FIELD_FILTER, Optional.empty());
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, globalParsingContext);
