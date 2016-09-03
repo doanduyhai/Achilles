@@ -146,7 +146,9 @@
         <module>achilles-embedded</module>
         <module>achilles-junit</module>
         <module>achilles-schema-generator</module>
-        <module>integration-test</module>
+        <module>integration-test-2_1</module>
+        <module>integration-test-2_2</module>
+        <module>integration-test-3_0</module>
     </modules>
 
     <dependencyManagement>
@@ -194,7 +196,19 @@
 
             <dependency>
                 <groupId>info.archinnov</groupId>
-                <artifactId>integration-test</artifactId>
+                <artifactId>integration-test-2_1</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>info.archinnov</groupId>
+                <artifactId>integration-test-2_2</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>info.archinnov</groupId>
+                <artifactId>integration-test-3_0</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
