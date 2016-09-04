@@ -548,8 +548,16 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
             return selectClassName() + "." + className + SELECT_FROM_DSL_SUFFIX;
         }
 
+        public String selectFromTypedMapReturnType() {
+            return selectClassName() + "." + className + SELECT_FROM_TYPED_MAP_DSL_SUFFIX;
+        }
+
         public String selectColumnsReturnType() {
             return selectClassName() + "." + className + SELECT_COLUMNS_DSL_SUFFIX;
+        }
+
+        public String selectColumnsTypedMapReturnType() {
+            return selectClassName() + "." + className + SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String classNameInsideSelectColumns(String className) {
@@ -560,10 +568,17 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
             return selectClassName() + "." + className + SELECT_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
         }
 
+        public String selectWhereTypedMapReturnType(String fieldName) {
+            return selectClassName() + "." + className + SELECT_WHERE_TYPED_MAP_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+        }
+
         public String selectEndReturnType() {
             return selectClassName() + "." + className + SELECT_END_DSL_SUFFIX;
         }
 
+        public String selectEndTypedMapReturnType() {
+            return selectClassName() + "." + className + SELECT_END_TYPED_MAP_DSL_SUFFIX;
+        }
 
         public String deleteClassName() {
             return className + DELETE_DSL_SUFFIX;

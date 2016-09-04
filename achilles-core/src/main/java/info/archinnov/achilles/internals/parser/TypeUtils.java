@@ -79,10 +79,14 @@ public class TypeUtils {
     public static final String DSL_RELATION_SUFFIX = "_Relation";
     public static final String DSL_RELATION = "Relation";
     public static final String SELECT_COLUMNS_DSL_SUFFIX = "_SelectColumns";
+    public static final String SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX = "_SelectColumnsTypedMap";
     public static final String SELECT_DSL_SUFFIX = "_Select";
     public static final String SELECT_FROM_DSL_SUFFIX = "_SelectFrom";
+    public static final String SELECT_FROM_TYPED_MAP_DSL_SUFFIX = "_SelectFromTypedMap";
     public static final String SELECT_WHERE_DSL_SUFFIX = "_SelectWhere";
+    public static final String SELECT_WHERE_TYPED_MAP_DSL_SUFFIX = "_SelectWhereTypedMap";
     public static final String SELECT_END_DSL_SUFFIX = "_SelectEnd";
+    public static final String SELECT_END_TYPED_MAP_DSL_SUFFIX = "_SelectEndTypedMap";
 
     public static final String DELETE_DSL_SUFFIX = "_Delete";
     public static final String DELETE_STATIC_DSL_SUFFIX = "_DeleteStatic";
@@ -176,9 +180,13 @@ public class TypeUtils {
     // DSL
     public static final ClassName ABSTRACT_SELECT = ClassName.get(AbstractSelect.class);
     public static final ClassName ABSTRACT_SELECT_COLUMNS = ClassName.get(AbstractSelectColumns.class);
+    public static final ClassName ABSTRACT_SELECT_COLUMNS_TYPED_MAP = ClassName.get(AbstractSelectColumnsTypeMap.class);
     public static final ClassName ABSTRACT_SELECT_FROM = ClassName.get(AbstractSelectFrom.class);
+    public static final ClassName ABSTRACT_SELECT_FROM_TYPED_MAP = ClassName.get(AbstractSelectFromTypeMap.class);
     public static final ClassName ABSTRACT_SELECT_WHERE = ClassName.get(AbstractSelectWhere.class);
+    public static final ClassName ABSTRACT_SELECT_WHERE_TYPED_MAP = ClassName.get(AbstractSelectWhereTypeMap.class);
     public static final ClassName ABSTRACT_SELECT_WHERE_PARTITION = ClassName.get(AbstractSelectWherePartition.class);
+    public static final ClassName ABSTRACT_SELECT_WHERE_PARTITION_TYPED_MAP = ClassName.get(AbstractSelectWherePartitionTypeMap.class);
     public static final ClassName ABSTRACT_DELETE = ClassName.get(AbstractDelete.class);
     public static final ClassName ABSTRACT_DELETE_COLUMNS = ClassName.get(AbstractDeleteColumns.class);
     public static final ClassName ABSTRACT_DELETE_FROM = ClassName.get(AbstractDeleteFrom.class);
@@ -279,11 +287,11 @@ public class TypeUtils {
 
     // Java Driver types
     public static final TypeName CLUSTER = ClassName.get(Cluster.class);
-    public static final TypeName SELECT_COLUMNS = ClassName.get(Select.Selection.class);
-    public static final TypeName SELECT_WHERE = ClassName.get(Select.Where.class);
-    public static final TypeName DELETE_WHERE = ClassName.get(Delete.Where.class);
-    public static final TypeName DELETE_COLUMNS = ClassName.get(Delete.Selection.class);
-    public static final TypeName UPDATE_WHERE = ClassName.get(Update.Where.class);
+    public static final TypeName SELECT_DOT_SELECTION = ClassName.get(Select.Selection.class);
+    public static final TypeName SELECT_DOT_WHERE = ClassName.get(Select.Where.class);
+    public static final TypeName DELETE_DOT_WHERE = ClassName.get(Delete.Where.class);
+    public static final TypeName DELETE_DOT_SELECTION = ClassName.get(Delete.Selection.class);
+    public static final TypeName UPDATE_DOT_WHERE = ClassName.get(Update.Where.class);
     public static final TypeName QUERY_BUILDER = ClassName.get(QueryBuilder.class);
     public static final TypeName BOUND_STATEMENT = ClassName.get(BoundStatement.class);
     public static final TypeName PREPARED_STATEMENT = ClassName.get(PreparedStatement.class);

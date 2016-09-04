@@ -76,8 +76,8 @@ public abstract class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .filter(x -> candidateColumns.contains(x.context.columnType))
                 .forEach(x -> builder.addMethod(buildDeleteColumnMethod(deleteColumnsTypeName, x, ReturnType.NEW)));
 
-        builder.addMethod(buildAllColumns(deleteFromTypeName, DELETE_WHERE, "delete"));
-        builder.addMethod(buildAllColumnsWithSchemaProvider(deleteFromTypeName, DELETE_WHERE, "delete"));
+        builder.addMethod(buildAllColumns(deleteFromTypeName, DELETE_DOT_WHERE, "delete"));
+        builder.addMethod(buildAllColumnsWithSchemaProvider(deleteFromTypeName, DELETE_DOT_WHERE, "delete"));
 
 
         deleteWhereDSLCodeGen.buildWhereClasses(signature).forEach(builder::addType);
@@ -149,7 +149,7 @@ public abstract class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(ABSTRACT_DELETE_COLUMNS)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
-                        .addParameter(DELETE_COLUMNS, "deleteColumns")
+                        .addParameter(DELETE_DOT_SELECTION, "deleteColumns")
                         .addStatement("super(deleteColumns)")
                         .build());
 
@@ -158,8 +158,8 @@ public abstract class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .filter(x -> candidateColumns.contains(x.context.columnType))
                 .forEach(x -> builder.addMethod(buildDeleteColumnMethod(deleteColumnsTypeName, x, ReturnType.THIS)));
 
-        builder.addMethod(buildFrom(deleteFromTypeName, DELETE_WHERE, "deleteColumns"));
-        builder.addMethod(buildFromWithSchemaProvider(deleteFromTypeName, DELETE_WHERE, "deleteColumns"));
+        builder.addMethod(buildFrom(deleteFromTypeName, DELETE_DOT_WHERE, "deleteColumns"));
+        builder.addMethod(buildFromWithSchemaProvider(deleteFromTypeName, DELETE_DOT_WHERE, "deleteColumns"));
 
         return builder.build();
     }
@@ -173,7 +173,7 @@ public abstract class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(ABSTRACT_DELETE_FROM)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
-                        .addParameter(DELETE_WHERE, "where")
+                        .addParameter(DELETE_DOT_WHERE, "where")
                         .addStatement("super(where)")
                         .build())
                 .addMethod(MethodSpec.methodBuilder("where")

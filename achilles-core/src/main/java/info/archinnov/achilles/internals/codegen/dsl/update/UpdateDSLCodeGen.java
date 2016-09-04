@@ -138,7 +138,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addParameter(SCHEMA_NAME_PROVIDER, "schemaNameProvider", Modifier.FINAL)
                 .addStatement("final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass)")
                 .addStatement("final String currentTable = lookupTable(schemaNameProvider, meta.entityClass)")
-                .addStatement("final $T where = $T.update(currentKeyspace, currentTable).where()", UPDATE_WHERE, QUERY_BUILDER)
+                .addStatement("final $T where = $T.update(currentKeyspace, currentTable).where()", UPDATE_DOT_WHERE, QUERY_BUILDER)
                 .addStatement("return new $T(where)", updateFromTypeName)
                 .returns(updateFromTypeName)
                 .build();
@@ -150,7 +150,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("final String currentKeyspace = meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName())",
                         "unknown_keyspace_for_")
-                .addStatement("final $T where = $T.update(currentKeyspace, meta.getTableOrViewName()).where()", UPDATE_WHERE, QUERY_BUILDER)
+                .addStatement("final $T where = $T.update(currentKeyspace, meta.getTableOrViewName()).where()", UPDATE_DOT_WHERE, QUERY_BUILDER)
                 .addStatement("return new $T(where)", updateFromTypeName)
                 .returns(updateFromTypeName)
                 .build();
@@ -166,7 +166,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(ABSTRACT_UPDATE_FROM)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
-                        .addParameter(UPDATE_WHERE, "where")
+                        .addParameter(UPDATE_DOT_WHERE, "where")
                         .addStatement("super(where)")
                         .build());
 
@@ -189,7 +189,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(ABSTRACT_UPDATE_COLUMNS)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
-                        .addParameter(UPDATE_WHERE, "where")
+                        .addParameter(UPDATE_DOT_WHERE, "where")
                         .addStatement("super(where)")
                         .build());
 

@@ -52,6 +52,7 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
 
         TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, signature.selectFromReturnType());
         TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsReturnType());
+        TypeName selectColumnsTypeMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsTypedMapReturnType());
 
         final TypeSpec.Builder selectClassBuilder = TypeSpec.classBuilder(signature.selectClassName())
                 .superclass(ABSTRACT_SELECT)
@@ -60,7 +61,9 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .addField(buildExactEntityMetaField(signature))
                 .addField(buildEntityClassField(signature))
                 .addType(buildSelectColumns(signature))
-                .addType(buildSelectFrom(signature, firstPartitionKey));
+                .addType(buildSelectColumnsTypeMap(signature))
+                .addType(buildSelectFrom(signature, firstPartitionKey))
+                .addType(buildSelectFromTypedMap(signature, firstPartitionKey));
 
         signature.fieldMetaSignatures
                 .stream()
@@ -78,10 +81,10 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .filter(x -> x.context.columnType == ColumnType.COMPUTED)
                 .forEach(x -> selectClassBuilder.addMethod(buildSelectComputedColumnMethod(selectColumnsTypeName, x, "select", NEW)));
 
-        selectClassBuilder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypeName, "select", NEW));
+        selectClassBuilder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypeMapTypeName, "select", NEW));
 
-        selectClassBuilder.addMethod(buildAllColumns(selectFromTypeName, SELECT_WHERE, "select"));
-        selectClassBuilder.addMethod(buildAllColumnsWithSchemaProvider(selectFromTypeName, SELECT_WHERE, "select"));
+        selectClassBuilder.addMethod(buildAllColumns(selectFromTypeName, SELECT_DOT_WHERE, "select"));
+        selectClassBuilder.addMethod(buildAllColumnsWithSchemaProvider(selectFromTypeName, SELECT_DOT_WHERE, "select"));
 
 
         selectWhereDSLCodeGen.buildWhereClasses(signature, selectWhereDSLCodeGen).forEach(selectClassBuilder::addType);
@@ -106,6 +109,7 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
     public TypeSpec buildSelectColumns(EntityMetaSignature signature) {
 
         TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsReturnType());
+        TypeName selectColumnsTypedMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsTypedMapReturnType());
 
         TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, signature.selectFromReturnType());
 
@@ -114,7 +118,7 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(SELECT_COLUMNS, "selection")
+                .addParameter(SELECT_DOT_SELECTION, "selection")
                 .addStatement("super(selection)")
                 .build());
 
@@ -133,10 +137,48 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .filter(x -> x.context.columnType == ColumnType.COMPUTED)
                 .forEach(x -> selectColumnsBuilder.addMethod(buildSelectComputedColumnMethod(selectColumnsTypeName, x, "selection", THIS)));
 
-        selectColumnsBuilder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypeName, "selection", THIS));
+        selectColumnsBuilder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypedMapTypeName, "selection", NEW));
 
-        selectColumnsBuilder.addMethod(buildFrom(selectFromTypeName, SELECT_WHERE, "selection"));
-        selectColumnsBuilder.addMethod(buildFromWithSchemaProvider(selectFromTypeName, SELECT_WHERE, "selection"));
+        selectColumnsBuilder.addMethod(buildFrom(selectFromTypeName, SELECT_DOT_WHERE, "selection"));
+        selectColumnsBuilder.addMethod(buildFromWithSchemaProvider(selectFromTypeName, SELECT_DOT_WHERE, "selection"));
+
+        return selectColumnsBuilder.build();
+    }
+
+    public TypeSpec buildSelectColumnsTypeMap(EntityMetaSignature signature) {
+
+        TypeName selectColumnsTypedMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsTypedMapReturnType());
+
+        TypeName selectFromTypedMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectFromTypedMapReturnType());
+
+        final TypeSpec.Builder selectColumnsBuilder = TypeSpec.classBuilder(signature.className + SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX)
+                .superclass(ABSTRACT_SELECT_COLUMNS_TYPED_MAP)
+                .addModifiers(Modifier.PUBLIC)
+                .addMethod(MethodSpec.constructorBuilder()
+                        .addModifiers(Modifier.PUBLIC)
+                        .addParameter(SELECT_DOT_SELECTION, "selection")
+                        .addStatement("super(selection)")
+                        .build());
+
+        signature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.context.columnType != ColumnType.COMPUTED && !x.isUDT())
+                .forEach(x -> selectColumnsBuilder.addMethod(buildSelectColumnMethod(selectColumnsTypedMapTypeName, x, "selection", THIS)));
+
+        signature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.isUDT())
+                .forEach(x -> buildSelectUDTClassAndMethods(selectColumnsBuilder, selectColumnsTypedMapTypeName, signature.selectColumnsTypedMapReturnType(), "", x, "selection", THIS));
+
+        signature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.context.columnType == ColumnType.COMPUTED)
+                .forEach(x -> selectColumnsBuilder.addMethod(buildSelectComputedColumnMethod(selectColumnsTypedMapTypeName, x, "selection", THIS)));
+
+        selectColumnsBuilder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypedMapTypeName, "selection", THIS));
+
+        selectColumnsBuilder.addMethod(buildFrom(selectFromTypedMapTypeName, SELECT_DOT_WHERE, "selection"));
+        selectColumnsBuilder.addMethod(buildFromWithSchemaProvider(selectFromTypedMapTypeName, SELECT_DOT_WHERE, "selection"));
 
         return selectColumnsBuilder.build();
     }
@@ -150,7 +192,7 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .superclass(ABSTRACT_SELECT_FROM)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
-                        .addParameter(SELECT_WHERE, "where")
+                        .addParameter(SELECT_DOT_WHERE, "where")
                         .addStatement("super(where)")
                         .build())
                 .addMethod(MethodSpec.methodBuilder("where")
@@ -164,6 +206,33 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                         .addStatement("return new $T(where)", selectEndTypeName)
                         .returns(selectEndTypeName)
+                        .build())
+                .build();
+    }
+
+    public TypeSpec buildSelectFromTypedMap(EntityMetaSignature signature, String firstPartitionKey) {
+        TypeName selectWhereTypedMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectWhereTypedMapReturnType(firstPartitionKey));
+
+        TypeName selectEndTypedMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectEndTypedMapReturnType());
+
+        return TypeSpec.classBuilder(signature.className + SELECT_FROM_TYPED_MAP_DSL_SUFFIX)
+                .superclass(ABSTRACT_SELECT_FROM)
+                .addModifiers(Modifier.PUBLIC)
+                .addMethod(MethodSpec.constructorBuilder()
+                        .addParameter(SELECT_DOT_WHERE, "where")
+                        .addStatement("super(where)")
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("where")
+                        .addJavadoc("Generate a SELECT ... FROM ... <strong>WHERE</strong> ...")
+                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                        .addStatement("return new $T(where)", selectWhereTypedMapTypeName)
+                        .returns(selectWhereTypedMapTypeName)
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("without_WHERE_Clause")
+                        .addJavadoc("Generate a SELECT statement <strong>without</strong> the <strong>WHERE</strong> clause")
+                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                        .addStatement("return new $T(where)", selectEndTypedMapTypeName)
+                        .returns(selectEndTypedMapTypeName)
                         .build())
                 .build();
     }

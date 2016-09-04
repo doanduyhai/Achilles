@@ -34,7 +34,7 @@ public abstract class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
 
     public static final MethodSpec WHERE_CONSTRUCTOR = MethodSpec.constructorBuilder()
             .addModifiers(Modifier.PUBLIC)
-            .addParameter(UPDATE_WHERE, "where")
+            .addParameter(UPDATE_DOT_WHERE, "where")
             .addStatement("super(where)")
             .build();
 
@@ -95,7 +95,7 @@ public abstract class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen {
         final TypeSpec.Builder builder = TypeSpec.classBuilder(lastSignature.className)
                 .superclass(lastSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(UPDATE_WHERE))
+                .addMethod(buildWhereConstructor(UPDATE_DOT_WHERE))
                 .addMethod(buildGetEntityClass(signature))
                 .addMethod(buildGetMetaInternal(signature.entityRawClass))
                 .addMethod(buildGetRte())

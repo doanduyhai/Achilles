@@ -24,7 +24,6 @@ import java.util.List;
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
@@ -94,7 +93,7 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         final TypeSpec.Builder builder = TypeSpec.classBuilder(lastSignature.className)
                 .superclass(lastSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(DELETE_WHERE))
+                .addMethod(buildWhereConstructor(DELETE_DOT_WHERE))
                 .addMethod(buildGetEntityClass(signature))
                 .addMethod(buildGetMetaInternal(signature.entityRawClass))
                 .addMethod(buildGetRte())
@@ -154,7 +153,7 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         return TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(DELETE_WHERE))
+                .addMethod(buildWhereConstructor(DELETE_DOT_WHERE))
                 .addType(relationClassBuilder.build())
                 .addMethod(buildRelationMethod(partitionInfo.fieldName, relationClassTypeName))
                 .build();
@@ -197,7 +196,7 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen {
         return TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(DELETE_WHERE))
+                .addMethod(buildWhereConstructor(DELETE_DOT_WHERE))
                 .addType(relationClass)
                 .addMethod(buildRelationMethod(clusteringColumnInfo.fieldName, relationClassTypeName))
                 .build();
