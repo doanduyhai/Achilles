@@ -77,7 +77,7 @@ public class TestTypedQueries {
 
         //When
         final SimpleEntity actual = manager
-                .query()
+                .raw()
                 .typedQueryForSelect(statement)
                 .getOne();
 
@@ -95,7 +95,7 @@ public class TestTypedQueries {
 
         //When
         final SimpleEntity actual = manager
-                .query()
+                .raw()
                 .typedQueryForSelect(preparedStatement, id)
                 .getOne();
 
@@ -115,7 +115,7 @@ public class TestTypedQueries {
 
         //Then
         final SimpleEntity actual = manager
-                .query()
+                .raw()
                 .typedQueryForSelect(boundStatement)
                 .getOne();
 
@@ -134,7 +134,7 @@ public class TestTypedQueries {
         exception.expectMessage("Statement provided for typed query should be an SELECT statement");
 
         manager
-                .query()
+                .raw()
                 .typedQueryForSelect(statement)
                 .getList();
     }
@@ -149,7 +149,7 @@ public class TestTypedQueries {
         exception.expectMessage("The typed query [select * from entity_with_clusterings where id = :id] should contain the table name 'simple' if the entity type is 'info.archinnov.achilles.internals.entities.SimpleEntity'");
 
         manager
-                .query()
+                .raw()
                 .typedQueryForSelect(statement)
                 .getList();
     }
@@ -175,7 +175,7 @@ public class TestTypedQueries {
 
         //When
         final Iterator<SimpleEntity> iter = manager
-                .query()
+                .raw()
                 .typedQueryForSelect(statement, id)
                 .iterator();
 

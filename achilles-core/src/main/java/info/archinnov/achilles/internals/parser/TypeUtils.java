@@ -111,7 +111,7 @@ public class TypeUtils {
     public static final String MANAGER_SUFFIX = "_Manager";
     public static final String CRUD_SUFFIX = "_CRUD";
     public static final String DSL_SUFFIX = "_DSL";
-    public static final String QUERY_SUFFIX = "_QUERY";
+    public static final String RAW_QUERY_SUFFIX = "_RAW_QUERY";
     public static final String FUNCTION_TYPE_SUFFIX = "_Type";
     public static final String FUNCTION_PROPERTY_SUFFIX = "_FunctionProperty";
     public static final String GENERATED_PACKAGE = "info.archinnov.achilles.generated";

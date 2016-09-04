@@ -124,7 +124,7 @@ public class TestViewSensorByType {
 
         //When
         final List<ViewSensorByType> found = viewSensorManager
-                .query()
+                .raw()
                 .typedQueryForSelect(new SimpleStatement("SELECT value FROM sensor_by_type " +
                         "WHERE type='PRESSURE' " +
                         "AND sensor_id=" + id + " " +
@@ -149,7 +149,7 @@ public class TestViewSensorByType {
 
         //When
         final List<TypedMap> found = viewSensorManager
-                .query()
+                .raw()
                 .nativeQuery(new SimpleStatement("SELECT value FROM sensor_by_type " +
                         "WHERE type=:type AND sensor_id=:id AND date>=:date1 AND date<:date2"),
                         "TEMPERATURE", id, 20160215L, 20160219L)
@@ -169,7 +169,7 @@ public class TestViewSensorByType {
 
         //When
         viewSensorManager
-                .query()
+                .raw()
                 .nativeQuery(new SimpleStatement("INSERT INTO sensor_by_type(type, sensor_id, date, value) " +
                         "VALUES('PRESSURE',123, 20160215, 12.8)"))
                 .getTypedMap();

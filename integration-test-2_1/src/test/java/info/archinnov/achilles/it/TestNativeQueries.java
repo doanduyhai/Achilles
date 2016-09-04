@@ -78,7 +78,7 @@ public class TestNativeQueries {
 
         //When
         final TypedMap actual = manager
-                .query()
+                .raw()
                 .nativeQuery(statement)
                 .getTypedMap();
 
@@ -96,7 +96,7 @@ public class TestNativeQueries {
 
         //When
         final TypedMap actual = manager
-                .query()
+                .raw()
                 .nativeQuery(preparedStatement, id)
                 .getTypedMap();
 
@@ -116,7 +116,7 @@ public class TestNativeQueries {
 
         //Then
         final TypedMap actual = manager
-                .query()
+                .raw()
                 .nativeQuery(boundStatement)
                 .getTypedMap();
 
@@ -147,7 +147,7 @@ public class TestNativeQueries {
 
         //When
         final Iterator<TypedMap> iter = manager
-                .query()
+                .raw()
                 .nativeQuery(statement, id)
                 .typedMapIterator();
 
@@ -170,7 +170,7 @@ public class TestNativeQueries {
 
         //When
         manager
-                .query()
+                .raw()
                 .nativeQuery(statement, id, new Date(), "val")
                 .execute();
 

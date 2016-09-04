@@ -52,7 +52,7 @@ public class ManagerCodeGen {
                 .addMethod(buildConstructor(signature))
                 .addMethod(buildCRUD(signature))
                 .addMethod(buildDSL(signature))
-                .addMethod(buildQuery(signature))
+                .addMethod(buildRawQuery(signature))
                 .addField(buildExactEntityMetaField(signature));
 
 
@@ -101,10 +101,10 @@ public class ManagerCodeGen {
         classes.add(context.selectDSLCodeGen().buildSelectClass(signature, context.selectWhereDSLCodeGen()));
 
         // Query
-        final TypeSpec.Builder queryClass = TypeSpec.classBuilder(signature.className + QUERY_SUFFIX)
+        final TypeSpec.Builder queryClass = TypeSpec.classBuilder(signature.className + RAW_QUERY_SUFFIX)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
-        buildQueryMethods(signature).forEach(queryClass::addMethod);
+        buildRawQueryMethods(signature).forEach(queryClass::addMethod);
 
         builder.addType(crudClass.build());
         builder.addType(dslClass.build());
@@ -171,10 +171,10 @@ public class ManagerCodeGen {
         return builder.build();
     }
 
-    private static MethodSpec buildQuery(EntityMetaSignature signature) {
-        TypeName dslClass = ClassName.get(MANAGER_PACKAGE, signature.className + MANAGER_SUFFIX, signature.className + QUERY_SUFFIX);
-        return MethodSpec.methodBuilder("query")
-                .addJavadoc("Provide QUERY methods: <br/>\n")
+    private static MethodSpec buildRawQuery(EntityMetaSignature signature) {
+        TypeName dslClass = ClassName.get(MANAGER_PACKAGE, signature.className + MANAGER_SUFFIX, signature.className + RAW_QUERY_SUFFIX);
+        return MethodSpec.methodBuilder("raw")
+                .addJavadoc("Provide Raw query methods: <br/>\n")
                 .addJavadoc("<ul>\n")
                 .addJavadoc("   <li>Typed Queries (for SELECT only)</li>\n")
                 .addJavadoc("   <li>Native Queries (for any kind of statement)</li>\n")
@@ -420,7 +420,7 @@ public class ManagerCodeGen {
                 .build();
     }
 
-    private static List<MethodSpec> buildQueryMethods(EntityMetaSignature signature) {
+    private static List<MethodSpec> buildRawQueryMethods(EntityMetaSignature signature) {
         List<MethodSpec> methods = new ArrayList<>();
 
         methods.add(MethodSpec.methodBuilder("typedQueryForSelect")
