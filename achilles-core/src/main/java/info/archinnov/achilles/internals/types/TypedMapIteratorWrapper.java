@@ -27,9 +27,7 @@ import com.datastax.driver.core.Row;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import info.archinnov.achilles.internals.options.Options;
-import info.archinnov.achilles.internals.query.AsyncAware;
-import info.archinnov.achilles.internals.query.StatementTypeAware;
-import info.archinnov.achilles.internals.query.TypedMapAware;
+import info.archinnov.achilles.internals.dsl.AsyncAware;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
 import info.archinnov.achilles.type.TypedMap;
 

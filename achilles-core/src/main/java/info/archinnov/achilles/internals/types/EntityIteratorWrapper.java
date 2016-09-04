@@ -27,7 +27,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.options.Options;
-import info.archinnov.achilles.internals.query.AsyncAware;
+import info.archinnov.achilles.internals.dsl.AsyncAware;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
 import info.archinnov.achilles.type.interceptor.Event;
 

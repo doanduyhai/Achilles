@@ -31,10 +31,10 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.*;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.query.crud.DeleteWithOptions;
-import info.archinnov.achilles.internals.query.crud.InsertWithOptions;
-import info.archinnov.achilles.internals.query.raw.NativeQuery;
-import info.archinnov.achilles.internals.query.typed.TypedQuery;
+import info.archinnov.achilles.internals.dsl.crud.DeleteWithOptions;
+import info.archinnov.achilles.internals.dsl.crud.InsertWithOptions;
+import info.archinnov.achilles.internals.dsl.raw.NativeQuery;
+import info.archinnov.achilles.internals.dsl.raw.TypedQuery;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public abstract class AbstractManager<ENTITY> {
