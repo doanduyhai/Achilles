@@ -80,7 +80,7 @@ public class TestNativeQueries {
         final TypedMap actual = manager
                 .query()
                 .nativeQuery(statement)
-                .getOne();
+                .getTypedMap();
 
         assertThat(actual).isNotNull();
         assertThat(actual.<String>getTyped("value")).contains("0 AM");
@@ -98,7 +98,7 @@ public class TestNativeQueries {
         final TypedMap actual = manager
                 .query()
                 .nativeQuery(preparedStatement, id)
-                .getOne();
+                .getTypedMap();
 
         //Then
         assertThat(actual).isNotNull();
@@ -118,7 +118,7 @@ public class TestNativeQueries {
         final TypedMap actual = manager
                 .query()
                 .nativeQuery(boundStatement)
-                .getOne();
+                .getTypedMap();
 
         //Then
         assertThat(actual).isNotNull();
@@ -149,7 +149,7 @@ public class TestNativeQueries {
         final Iterator<TypedMap> iter = manager
                 .query()
                 .nativeQuery(statement, id)
-                .iterator();
+                .typedMapIterator();
 
 
         //Then

@@ -152,7 +152,8 @@ public class TestViewSensorByType {
                 .query()
                 .nativeQuery(new SimpleStatement("SELECT value FROM sensor_by_type " +
                         "WHERE type=:type AND sensor_id=:id AND date>=:date1 AND date<:date2"),
-                        "TEMPERATURE", id, 20160215L, 20160219L).getList();
+                        "TEMPERATURE", id, 20160215L, 20160219L)
+                .getTypedMaps();
         //Then
         assertThat(found).hasSize(2);
         assertThat(found.get(0).<Double>getTyped("value")).isEqualTo(18.34d);
@@ -170,7 +171,8 @@ public class TestViewSensorByType {
         viewSensorManager
                 .query()
                 .nativeQuery(new SimpleStatement("INSERT INTO sensor_by_type(type, sensor_id, date, value) " +
-                        "VALUES('PRESSURE',123, 20160215, 12.8)")).getList();
+                        "VALUES('PRESSURE',123, 20160215, 12.8)"))
+                .getTypedMap();
 
         //Then
 

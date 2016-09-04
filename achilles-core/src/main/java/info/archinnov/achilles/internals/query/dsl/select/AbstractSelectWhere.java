@@ -22,7 +22,6 @@ import static java.util.stream.Collectors.toList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
@@ -30,14 +29,13 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Select;
-import com.google.common.util.concurrent.Uninterruptibles;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.internals.query.StatementProvider;
 import info.archinnov.achilles.internals.query.action.SelectAction;
 import info.archinnov.achilles.internals.query.options.AbstractOptionsForSelect;
-import info.archinnov.achilles.internals.query.raw.TypedMapAware;
+import info.archinnov.achilles.internals.query.TypedMapAware;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;
@@ -94,28 +92,6 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
         return Tuple2.of(iterator, iterator.getExecutionInfo());
     }
 
-    @Override
-    public Iterator<TypedMap> typedMapIterator() {
-        final RuntimeEngine rte = getRte();
-        final Options options = getOptions();
-        final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
-
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format("Execute native query async with execution info : %s",
-                    statementWrapper.getBoundStatement().preparedStatement().getQueryString()));
-        }
-
-        CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
-
-        return new TypedMapIteratorWrapper(futureRS, statementWrapper, options);
-    }
-
-    @Override
-    public Tuple2<Iterator<TypedMap>, ExecutionInfo> typedMapIteratorWithExecutionInfo() {
-        final TypedMapIteratorWrapper iterator = (TypedMapIteratorWrapper)this.typedMapIterator();
-        return Tuple2.of(iterator, iterator.getExecutionInfo());
-    }
-
     public CompletableFuture<Tuple2<List<ENTITY>, ExecutionInfo>> getListAsyncWithStats() {
 
         final RuntimeEngine rte = getRte();
@@ -154,6 +130,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
     /***************************************************************************************
      * TypedMap API                                                                        *
      ***************************************************************************************/
+    @Override
     public CompletableFuture<Tuple2<List<TypedMap>, ExecutionInfo>> getTypedMapsAsyncWithStats() {
         final RuntimeEngine rte = getRte();
         final Options options = getOptions();
@@ -173,26 +150,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
                     .thenApply(x -> Tuple2.of(mapResultSetToTypedMaps(x), x.getExecutionInfo()));
     }
 
-    public CompletableFuture<List<TypedMap>> getTypedMapsAsync() {
-        return getTypedMapsAsyncWithStats()
-                .thenApply(Tuple2::_1);
-    }
 
-    public Tuple2<List<TypedMap>, ExecutionInfo> getTypedMapsWithStats() {
-        try {
-            return Uninterruptibles.getUninterruptibly(getTypedMapsAsyncWithStats());
-        } catch (ExecutionException e) {
-            throw extractCauseFromExecutionException(e);
-        }
-    }
-
-    public List<TypedMap> getTypedMaps() {
-        try {
-            return Uninterruptibles.getUninterruptibly(getTypedMapsAsync());
-        } catch (ExecutionException e) {
-            throw extractCauseFromExecutionException(e);
-        }
-    }
 
     public CompletableFuture<Tuple2<TypedMap, ExecutionInfo>> getTypedMapAsyncWithStats() {
         final RuntimeEngine rte = getRte();
@@ -214,27 +172,27 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
                 .thenApply(x -> Tuple2.of(mapRowToTypedMap(x.one()), x.getExecutionInfo()));
     }
 
-    public CompletableFuture<TypedMap> getTypedMapAsync() {
-        return getTypedMapAsyncWithStats()
-                .thenApply(Tuple2::_1);
-    }
+    @Override
+    public Iterator<TypedMap> typedMapIterator() {
+        final RuntimeEngine rte = getRte();
+        final Options options = getOptions();
+        final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
-    public Tuple2<TypedMap, ExecutionInfo> getTypedMapWithStats() {
-        try {
-            return Uninterruptibles.getUninterruptibly(getTypedMapAsyncWithStats());
-        } catch (ExecutionException e) {
-            throw extractCauseFromExecutionException(e);
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(format("Execute native query async with execution info : %s",
+                    statementWrapper.getBoundStatement().preparedStatement().getQueryString()));
         }
+
+        CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
+
+        return new TypedMapIteratorWrapper(futureRS, statementWrapper, options);
     }
 
-    public TypedMap getTypedMap() {
-        try {
-            return Uninterruptibles.getUninterruptibly(getTypedMapAsync());
-        } catch (ExecutionException e) {
-            throw extractCauseFromExecutionException(e);
-        }
+    @Override
+    public Tuple2<Iterator<TypedMap>, ExecutionInfo> typedMapIteratorWithExecutionInfo() {
+        final TypedMapIteratorWrapper iterator = (TypedMapIteratorWrapper)this.typedMapIterator();
+        return Tuple2.of(iterator, iterator.getExecutionInfo());
     }
-
     /***************************************************************************************
      * Utility API                                                                         *
      ***************************************************************************************/

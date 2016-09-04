@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -27,11 +28,12 @@ import com.google.common.util.concurrent.Uninterruptibles;
 
 import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.internals.query.AsyncAware;
-import info.archinnov.achilles.internals.query.raw.TypedMapAware;
+import info.archinnov.achilles.internals.query.StatementTypeAware;
+import info.archinnov.achilles.internals.query.TypedMapAware;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
 import info.archinnov.achilles.type.TypedMap;
 
-public class TypedMapIteratorWrapper implements Iterator<TypedMap>, TypedMapAware, AsyncAware {
+public class TypedMapIteratorWrapper implements Iterator<TypedMap>, AsyncAware {
 
     private final Iterator<Row> delegate;
     private final StatementWrapper statementWrapper;
@@ -75,5 +77,16 @@ public class TypedMapIteratorWrapper implements Iterator<TypedMap>, TypedMapAwar
         } else {
             return null;
         }
+    }
+
+    private TypedMap mapRowToTypedMap(Row row) {
+        final TypedMap typedMap = new TypedMap();
+        if (row != null) {
+            for (ColumnDefinitions.Definition def : row.getColumnDefinitions().asList()) {
+                final String cqlColumn = def.getName();
+                typedMap.put(cqlColumn, row.getObject(cqlColumn));
+            }
+        }
+        return typedMap;
     }
 }

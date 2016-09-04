@@ -38,8 +38,10 @@ import com.datastax.driver.core.Row;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.query.RawAndTypeMapDefaultImpl;
 import info.archinnov.achilles.internals.query.StatementTypeAware;
 import info.archinnov.achilles.internals.query.action.SelectAction;
+import info.archinnov.achilles.internals.query.TypedMapAware;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
@@ -52,7 +54,7 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 /**
  * Typed query
  */
-public class TypedQuery<ENTITY> implements SelectAction<ENTITY>, StatementTypeAware {
+public class TypedQuery<ENTITY> implements SelectAction<ENTITY>, RawAndTypeMapDefaultImpl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TypedQuery.class);
 
@@ -174,27 +176,6 @@ public class TypedQuery<ENTITY> implements SelectAction<ENTITY>, StatementTypeAw
         return Tuple2.of(iterator, iterator.getExecutionInfo());
     }
 
-    @Override
-    public Iterator<TypedMap> typedMapIterator() {
-        StatementWrapper statementWrapper = new BoundStatementWrapper(getOperationType(boundStatement), meta,
-                boundStatement, encodedBoundValues);
-
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(String.format("Generate iterator for typed query : %s",
-                    statementWrapper.getBoundStatement().preparedStatement().getQueryString()));
-        }
-
-        CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
-
-        return new TypedMapIteratorWrapper(futureRS, statementWrapper, options);
-    }
-
-    @Override
-    public Tuple2<Iterator<TypedMap>, ExecutionInfo> typedMapIteratorWithExecutionInfo() {
-        TypedMapIteratorWrapper iterator = (TypedMapIteratorWrapper) this.typedMapIterator();
-        return Tuple2.of(iterator, iterator.getExecutionInfo());
-    }
-
     /**
      * Execute the typed query asynchronously and return a list of entities with execution info
      *
@@ -230,5 +211,30 @@ public class TypedQuery<ENTITY> implements SelectAction<ENTITY>, StatementTypeAw
                     }
                     return tuple2;
                 });
+    }
+
+    @Override
+    public RuntimeEngine runtimeEngine() {
+        return rte;
+    }
+
+    @Override
+    public AbstractEntityProperty<?> meta() {
+        return meta;
+    }
+
+    @Override
+    public BoundStatement boundStatement() {
+        return boundStatement;
+    }
+
+    @Override
+    public Object[] encodedBoundValues() {
+        return encodedBoundValues;
+    }
+
+    @Override
+    public Options options() {
+        return options;
     }
 }

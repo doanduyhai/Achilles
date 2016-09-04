@@ -36,11 +36,13 @@ import com.google.common.util.concurrent.Uninterruptibles;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.options.Options;
-import info.archinnov.achilles.internals.query.AsyncAware;
 import info.archinnov.achilles.internals.query.LWTHelper;
+import info.archinnov.achilles.internals.query.RawAndTypeMapDefaultImpl;
 import info.archinnov.achilles.internals.query.StatementTypeAware;
+import info.archinnov.achilles.internals.query.TypedMapAware;
 import info.archinnov.achilles.internals.query.action.MutationAction;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
+import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.NativeStatementWrapper;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
 import info.archinnov.achilles.internals.types.TypedMapIteratorWrapper;
@@ -51,7 +53,7 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 /**
  * Native query
  */
-public class NativeQuery implements MutationAction, StatementTypeAware, TypedMapAware, AsyncAware {
+public class NativeQuery implements MutationAction, RawAndTypeMapDefaultImpl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeQuery.class);
 
@@ -178,143 +180,150 @@ public class NativeQuery implements MutationAction, StatementTypeAware, TypedMap
                 .thenApply(x -> x.getExecutionInfo());
     }
 
-    /**
-     * Execute the native query asynchronously and return a list of {@link info.archinnov.achilles.type.TypedMap}
-     * and an execution info object
-     *
-     * @return CompletableFuture&lt;Tuple2&lt;List&lt;TypedMap&gt;, ExecutionInfo&gt;&gt;
-     */
-    public CompletableFuture<Tuple2<List<TypedMap>, ExecutionInfo>> getListAsyncWithStats() {
-        final StatementWrapper statementWrapper = new NativeStatementWrapper(getOperationType(boundStatement), meta, boundStatement, encodedBoundValues);
-        final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
+//    /**
+//     * Execute the native query asynchronously and return a list of {@link info.archinnov.achilles.type.TypedMap}
+//     * and an execution info object
+//     *
+//     * @return CompletableFuture&lt;Tuple2&lt;List&lt;TypedMap&gt;, ExecutionInfo&gt;&gt;
+//     */
+//    public CompletableFuture<Tuple2<List<TypedMap>, ExecutionInfo>> getListAsyncWithStats() {
+//        final StatementWrapper statementWrapper = new NativeStatementWrapper(getOperationType(boundStatement), meta, boundStatement, encodedBoundValues);
+//        final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
+//
+//        if (LOGGER.isTraceEnabled()) {
+//            LOGGER.trace(format("Execute native query async with execution info : %s", queryString));
+//        }
+//
+//        CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
+//
+//        return cfutureRS
+//                .thenApply(options::resultSetAsyncListener)
+//                .thenApply(statementWrapper::logReturnResults)
+//                .thenApply(statementWrapper::logTrace)
+//                .thenApply(x -> LWTHelper.triggerLWTListeners(lwtResultListeners, x, queryString))
+//                .thenApply(x -> Tuple2.of(mapResultSetToTypedMaps(x), x.getExecutionInfo()));
+//    }
+//
+//    /**
+//     * Execute the native query asynchronously and return a list of {@link info.archinnov.achilles.type.TypedMap}
+//     *
+//     * @return CompletableFuture&lt;List&lt;TypedMap&gt;&gt;
+//     */
+//    public CompletableFuture<List<TypedMap>> getListAsync() {
+//        return getListAsyncWithStats()
+//                .thenApply(Tuple2::_1);
+//    }
+//
+//    /**
+//     * Execute the native query and return a list of {@link info.archinnov.achilles.type.TypedMap}
+//     * with execution info
+//     *
+//     * @return Tuple2&lt;List&lt;TypedMap&gt;, ExecutionInfo&gt;
+//     */
+//    public Tuple2<List<TypedMap>, ExecutionInfo> getListWithStats() {
+//        try {
+//            return Uninterruptibles.getUninterruptibly(getListAsyncWithStats());
+//        } catch (ExecutionException e) {
+//            throw extractCauseFromExecutionException(e);
+//        }
+//    }
+//
+//    /**
+//     * Execute the native query and return a list of {@link info.archinnov.achilles.type.TypedMap}
+//     *
+//     * @return List&lt;TypedMap&gt;
+//     */
+//    public List<TypedMap> getList() {
+//        try {
+//            return Uninterruptibles.getUninterruptibly(getListAsync());
+//        } catch (ExecutionException e) {
+//            throw extractCauseFromExecutionException(e);
+//        }
+//    }
+//
+//    /**
+//     * Execute the native query asynchronously and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
+//     * and an execution info object
+//     *
+//     * @return CompletableFuture&lt;Tuple2&lt;TypedMap, ExecutionInfo&gt;&gt;
+//     */
+//    public CompletableFuture<Tuple2<TypedMap, ExecutionInfo>> getOneAsyncWithStats() {
+//        final StatementWrapper statementWrapper = new NativeStatementWrapper(getOperationType(boundStatement), meta, boundStatement, encodedBoundValues);
+//        final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
+//
+//        if (LOGGER.isTraceEnabled()) {
+//            LOGGER.trace(format("Execute native query async with execution info : %s", queryString));
+//        }
+//
+//        CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
+//
+//        return cfutureRS
+//                .thenApply(options::resultSetAsyncListener)
+//                .thenApply(statementWrapper::logReturnResults)
+//                .thenApply(statementWrapper::logTrace)
+//                .thenApply(x -> LWTHelper.triggerLWTListeners(lwtResultListeners, x, queryString))
+//                .thenApply(x -> Tuple2.of(mapRowToTypedMap(x.one()), x.getExecutionInfo()));
+//    }
+//
+//    /**
+//     * Execute the native query asynchronously and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
+//     *
+//     * @return CompletableFuture&lt;TypedMap&gt;&gt;
+//     */
+//    public CompletableFuture<TypedMap> getOneAsync() {
+//        return getOneAsyncWithStats()
+//                .thenApply(Tuple2::_1);
+//    }
+//
+//    /**
+//     * Execute the native query and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
+//     * and execution info
+//     *
+//     * @return Tuple2&lt;TypedMap, ExecutionInfo&gt;
+//     */
+//    public Tuple2<TypedMap, ExecutionInfo> getOneWithStats() {
+//        try {
+//            return Uninterruptibles.getUninterruptibly(getOneAsyncWithStats());
+//        } catch (ExecutionException e) {
+//            throw extractCauseFromExecutionException(e);
+//        }
+//    }
+//
+//    /**
+//     * Execute the native query and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
+//     *
+//     * @return TypedMap
+//     */
+//    public TypedMap getOne() {
+//        try {
+//            return Uninterruptibles.getUninterruptibly(getOneAsync());
+//        } catch (ExecutionException e) {
+//            throw extractCauseFromExecutionException(e);
+//        }
+//    }
 
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format("Execute native query async with execution info : %s", queryString));
-        }
-
-        CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
-
-        return cfutureRS
-                .thenApply(options::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
-                .thenApply(statementWrapper::logTrace)
-                .thenApply(x -> LWTHelper.triggerLWTListeners(lwtResultListeners, x, queryString))
-                .thenApply(x -> Tuple2.of(mapResultSetToTypedMaps(x), x.getExecutionInfo()));
+    @Override
+    public RuntimeEngine runtimeEngine() {
+        return rte;
     }
 
-    /**
-     * Execute the native query asynchronously and return a list of {@link info.archinnov.achilles.type.TypedMap}
-     *
-     * @return CompletableFuture&lt;List&lt;TypedMap&gt;&gt;
-     */
-    public CompletableFuture<List<TypedMap>> getListAsync() {
-        return getListAsyncWithStats()
-                .thenApply(Tuple2::_1);
+    @Override
+    public AbstractEntityProperty<?> meta() {
+        return meta;
     }
 
-    /**
-     * Execute the native query and return a list of {@link info.archinnov.achilles.type.TypedMap}
-     * with execution info
-     *
-     * @return Tuple2&lt;List&lt;TypedMap&gt;, ExecutionInfo&gt;
-     */
-    public Tuple2<List<TypedMap>, ExecutionInfo> getListWithStats() {
-        try {
-            return Uninterruptibles.getUninterruptibly(getListAsyncWithStats());
-        } catch (ExecutionException e) {
-            throw extractCauseFromExecutionException(e);
-        }
+    @Override
+    public BoundStatement boundStatement() {
+        return boundStatement;
     }
 
-    /**
-     * Execute the native query and return a list of {@link info.archinnov.achilles.type.TypedMap}
-     *
-     * @return List&lt;TypedMap&gt;
-     */
-    public List<TypedMap> getList() {
-        try {
-            return Uninterruptibles.getUninterruptibly(getListAsync());
-        } catch (ExecutionException e) {
-            throw extractCauseFromExecutionException(e);
-        }
+    @Override
+    public Object[] encodedBoundValues() {
+        return encodedBoundValues;
     }
 
-    /**
-     * Execute the native query asynchronously and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
-     * and an execution info object
-     *
-     * @return CompletableFuture&lt;Tuple2&lt;TypedMap, ExecutionInfo&gt;&gt;
-     */
-    public CompletableFuture<Tuple2<TypedMap, ExecutionInfo>> getOneAsyncWithStats() {
-        final StatementWrapper statementWrapper = new NativeStatementWrapper(getOperationType(boundStatement), meta, boundStatement, encodedBoundValues);
-        final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
-
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format("Execute native query async with execution info : %s", queryString));
-        }
-
-        CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
-
-        return cfutureRS
-                .thenApply(options::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
-                .thenApply(statementWrapper::logTrace)
-                .thenApply(x -> LWTHelper.triggerLWTListeners(lwtResultListeners, x, queryString))
-                .thenApply(x -> Tuple2.of(mapRowToTypedMap(x.one()), x.getExecutionInfo()));
-    }
-
-    /**
-     * Execute the native query asynchronously and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
-     *
-     * @return CompletableFuture&lt;TypedMap&gt;&gt;
-     */
-    public CompletableFuture<TypedMap> getOneAsync() {
-        return getOneAsyncWithStats()
-                .thenApply(Tuple2::_1);
-    }
-
-    /**
-     * Execute the native query and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
-     * and execution info
-     *
-     * @return Tuple2&lt;TypedMap, ExecutionInfo&gt;
-     */
-    public Tuple2<TypedMap, ExecutionInfo> getOneWithStats() {
-        try {
-            return Uninterruptibles.getUninterruptibly(getOneAsyncWithStats());
-        } catch (ExecutionException e) {
-            throw extractCauseFromExecutionException(e);
-        }
-    }
-
-    /**
-     * Execute the native query and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
-     *
-     * @return TypedMap
-     */
-    public TypedMap getOne() {
-        try {
-            return Uninterruptibles.getUninterruptibly(getOneAsync());
-        } catch (ExecutionException e) {
-            throw extractCauseFromExecutionException(e);
-        }
-    }
-
-    /**
-     * Execute the native query and return an iterator of {@link info.archinnov.achilles.type.TypedMap}
-     *
-     * @return Iterator&lt;TypedMap&gt;
-     */
-    public Iterator<TypedMap> iterator() {
-        final StatementWrapper statementWrapper = new NativeStatementWrapper(getOperationType(boundStatement), meta, boundStatement, encodedBoundValues);
-        final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
-
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format("Execute native query async with execution info : %s", queryString));
-        }
-
-        CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
-
-        return new TypedMapIteratorWrapper(cfutureRS, statementWrapper, options);
+    @Override
+    public Options options() {
+        return options;
     }
 }

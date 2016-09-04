@@ -48,22 +48,6 @@ public interface SelectAction<ENTITY> extends AsyncAware {
 
     /**
      * Execute the SELECT action
-     * and return an {@link java.util.Iterator}<{@link info.archinnov.achilles.type.TypedMap}>
-     * <br/>
-     * WARNING: <strong>this method performs a blocking call to the underlying async query</strong>
-     */
-    Iterator<TypedMap> typedMapIterator();
-
-    /**
-     * Execute the SELECT action
-     * and return an {@link info.archinnov.achilles.type.tuples.Tuple2}&lt;{@link java.util.Iterator}&lt;{@link info.archinnov.achilles.type.TypedMap}&gt;, {@link com.datastax.driver.core.ExecutionInfo}&gt;
-     * <br/>
-     * WARNING: <strong>this method performs a blocking call to the underlying async query</strong>
-     */
-    Tuple2<Iterator<TypedMap>, ExecutionInfo> typedMapIteratorWithExecutionInfo();
-
-    /**
-     * Execute the SELECT action
      * and return the first entity instance
      */
     default ENTITY getOne() {
