@@ -62,17 +62,21 @@ public enum CassandraVersion {
      * New features:
      * <br/>
      * <ul>
-     *     <li>Stable SASI with Support LIKE operator in prepared statements (CASSANDRA-11456)</li>
      *     <li>Add static column support to SASI index (CASSANDRA-11183)</li>
      *     <li>Allow per-partition LIMIT clause in CQL (CASSANDRA-7017)</li>
      *     <li>Support for non-frozen user-defined types, updating individual fields of user-defined types (CASSANDRA-7423)</li>
-     *     <li></li>
-     *     <li></li>
-     *     <li></li>
      * </ul>
      *
      */
     CASSANDRA_3_6,
+    /**
+     * New features:
+     * <br/>
+     * <ul>
+     *     <li><strong>Stable</strong> SASI index with Support LIKE operator in prepared statements (CASSANDRA-11456)</li>
+     * </ul>
+     *
+     */
     CASSANDRA_3_7,
     /**
      * New features:

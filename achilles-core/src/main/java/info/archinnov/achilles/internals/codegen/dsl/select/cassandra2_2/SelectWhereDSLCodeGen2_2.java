@@ -31,11 +31,13 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.JSONFunctionCallSupport;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
-public class SelectWhereDSLCodeGen2_2 extends SelectWhereDSLCodeGen {
+public class SelectWhereDSLCodeGen2_2 extends SelectWhereDSLCodeGen
+        implements JSONFunctionCallSupport {
 
     @Override
     public List<TypeSpec> augmentSelectClass(GlobalParsingContext context,
@@ -55,21 +57,9 @@ public class SelectWhereDSLCodeGen2_2 extends SelectWhereDSLCodeGen {
     }
 
     @Override
-    public void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldInfo,
+    public void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
+                                                   FieldSignatureInfo fieldInfo,
                                                    ClassSignatureInfo nextSignature) {
-        final String methodName = "Eq_FromJson";
-        final MethodSpec fromJsonMethod = MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L </strong>", fieldInfo.quotedCqlColumn, " = fromJson(?)")
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(STRING, fieldInfo.fieldName)
-                .addStatement("where.and($T.eq($S, $T.fromJson($T.bindMarker($S))))",
-                        QUERY_BUILDER, fieldInfo.quotedCqlColumn, QUERY_BUILDER, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
-                .addStatement("boundValues.add($N)", fieldInfo.fieldName)
-                .addStatement("encodedValues.add($N)", fieldInfo.fieldName)
-                .returns(nextSignature.returnClassType)
-                .addStatement("return new $T(where)", nextSignature.returnClassType)
-                .build();
-
-        relationClassBuilder.addMethod(fromJsonMethod);
+        buildEqFromJSONToRelationClass(relationClassBuilder, fieldInfo, nextSignature);
     }
 }

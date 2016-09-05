@@ -16,19 +16,43 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.delete.cassandra2_1;
 
+import java.util.List;
+
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 
 public class DeleteWhereDSLCodeGen2_1 extends DeleteWhereDSLCodeGen {
     @Override
-    public void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo nextSignature) {
+    public void augmentPartitionKeyRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
+                                                               FieldSignatureInfo fieldSignatureInfo,
+                                                               ClassSignatureInfo nextSignature) {
         //NO Op
     }
 
     @Override
-    public void augmentLWTConditionClass(TypeSpec.Builder conditionClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo currentSignature) {
+    public void augmentClusteringColRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
+                                                                FieldSignatureInfo fieldSignatureInfo,
+                                                                ClassSignatureInfo nextSignature,
+                                                                ClassSignatureInfo lastSignature) {
+        //NO Op
+    }
+
+    @Override
+    public void augmentWhereClass(TypeSpec.Builder whereClassBuilder, EntityMetaSignature signature,
+                                  List<FieldSignatureInfo> clusteringCols,
+                                  List<ClassSignatureInfo> classesSignature,
+                                  ClassSignatureInfo lastSignature) {
+        //NO Op
+    }
+
+    @Override
+    public void augmentLWTConditionClass(TypeSpec.Builder conditionClassBuilder,
+                                         FieldSignatureInfo fieldSignatureInfo,
+                                         ClassSignatureInfo currentSignature) {
         //NO Op
     }
 }

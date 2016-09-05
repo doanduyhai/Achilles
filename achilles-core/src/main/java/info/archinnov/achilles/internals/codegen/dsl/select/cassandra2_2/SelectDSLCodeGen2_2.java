@@ -23,6 +23,7 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import info.archinnov.achilles.internals.codegen.dsl.JSONFunctionCallSupport;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
@@ -30,7 +31,8 @@ import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-public class SelectDSLCodeGen2_2 extends SelectDSLCodeGen {
+public class SelectDSLCodeGen2_2 extends SelectDSLCodeGen
+        implements JSONFunctionCallSupport {
 
     @Override
     public void augmentSelectClass(GlobalParsingContext context, EntityMetaCodeGen.EntityMetaSignature signature, TypeSpec.Builder builder) {

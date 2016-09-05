@@ -23,9 +23,15 @@ import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGe
 
 public class UpdateWhereDSLCodeGen2_1 extends UpdateWhereDSLCodeGen {
     @Override
-    public void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo nextSignature) {
+    public void augmentPartitionKeyRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo nextSignature) {
         //NO Op
     }
+
+    @Override
+    public void augmentClusteringColRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo nextSignature) {
+        //NO Op
+    }
+
 
     @Override
     public void augmentLWTConditionClass(TypeSpec.Builder conditionClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo currentSignature) {

@@ -196,6 +196,13 @@ CREATE TABLE IF NOT EXISTS test.entity_static_counter(
 		count counter,
 		PRIMARY KEY(id, uuid))
 	WITH CLUSTERING ORDER BY(uuid ASC);
+CREATE TABLE IF NOT EXISTS test.multi_clustering_entity(
+		id bigint,
+		c1 int,
+		c2 int,
+		value text,
+		PRIMARY KEY(id, c1, c2))
+	WITH CLUSTERING ORDER BY(c1 ASC, c2 ASC);
 CREATE TABLE IF NOT EXISTS test.simple(
 		id bigint,
 		date timestamp,

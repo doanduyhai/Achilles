@@ -28,11 +28,12 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.BaseSingleColumnRestriction;
 import info.archinnov.achilles.internals.codegen.dsl.LWTConditionsCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 
 public abstract class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen
-        implements LWTConditionsCodeGen {
+        implements LWTConditionsCodeGen, BaseSingleColumnRestriction {
 
     public static final MethodSpec WHERE_CONSTRUCTOR = MethodSpec.constructorBuilder()
             .addModifiers(Modifier.PUBLIC)
@@ -40,9 +41,13 @@ public abstract class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen
             .addStatement("super(where)")
             .build();
 
-    public abstract void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
+    public abstract void augmentPartitionKeyRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
                                                             FieldSignatureInfo fieldSignatureInfo,
                                                             ClassSignatureInfo nextSignature);
+
+    public abstract void augmentClusteringColRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
+                                                                        FieldSignatureInfo fieldSignatureInfo,
+                                                                        ClassSignatureInfo nextSignature);
 
     public List<TypeSpec> buildWhereClasses(EntityMetaSignature signature) {
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
@@ -146,7 +151,7 @@ public abstract class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen
                 .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo))
                 .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo));
 
-        augmentRelationClassForWhereClause(relationClassBuilder, partitionInfo, nextSignature);
+        augmentPartitionKeyRelationClassForWhereClause(relationClassBuilder, partitionInfo, nextSignature);
 
         return TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
@@ -190,7 +195,7 @@ public abstract class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo));
 
-        augmentRelationClassForWhereClause(relationClassBuilder, clusteringColumnInfo, nextSignature);
+        augmentClusteringColRelationClassForWhereClause(relationClassBuilder, clusteringColumnInfo, nextSignature);
 
         return TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)

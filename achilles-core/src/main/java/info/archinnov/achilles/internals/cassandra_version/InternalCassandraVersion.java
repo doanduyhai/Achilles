@@ -26,6 +26,7 @@ import info.archinnov.achilles.internals.codegen.crud.CrudAPICodeGen;
 import info.archinnov.achilles.internals.codegen.crud.cassandra2_2.CrudAPICodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.delete.cassandra2_2.DeleteWhereDSLCodeGen2_2;
+import info.archinnov.achilles.internals.codegen.dsl.delete.cassandra3_0.DeleteWhereDSLCodeGen3_0;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_2.SelectDSLCodeGen2_2;
@@ -34,6 +35,7 @@ import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2.UpdateDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2.UpdateWhereDSLCodeGen2_2;
+import info.archinnov.achilles.internals.codegen.dsl.update.cassandra3_0.UpdateWhereDSLCodeGen3_0;
 import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
 import info.archinnov.achilles.internals.codegen.function.cassandra2_2.FunctionsRegistryCodeGen2_2;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
@@ -122,12 +124,12 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
 
         @Override
         public UpdateWhereDSLCodeGen updateWhereDslCodeGen() {
-            return UPDATE_WHERE_DSL_CODE_GEN_2_2;
+            return UPDATE_WHERE_DSL_CODE_GEN_3_0;
         }
 
         @Override
         public DeleteWhereDSLCodeGen deleteWhereDslCodeGen() {
-            return DELETE_WHERE_DSL_CODE_GEN_2_2;
+            return DELETE_WHERE_DSL_CODE_GEN_3_0;
         }
 
         @Override
@@ -146,7 +148,9 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
     private static final SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_2_2 = new SelectWhereDSLCodeGen2_2();
     private static final UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_2_2 = new UpdateDSLCodeGen2_2();
     private static final UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN_2_2 = new UpdateWhereDSLCodeGen2_2();
+    private static final UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN_3_0 = new UpdateWhereDSLCodeGen3_0();
     private static final DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN_2_2 = new DeleteWhereDSLCodeGen2_2();
+    private static final DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN_3_0 = new DeleteWhereDSLCodeGen3_0();
 
     private static final BeanValidator BEAN_VALIDATOR_3_0 = new BeanValidator3_0();
     private static final FunctionsRegistryCodeGen2_2 FUNCTIONS_REGISTRY_CODE_GEN_2_2 = new FunctionsRegistryCodeGen2_2();

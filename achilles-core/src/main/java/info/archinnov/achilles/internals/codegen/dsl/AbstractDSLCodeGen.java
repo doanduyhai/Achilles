@@ -106,43 +106,53 @@ public abstract class AbstractDSLCodeGen {
 
     }
 
-    public MethodSpec buildColumnRelation(String relation, TypeName nextType, FieldSignatureInfo fieldInfo) {
-        final String methodName = upperCaseFirst(relation);
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fieldInfo.quotedCqlColumn, relationToSymbolForJavaDoc(relation))
-                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(fieldInfo.typeName, fieldInfo.fieldName)
-                .addStatement("where.and($T.$L($S, $T.bindMarker($S)))",
-                        QUERY_BUILDER, relation, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
-                .addStatement("boundValues.add($N)", fieldInfo.fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, fieldInfo.fieldName)
-                .returns(nextType);
-
-        return builder.addStatement("return new $T(where)", nextType).build();
-    }
-
-    public MethodSpec buildColumnInVarargs(TypeName nextType, FieldSignatureInfo fieldInfo) {
-        final String methodName = "IN";
-        final String param = fieldInfo.fieldName;
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L IN ?</strong>", fieldInfo.quotedCqlColumn)
-                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(ArrayTypeName.of(fieldInfo.typeName), fieldInfo.fieldName)
-                .varargs()
-                .addStatement("$T.validateTrue($T.isNotEmpty($L), \"Varargs for field '%s' should not be null/empty\", $S)",
-                        VALIDATOR, ARRAYS_UTILS, fieldInfo.fieldName, fieldInfo.fieldName)
-                .addStatement("where.and($T.in($S,$T.bindMarker($S)))",
-                        QUERY_BUILDER, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
-                .addStatement("final $T varargs = $T.<Object>asList((Object[])$L)", LIST_OBJECT, ARRAYS, param)
-                .addStatement("final $T encodedVarargs = $T.<$T>stream(($T[])$L).map(x -> meta.$L.encodeFromJava(x)).collect($T.toList())",
-                        LIST_OBJECT, ARRAYS, fieldInfo.typeName, fieldInfo.typeName, fieldInfo.fieldName, fieldInfo.fieldName, COLLECTORS)
-                .addStatement("boundValues.add(varargs)")
-                .addStatement("encodedValues.add(encodedVarargs)")
-                .returns(nextType);
-        return builder.addStatement("return new $T(where)", nextType).build();
-    }
+//    public static MethodSpec buildColumnRelation(String relation, TypeName nextType, FieldSignatureInfo fieldInfo) {
+//        final String methodName = upperCaseFirst(relation);
+//        final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
+//                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fieldInfo.quotedCqlColumn, relationToSymbolForJavaDoc(relation))
+//                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
+//                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+//                .addParameter(fieldInfo.typeName, fieldInfo.fieldName)
+//                .addStatement("where.and($T.$L($S, $T.bindMarker($S)))",
+//                        QUERY_BUILDER, relation, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
+//                .addStatement("boundValues.add($N)", fieldInfo.fieldName)
+//                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, fieldInfo.fieldName)
+//                .returns(nextType);
+//
+//        return builder.addStatement("return new $T(where)", nextType).build();
+//    }
+//
+//    public static MethodSpec buildColumnInVarargs(TypeName nextType, FieldSignatureInfo fieldInfo) {
+//        final String methodName = "IN";
+//        final String param = fieldInfo.fieldName;
+//        final TypeName paramTypeName = fieldInfo.typeName;
+//        final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
+//                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L IN ?</strong>", fieldInfo.quotedCqlColumn)
+//                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
+//                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+//                .addParameter(ArrayTypeName.of(paramTypeName), param)
+//                .varargs()
+//                .addStatement("$T.validateTrue($T.isNotEmpty($L), \"Varargs for field '%s' should not be null/empty\", $S)",
+//                        VALIDATOR, ARRAYS_UTILS, fieldInfo.fieldName, fieldInfo.fieldName)
+//                .addStatement("where.and($T.in($S,$T.bindMarker($S)))",
+//                        QUERY_BUILDER, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn);
+//
+//        if (paramTypeName.isPrimitive()) {
+//            builder.addStatement("final $T varargs = $T.<Object>asList(($T[])$L)", LIST_OBJECT, ARRAYS, paramTypeName, param)
+//                    .addStatement("final $T encodedVarargs = $T.stream(($T[])$L).mapToObj(x -> meta.$L.encodeFromJava(x)).collect($T.toList())",
+//                            LIST_OBJECT, ARRAYS, paramTypeName, param, param, COLLECTORS);
+//        } else {
+//            builder.addStatement("final $T varargs = $T.<Object>asList((Object[])$L)", LIST_OBJECT, ARRAYS, param)
+//                    .addStatement("final $T encodedVarargs = $T.<$T>stream(($T[])$L).map(x -> meta.$L.encodeFromJava(x)).collect($T.toList())",
+//                            LIST_OBJECT, ARRAYS, paramTypeName, paramTypeName, param, param, COLLECTORS);
+//        }
+//
+//        builder.addStatement("boundValues.add(varargs)")
+//                .addStatement("encodedValues.add(encodedVarargs)")
+//                .returns(nextType);
+//
+//        return builder.addStatement("return new $T(where)", nextType).build();
+//    }
 
     public MethodSpec buildGetThis(TypeName currentType) {
         return MethodSpec
@@ -246,17 +256,6 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    public MethodSpec buildAllColumnsJSON(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
-        return MethodSpec.methodBuilder("allColumnsAsJSON_FromBaseTable")
-                .addJavadoc("Generate ... * FROM ...")
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addStatement("final $T where = $L.json().all().from(meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where()",
-                        whereTypeName, privateFieldName, "unknown_keyspace_for_")
-                .addStatement("return new $T(where)", newTypeName)
-                .returns(newTypeName)
-                .build();
-    }
-
     public MethodSpec buildAllColumnsWithSchemaProvider(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
         return MethodSpec.methodBuilder("allColumns_From")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -265,19 +264,6 @@ public abstract class AbstractDSLCodeGen {
                 .addStatement("final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass)")
                 .addStatement("final String currentTable = lookupTable(schemaNameProvider, meta.entityClass)")
                 .addStatement("final $T where = $L.all().from(currentKeyspace, currentTable).where()", whereTypeName, privateFieldName)
-                .addStatement("return new $T(where)", newTypeName)
-                .returns(newTypeName)
-                .build();
-    }
-
-    public MethodSpec buildAllColumnsJSONWithSchemaProvider(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
-        return MethodSpec.methodBuilder("allColumnsAsJSON_From")
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addJavadoc("Generate ... * FROM ... using the given SchemaNameProvider")
-                .addParameter(SCHEMA_NAME_PROVIDER, "schemaNameProvider", Modifier.FINAL)
-                .addStatement("final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass)")
-                .addStatement("final String currentTable = lookupTable(schemaNameProvider, meta.entityClass)")
-                .addStatement("final $T where = $L.json().all().from(currentKeyspace, currentTable).where()", whereTypeName, privateFieldName)
                 .addStatement("return new $T(where)", newTypeName)
                 .returns(newTypeName)
                 .build();
@@ -307,7 +293,7 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
-    public MethodSpec buildRelationMethod(String fieldName, TypeName relationClassTypeName) {
+    public static MethodSpec buildRelationMethod(String fieldName, TypeName relationClassTypeName) {
         return MethodSpec.methodBuilder(fieldName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("return new $T()", relationClassTypeName)
@@ -355,7 +341,7 @@ public abstract class AbstractDSLCodeGen {
         }
     }
 
-    public String formatColumnTuplesForJavadoc(String columnTuples) {
+    public static String formatColumnTuplesForJavadoc(String columnTuples) {
         return "(" + columnTuples.replaceAll("\"","") + ")";
     }
 

@@ -1,0 +1,9 @@
+INSERT INTO achilles_embedded.multi_clustering_entity(id, c1, c2, value) VALUES (${id}, 1, 1, '111');
+INSERT INTO achilles_embedded.multi_clustering_entity(id, c1, c2, value) VALUES (${id}, 1, 2, '112');
+INSERT INTO achilles_embedded.multi_clustering_entity(id, c1, c2, value) VALUES (${id}, 1, 3, '112');
+INSERT INTO achilles_embedded.multi_clustering_entity(id, c1, c2, value) VALUES (${id}, 2, 1, '121');
+INSERT INTO achilles_embedded.multi_clustering_entity(id, c1, c2, value) VALUES (${id}, 2, 2, '122');
+INSERT INTO achilles_embedded.multi_clustering_entity(id, c1, c2, value) VALUES (${id}, 2, 3, '211');
+INSERT INTO achilles_embedded.multi_clustering_entity(id, c1, c2, value) VALUES (${id}, 3, 1, '212');
+INSERT INTO achilles_embedded.multi_clustering_entity(id, c1, c2, value) VALUES (${id}, 3, 2, '221');
+INSERT INTO achilles_embedded.multi_clustering_entity(id, c1, c2, value) VALUES (${id}, 3, 3, '222');

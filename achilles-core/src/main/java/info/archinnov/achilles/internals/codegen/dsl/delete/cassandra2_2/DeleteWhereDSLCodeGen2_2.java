@@ -16,55 +16,45 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.delete.cassandra2_2;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.QUERY_BUILDER;
-import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
+import java.util.List;
 
-import javax.lang.model.element.Modifier;
-
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
+import info.archinnov.achilles.internals.codegen.dsl.JSONFunctionCallSupport;
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 
-public class DeleteWhereDSLCodeGen2_2 extends DeleteWhereDSLCodeGen {
+public class DeleteWhereDSLCodeGen2_2 extends DeleteWhereDSLCodeGen
+        implements JSONFunctionCallSupport{
     @Override
-    public void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldInfo,
+    public void augmentPartitionKeyRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
+                                                               FieldSignatureInfo fieldInfo,
                                                    ClassSignatureInfo nextSignature) {
-        final String methodName = "Eq_FromJson";
-        final MethodSpec fromJsonMethod = MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L </strong>", fieldInfo.quotedCqlColumn, " = fromJson(?)")
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(STRING, fieldInfo.fieldName)
-                .addStatement("where.and($T.eq($S, $T.fromJson($T.bindMarker($S))))",
-                        QUERY_BUILDER, fieldInfo.quotedCqlColumn, QUERY_BUILDER, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
-                .addStatement("boundValues.add($N)", fieldInfo.fieldName)
-                .addStatement("encodedValues.add($N)", fieldInfo.fieldName)
-                .returns(nextSignature.returnClassType)
-                .addStatement("return new $T(where)", nextSignature.returnClassType)
-                .build();
 
-        relationClassBuilder.addMethod(fromJsonMethod);
+        buildEqFromJSONToRelationClass(relationClassBuilder, fieldInfo, nextSignature);
     }
 
     @Override
-    public void augmentLWTConditionClass(TypeSpec.Builder conditionClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo currentSignature) {
+    public void augmentClusteringColRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
+                                                                FieldSignatureInfo fieldInfo,
+                                                                ClassSignatureInfo nextSignature,
+                                                                ClassSignatureInfo lastSignature) {
+        buildEqFromJSONToRelationClass(relationClassBuilder, fieldInfo, nextSignature);
 
-        String methodName = "Eq_FromJSON";
-        final String fieldName = fieldSignatureInfo.fieldName;
-        final String quotedCqlColumn = fieldSignatureInfo.quotedCqlColumn;
-        MethodSpec fromJsonMethod = MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate an ... <strong>IF $L = fromJson(?)</strong>", fieldName)
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(STRING, fieldName, Modifier.FINAL)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add($N)", fieldName)
-                .addStatement("where.onlyIf($T.eq($S, $T.fromJson($T.bindMarker($S))))",
-                        QUERY_BUILDER, quotedCqlColumn, QUERY_BUILDER, QUERY_BUILDER, quotedCqlColumn)
-                .addStatement("return $T.this", currentSignature.returnClassType)
-                .returns(currentSignature.returnClassType)
-                .build();
+    }
 
-        conditionClassBuilder.addMethod(fromJsonMethod);
+    @Override
+    public void augmentWhereClass(TypeSpec.Builder whereClassBuilder, EntityMetaSignature signature,
+                                  List<FieldSignatureInfo> clusteringCols,
+                                  List<ClassSignatureInfo> classesSignature,
+                                  ClassSignatureInfo lastSignature) {
+        //NO Op
+    }
+
+    @Override
+    public void augmentLWTConditionClass(TypeSpec.Builder conditionClassBuilder,
+                                         FieldSignatureInfo fieldSignatureInfo,
+                                         ClassSignatureInfo currentSignature) {
+        buildIfEqFromJSONToConditionClass(conditionClassBuilder, fieldSignatureInfo, currentSignature);
     }
 }
