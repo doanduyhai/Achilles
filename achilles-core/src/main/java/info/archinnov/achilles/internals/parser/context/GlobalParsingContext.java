@@ -16,14 +16,10 @@
 
 package info.archinnov.achilles.internals.parser.context;
 
-import static info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion.V2_1;
-import static info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion.V2_2;
-import static info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion.V3_0;
+import static info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter.*;
-import static info.archinnov.achilles.type.CassandraVersion.CASSANDRA_2_1_X;
-import static info.archinnov.achilles.type.CassandraVersion.CASSANDRA_2_2_X;
-import static info.archinnov.achilles.type.CassandraVersion.CASSANDRA_3_0_X;
+import static info.archinnov.achilles.type.CassandraVersion.*;
 import static info.archinnov.achilles.type.strategy.ColumnMappingStrategy.EXPLICIT;
 import static info.archinnov.achilles.type.strategy.ColumnMappingStrategy.IMPLICIT;
 
@@ -72,6 +68,8 @@ public class GlobalParsingContext {
         VERSION_MAPPING.put(CASSANDRA_2_1_X, V2_1);
         VERSION_MAPPING.put(CASSANDRA_2_2_X, V2_2);
         VERSION_MAPPING.put(CASSANDRA_3_0_X, V3_0);
+        VERSION_MAPPING.put(CASSANDRA_3_1, V3_0);
+        VERSION_MAPPING.put(CASSANDRA_3_2, V3_2);
 
         COLUMNS_MAPPING.put(EXPLICIT, Tuple2.of(EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER));
         COLUMNS_MAPPING.put(IMPLICIT, Tuple2.of(IMPLICIT_ENTITY_FIELD_FILTER, IMPLICIT_UDT_FIELD_FILTER));

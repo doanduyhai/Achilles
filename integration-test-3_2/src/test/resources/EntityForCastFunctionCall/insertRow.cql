@@ -1,0 +1,1 @@
+INSERT INTO achilles_embedded.entity_for_cast_fcall(id, value) VALUES(${id}, 'val');

@@ -20,6 +20,10 @@ CREATE TABLE IF NOT EXISTS test.entity_child(
 		child_value text,
 		value text,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.entity_for_cast_fcall(
+		id bigint,
+		value text,
+		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.entity_for_json_function_call(
 		id bigint,
 		clust bigint,

@@ -141,56 +141,6 @@ public class TestFunctionCallsSimpleEntityIT {
     }
 
     @Test
-    public void should_dsl_with_nested_system_casting_call() throws Exception {
-        //Given
-        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
-        final Date date = buildDateKey();
-        scriptExecutor.executeScriptTemplate("SimpleEntity/insert_single_row.cql", ImmutableMap.of("id", id, "table", "simple"));
-
-        //When
-        final TypedMap typedMap = manager
-                .dsl()
-                .select()
-                .id()
-                .function(SystemFunctions.castAsText(SystemFunctions.writetime(SimpleEntity_AchillesMeta.COLUMNS.VALUE)), "writetimeOfValueAsString")
-                .fromBaseTable()
-                .where()
-                .id().Eq(id)
-                .date().Eq(date)
-                .getTypedMap();
-
-        //Then
-        assertThat(typedMap).isNotNull();
-        assertThat(typedMap).isNotEmpty();
-        assertThat(Long.parseLong(typedMap.<String>getTyped("writetimeofvalueasstring"))).isGreaterThan(date.getTime());
-    }
-
-    @Test
-    public void should_dsl_with_cast_nested_into_udf_call() throws Exception {
-        //Given
-        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
-        final Date date = buildDateKey();
-        scriptExecutor.executeScriptTemplate("SimpleEntity/insert_single_row.cql", ImmutableMap.of("id", id, "table", "simple"));
-
-        //When
-        final TypedMap typedMap = manager
-                .dsl()
-                .select()
-                .id()
-                .function(FunctionsRegistry.convertToLong(castAsText(writetime(SimpleEntity_AchillesMeta.COLUMNS.VALUE))), "casted")
-                .fromBaseTable()
-                .where()
-                .id().Eq(id)
-                .date().Eq(date)
-                .getTypedMap();
-
-        //Then
-        assertThat(typedMap).isNotNull();
-        assertThat(typedMap).isNotEmpty();
-        assertThat(typedMap.<Long>getTyped("casted")).isGreaterThan(date.getTime());
-    }
-
-    @Test
     public void should_dsl_with_udf_call() throws Exception {
         //Given
         final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);

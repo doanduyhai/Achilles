@@ -38,6 +38,7 @@ import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2.UpdateW
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra3_0.UpdateWhereDSLCodeGen3_0;
 import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
 import info.archinnov.achilles.internals.codegen.function.cassandra2_2.FunctionsRegistryCodeGen2_2;
+import info.archinnov.achilles.internals.codegen.function.cassandra3_2.FunctionsRegistryCodeGen3_2;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.cassandra_3_0.BeanValidator3_0;
 
@@ -141,6 +142,54 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
         public boolean supportsFeature(CassandraFeature feature) {
             return SUPPORTED_FEATURES.contains(feature);
         }
+    },
+    V3_2 {
+        private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA, MATERIALIZED_VIEW);
+
+        @Override
+        public BeanValidator beanValidator() {
+            return BEAN_VALIDATOR_3_0;
+        }
+
+        @Override
+        public CrudAPICodeGen crudApiCodeGen() {
+            return CRUD_API_CODE_GEN_2_2;
+        }
+
+        @Override
+        public SelectDSLCodeGen selectDslCodeGen() {
+            return SELECT_DSL_CODE_GEN_2_2;
+        }
+
+        @Override
+        public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
+            return SELECT_WHERE_DSL_CODE_GEN_2_2;
+        }
+
+        @Override
+        public UpdateDSLCodeGen updateDslCodeGen() {
+            return UPDATE_DSL_CODE_GEN_2_2;
+        }
+
+        @Override
+        public UpdateWhereDSLCodeGen updateWhereDslCodeGen() {
+            return UPDATE_WHERE_DSL_CODE_GEN_3_0;
+        }
+
+        @Override
+        public DeleteWhereDSLCodeGen deleteWhereDslCodeGen() {
+            return DELETE_WHERE_DSL_CODE_GEN_3_0;
+        }
+
+        @Override
+        public FunctionsRegistryCodeGen functionsRegistryCodeGen() {
+            return FUNCTIONS_REGISTRY_CODE_GEN_3_2;
+        }
+
+        @Override
+        public boolean supportsFeature(CassandraFeature feature) {
+            return SUPPORTED_FEATURES.contains(feature);
+        }
     };
 
     private static final CrudAPICodeGen CRUD_API_CODE_GEN_2_2 = new CrudAPICodeGen2_2();
@@ -153,7 +202,8 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
     private static final DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN_3_0 = new DeleteWhereDSLCodeGen3_0();
 
     private static final BeanValidator BEAN_VALIDATOR_3_0 = new BeanValidator3_0();
-    private static final FunctionsRegistryCodeGen2_2 FUNCTIONS_REGISTRY_CODE_GEN_2_2 = new FunctionsRegistryCodeGen2_2();
+    private static final FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN_2_2 = new FunctionsRegistryCodeGen2_2();
+    private static final FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN_3_2 = new FunctionsRegistryCodeGen3_2();
 
     public abstract boolean supportsFeature(CassandraFeature feature);
 

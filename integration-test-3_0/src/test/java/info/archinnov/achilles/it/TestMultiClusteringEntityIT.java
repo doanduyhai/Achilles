@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.collect.ImmutableMap;
 
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_3_0;

@@ -31,7 +31,7 @@ import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public abstract class FunctionsRegistryCodeGen {
 
-    public TypeSpec generateFunctionsRegistryClass(String className, List<FunctionSignature> udfSignatures) {
+    public TypeSpec generateFunctionsRegistryClass(String className, List<FunctionSignature> functionSignatures) {
 
         final TypeSpec.Builder builder = TypeSpec.classBuilder(className)
                 .addModifiers(Modifier.FINAL, Modifier.PUBLIC);
@@ -40,10 +40,6 @@ public abstract class FunctionsRegistryCodeGen {
             builder.addJavadoc("This class is the common registry for all system functions");
             buildAcceptAllMethodsForSystemFunction().forEach(builder::addMethod);
         }
-//        else {
-//            builder.addJavadoc("This class is the common registry for all registered user-defined functions");
-//        }
-//        udfSignatures.forEach(signature -> builder.addMethod(buildMethodForFunction(signature)));
 
         return builder.build();
     }

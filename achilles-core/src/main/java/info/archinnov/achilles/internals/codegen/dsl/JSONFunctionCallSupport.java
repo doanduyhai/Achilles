@@ -16,23 +16,71 @@
 
 package info.archinnov.achilles.internals.codegen.dsl;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.QUERY_BUILDER;
-import static info.archinnov.achilles.internals.parser.TypeUtils.SCHEMA_NAME_PROVIDER;
-import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
+import static com.squareup.javapoet.TypeName.BOOLEAN;
+import static com.squareup.javapoet.TypeName.OBJECT;
+import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static info.archinnov.achilles.internals.parser.TypeUtils.LIST;
 
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ClassSignatureInfo;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
 import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public interface JSONFunctionCallSupport {
 
+    default MethodSpec buildToJSONFunctionCall() {
+        final TypeName STRING_TYPE = TypeUtils.determineTypeForFunctionParam(STRING);
+
+        final TypeVariableName typeVariableName = TypeVariableName.get("T", ABSTRACT_CQL_COMPATIBLE_TYPE, FUNCTION_CALL);
+
+        final AnnotationSpec unchecked = AnnotationSpec.builder(ClassName.get(SuppressWarnings.class))
+                .addMember("value", "$S", "rawtypes")
+                .build();
+
+        //toJson function
+        final MethodSpec.Builder toJSONFunctionBuilder = MethodSpec.methodBuilder("toJson")
+                .addTypeVariable(typeVariableName)
+                .addAnnotation(unchecked)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .addJavadoc("Call $S function with given parameters", "toJson")
+                .returns(STRING_TYPE)
+                .addParameter(typeVariableName, "input", Modifier.FINAL)
+                .addStatement("final $T<Object> params = new $T<>()", LIST, ARRAY_LIST)
+                .addStatement("$T.validateFalse(input.isFunctionCall(), $S)", VALIDATOR, "Invalid argument for 'toJson' function, it does not accept function call as argument, only simple column")
+                .addStatement("$T.validateFalse(input.hasLiteralValue(), $S)", VALIDATOR, "Invalid argument for 'toJson' function, it does not accept literal value as argument, only simple column")
+                .addStatement("params.add($T.column((String)$L.getValue()))", QUERY_BUILDER, "input");
+
+        final TypeSpec.Builder toJSONAnonClassBuilder = TypeSpec.anonymousClassBuilder("$T.empty()", OPTIONAL)
+                .superclass(STRING_TYPE)
+                .addMethod(MethodSpec
+                        .methodBuilder("isFunctionCall")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(BOOLEAN)
+                        .addStatement("return true")
+                        .build())
+                .addMethod(MethodSpec
+                        .methodBuilder("functionName")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(STRING)
+                        .addStatement("return $S", "toJson")
+                        .build())
+                .addMethod(MethodSpec
+                        .methodBuilder("parameters")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(genericType(LIST, OBJECT))
+                        .addStatement("return params")
+                        .build());
+
+        return toJSONFunctionBuilder.addStatement("return $L", toJSONAnonClassBuilder.build()).build();
+    }
     default void buildSetFromJSONToRelationClass(TypeSpec.Builder relationClassBuilder,
                                                  FieldParser.FieldMetaSignature parsingResult,
                                                  TypeName newTypeName,
