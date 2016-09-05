@@ -43,7 +43,9 @@ import info.archinnov.achilles.bootstrap.AbstractManagerFactoryBuilder;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
 import info.archinnov.achilles.internals.codec.*;
+import info.archinnov.achilles.internals.codegen.function.InternalSystemFunctionRegistry;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
+import info.archinnov.achilles.internals.dsl.crud.*;
 import info.archinnov.achilles.internals.metamodel.*;
 import info.archinnov.achilles.internals.metamodel.columns.*;
 import info.archinnov.achilles.generated.function.AbstractCQLCompatibleType;
@@ -52,10 +54,6 @@ import info.archinnov.achilles.internals.metamodel.functions.FunctionProperty;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.options.Options;
-import info.archinnov.achilles.internals.dsl.crud.DeleteByPartitionWithOptions;
-import info.archinnov.achilles.internals.dsl.crud.DeleteWithOptions;
-import info.archinnov.achilles.internals.dsl.crud.FindWithOptions;
-import info.archinnov.achilles.internals.dsl.crud.InsertWithOptions;
 import info.archinnov.achilles.internals.dsl.query.delete.*;
 import info.archinnov.achilles.internals.dsl.query.select.*;
 import info.archinnov.achilles.internals.dsl.query.update.*;
@@ -82,11 +80,14 @@ public class TypeUtils {
     public static final String SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX = "_SelectColumnsTypedMap";
     public static final String SELECT_DSL_SUFFIX = "_Select";
     public static final String SELECT_FROM_DSL_SUFFIX = "_SelectFrom";
+    public static final String SELECT_FROM_JSON_DSL_SUFFIX = "_SelectFromJSON";
     public static final String SELECT_FROM_TYPED_MAP_DSL_SUFFIX = "_SelectFromTypedMap";
     public static final String SELECT_WHERE_DSL_SUFFIX = "_SelectWhere";
     public static final String SELECT_WHERE_TYPED_MAP_DSL_SUFFIX = "_SelectWhereTypedMap";
+    public static final String SELECT_WHERE_JSON_DSL_SUFFIX = "_SelectWhereJSON";
     public static final String SELECT_END_DSL_SUFFIX = "_SelectEnd";
     public static final String SELECT_END_TYPED_MAP_DSL_SUFFIX = "_SelectEndTypedMap";
+    public static final String SELECT_END_JSON_DSL_SUFFIX = "_SelectEndJSON";
 
     public static final String DELETE_DSL_SUFFIX = "_Delete";
     public static final String DELETE_STATIC_DSL_SUFFIX = "_DeleteStatic";
@@ -183,10 +184,13 @@ public class TypeUtils {
     public static final ClassName ABSTRACT_SELECT_COLUMNS_TYPED_MAP = ClassName.get(AbstractSelectColumnsTypeMap.class);
     public static final ClassName ABSTRACT_SELECT_FROM = ClassName.get(AbstractSelectFrom.class);
     public static final ClassName ABSTRACT_SELECT_FROM_TYPED_MAP = ClassName.get(AbstractSelectFromTypeMap.class);
+    public static final ClassName ABSTRACT_SELECT_FROM_JSON = ClassName.get(AbstractSelectFromJSON.class);
     public static final ClassName ABSTRACT_SELECT_WHERE = ClassName.get(AbstractSelectWhere.class);
     public static final ClassName ABSTRACT_SELECT_WHERE_TYPED_MAP = ClassName.get(AbstractSelectWhereTypeMap.class);
+    public static final ClassName ABSTRACT_SELECT_WHERE_JSON = ClassName.get(AbstractSelectWhereJSON.class);
     public static final ClassName ABSTRACT_SELECT_WHERE_PARTITION = ClassName.get(AbstractSelectWherePartition.class);
     public static final ClassName ABSTRACT_SELECT_WHERE_PARTITION_TYPED_MAP = ClassName.get(AbstractSelectWherePartitionTypeMap.class);
+    public static final ClassName ABSTRACT_SELECT_WHERE_PARTITION_JSON = ClassName.get(AbstractSelectWherePartitionJSON.class);
     public static final ClassName ABSTRACT_DELETE = ClassName.get(AbstractDelete.class);
     public static final ClassName ABSTRACT_DELETE_COLUMNS = ClassName.get(AbstractDeleteColumns.class);
     public static final ClassName ABSTRACT_DELETE_FROM = ClassName.get(AbstractDeleteFrom.class);
@@ -220,6 +224,7 @@ public class TypeUtils {
     public static final ClassName ABSTRACT_VIEW_PROPERTY = ClassName.get(AbstractViewProperty.class);
     public static final ClassName RUNTIME_ENGINE = ClassName.get(RuntimeEngine.class);
     public static final ClassName INSERT_WITH_OPTIONS = ClassName.get(InsertWithOptions.class);
+    public static final ClassName INSERT_JSON_WITH_OPTIONS = ClassName.get(InsertJSONWithOptions.class);
     public static final ClassName FIND_WITH_OPTIONS = ClassName.get(FindWithOptions.class);
     public static final ClassName DELETE_WITH_OPTIONS = ClassName.get(DeleteWithOptions.class);
     public static final ClassName DELETE_BY_PARTITION_WITH_OPTIONS = ClassName.get(DeleteByPartitionWithOptions.class);
@@ -227,6 +232,8 @@ public class TypeUtils {
     // UDF & UDA
     public static final ClassName ABSTRACT_CQL_COMPATIBLE_TYPE = ClassName.get(AbstractCQLCompatibleType.class);
     public static final ClassName FUNCTION_CALL = ClassName.get(FunctionCall.class);
+    public static final TypeName SYSTEM_FUNCTION_REGISTRY = ClassName.get(InternalSystemFunctionRegistry.class);
+
 
     // Common
     public static final TypeName WILDCARD = WildcardTypeName.subtypeOf(TypeName.OBJECT);
@@ -592,29 +599,6 @@ public class TypeUtils {
         } else {
             return typeName;
         }
-    }
-
-    public static TypeName mapToNativeCassandraType(TypeName typeName) {
-        if (typeName.isPrimitive()) {
-            return typeName.box();
-        } else if (typeName instanceof ParameterizedTypeName) {
-            final ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) typeName;
-            final ClassName rawType = parameterizedTypeName.rawType;
-            if (rawType.equals(LIST)) {
-                return genericType(LIST, mapToNativeCassandraType(parameterizedTypeName.typeArguments.get(0)));
-            } else if (rawType.equals(SET)) {
-                return genericType(SET, mapToNativeCassandraType(parameterizedTypeName.typeArguments.get(0)));
-            } else if (rawType.equals(MAP)) {
-                return genericType(MAP,
-                        mapToNativeCassandraType(parameterizedTypeName.typeArguments.get(0)),
-                        mapToNativeCassandraType(parameterizedTypeName.typeArguments.get(1)));
-            } else {
-                throw new IllegalStateException(format("Cannot map Java type '%s' to native Cassandra type", typeName));
-            }
-        } else {
-            return NATIVE_TYPES_MAPPING.containsKey(typeName) ? NATIVE_TYPES_MAPPING.get(typeName): typeName;
-        }
-
     }
 
     public static TypeName determineTypeForFunctionParam(TypeName typeName) {

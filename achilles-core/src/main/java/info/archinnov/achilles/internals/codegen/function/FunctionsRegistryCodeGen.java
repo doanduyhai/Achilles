@@ -29,9 +29,9 @@ import com.squareup.javapoet.*;
 import info.archinnov.achilles.internals.parser.context.FunctionSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 
-public class FunctionsRegistryCodeGen {
+public abstract class FunctionsRegistryCodeGen {
 
-    public static TypeSpec generateFunctionsRegistryClass(String className, List<FunctionSignature> udfSignatures) {
+    public TypeSpec generateFunctionsRegistryClass(String className, List<FunctionSignature> udfSignatures) {
 
         final TypeSpec.Builder builder = TypeSpec.classBuilder(className)
                 .addModifiers(Modifier.FINAL, Modifier.PUBLIC);
@@ -39,16 +39,16 @@ public class FunctionsRegistryCodeGen {
         if (className.equals(SYSTEM_FUNCTIONS_CLASS)) {
             builder.addJavadoc("This class is the common registry for all system functions");
             buildAcceptAllMethodsForSystemFunction().forEach(builder::addMethod);
-        } else {
-            builder.addJavadoc("This class is the common registry for all registered user-defined functions");
         }
-
-        udfSignatures.forEach(signature -> builder.addMethod(buildMethodForFunction(signature)));
+//        else {
+//            builder.addJavadoc("This class is the common registry for all registered user-defined functions");
+//        }
+//        udfSignatures.forEach(signature -> builder.addMethod(buildMethodForFunction(signature)));
 
         return builder.build();
     }
 
-    private static MethodSpec buildMethodForFunction(FunctionSignature signature) {
+    protected MethodSpec buildMethodForFunction(FunctionSignature signature) {
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(signature.methodName)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .addJavadoc("Call $S function with given parameters", signature.getFunctionName())
@@ -91,6 +91,8 @@ public class FunctionsRegistryCodeGen {
                         .returns(genericType(LIST, OBJECT))
                         .addStatement("return params")
                         .build());
+
+        // CAST functions
         if (signature.getFunctionName().equals("cast")) {
             anonymousClassBuilder.addMethod(MethodSpec
                     .methodBuilder("targetCQLTypeName")
@@ -107,7 +109,7 @@ public class FunctionsRegistryCodeGen {
                 .build();
     }
 
-    private static List<MethodSpec> buildAcceptAllMethodsForSystemFunction() {
+    protected List<MethodSpec> buildAcceptAllMethodsForSystemFunction() {
         final List<MethodSpec> methods = new ArrayList<>();
         final TypeName LONG_TYPE = TypeUtils.determineTypeForFunctionParam(OBJECT_LONG);
         final TypeName INT_TYPE = TypeUtils.determineTypeForFunctionParam(OBJECT_INT);

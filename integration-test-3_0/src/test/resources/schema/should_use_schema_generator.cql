@@ -20,6 +20,15 @@ CREATE TABLE IF NOT EXISTS test.entity_child(
 		child_value text,
 		value text,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.entity_for_json_function_call(
+		id bigint,
+		clust bigint,
+		liststring list<text>,
+		mapstring map<int, text>,
+		setstring set<text>,
+		value text,
+		PRIMARY KEY(id, clust))
+	WITH CLUSTERING ORDER BY(clust ASC);
 CREATE TABLE IF NOT EXISTS test.layer(
 		layer text,
 		layer2 frozen<test.layer2>,

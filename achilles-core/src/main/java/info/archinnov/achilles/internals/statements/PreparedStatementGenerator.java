@@ -230,8 +230,14 @@ public class PreparedStatementGenerator {
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT),
                 () -> session.prepare(generateInsert(entityProperty, Optional.empty())));
 
+        cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_JSON),
+                () -> session.prepare(generateInsertJSON(entityProperty, Optional.empty())));
+
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_IF_NOT_EXISTS),
                 () -> session.prepare(generateInsertIfNotExists(entityProperty, Optional.empty())));
+
+        cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_IF_NOT_EXISTS_JSON),
+                () -> session.prepare(generateInsertIfNotExistsJson(entityProperty, Optional.empty())));
 
         if (entityProperty.hasStaticColumn()) {
             cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_STATIC),
@@ -252,6 +258,18 @@ public class PreparedStatementGenerator {
         for (AbstractProperty<?, ?, ?> x : entityProperty.allColumns) {
             insert.value(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn));
         }
+
+        return insert.using(ttl(bindMarker("ttl")));
+    }
+
+    public static RegularStatement generateInsertJSON(AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format("Generate INSERT JSON query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
+        }
+
+        final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
+
+        insert.json(QueryBuilder.bindMarker("json"));
 
         return insert.using(ttl(bindMarker("ttl")));
     }
@@ -291,6 +309,18 @@ public class PreparedStatementGenerator {
         return insert.ifNotExists().using(ttl(bindMarker("ttl")));
     }
 
+    public static RegularStatement generateInsertIfNotExistsJson( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format("Generate INSERT JSON ... IF NOT EXISTS query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
+        }
+
+        final Insert insert = getInsertWithTableName(entityProperty, schemaNameProvider);
+
+        insert.json(QueryBuilder.bindMarker("json"));
+
+        return insert.ifNotExists().using(ttl(bindMarker("ttl")));
+    }
+
     public static RegularStatement generateInsertStaticIfNotExists( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate INSERT STATIC IF NOT EXISTS query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
@@ -313,8 +343,6 @@ public class PreparedStatementGenerator {
     }
 
     private static Insert getInsertWithTableName( AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
-
-
         final Optional<String> keyspace = entityProperty.getKeyspace();
         final Insert insert;
         if (schemaNameProvider.isPresent()) {

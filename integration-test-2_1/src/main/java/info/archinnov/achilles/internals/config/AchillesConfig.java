@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_1;
+package info.archinnov.achilles.internals.config;
 
-import com.squareup.javapoet.TypeSpec;
+import info.archinnov.achilles.annotations.CompileTimeConfig;
+import info.archinnov.achilles.type.CassandraVersion;
 
-import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
-import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
-import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-
-public class SelectDSLCodeGen2_1 extends SelectDSLCodeGen {
-
-    @Override
-    public void augmentSelectClass(GlobalParsingContext context, EntityMetaCodeGen.EntityMetaSignature signature, TypeSpec.Builder builder) {
-        // No Op
-    }
+@CompileTimeConfig(cassandraVersion = CassandraVersion.CASSANDRA_2_1_X)
+public interface AchillesConfig {
 }

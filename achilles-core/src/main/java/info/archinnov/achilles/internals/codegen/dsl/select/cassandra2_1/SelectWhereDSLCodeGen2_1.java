@@ -16,7 +16,30 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_1;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import com.squareup.javapoet.TypeSpec;
+
+import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
 public class SelectWhereDSLCodeGen2_1 extends SelectWhereDSLCodeGen {
+    @Override
+    public List<TypeSpec> augmentSelectClass(GlobalParsingContext context,
+                                             EntityMetaCodeGen.EntityMetaSignature signature,
+                                             List<FieldSignatureInfo> partitionKeys,
+                                             List<FieldSignatureInfo> clusteringCols) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo nextSignature) {
+        // No Op
+    }
+
+
 }

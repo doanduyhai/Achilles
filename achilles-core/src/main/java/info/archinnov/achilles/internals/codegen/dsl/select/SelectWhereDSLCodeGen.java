@@ -26,17 +26,27 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import javax.lang.model.element.Modifier;
 
-import org.apache.commons.collections.CollectionUtils;
 
 import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
-import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
 public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
 
-    public List<TypeSpec> buildWhereClasses(EntityMetaSignature signature, SelectWhereDSLCodeGen selectWhereDSLCodeGen) {
+    public abstract List<TypeSpec> augmentSelectClass(GlobalParsingContext context,
+                                                      EntityMetaSignature signature,
+                                                      List<FieldSignatureInfo> partitionKeys,
+                                                      List<FieldSignatureInfo> clusteringCols);
+
+    public abstract void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
+                                                            FieldSignatureInfo fieldSignatureInfo,
+                                                            ClassSignatureInfo nextSignature);
+
+    public List<TypeSpec> buildWhereClasses(GlobalParsingContext context, EntityMetaSignature signature) {
+        SelectWhereDSLCodeGen selectWhereDSLCodeGen = context.selectWhereDSLCodeGen();
+
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
@@ -56,6 +66,9 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
         final List<TypeSpec> partitionKeysWhereTypedMapClasses = buildWhereClassesInternal(signature, selectWhereDSLCodeGen, partitionKeys, clusteringCols,
                 firstClustering, typedMapClassSignatureParams);
         partitionKeysWhereClasses.addAll(partitionKeysWhereTypedMapClasses);
+
+        partitionKeysWhereClasses.addAll(augmentSelectClass(context, signature, partitionKeys, clusteringCols));
+
         return partitionKeysWhereClasses;
     }
 
@@ -165,17 +178,18 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 + "." + classSignature.className
                 + "." + DSL_RELATION);
 
-        final TypeSpec relationClass = TypeSpec.classBuilder(DSL_RELATION)
+        final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(DSL_RELATION)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo))
-                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo))
-                .build();
+                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo));
+
+        augmentRelationClassForWhereClause(relationClassBuilder, partitionInfo, nextSignature);
 
         return TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(SELECT_DOT_WHERE))
-                .addType(relationClass)
+                .addType(relationClassBuilder.build())
                 .addMethod(buildRelationMethod(partitionInfo.fieldName, relationClassTypeName))
                 .build();
     }
@@ -228,7 +242,7 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildGetEncodedBoundValuesInternal())
                 .addMethod(buildLimit(classSignature));
 
-        TypeSpec relationClass = TypeSpec.classBuilder(DSL_RELATION)
+        TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(DSL_RELATION)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo))
                 .addMethod(buildColumnInVarargs(nextSignature.returnClassType, clusteringColumnInfo))
@@ -239,10 +253,11 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildDoubleColumnRelation(GT, LT, lastSignature.returnClassType, clusteringColumnInfo))
                 .addMethod(buildDoubleColumnRelation(GT, LTE, lastSignature.returnClassType, clusteringColumnInfo))
                 .addMethod(buildDoubleColumnRelation(GTE, LT, lastSignature.returnClassType, clusteringColumnInfo))
-                .addMethod(buildDoubleColumnRelation(GTE, LTE, lastSignature.returnClassType, clusteringColumnInfo))
-                .build();
+                .addMethod(buildDoubleColumnRelation(GTE, LTE, lastSignature.returnClassType, clusteringColumnInfo));
 
-        builder.addType(relationClass);
+        augmentRelationClassForWhereClause(relationClassBuilder, clusteringColumnInfo, nextSignature);
+
+        builder.addType(relationClassBuilder.build());
         builder.addMethod(buildRelationMethod(clusteringColumnInfo.fieldName, relationClassTypeName));
 
         // Tuple notation (col1, col2, ..., colN) < (:col1, :col2, ..., :colN)

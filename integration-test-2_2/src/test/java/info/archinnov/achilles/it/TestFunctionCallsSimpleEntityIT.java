@@ -61,7 +61,7 @@ import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.tuples.Tuple3;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TestFunctionCallsSimpleEntity {
+public class TestFunctionCallsSimpleEntityIT {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();

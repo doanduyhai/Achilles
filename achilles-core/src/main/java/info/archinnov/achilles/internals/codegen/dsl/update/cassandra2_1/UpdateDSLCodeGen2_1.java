@@ -16,7 +16,16 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_1;
 
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
+
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 
 public class UpdateDSLCodeGen2_1 extends UpdateDSLCodeGen {
+    @Override
+    protected void augmentUpdateRelationClass(TypeSpec.Builder relationClassBuilder, FieldMetaSignature parsingResult,
+                                              TypeName newTypeName, ReturnType returnType) {
+        //NO Op
+    }
 }

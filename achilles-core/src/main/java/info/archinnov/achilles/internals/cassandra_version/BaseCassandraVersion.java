@@ -16,6 +16,8 @@
 
 package info.archinnov.achilles.internals.cassandra_version;
 
+import info.archinnov.achilles.internals.codegen.crud.CrudAPICodeGen;
+import info.archinnov.achilles.internals.codegen.crud.cassandra2_1.CrudAPICodeGen2_1;
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.delete.cassandra2_1.DeleteDSLCodeGen2_1;
@@ -28,6 +30,8 @@ import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_1.UpdateDSLCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_1.UpdateWhereDSLCodeGen2_1;
+import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
+import info.archinnov.achilles.internals.codegen.function.cassandra2_1.FunctionsRegistryCodeGen2_1;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
@@ -43,6 +47,7 @@ public interface BaseCassandraVersion {
     TypeValidator TYPE_VALIDATOR = new TypeValidator2_1();
     NestedTypesValidator NESTED_TYPES_VALIDATOR = new NestedTypeValidator2_1();
 
+    CrudAPICodeGen CRUD_API_CODE_GEN = new CrudAPICodeGen2_1();
     SelectDSLCodeGen SELECT_DSL_CODE_GEN = new SelectDSLCodeGen2_1();
     SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN = new SelectWhereDSLCodeGen2_1();
 
@@ -51,6 +56,8 @@ public interface BaseCassandraVersion {
 
     DeleteDSLCodeGen DELETE_DSL_CODE_GEN = new DeleteDSLCodeGen2_1();
     DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN = new DeleteWhereDSLCodeGen2_1();
+
+    FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN = new FunctionsRegistryCodeGen2_1();
 
     default BeanValidator beanValidator() {
         return BEAN_VALIDATOR;
@@ -66,6 +73,10 @@ public interface BaseCassandraVersion {
 
     default NestedTypesValidator nestedTypesValidator() {
         return NESTED_TYPES_VALIDATOR;
+    }
+
+    default CrudAPICodeGen crudApiCodeGen() {
+        return CRUD_API_CODE_GEN;
     }
 
     default SelectDSLCodeGen selectDslCodeGen() {
@@ -90,5 +101,9 @@ public interface BaseCassandraVersion {
 
     default DeleteWhereDSLCodeGen deleteWhereDslCodeGen() {
         return DELETE_WHERE_DSL_CODE_GEN;
+    }
+
+    default FunctionsRegistryCodeGen functionsRegistryCodeGen() {
+        return FUNCTIONS_REGISTRY_CODE_GEN;
     }
 }

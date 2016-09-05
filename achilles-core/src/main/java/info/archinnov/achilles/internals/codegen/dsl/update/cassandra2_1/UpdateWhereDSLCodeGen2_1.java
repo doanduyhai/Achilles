@@ -16,7 +16,19 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_1;
 
+import com.squareup.javapoet.TypeSpec;
+
+import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
 
 public class UpdateWhereDSLCodeGen2_1 extends UpdateWhereDSLCodeGen {
+    @Override
+    public void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo nextSignature) {
+        //NO Op
+    }
+
+    @Override
+    public void augmentLWTConditionClass(TypeSpec.Builder conditionClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo currentSignature) {
+        //NO Op
+    }
 }

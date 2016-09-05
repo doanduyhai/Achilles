@@ -40,12 +40,14 @@ import com.squareup.javapoet.TypeSpec;
 import info.archinnov.achilles.annotations.CompileTimeConfig;
 import info.archinnov.achilles.internals.cassandra_version.CassandraFeature;
 import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
+import info.archinnov.achilles.internals.codegen.crud.CrudAPICodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
 import info.archinnov.achilles.internals.parser.CodecFactory.CodecInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
@@ -151,6 +153,10 @@ public class GlobalParsingContext {
         return cassandraVersion.nestedTypesValidator();
     }
 
+    public CrudAPICodeGen crudAPICodeGen() {
+        return cassandraVersion.crudApiCodeGen();
+    }
+
     public SelectDSLCodeGen selectDSLCodeGen() {
         return cassandraVersion.selectDslCodeGen();
     }
@@ -173,6 +179,10 @@ public class GlobalParsingContext {
 
     public DeleteWhereDSLCodeGen deleteWhereDSLCodeGen() {
         return cassandraVersion.deleteWhereDslCodeGen();
+    }
+
+    public FunctionsRegistryCodeGen functionsRegistryCodeGen() {
+        return cassandraVersion.functionsRegistryCodeGen();
     }
 
     public boolean supportsFeature(CassandraFeature feature) {

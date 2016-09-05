@@ -246,6 +246,17 @@ public abstract class AbstractDSLCodeGen {
                 .build();
     }
 
+    public MethodSpec buildAllColumnsJSON(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
+        return MethodSpec.methodBuilder("allColumnsAsJSON_FromBaseTable")
+                .addJavadoc("Generate ... * FROM ...")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addStatement("final $T where = $L.json().all().from(meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where()",
+                        whereTypeName, privateFieldName, "unknown_keyspace_for_")
+                .addStatement("return new $T(where)", newTypeName)
+                .returns(newTypeName)
+                .build();
+    }
+
     public MethodSpec buildAllColumnsWithSchemaProvider(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
         return MethodSpec.methodBuilder("allColumns_From")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -254,6 +265,19 @@ public abstract class AbstractDSLCodeGen {
                 .addStatement("final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass)")
                 .addStatement("final String currentTable = lookupTable(schemaNameProvider, meta.entityClass)")
                 .addStatement("final $T where = $L.all().from(currentKeyspace, currentTable).where()", whereTypeName, privateFieldName)
+                .addStatement("return new $T(where)", newTypeName)
+                .returns(newTypeName)
+                .build();
+    }
+
+    public MethodSpec buildAllColumnsJSONWithSchemaProvider(TypeName newTypeName, TypeName whereTypeName, String privateFieldName) {
+        return MethodSpec.methodBuilder("allColumnsAsJSON_From")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addJavadoc("Generate ... * FROM ... using the given SchemaNameProvider")
+                .addParameter(SCHEMA_NAME_PROVIDER, "schemaNameProvider", Modifier.FINAL)
+                .addStatement("final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass)")
+                .addStatement("final String currentTable = lookupTable(schemaNameProvider, meta.entityClass)")
+                .addStatement("final $T where = $L.json().all().from(currentKeyspace, currentTable).where()", whereTypeName, privateFieldName)
                 .addStatement("return new $T(where)", newTypeName)
                 .returns(newTypeName)
                 .build();
@@ -311,72 +335,9 @@ public abstract class AbstractDSLCodeGen {
                 .collect(toList()));
     }
 
-    public void buildLWtConditionMethods(EntityMetaSignature signature, String parentFQCN, ClassSignatureInfo currentSignature, boolean hasCounter, TypeSpec.Builder parentBuilder) {
-        if (!hasCounter) {
-            signature.fieldMetaSignatures.stream()
-                    .filter(x -> x.context.columnType == ColumnType.NORMAL || x.context.columnType == ColumnType.STATIC)
-                    .forEach(x -> {
 
-                        final FieldSignatureInfo fieldSignatureInfo = FieldSignatureInfo.of(x.context.fieldName, x.context.cqlColumn, x.sourceType);
-                        final String conditionClassName = "If_" + upperCaseFirst(x.context.fieldName);
-                        TypeName conditionClassTypeName = ClassName.get(DSL_PACKAGE, parentFQCN + "." + conditionClassName);
 
-                        TypeSpec conditionClass = TypeSpec.classBuilder(conditionClassName)
-                                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                                .addMethod(buildLWTConditionOnColumn(EQ, fieldSignatureInfo, currentSignature.returnClassType))
-                                .addMethod(buildLWTConditionOnColumn(GT, fieldSignatureInfo, currentSignature.returnClassType))
-                                .addMethod(buildLWTConditionOnColumn(GTE, fieldSignatureInfo, currentSignature.returnClassType))
-                                .addMethod(buildLWTConditionOnColumn(LT, fieldSignatureInfo, currentSignature.returnClassType))
-                                .addMethod(buildLWTConditionOnColumn(LTE, fieldSignatureInfo, currentSignature.returnClassType))
-                                .addMethod(buildLWTNotEqual(fieldSignatureInfo, currentSignature.returnClassType))
-                                .build();
-
-                        parentBuilder.addType(conditionClass);
-                        parentBuilder.addMethod(MethodSpec.methodBuilder("if_" + upperCaseFirst(x.context.fieldName))
-                                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                                .addStatement("return new $T()", conditionClassTypeName)
-                                .returns(conditionClassTypeName)
-                                .build());
-                    });
-
-        }
-    }
-
-    public MethodSpec buildLWTConditionOnColumn(String relation, FieldSignatureInfo fieldSignatureInfo, TypeName currentType) {
-        String methodName = upperCaseFirst(relation);
-        return MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate an ... <strong>IF $L $L ?</strong>", fieldSignatureInfo.fieldName, relationToSymbolForJavaDoc(relation))
-                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(fieldSignatureInfo.typeName, fieldSignatureInfo.fieldName, Modifier.FINAL)
-                .addStatement("boundValues.add($N)", fieldSignatureInfo.fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldSignatureInfo.fieldName, fieldSignatureInfo.fieldName)
-                .addStatement("where.onlyIf($T.$L($S, $T.bindMarker($S)))",
-                        QUERY_BUILDER, relation, fieldSignatureInfo.cqlColumn, QUERY_BUILDER, fieldSignatureInfo.cqlColumn)
-                .addStatement("return $T.this", currentType)
-                .returns(currentType)
-                .build();
-
-    }
-
-    public MethodSpec buildLWTNotEqual(FieldSignatureInfo fieldSignatureInfo, TypeName currentType) {
-        String methodName =  "NotEq";
-        return MethodSpec.methodBuilder(methodName)
-                .addJavadoc("Generate an  ... <strong>IF $L != ?</strong>", fieldSignatureInfo.fieldName)
-                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(fieldSignatureInfo.typeName, fieldSignatureInfo.fieldName, Modifier.FINAL)
-                .addStatement("boundValues.add($N)", fieldSignatureInfo.fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldSignatureInfo.fieldName, fieldSignatureInfo.fieldName)
-                .addStatement("where.onlyIf($T.of($S, $T.bindMarker($S)))",
-                        NOT_EQ, fieldSignatureInfo.cqlColumn, QUERY_BUILDER, fieldSignatureInfo.cqlColumn)
-                .addStatement("return $T.this", currentType)
-                .returns(currentType)
-                .build();
-
-    }
-
-    public String relationToSymbolForJavaDoc(String relation) {
+    public static String relationToSymbolForJavaDoc(String relation) {
         switch (relation) {
             case EQ:
                 return "=";

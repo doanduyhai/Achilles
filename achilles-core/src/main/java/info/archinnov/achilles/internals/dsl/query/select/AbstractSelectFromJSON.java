@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_1;
+package info.archinnov.achilles.internals.dsl.query.select;
 
-import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
-import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
-import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
+import com.datastax.driver.core.querybuilder.Select;
 
-public class SelectDSLCodeGen2_1 extends SelectDSLCodeGen {
 
-    @Override
-    public void augmentSelectClass(GlobalParsingContext context, EntityMetaCodeGen.EntityMetaSignature signature, TypeSpec.Builder builder) {
-        // No Op
+public abstract class AbstractSelectFromJSON {
+
+    protected final Select.Where where;
+
+    protected AbstractSelectFromJSON(Select.Where where) {
+        this.where = where;
     }
+
 }

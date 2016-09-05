@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.metamodel.functions;
+package info.archinnov.achilles.internals.codegen.function;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
@@ -38,7 +38,6 @@ public class InternalSystemFunctionRegistry {
 
     public static final List<FunctionSignature> SYSTEM_FUNCTIONS = new ArrayList<>();
     public static final List<String> SYSTEM_FUNCTIONS_NAME = new ArrayList<>();
-    public static final TypeName SYSTEM_FUNCTION_REGISTRY = ClassName.get(InternalSystemFunctionRegistry.class);
     private static final String FQCN_PATTERN = ".+\\.([a-zA-Z0-9]+)".intern();
 
     public static final List<String> FORBIDDEN_KEYSPACES = Arrays.asList("system", "system_schema", "system_auth",

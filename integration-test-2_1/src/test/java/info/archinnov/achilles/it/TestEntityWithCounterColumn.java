@@ -87,7 +87,7 @@ public class TestEntityWithCounterColumn {
                 .dsl()
                 .update()
                 .fromBaseTable()
-                .count().count_Incr(incr)
+                .count().Incr(incr)
                 .where()
                 .id().Eq(id)
                 .execute();

@@ -75,7 +75,7 @@ public class TestDSLUpdateWithTTLAndTimestamp {
                 .update()
                 .fromBaseTable()
                 .value().Set("new value")
-                .consistencyList().consistencyList_Set(Arrays.asList(ConsistencyLevel.ALL))
+                .consistencyList().Set(Arrays.asList(ConsistencyLevel.ALL))
                 .where()
                 .id().Eq(id)
                 .date().Eq(date)

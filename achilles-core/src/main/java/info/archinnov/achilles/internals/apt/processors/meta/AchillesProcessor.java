@@ -19,7 +19,7 @@ package info.archinnov.achilles.internals.apt.processors.meta;
 import static info.archinnov.achilles.internals.apt.AptUtils.*;
 import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.MATERIALIZED_VIEW;
 import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDF_UDA;
-import static info.archinnov.achilles.internals.metamodel.functions.InternalSystemFunctionRegistry.SYSTEM_FUNCTIONS;
+import static info.archinnov.achilles.internals.codegen.function.InternalSystemFunctionRegistry.SYSTEM_FUNCTIONS;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -97,9 +97,7 @@ public class AchillesProcessor extends AbstractProcessor {
 
                 final List<EntityMetaSignature> tableAndViewSignatures = discoverAndValidateTablesAndViews(annotations, roundEnv, parsingContext);
 
-                final FunctionsContext udfContext = parsingContext.supportsFeature(UDF_UDA)
-                    ? parseAndValidateFunctionRegistry(parsingContext, annotations, roundEnv, tableAndViewSignatures)
-                    : FunctionsContext.noFunction();
+                final FunctionsContext udfContext = parseAndValidateFunctionRegistry(parsingContext, annotations, roundEnv, tableAndViewSignatures);
 
                 final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance(parsingContext);
 
@@ -115,19 +113,19 @@ public class AchillesProcessor extends AbstractProcessor {
                     aptUtils.printNote("[Achilles] No previously generated source files found, proceed to code generation");
                 }
 
-                aptUtils.printNote("[Achilles] Generating CQL compatible types (used by the application) as class");
+                aptUtils.printNote("[Achilles] Generating CQL compatible types (used by the application) as class for function calls");
                 for (TypeSpec typeSpec : FunctionParameterTypesCodeGen.buildParameterTypesClasses(udfContext)) {
                     JavaFile.builder(FUNCTION_PACKAGE, typeSpec)
                             .build().writeTo(aptUtils.filer);
                 }
 
                 aptUtils.printNote("[Achilles] Generating SystemFunctions");
-                JavaFile.builder(FUNCTION_PACKAGE, FunctionsRegistryCodeGen.generateFunctionsRegistryClass(SYSTEM_FUNCTIONS_CLASS,
+                JavaFile.builder(FUNCTION_PACKAGE, parsingContext.functionsRegistryCodeGen().generateFunctionsRegistryClass(SYSTEM_FUNCTIONS_CLASS,
                         SYSTEM_FUNCTIONS)).build().writeTo(aptUtils.filer);
 
                 if (parsingContext.supportsFeature(UDF_UDA)) {
                     aptUtils.printNote("[Achilles] Generating FunctionsRegistry");
-                    JavaFile.builder(FUNCTION_PACKAGE, FunctionsRegistryCodeGen.generateFunctionsRegistryClass(FUNCTIONS_REGISTRY_CLASS,
+                    JavaFile.builder(FUNCTION_PACKAGE, parsingContext.functionsRegistryCodeGen().generateFunctionsRegistryClass(FUNCTIONS_REGISTRY_CLASS,
                             udfContext.functionSignatures)).build().writeTo(aptUtils.filer);
                 }
 

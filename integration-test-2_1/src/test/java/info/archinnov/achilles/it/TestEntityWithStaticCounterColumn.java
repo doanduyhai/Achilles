@@ -94,7 +94,7 @@ public class TestEntityWithStaticCounterColumn {
                 .dsl()
                 .updateStatic()
                 .fromBaseTable()
-                .staticCount().staticCount_Incr(staticCount)
+                .staticCount().Incr(staticCount)
                 .where()
                 .id().Eq(id)
                 .execute();

@@ -40,6 +40,11 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
     public static final Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
             (o1, o2) -> o1._2().order.compareTo(o2._2().order);
 
+    protected abstract void augmentUpdateRelationClass(TypeSpec.Builder relationClassBuilder,
+                                                       FieldMetaSignature parsingResult,
+                                                       TypeName newTypeName,
+                                                       ReturnType returnType);
+
     public TypeSpec buildUpdateClass(AptUtils aptUtils, EntityMetaSignature signature, UpdateWhereDSLCodeGen updateWhereDSLCodeGen) {
 
         final String firstPartitionKey = signature.fieldMetaSignatures
@@ -256,7 +261,9 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
             builder.addStatement("return $T.this", newTypeName);
         }
 
-        createRelationClassesForColumns(parentBuilder, updateColumnsClassName, parsingResult, fieldName, Arrays.asList(builder.build()));
+        createRelationClassForColumn(parentBuilder, updateColumnsClassName,
+                parsingResult, newTypeName,
+                returnType, Arrays.asList(builder.build()));
     }
 
 
@@ -270,7 +277,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         final TypeName nestedType = aptUtils.extractTypeArgument(sourceType, 0);
 
         List<MethodSpec> updateMethods = new ArrayList<>();
-        final MethodSpec.Builder appendTo = MethodSpec.methodBuilder(fieldName + "_AppendTo")
+        final MethodSpec.Builder appendTo = MethodSpec.methodBuilder("AppendTo")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + [?]</strong>", cqlColumn, cqlColumn)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -282,7 +289,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .returns(newTypeName);
 
 
-        final MethodSpec.Builder appendAllTo = MethodSpec.methodBuilder(fieldName + "_AppendAllTo")
+        final MethodSpec.Builder appendAllTo = MethodSpec.methodBuilder("AppendAllTo")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -294,7 +301,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .returns(newTypeName);
 
 
-        final MethodSpec.Builder prependTo = MethodSpec.methodBuilder(fieldName + "_PrependTo")
+        final MethodSpec.Builder prependTo = MethodSpec.methodBuilder("PrependTo")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = [?] + $L</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -306,7 +313,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .returns(newTypeName);
 
 
-        final MethodSpec.Builder prependAllTo = MethodSpec.methodBuilder(fieldName + "_PrependAllTo")
+        final MethodSpec.Builder prependAllTo = MethodSpec.methodBuilder("PrependAllTo")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ? + $L</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -317,7 +324,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder setAtIndex = MethodSpec.methodBuilder(fieldName + "_SetAtIndex")
+        final MethodSpec.Builder setAtIndex = MethodSpec.methodBuilder("SetAtIndex")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L[index] = ?</strong>", fieldName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(TypeName.INT, "index", Modifier.FINAL)
@@ -328,7 +335,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(meta.$L.valueProperty.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder removeAtIndex = MethodSpec.methodBuilder(fieldName + "_RemoveAtIndex")
+        final MethodSpec.Builder removeAtIndex = MethodSpec.methodBuilder("RemoveAtIndex")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L[index] = null</strong>", fieldName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(TypeName.INT, "index", Modifier.FINAL)
@@ -338,7 +345,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(null)")
                 .returns(newTypeName);
 
-        final MethodSpec.Builder removeFrom = MethodSpec.methodBuilder(fieldName + "_RemoveFrom")
+        final MethodSpec.Builder removeFrom = MethodSpec.methodBuilder("RemoveFrom")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L - [?]</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -349,7 +356,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.asList($N)))", fieldName, ARRAYS, param)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder removeAllFrom = MethodSpec.methodBuilder(fieldName + "_RemoveAllFrom")
+        final MethodSpec.Builder removeAllFrom = MethodSpec.methodBuilder("RemoveAllFrom")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L - ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -360,7 +367,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder set = MethodSpec.methodBuilder(fieldName + "_Set")
+        final MethodSpec.Builder set = MethodSpec.methodBuilder("Set")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ?</strong>", fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -403,7 +410,9 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         updateMethods.add(removeAllFrom.build());
         updateMethods.add(set.build());
 
-        createRelationClassesForColumns(parentBuilder, parentClassName, parsingResult, fieldName, updateMethods);
+        createRelationClassForColumn(parentBuilder, parentClassName,
+                parsingResult, newTypeName,
+                returnType, updateMethods);
     }
 
     public void buildMethodsForSetUpdate(AptUtils aptUtils, TypeSpec.Builder parentBuilder, String parentClassName,
@@ -416,7 +425,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         final TypeName nestedType = aptUtils.extractTypeArgument(sourceType, 0);
 
         List<MethodSpec> updateMethods = new ArrayList<>();
-        final MethodSpec.Builder addTo = MethodSpec.methodBuilder(fieldName + "_AddTo")
+        final MethodSpec.Builder addTo = MethodSpec.methodBuilder("AddTo")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + {?}</strong>", cqlColumn, cqlColumn)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -427,7 +436,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.newHashSet($N)))", fieldName, SETS, param)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder addAllTo = MethodSpec.methodBuilder(fieldName + "_AddAllTo")
+        final MethodSpec.Builder addAllTo = MethodSpec.methodBuilder("AddAllTo")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -438,7 +447,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder removeFrom = MethodSpec.methodBuilder(fieldName + "_RemoveFrom")
+        final MethodSpec.Builder removeFrom = MethodSpec.methodBuilder("RemoveFrom")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L - {?}</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -449,7 +458,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.newHashSet($N)))", fieldName, SETS, param)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder removeAllFrom = MethodSpec.methodBuilder(fieldName + "_RemoveAllFrom")
+        final MethodSpec.Builder removeAllFrom = MethodSpec.methodBuilder("RemoveAllFrom")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L - ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -460,7 +469,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder set = MethodSpec.methodBuilder(fieldName + "_Set")
+        final MethodSpec.Builder set = MethodSpec.methodBuilder("Set")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ?</strong>", fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -491,7 +500,9 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         updateMethods.add(removeAllFrom.build());
         updateMethods.add(set.build());
 
-        createRelationClassesForColumns(parentBuilder, parentClassName, parsingResult, fieldName, updateMethods);
+        createRelationClassForColumn(parentBuilder, parentClassName,
+                parsingResult, newTypeName,
+                returnType, updateMethods);
     }
 
     public void buildMethodsForMapUpdate(AptUtils aptUtils, TypeSpec.Builder parentBuilder, String parentClassName,
@@ -506,7 +517,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         final TypeName nestedValueType = aptUtils.extractTypeArgument(sourceType, 1);
 
         List<MethodSpec> updateMethods = new ArrayList<>();
-        final MethodSpec.Builder putTo = MethodSpec.methodBuilder(fieldName + "_PutTo")
+        final MethodSpec.Builder putTo = MethodSpec.methodBuilder("PutTo")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L[?] = ?</strong>", cqlColumn)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(nestedKeyType, paramKey, Modifier.FINAL)
@@ -519,7 +530,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(meta.$L.valueProperty.encodeFromJava($N))", fieldName, paramValue)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder addAllTo = MethodSpec.methodBuilder(fieldName + "_AddAllTo")
+        final MethodSpec.Builder addAllTo = MethodSpec.methodBuilder("AddAllTo")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -530,7 +541,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder removeByKey = MethodSpec.methodBuilder(fieldName + "_RemoveByKey")
+        final MethodSpec.Builder removeByKey = MethodSpec.methodBuilder("RemoveByKey")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L[?] = null</strong>", fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
@@ -543,7 +554,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(null)")
                 .returns(newTypeName);
 
-        final MethodSpec.Builder set = MethodSpec.methodBuilder(fieldName + "_Set")
+        final MethodSpec.Builder set = MethodSpec.methodBuilder("Set")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ?", fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -571,7 +582,9 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         updateMethods.add(removeByKey.build());
         updateMethods.add(set.build());
 
-        createRelationClassesForColumns(parentBuilder, parentClassName, parsingResult, fieldName, updateMethods);
+        createRelationClassForColumn(parentBuilder, parentClassName,
+                parsingResult, newTypeName,
+                returnType, updateMethods);
     }
 
     public void buildMethodsForCounterUpdate(TypeSpec.Builder parentBuilder, String parentClassName, TypeName newTypeName,
@@ -584,14 +597,14 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
         List<MethodSpec> updateMethods = new ArrayList<>();
 
-        final MethodSpec.Builder incrOne = MethodSpec.methodBuilder(fieldName + "_Incr")
+        final MethodSpec.Builder incrOne = MethodSpec.methodBuilder("Incr")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + 1</strong>", cqlColumn, cqlColumn)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("where.with($T.incr($S))",
                         QUERY_BUILDER, cqlColumn)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder incr = MethodSpec.methodBuilder(fieldName + "_Incr")
+        final MethodSpec.Builder incr = MethodSpec.methodBuilder("Incr")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -602,14 +615,14 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder decrOne = MethodSpec.methodBuilder(fieldName + "_Decr")
+        final MethodSpec.Builder decrOne = MethodSpec.methodBuilder("Decr")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L - 1</strong>", fieldName, fieldName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("where.with($T.decr($S))",
                         QUERY_BUILDER, cqlColumn)
                 .returns(newTypeName);
 
-        final MethodSpec.Builder decr = MethodSpec.methodBuilder(fieldName + "_Decr")
+        final MethodSpec.Builder decr = MethodSpec.methodBuilder("Decr")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L - ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -637,19 +650,24 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         updateMethods.add(decrOne.build());
         updateMethods.add(decr.build());
 
-        createRelationClassesForColumns(parentBuilder, parentClassName, parsingResult, fieldName, updateMethods);
+        createRelationClassForColumn(parentBuilder, parentClassName,
+                parsingResult, newTypeName,
+                returnType, updateMethods);
     }
 
 
-    public void createRelationClassesForColumns(TypeSpec.Builder parentBuilder, String parentClassName, FieldMetaSignature parsingResult, String fieldName, List<MethodSpec> methods) {
+    public void createRelationClassForColumn(TypeSpec.Builder parentBuilder, String parentClassName, FieldMetaSignature parsingResult,
+                                             TypeName newTypeName, ReturnType returnType, List<MethodSpec> methods) {
         TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + parsingResult.relationClassnameForUpdate());
-
-        final TypeSpec.Builder builder = TypeSpec.classBuilder(parsingResult.relationClassnameForUpdate())
+        String fieldName = parsingResult.context.fieldName;
+        final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(parsingResult.relationClassnameForUpdate())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
-        methods.forEach(builder::addMethod);
+        methods.forEach(relationClassBuilder::addMethod);
 
-        final TypeSpec relationClass = builder.build();
+        augmentUpdateRelationClass(relationClassBuilder, parsingResult, newTypeName, returnType);
+
+        final TypeSpec relationClass = relationClassBuilder.build();
 
         parentBuilder.addType(relationClass);
         parentBuilder.addMethod(MethodSpec.methodBuilder(fieldName)
@@ -658,5 +676,4 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .returns(relationClassTypeName)
                 .build());
     }
-
 }

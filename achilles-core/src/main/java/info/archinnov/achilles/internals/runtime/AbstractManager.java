@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.*;
 
+import info.archinnov.achilles.internals.dsl.crud.InsertJSONWithOptions;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.dsl.crud.DeleteWithOptions;
 import info.archinnov.achilles.internals.dsl.crud.InsertWithOptions;
@@ -106,6 +107,17 @@ public abstract class AbstractManager<ENTITY> {
         }
 
         return new InsertWithOptions<>(meta_internal, rte, instance, insertStatic);
+    }
+
+    protected InsertJSONWithOptions insertJSONInternal(String json) {
+
+        validateNotBlank(json, "The JSON string to be used for INSERT JSON should not be blank");
+
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(format("Create insert json CRUD for with JSON %s", json));
+        }
+
+        return new InsertJSONWithOptions(meta_internal, rte, json);
     }
 
     protected DeleteWithOptions<ENTITY> deleteInternal(ENTITY instance) {

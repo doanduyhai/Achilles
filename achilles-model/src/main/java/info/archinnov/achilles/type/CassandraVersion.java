@@ -41,7 +41,7 @@ public enum CassandraVersion {
      *     <li>Support for IN restrictions on any partition key component or clustering key
      *          as well as support for EQ and IN multicolumn restrictions has been added to
      *          UPDATE and DELETE statement</li>
-     *     <li>Support for single-column and multi-colum slice restrictions (>, >=, <= and <)
+     *     <li>Support for single-column and multi-column slice restrictions (>, >=, <= and <)
      *          has been added to DELETE statements</li>
      * </ul>
      */

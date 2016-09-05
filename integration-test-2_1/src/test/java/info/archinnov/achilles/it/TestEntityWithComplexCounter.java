@@ -97,7 +97,7 @@ public class TestEntityWithComplexCounter {
                 .dsl()
                 .update()
                 .fromBaseTable()
-                .counterWithCodec().counterWithCodec_Incr(codecCount + "")
+                .counterWithCodec().Incr(codecCount + "")
                 .where()
                 .id().Eq(id)
                 .uuid().Eq(uuid)

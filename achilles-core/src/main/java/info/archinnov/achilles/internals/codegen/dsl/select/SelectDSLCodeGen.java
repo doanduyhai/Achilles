@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.squareup.javapoet.*;
 
+import info.archinnov.achilles.internals.cassandra_version.CassandraFeature;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
@@ -35,11 +36,14 @@ import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
 
-    public TypeSpec buildSelectClass(EntityMetaSignature signature, SelectWhereDSLCodeGen selectWhereDSLCodeGen) {
+    public abstract void augmentSelectClass(GlobalParsingContext context, EntityMetaSignature signature, TypeSpec.Builder builder);
+
+    public TypeSpec buildSelectClass(GlobalParsingContext context, EntityMetaSignature signature) {
 
         final String firstPartitionKey = signature.fieldMetaSignatures
                 .stream()
@@ -86,8 +90,9 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
         selectClassBuilder.addMethod(buildAllColumns(selectFromTypeName, SELECT_DOT_WHERE, "select"));
         selectClassBuilder.addMethod(buildAllColumnsWithSchemaProvider(selectFromTypeName, SELECT_DOT_WHERE, "select"));
 
+        augmentSelectClass(context, signature, selectClassBuilder);
 
-        selectWhereDSLCodeGen.buildWhereClasses(signature, selectWhereDSLCodeGen).forEach(selectClassBuilder::addType);
+        context.selectWhereDSLCodeGen().buildWhereClasses(context, signature).forEach(selectClassBuilder::addType);
 
         return selectClassBuilder.build();
     }
@@ -216,7 +221,7 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
         TypeName selectEndTypedMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectEndTypedMapReturnType());
 
         return TypeSpec.classBuilder(signature.className + SELECT_FROM_TYPED_MAP_DSL_SUFFIX)
-                .superclass(ABSTRACT_SELECT_FROM)
+                .superclass(ABSTRACT_SELECT_FROM_TYPED_MAP)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
                         .addParameter(SELECT_DOT_WHERE, "where")
@@ -233,6 +238,33 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                         .addStatement("return new $T(where)", selectEndTypedMapTypeName)
                         .returns(selectEndTypedMapTypeName)
+                        .build())
+                .build();
+    }
+
+    public TypeSpec buildSelectFromJSON(EntityMetaSignature signature, String firstPartitionKey) {
+        TypeName selectWhereJSONTypeName = ClassName.get(DSL_PACKAGE, signature.selectWhereJSONReturnType(firstPartitionKey));
+
+        TypeName selectEndJSONTypeName = ClassName.get(DSL_PACKAGE, signature.selectEndJSONReturnType());
+
+        return TypeSpec.classBuilder(signature.className + SELECT_FROM_JSON_DSL_SUFFIX)
+                .superclass(ABSTRACT_SELECT_FROM_JSON)
+                .addModifiers(Modifier.PUBLIC)
+                .addMethod(MethodSpec.constructorBuilder()
+                        .addParameter(SELECT_DOT_WHERE, "where")
+                        .addStatement("super(where)")
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("where")
+                        .addJavadoc("Generate a SELECT ... FROM ... <strong>WHERE</strong> ...")
+                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                        .addStatement("return new $T(where)", selectWhereJSONTypeName)
+                        .returns(selectWhereJSONTypeName)
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("without_WHERE_Clause")
+                        .addJavadoc("Generate a SELECT statement <strong>without</strong> the <strong>WHERE</strong> clause")
+                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                        .addStatement("return new $T(where)", selectEndJSONTypeName)
+                        .returns(selectEndJSONTypeName)
                         .build())
                 .build();
     }

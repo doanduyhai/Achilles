@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.internals.parser.context;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -26,10 +25,6 @@ public class FunctionsContext {
 
     public final List<FunctionSignature> functionSignatures;
     public final Set<TypeName> allUsedTypes;
-
-    public static FunctionsContext noFunction() {
-        return new FunctionsContext(Collections.EMPTY_LIST, Collections.EMPTY_SET);
-    }
 
     public FunctionsContext(List<FunctionSignature> functionSignatures, Set<TypeName> allUsedTypes) {
         this.functionSignatures = functionSignatures;

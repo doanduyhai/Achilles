@@ -16,8 +16,8 @@
 
 package info.archinnov.achilles.internals.parser;
 
-import static info.archinnov.achilles.internals.metamodel.functions.InternalSystemFunctionRegistry.FORBIDDEN_KEYSPACES;
-import static info.archinnov.achilles.internals.metamodel.functions.InternalSystemFunctionRegistry.SYSTEM_FUNCTIONS_NAME;
+import static info.archinnov.achilles.internals.codegen.function.InternalSystemFunctionRegistry.FORBIDDEN_KEYSPACES;
+import static info.archinnov.achilles.internals.codegen.function.InternalSystemFunctionRegistry.SYSTEM_FUNCTIONS_NAME;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 

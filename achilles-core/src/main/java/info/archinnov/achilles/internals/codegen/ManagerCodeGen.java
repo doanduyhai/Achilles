@@ -37,11 +37,6 @@ import info.archinnov.achilles.type.tuples.Tuple3;
 
 public class ManagerCodeGen {
 
-    public static final Comparator<Tuple3<String, TypeName, PartitionKeyInfo>> PARTITION_KEY_SORTER =
-            (o1, o2) -> o1._3().order.compareTo(o2._3().order);
-    public static final Comparator<Tuple3<String, TypeName, ClusteringColumnInfo>> CLUSTERING_COLUMN_SORTER =
-            (o1, o2) -> o1._3().order.compareTo(o2._3().order);
-
     static ManagerAndDSLClasses buildManager(GlobalParsingContext context, AptUtils aptUtils, EntityMetaSignature signature) {
 
         final List<TypeSpec> classes = new ArrayList<>();
@@ -57,26 +52,7 @@ public class ManagerCodeGen {
 
 
         // CRUD
-        final TypeSpec.Builder crudClass = TypeSpec.classBuilder(signature.className + CRUD_SUFFIX)
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildFind(signature));
-
-        // API for table
-        if (signature.isTable()) {
-            crudClass.addMethod(buildDeleteInstance(signature))
-                    .addMethod(buildDeleteByKeys(signature));
-
-            if (!signature.isCounterEntity()) {
-                crudClass.addMethod(buildInsert(signature));
-                if (signature.hasStatic()) {
-                    crudClass.addMethod(buildInsertStatic(signature));
-                }
-            }
-
-            if (signature.hasClustering()) {
-                crudClass.addMethod(buildDeleteByPartition(signature));
-            }
-        }
+        final TypeSpec crudClass = context.crudAPICodeGen().buildCRUDClass(signature);
 
         // DSL
         final TypeSpec.Builder dslClass = TypeSpec.classBuilder(signature.className + DSL_SUFFIX)
@@ -98,7 +74,7 @@ public class ManagerCodeGen {
             }
         }
 
-        classes.add(context.selectDSLCodeGen().buildSelectClass(signature, context.selectWhereDSLCodeGen()));
+        classes.add(context.selectDSLCodeGen().buildSelectClass(context, signature));
 
         // Query
         final TypeSpec.Builder queryClass = TypeSpec.classBuilder(signature.className + RAW_QUERY_SUFFIX)
@@ -106,7 +82,7 @@ public class ManagerCodeGen {
 
         buildRawQueryMethods(signature).forEach(queryClass::addMethod);
 
-        builder.addType(crudClass.build());
+        builder.addType(crudClass);
         builder.addType(dslClass.build());
         builder.addType(queryClass.build());
 
@@ -183,184 +159,6 @@ public class ManagerCodeGen {
                 .addStatement("return new $T()", dslClass)
                 .returns(dslClass)
                 .build();
-    }
-
-    private static MethodSpec buildInsert(EntityMetaSignature signature) {
-        return MethodSpec.methodBuilder("insert")
-                .addJavadoc("Insert this entity\n\n")
-                .addJavadoc("@param instance an instance of $T\n", signature.entityRawClass)
-                .addJavadoc("@return InsertWithOptions<$T>", signature.entityRawClass)
-                .addModifiers(Modifier.FINAL, Modifier.PUBLIC)
-                .addParameter(signature.entityRawClass, "instance", Modifier.FINAL)
-                .addStatement("return insertInternal(instance, false)") // insertStatic = false
-                .returns(genericType(INSERT_WITH_OPTIONS, signature.entityRawClass))
-                .build();
-    }
-
-    private static MethodSpec buildInsertStatic(EntityMetaSignature signature) {
-        return MethodSpec.methodBuilder("insertStatic")
-                .addJavadoc("Insert only partition key(s) and static column(s).\n\n")
-                .addJavadoc("<strong>All clustering column(s) values will be ignored and not inserted</strong>\n\n")
-                .addJavadoc("@param instance an instance of $T\n", signature.entityRawClass)
-                .addJavadoc("@return InsertWithOptions<$T>", signature.entityRawClass)
-                .addModifiers(Modifier.FINAL, Modifier.PUBLIC)
-                .addParameter(signature.entityRawClass, "instance", Modifier.FINAL)
-                .addStatement("return insertInternal(instance, true)") // insertStatic = true
-                .returns(genericType(INSERT_WITH_OPTIONS, signature.entityRawClass))
-                .build();
-    }
-
-    private static MethodSpec buildFind(EntityMetaSignature signature) {
-        ParameterizedTypeName returnType = genericType(FIND_WITH_OPTIONS, signature.entityRawClass);
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder("findById")
-                .addJavadoc("Find an entity by its complete primary key")
-                .addModifiers(Modifier.PUBLIC)
-                .addStatement("$T keys = new $T<>()", LIST_OBJECT, ARRAY_LIST)
-                .addStatement("$T encodedKeys = new $T<>()", LIST_OBJECT, ARRAY_LIST);
-
-        signature.fieldMetaSignatures
-                .stream()
-                .filter(x -> x.context.columnType == PARTITION)
-                .map(x -> Tuple3.of(x.context.fieldName, x.sourceType, (PartitionKeyInfo) x.context.columnInfo))
-                .sorted(PARTITION_KEY_SORTER)
-                .forEach(tuple ->
-                                builder.addJavadoc("@param $L partition key '$L'", tuple._1(), tuple._1())
-                                        .addParameter(tuple._2(), tuple._1(), Modifier.FINAL)
-                                        .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
-                                                "Partition key '%s' should not be null", tuple._1())
-                                        .addStatement("keys.add($L)", tuple._1())
-                                        .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
-                                                signature.className + META_SUFFIX, tuple._1(), tuple._1())
-                );
-
-        signature.fieldMetaSignatures
-                .stream()
-                .filter(x -> x.context.columnType == CLUSTERING)
-                .map(x -> Tuple3.of(x.context.fieldName, x.sourceType, (ClusteringColumnInfo) x.context.columnInfo))
-                .sorted(CLUSTERING_COLUMN_SORTER)
-                .forEach(tuple ->
-                                builder.addJavadoc("@param $L clustering column '$L'", tuple._1(), tuple._1())
-                                        .addParameter(tuple._2(), tuple._1(), Modifier.FINAL)
-                                        .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
-                                                "Partition key '%s' should not be null", tuple._1())
-                                        .addStatement("keys.add($L)", tuple._1())
-                                        .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
-                                                signature.className + META_SUFFIX, tuple._1(), tuple._1())
-                );
-
-
-        builder.addJavadoc("@return FindWithOptions<$T>", signature.entityRawClass);
-
-        builder.addStatement("final Object[] primaryKeyValues = keys.toArray()")
-                .addStatement("final Object[] encodedPrimaryKeyValues = encodedKeys.toArray()")
-                .addStatement("return new $T($L, $L, $L, $L, $L)", returnType,
-                        "entityClass", "meta", "rte", "primaryKeyValues", "encodedPrimaryKeyValues")
-                .returns(returnType);
-
-        return builder.build();
-    }
-
-    /*
-       public DeleteWithOptions delete(...) {
-         validate keys not null
-         return DeleteWithOptions(rte, clazz, meta, keys);
-       }
-    */
-    private static MethodSpec buildDeleteByKeys(EntityMetaSignature signature) {
-        ParameterizedTypeName returnType = genericType(DELETE_WITH_OPTIONS, signature.entityRawClass);
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder("deleteById")
-                .addJavadoc("Delete an entity using its complete primary key")
-                .addModifiers(Modifier.PUBLIC)
-                .addStatement("$T keys = new $T<>()", LIST_OBJECT, ARRAY_LIST)
-                .addStatement("$T encodedKeys = new $T<>()", LIST_OBJECT, ARRAY_LIST);
-
-        signature.fieldMetaSignatures
-                .stream()
-                .filter(x -> x.context.columnType == PARTITION)
-                .map(x -> Tuple3.of(x.context.fieldName, x.sourceType, (PartitionKeyInfo) x.context.columnInfo))
-                .sorted(PARTITION_KEY_SORTER)
-                .forEach(tuple ->
-                                builder.addJavadoc("@param $L partition key '$L'", tuple._1(), tuple._1())
-                                        .addParameter(tuple._2(), tuple._1(), Modifier.FINAL)
-                                        .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
-                                                "Partition key '%s' should not be null", tuple._1())
-                                        .addStatement("keys.add($L)", tuple._1())
-                                        .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
-                                                signature.className + META_SUFFIX, tuple._1(), tuple._1())
-                );
-
-        signature.fieldMetaSignatures
-                .stream()
-                .filter(x -> x.context.columnType == CLUSTERING)
-                .map(x -> Tuple3.of(x.context.fieldName, x.sourceType, (ClusteringColumnInfo) x.context.columnInfo))
-                .sorted(CLUSTERING_COLUMN_SORTER)
-                .forEach(tuple ->
-                        builder.addJavadoc("@param $L clustering column '$L'", tuple._1(), tuple._1())
-                                .addParameter(tuple._2(), tuple._1(), Modifier.FINAL)
-                                .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
-                                        "Partition key '%s' should not be null", tuple._1())
-                                .addStatement("keys.add($L)", tuple._1())
-                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
-                                        signature.className + META_SUFFIX, tuple._1(), tuple._1()));
-
-        builder.addJavadoc("@return DeleteWithOptions<$T>", signature.entityRawClass);
-
-        builder.addStatement("final Object[] partitionKeysValues = keys.toArray()")
-                .addStatement("final Object[] encodedPartitionKeyValues = encodedKeys.toArray()")
-                .addStatement("return new $T($L, $L, $L, $L, $L, $T.empty())", returnType,
-                        "entityClass", "meta", "rte", "partitionKeysValues", "encodedPartitionKeyValues", OPTIONAL)
-                .returns(returnType);
-
-
-        return builder.build();
-    }
-
-    private static MethodSpec buildDeleteInstance(EntityMetaSignature signature) {
-        return MethodSpec.methodBuilder("delete")
-                .addJavadoc("Delete an entity instance by extracting its primary key")
-                .addJavadoc("Remark: <strong>Achilles will throw an exception if any column being part of the primary key is NULL</strong>")
-                .addJavadoc("@param an instance of $T to be delete", signature.entityRawClass)
-                .addJavadoc("@return DeleteWithOptions<$T>", signature.entityRawClass)
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(signature.entityRawClass, "instance", Modifier.FINAL)
-                .addStatement("return deleteInternal($N)", "instance")
-                .returns(genericType(DELETE_WITH_OPTIONS, signature.entityRawClass))
-                .build();
-    }
-
-    private static MethodSpec buildDeleteByPartition(EntityMetaSignature signature) {
-        ParameterizedTypeName returnType = genericType(DELETE_BY_PARTITION_WITH_OPTIONS, signature.entityRawClass);
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder("deleteByPartitionKeys")
-                .addJavadoc("Delete a whole partition using the partition key")
-
-                .addModifiers(Modifier.PUBLIC)
-                .addStatement("$T keys = new $T<>()", LIST_OBJECT, ARRAY_LIST)
-                .addStatement("$T encodedKeys = new $T<>()", LIST_OBJECT, ARRAY_LIST);
-
-        signature.fieldMetaSignatures
-                .stream()
-                .filter(x -> x.context.columnType == PARTITION)
-                .map(x -> Tuple3.of(x.context.fieldName, x.sourceType, (PartitionKeyInfo) x.context.columnInfo))
-                .sorted(PARTITION_KEY_SORTER)
-                .forEach(tuple ->
-                        builder.addJavadoc("@param $L partition key '$L'", tuple._1(), tuple._1())
-                                .addParameter(tuple._2(), tuple._1(), Modifier.FINAL)
-                                .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
-                                        "Partition key '%s' should not be null", tuple._1())
-                                .addStatement("keys.add($L)", tuple._1())
-                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
-                                        signature.className + META_SUFFIX, tuple._1(), tuple._1()));
-
-
-        builder.addJavadoc("@return DeleteByPartitionWithOptions<$T>", signature.entityRawClass);
-
-        builder.addStatement("final Object[] partitionKeys = keys.toArray()")
-                .addStatement("final Object[] encodedPartitionKeys = encodedKeys.toArray()")
-                .addStatement("return new $T($L, $L, $L, $L)", returnType,
-                        "meta", "rte", "partitionKeys", "encodedPartitionKeys")
-                .returns(returnType);
-
-        return builder.build();
     }
 
     private static MethodSpec buildSelectMethod(EntityMetaSignature signature) {

@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.codegen.dsl.delete.cassandra2_1;
+package info.archinnov.achilles.internals.codegen.crud.cassandra2_1;
 
 import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
-import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.crud.CrudAPICodeGen;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 
-public class DeleteWhereDSLCodeGen2_1 extends DeleteWhereDSLCodeGen {
+public class CrudAPICodeGen2_1 extends CrudAPICodeGen {
     @Override
-    public void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo nextSignature) {
-        //NO Op
-    }
-
-    @Override
-    public void augmentLWTConditionClass(TypeSpec.Builder conditionClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo currentSignature) {
+    protected void augmentCRUDClass(EntityMetaCodeGen.EntityMetaSignature signature, TypeSpec.Builder crudClassBuilder) {
         //NO Op
     }
 }
