@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
@@ -46,9 +47,8 @@ public interface FunctionCall {
                 .map(x -> x instanceof FunctionCall ? ((FunctionCall) x).buildRecursive() : x)
                 .collect(Collectors.toList());
 
-        //TODO Ugly hack for https://datastax-oss.atlassian.net/projects/JAVA/issues/JAVA-1086
         if (functionName().equals("cast") && transformed.size()==1) {
-            return QueryBuilder.raw("cast(" + transformed.get(0).toString() + " as " + this.targetCQLTypeName()+ ")");
+            return QueryBuilder.cast(QueryBuilder.raw(transformed.get(0).toString()), this.targetCQLTypeName());
         } else {
             return QueryBuilder.fcall(functionName(), transformed.toArray());
         }
@@ -56,16 +56,16 @@ public interface FunctionCall {
 
     boolean isFunctionCall();
 
-    default String targetCQLTypeName() {
+    default DataType targetCQLTypeName() {
         throw new IllegalStateException("Unexpected call. This method should only be called by system 'cast' functions");
     }
 
     default void addToSelect(Select.Selection selection, String alias) {
         final List<Object> parameters = parameters();
 
-        //TODO Ugly hack for https://datastax-oss.atlassian.net/projects/JAVA/issues/JAVA-1086
         if (functionName().equals("cast") && parameters.size()==1) {
-            ((Select.SelectionOrAlias)selection).raw("cast(" + parameters.get(0).toString() + " as " + this.targetCQLTypeName()+ ")").as(alias);
+            selection.cast(QueryBuilder.raw(parameters.get(0).toString()), targetCQLTypeName()).as(alias);
+
         } else {
             selection.fcall(functionName(), parameters.toArray()).as(alias);
         }

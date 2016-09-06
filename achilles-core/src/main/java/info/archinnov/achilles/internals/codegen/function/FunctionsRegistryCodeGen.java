@@ -94,8 +94,8 @@ public abstract class FunctionsRegistryCodeGen {
                     .methodBuilder("targetCQLTypeName")
                     .addModifiers(Modifier.PUBLIC)
                     .addAnnotation(Override.class)
-                    .returns(STRING)
-                    .addStatement("return $S", TypeUtils.getNativeDataTypeFor(signature.returnTypeSignature.targetCQLTypeName))
+                    .returns(DATATYPE)
+                    .addStatement("return $T.$L()", DATATYPE, TypeUtils.getNativeDataTypeFor(signature.returnTypeSignature.targetCQLTypeName))
                     .build());
         }
 
