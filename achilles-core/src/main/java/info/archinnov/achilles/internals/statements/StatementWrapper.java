@@ -60,12 +60,14 @@ public interface StatementWrapper {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(format("Writing DML log for query %s with id %s", queryString, queryId));
             }
-            actualLogger.debug("Query ID {} : [{}] with CONSISTENCY LEVEL [{}]",
-                    queryId.toString(), queryString, consistencyLevel);
+            StringBuilder logBuilder = new StringBuilder("\n");
+            logBuilder.append(String.format("Query ID %s : [%s] with CONSISTENCY LEVEL [%s]",
+                    queryId.toString(), queryString, consistencyLevel));
             if (ArrayUtils.isNotEmpty(boundValues)) {
-                actualLogger.debug("\t Java bound values : {}", replaceByteBuffersByHexString(boundValues));
-                actualLogger.debug("\t Encoded bound values : {}", replaceByteBuffersByHexString(encodedValues));
+                logBuilder.append(String.format("\t Java bound values : %s", replaceByteBuffersByHexString(boundValues)));
+                logBuilder.append(String.format("\t Encoded bound values : %s", replaceByteBuffersByHexString(encodedValues)));
             }
+            actualLogger.debug(logBuilder.toString());
         }
     }
 
