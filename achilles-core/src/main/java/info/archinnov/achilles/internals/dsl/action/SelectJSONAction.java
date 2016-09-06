@@ -30,7 +30,7 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 public interface SelectJSONAction extends AsyncAware {
 
     /**
-     * Execute the SELECT action
+     * Execute the SELECT JSON * action
      * and return an {@link java.util.Iterator}&lt;String&gt; of JSON values
      * <br/>
      * WARNING: <strong>this method performs a blocking call to the underlying async query</strong>
@@ -38,7 +38,7 @@ public interface SelectJSONAction extends AsyncAware {
     Iterator<String> iterator();
 
     /**
-     * Execute the SELECT action
+     * Execute the SELECT JSON * action
      * and return a {@link info.archinnov.achilles.type.tuples.Tuple2}<{@link java.util.Iterator}&lt;String&gt;, {@link com.datastax.driver.core.ExecutionInfo}>
      * <br/>
      * WARNING: <strong>this method performs a blocking call to the underlying async query</strong>
@@ -46,7 +46,7 @@ public interface SelectJSONAction extends AsyncAware {
     Tuple2<Iterator<String>, ExecutionInfo> iteratorWithExecutionInfo();
 
     /**
-     * Execute the SELECT action
+     * Execute the SELECT JSON * action
      * and return the first row value as JSON
      */
     default String getJSON() {
@@ -58,7 +58,7 @@ public interface SelectJSONAction extends AsyncAware {
     }
 
     /**
-     * Execute the SELECT action
+     * Execute the SELECT JSON * action
      * and return the first row as JSON with {@link com.datastax.driver.core.ExecutionInfo}
      */
     default Tuple2<String, ExecutionInfo> getJSONWithStats() {
@@ -70,7 +70,7 @@ public interface SelectJSONAction extends AsyncAware {
     }
 
     /**
-     * Execute the SELECT action asynchronously
+     * Execute the SELECT JSON * action asynchronously
      * and return a {@link java.util.concurrent.CompletableFuture} of
      * the first row as JSON
      */
@@ -79,7 +79,7 @@ public interface SelectJSONAction extends AsyncAware {
     }
 
     /**
-     * Execute the SELECT action asynchronously
+     * Execute the SELECT JSON * action asynchronously
      * and return a {@link java.util.concurrent.CompletableFuture} of
      * the first row as JSON with {@link com.datastax.driver.core.ExecutionInfo}
      */
@@ -90,7 +90,7 @@ public interface SelectJSONAction extends AsyncAware {
     }
 
     /**
-     * Execute the SELECT action
+     * Execute the SELECT JSON * action
      * and return a list of rows as JSON
      */
     default List<String> getListJSON() {
@@ -102,7 +102,7 @@ public interface SelectJSONAction extends AsyncAware {
     }
 
     /**
-     * Execute the SELECT action asynchronously
+     * Execute the SELECT JSON * action asynchronously
      * and return a {@link java.util.concurrent.CompletableFuture} of
      * a list of rows as JSON
      */
@@ -111,6 +111,10 @@ public interface SelectJSONAction extends AsyncAware {
     }
 
 
+    /**
+     * Execute the SELECT JSON * action
+     * and return a list of rows as JSON with {@link com.datastax.driver.core.ExecutionInfo}
+     */
     default Tuple2<List<String>, ExecutionInfo> getListJSONWithStats() {
         try {
             return Uninterruptibles.getUninterruptibly(getListJSONAsyncWithStats());
@@ -120,7 +124,7 @@ public interface SelectJSONAction extends AsyncAware {
     }
 
     /**
-     * Execute the SELECT action asynchronously
+     * Execute the SELECT JSON * action asynchronously
      * and return a {@link java.util.concurrent.CompletableFuture} of
      * a list of entity instances with {@link com.datastax.driver.core.ExecutionInfo}
      */

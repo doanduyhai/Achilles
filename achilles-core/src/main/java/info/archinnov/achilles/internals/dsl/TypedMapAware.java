@@ -35,28 +35,42 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 public interface TypedMapAware extends AsyncAware {
 
     /**
-     * Execute the SELECT action
-     * and return an {@link java.util.Iterator}<{@link info.archinnov.achilles.type.TypedMap}>
+     * Execute the SELECT action and return an {@link java.util.Iterator}<{@link info.archinnov.achilles.type.TypedMap}>
      * <br/>
      * WARNING: <strong>this method performs a blocking call to the underlying async query</strong>
      */
     Iterator<TypedMap> typedMapIterator();
 
     /**
-     * Execute the SELECT action
-     * and return an {@link info.archinnov.achilles.type.tuples.Tuple2}&lt;{@link java.util.Iterator}&lt;{@link info.archinnov.achilles.type.TypedMap}&gt;, {@link com.datastax.driver.core.ExecutionInfo}&gt;
+     * Execute the SELECT action and return a {@link info.archinnov.achilles.type.tuples.Tuple2}&lt;{@link java.util.Iterator}&lt;{@link info.archinnov.achilles.type.TypedMap}&gt;, {@link com.datastax.driver.core.ExecutionInfo}&gt;
      * <br/>
      * WARNING: <strong>this method performs a blocking call to the underlying async query</strong>
      */
     Tuple2<Iterator<TypedMap>, ExecutionInfo> typedMapIteratorWithExecutionInfo();
 
+    /**
+     * Execute the SELECT action and return a {@link java.util.concurrent.CompletableFuture}&lt;{@link info.archinnov.achilles.type.tuples.Tuple2}&lt;
+     * {@link java.util.List}&lt;{@link info.archinnov.achilles.type.TypedMap}&gt;, {@link com.datastax.driver.core.ExecutionInfo}&gt;&gt;
+     * <br/>
+     */
     CompletableFuture<Tuple2<List<TypedMap>, ExecutionInfo>> getTypedMapsAsyncWithStats();
+
+    /**
+     * Execute the SELECT action and return an {@link java.util.concurrent.CompletableFuture}&lt;
+     * {@link java.util.List}&lt;{@link info.archinnov.achilles.type.TypedMap}&gt;&gt;
+     * <br/>
+     */
 
     default CompletableFuture<List<TypedMap>> getTypedMapsAsync() {
         return getTypedMapsAsyncWithStats()
                 .thenApply(Tuple2::_1);
     }
 
+    /**
+     * Execute the SELECT action and return a {@link info.archinnov.achilles.type.tuples.Tuple2}&lt;
+     * {@link java.util.List}&lt;{@link info.archinnov.achilles.type.TypedMap}&gt;, {@link com.datastax.driver.core.ExecutionInfo}&gt;
+     * <br/>
+     */
     default Tuple2<List<TypedMap>, ExecutionInfo> getTypedMapsWithStats() {
         try {
             return Uninterruptibles.getUninterruptibly(getTypedMapsAsyncWithStats());
@@ -65,6 +79,11 @@ public interface TypedMapAware extends AsyncAware {
         }
     }
 
+    /**
+     * Execute the SELECT action and return a
+     * {@link java.util.List}&lt;{@link info.archinnov.achilles.type.TypedMap}&gt;
+     * <br/>
+     */
     default List<TypedMap> getTypedMaps() {
         try {
             return Uninterruptibles.getUninterruptibly(getTypedMapsAsync());
@@ -73,6 +92,11 @@ public interface TypedMapAware extends AsyncAware {
         }
     }
 
+    /**
+     * Execute the SELECT action and return a {@link java.util.concurrent.CompletableFuture}&lt;{@link info.archinnov.achilles.type.tuples.Tuple2}&lt;
+     * {@link info.archinnov.achilles.type.TypedMap}, {@link com.datastax.driver.core.ExecutionInfo}&gt;&gt;
+     * <br/>
+     */
     CompletableFuture<Tuple2<TypedMap, ExecutionInfo>> getTypedMapAsyncWithStats();
 
 
@@ -81,6 +105,11 @@ public interface TypedMapAware extends AsyncAware {
                 .thenApply(Tuple2::_1);
     }
 
+    /**
+     * Execute the SELECT action and return a {@link info.archinnov.achilles.type.tuples.Tuple2}&lt;
+     * {@link info.archinnov.achilles.type.TypedMap}, {@link com.datastax.driver.core.ExecutionInfo}&gt;
+     * <br/>
+     */
     default Tuple2<TypedMap, ExecutionInfo> getTypedMapWithStats() {
         try {
             return Uninterruptibles.getUninterruptibly(getTypedMapAsyncWithStats());
@@ -89,6 +118,10 @@ public interface TypedMapAware extends AsyncAware {
         }
     }
 
+    /**
+     * Execute the SELECT action and return a {@link info.archinnov.achilles.type.TypedMap}
+     * <br/>
+     */
     default TypedMap getTypedMap() {
         try {
             return Uninterruptibles.getUninterruptibly(getTypedMapAsync());
