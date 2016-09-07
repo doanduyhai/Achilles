@@ -19,6 +19,8 @@
 - Support for **Lightweight Transaction** with dedicated listener interface 
 - Support for **Materialized View** 
 - Support for typed-safe **Function calls**
+- Support for the new **JSON** API
+- Support for multi-project compilation unit
 - Flexible naming strategy & insert strategy
 - Runtime **Schema Name Provider** for multi-tenant environments
 - Full compatibility with Java 8 **CompletableFuture**
