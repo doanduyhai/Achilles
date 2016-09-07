@@ -58,9 +58,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.2</version>
                 <configuration>
-                    <debug>true</debug>
-                    <debuglevel>lines</debuglevel>
-                    <verbose>true</verbose>
+                    <debug>false</debug>
+                    <verbose>false</verbose>
                     <useIncrementalCompilation>false</useIncrementalCompilation>
                 </configuration>
             </plugin>
