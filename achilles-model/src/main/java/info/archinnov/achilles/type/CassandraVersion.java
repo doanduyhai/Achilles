@@ -193,7 +193,7 @@ public enum CassandraVersion {
     CASSANDRA_3_2,
     CASSANDRA_3_3,
     CASSANDRA_3_4,
-    CASSANDRA_3_5,
+    CASSANDRA_3_5
     /**
      * New features:
      * <br/>
@@ -204,7 +204,7 @@ public enum CassandraVersion {
      * </ul>
      *
      */
-    CASSANDRA_3_6,
+    //CASSANDRA_3_6,
     /**
      * New features:
      * <br/>
@@ -213,7 +213,7 @@ public enum CassandraVersion {
      * </ul>
      *
      */
-    CASSANDRA_3_7,
+    //CASSANDRA_3_7,
     /**
      * New features:
      * <br/>
@@ -222,5 +222,5 @@ public enum CassandraVersion {
      * </ul>
      *
      */
-    CASSANDRA_3_9
+    //CASSANDRA_3_9
 }
