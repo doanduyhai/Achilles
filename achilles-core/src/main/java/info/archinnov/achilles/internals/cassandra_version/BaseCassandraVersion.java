@@ -36,10 +36,10 @@ import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
 import info.archinnov.achilles.internals.parser.validator.TypeValidator;
-import info.archinnov.achilles.internals.parser.validator.cassandra_2_1.BeanValidator2_1;
-import info.archinnov.achilles.internals.parser.validator.cassandra_2_1.FieldValidator2_1;
-import info.archinnov.achilles.internals.parser.validator.cassandra_2_1.NestedTypeValidator2_1;
-import info.archinnov.achilles.internals.parser.validator.cassandra_2_1.TypeValidator2_1;
+import info.archinnov.achilles.internals.parser.validator.cassandra2_1.BeanValidator2_1;
+import info.archinnov.achilles.internals.parser.validator.cassandra2_1.FieldValidator2_1;
+import info.archinnov.achilles.internals.parser.validator.cassandra2_1.NestedTypeValidator2_1;
+import info.archinnov.achilles.internals.parser.validator.cassandra2_1.TypeValidator2_1;
 
 public interface BaseCassandraVersion {
     BeanValidator BEAN_VALIDATOR = new BeanValidator2_1();

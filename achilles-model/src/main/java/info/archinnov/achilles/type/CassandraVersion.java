@@ -83,6 +83,21 @@ package info.archinnov.achilles.type;
  *             <td>Add support for type casting in selection clause</td>
  *             <td>CASSANDRA-10310</td>
  *         </tr>
+ *         <tr>
+ *             <td>3.6</td>
+ *             <td>
+ *                 <ul>
+ *                     <li>Allow per-partition LIMIT clause in CQL</li>
+ *                     <li>Support for non-frozen user-defined types, updating individual fields of user-defined types</li>
+ *                 </ul>
+ *             </td>
+ *             <td>
+ *                 <ul>
+ *                     <li>CASSANDRA-7017</li>
+ *                     <li>CASSANDRA-7423</li>
+ *                 </ul>
+ *             </td>
+ *         </tr>
  *     </tbody>
  * </table>
  *
@@ -152,6 +167,23 @@ package info.archinnov.achilles.type;
  *                 </ul>
  *             </td>
  *         </tr>
+ *         <tr>
+ *             <td>Support for PER PARTITION LIMIT</td>
+ *             <td>
+ *                 <ul>
+ *                     <li>manager.dsl().select()....perPartitionLimit(xxx)</li>
+ *                 </ul>
+ *             </td>
+ *         </tr>
+ *         <tr>
+ *             <td>Support for non-frozen user-defined types, updating individual fields of user-defined types</td>
+ *             <td>
+ *                 <ul>
+ *                     <li>manager.dsl().update().fromBaseTable().userUDT().firstname_Set(...)</li>
+ *                     <li>manager.dsl().update().fromBaseTable().userUDT().lastname_Set(...)</li>
+ *                 </ul>
+ *             </td>
+ *         </tr>
  *     </tbody>
  * </table>
  */
@@ -193,22 +225,22 @@ public enum CassandraVersion {
     CASSANDRA_3_2,
     CASSANDRA_3_3,
     CASSANDRA_3_4,
-    CASSANDRA_3_5
+    CASSANDRA_3_5,
     /**
      * New features:
      * <br/>
      * <ul>
-     *     <li>Add static column support to SASI index (CASSANDRA-11183)</li>
      *     <li>Allow per-partition LIMIT clause in CQL (CASSANDRA-7017)</li>
      *     <li>Support for non-frozen user-defined types, updating individual fields of user-defined types (CASSANDRA-7423)</li>
      * </ul>
      *
      */
-    //CASSANDRA_3_6,
+    CASSANDRA_3_6
     /**
      * New features:
      * <br/>
      * <ul>
+     *     <li>Add static column support to SASI index (CASSANDRA-11183)</li>
      *     <li><strong>Stable</strong> SASI index with Support LIKE operator in prepared statements (CASSANDRA-11456)</li>
      * </ul>
      *

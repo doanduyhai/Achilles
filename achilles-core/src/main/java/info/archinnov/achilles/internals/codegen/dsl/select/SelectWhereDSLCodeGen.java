@@ -36,10 +36,12 @@ import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen
         implements BaseSingleColumnRestriction, MultiColumnsSliceRestrictionCodeGen {
 
-    public abstract List<TypeSpec> augmentSelectClass(GlobalParsingContext context,
-                                                      EntityMetaSignature signature,
-                                                      List<FieldSignatureInfo> partitionKeys,
-                                                      List<FieldSignatureInfo> clusteringCols);
+    public abstract void augmentSelectEndClass(TypeSpec.Builder selectEndClassBuilder, ClassSignatureInfo lastSignature);
+
+    public abstract List<TypeSpec> generateExtraWhereClasses(GlobalParsingContext context,
+                                                             EntityMetaSignature signature,
+                                                             List<FieldSignatureInfo> partitionKeys,
+                                                             List<FieldSignatureInfo> clusteringCols);
 
     public abstract void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
                                                             FieldSignatureInfo fieldSignatureInfo,
@@ -68,7 +70,7 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen
                 firstClustering, typedMapClassSignatureParams);
         partitionKeysWhereClasses.addAll(partitionKeysWhereTypedMapClasses);
 
-        partitionKeysWhereClasses.addAll(augmentSelectClass(context, signature, partitionKeys, clusteringCols));
+        partitionKeysWhereClasses.addAll(generateExtraWhereClasses(context, signature, partitionKeys, clusteringCols));
 
         return partitionKeysWhereClasses;
     }
@@ -109,6 +111,8 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen
                 .addMethod(buildGetEncodedBoundValuesInternal())
                 .addMethod(buildLimit(lastSignature))
                 .addMethod(buildGetThis(lastSignature.returnClassType));
+
+        augmentSelectEndClass(builder, lastSignature);
 
         maybeBuildOrderingBy(lastSignature, firstClustering, builder);
 

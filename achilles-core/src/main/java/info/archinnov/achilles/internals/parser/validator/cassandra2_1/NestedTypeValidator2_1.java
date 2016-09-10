@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.parser.validator.cassandra_2_1;
+package info.archinnov.achilles.internals.parser.validator.cassandra2_1;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
 

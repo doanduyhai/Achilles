@@ -29,10 +29,15 @@ import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
 public class SelectWhereDSLCodeGen2_1 extends SelectWhereDSLCodeGen {
     @Override
-    public List<TypeSpec> augmentSelectClass(GlobalParsingContext context,
-                                             EntityMetaCodeGen.EntityMetaSignature signature,
-                                             List<FieldSignatureInfo> partitionKeys,
-                                             List<FieldSignatureInfo> clusteringCols) {
+    public void augmentSelectEndClass(TypeSpec.Builder selectEndClassBuilder, ClassSignatureInfo lastSignature) {
+        //NO Op
+    }
+
+    @Override
+    public List<TypeSpec> generateExtraWhereClasses(GlobalParsingContext context,
+                                                    EntityMetaCodeGen.EntityMetaSignature signature,
+                                                    List<FieldSignatureInfo> partitionKeys,
+                                                    List<FieldSignatureInfo> clusteringCols) {
         return Collections.emptyList();
     }
 

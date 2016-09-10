@@ -70,6 +70,11 @@ CREATE TABLE IF NOT EXISTS test.entity_with_clusterings(
 		value text,
 		PRIMARY KEY(id, uuid, date))
 	WITH CLUSTERING ORDER BY(uuid ASC, date DESC);
+CREATE TABLE IF NOT EXISTS it_3_6.entity_with_clustering(
+		id bigint,
+		clust bigint,
+		PRIMARY KEY(id, clust))
+	WITH CLUSTERING ORDER BY(clust ASC);
 CREATE TABLE IF NOT EXISTS test.entity_complex_counters(
 		id bigint,
 		uuid uuid,

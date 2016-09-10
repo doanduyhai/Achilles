@@ -43,7 +43,7 @@
             <id>doanduyhai</id>
             <name>DuyHai DOAN</name>
             <email>doanduyhai@gmail.com</email>
-            <url>http://doanduyhai.wordpress.com</url>
+            <url>http://www.doanduyhai.com/blog</url>
             <roles>
                 <role>Lead Developer</role>
             </roles>
@@ -150,6 +150,7 @@
         <module>integration-test-2_2</module>
         <module>integration-test-3_0</module>
         <module>integration-test-3_2</module>
+        <module>integration-test-3_6</module>
     </modules>
 
     <dependencyManagement>
@@ -213,10 +214,15 @@
                 <version>${project.version}</version>
             </dependency>
 
-
             <dependency>
                 <groupId>info.archinnov</groupId>
                 <artifactId>integration-test-3_2</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>info.archinnov</groupId>
+                <artifactId>integration-test-3_6</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- Cassandra -->

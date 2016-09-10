@@ -31,16 +31,18 @@ import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_2.SelectDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_2.SelectWhereDSLCodeGen2_2;
+import info.archinnov.achilles.internals.codegen.dsl.select.cassandra3_6.SelectWhereDSLCodeGen3_6;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2.UpdateDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2.UpdateWhereDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra3_0.UpdateWhereDSLCodeGen3_0;
+import info.archinnov.achilles.internals.codegen.dsl.update.cassandra3_6.UpdateDSLCodeGen3_6;
 import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
 import info.archinnov.achilles.internals.codegen.function.cassandra2_2.FunctionsRegistryCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.function.cassandra3_2.FunctionsRegistryCodeGen3_2;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
-import info.archinnov.achilles.internals.parser.validator.cassandra_3_0.BeanValidator3_0;
+import info.archinnov.achilles.internals.parser.validator.cassandra3_0.BeanValidator3_0;
 
 public enum  InternalCassandraVersion implements BaseCassandraVersion {
 
@@ -190,11 +192,60 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
         public boolean supportsFeature(CassandraFeature feature) {
             return SUPPORTED_FEATURES.contains(feature);
         }
+    },
+    V3_6 {
+        private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA, MATERIALIZED_VIEW);
+
+        @Override
+        public BeanValidator beanValidator() {
+            return BEAN_VALIDATOR_3_0;
+        }
+
+        @Override
+        public CrudAPICodeGen crudApiCodeGen() {
+            return CRUD_API_CODE_GEN_2_2;
+        }
+
+        @Override
+        public SelectDSLCodeGen selectDslCodeGen() {
+            return SELECT_DSL_CODE_GEN_2_2;
+        }
+
+        @Override
+        public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
+            return SELECT_WHERE_DSL_CODE_GEN_3_6;
+        }
+
+        @Override
+        public UpdateDSLCodeGen updateDslCodeGen() {
+            return UPDATE_DSL_CODE_GEN_2_2;
+        }
+
+        @Override
+        public UpdateWhereDSLCodeGen updateWhereDslCodeGen() {
+            return UPDATE_WHERE_DSL_CODE_GEN_3_0;
+        }
+
+        @Override
+        public DeleteWhereDSLCodeGen deleteWhereDslCodeGen() {
+            return DELETE_WHERE_DSL_CODE_GEN_3_0;
+        }
+
+        @Override
+        public FunctionsRegistryCodeGen functionsRegistryCodeGen() {
+            return FUNCTIONS_REGISTRY_CODE_GEN_3_2;
+        }
+
+        @Override
+        public boolean supportsFeature(CassandraFeature feature) {
+            return SUPPORTED_FEATURES.contains(feature);
+        }
     };
 
     private static final CrudAPICodeGen CRUD_API_CODE_GEN_2_2 = new CrudAPICodeGen2_2();
     private static final SelectDSLCodeGen SELECT_DSL_CODE_GEN_2_2 = new SelectDSLCodeGen2_2();
     private static final SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_2_2 = new SelectWhereDSLCodeGen2_2();
+    private static final SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_3_6 = new SelectWhereDSLCodeGen3_6();
     private static final UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_2_2 = new UpdateDSLCodeGen2_2();
     private static final UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN_2_2 = new UpdateWhereDSLCodeGen2_2();
     private static final UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN_3_0 = new UpdateWhereDSLCodeGen3_0();

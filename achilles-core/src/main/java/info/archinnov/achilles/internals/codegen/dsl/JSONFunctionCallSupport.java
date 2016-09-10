@@ -29,6 +29,7 @@ import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ClassSig
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
 import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public interface JSONFunctionCallSupport {
@@ -82,7 +83,7 @@ public interface JSONFunctionCallSupport {
         return toJSONFunctionBuilder.addStatement("return $L", toJSONAnonClassBuilder.build()).build();
     }
     default void buildSetFromJSONToRelationClass(TypeSpec.Builder relationClassBuilder,
-                                                 FieldParser.FieldMetaSignature parsingResult,
+                                                 FieldMetaSignature parsingResult,
                                                  TypeName newTypeName,
                                                  ReturnType returnType) {
 

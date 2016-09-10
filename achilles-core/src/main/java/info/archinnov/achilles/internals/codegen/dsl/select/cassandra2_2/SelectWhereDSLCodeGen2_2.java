@@ -40,10 +40,15 @@ public class SelectWhereDSLCodeGen2_2 extends SelectWhereDSLCodeGen
         implements JSONFunctionCallSupport {
 
     @Override
-    public List<TypeSpec> augmentSelectClass(GlobalParsingContext context,
-                                             EntityMetaCodeGen.EntityMetaSignature signature,
-                                             List<FieldSignatureInfo> partitionKeys,
-                                             List<FieldSignatureInfo> clusteringCols) {
+    public void augmentSelectEndClass(TypeSpec.Builder selectEndClassBuilder, ClassSignatureInfo lastSignature) {
+        //No Op
+    }
+
+    @Override
+    public List<TypeSpec> generateExtraWhereClasses(GlobalParsingContext context,
+                                                    EntityMetaCodeGen.EntityMetaSignature signature,
+                                                    List<FieldSignatureInfo> partitionKeys,
+                                                    List<FieldSignatureInfo> clusteringCols) {
         final ClassSignatureParams jsonClassSignatureParams = ClassSignatureParams.of(SELECT_DSL_SUFFIX,
                 SELECT_WHERE_JSON_DSL_SUFFIX, SELECT_END_JSON_DSL_SUFFIX,
                 ABSTRACT_SELECT_WHERE_PARTITION_JSON, ABSTRACT_SELECT_WHERE_JSON);

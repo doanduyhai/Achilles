@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.parser.validator.cassandra_2_1;
+package info.archinnov.achilles.internals.parser.validator.cassandra2_1;
 
-import info.archinnov.achilles.internals.parser.validator.TypeValidator;
+import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 
-public class TypeValidator2_1 extends TypeValidator {
-
-
+public class FieldValidator2_1 extends FieldValidator {
 }

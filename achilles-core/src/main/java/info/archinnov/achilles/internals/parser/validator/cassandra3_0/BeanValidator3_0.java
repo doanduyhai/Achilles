@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.parser.validator.cassandra_3_0;
+package info.archinnov.achilles.internals.parser.validator.cassandra3_0;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;

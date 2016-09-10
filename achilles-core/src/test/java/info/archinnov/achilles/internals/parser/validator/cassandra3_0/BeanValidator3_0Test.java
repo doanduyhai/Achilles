@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.parser.validator.cassandra_3_0;
+package info.archinnov.achilles.internals.parser.validator.cassandra3_0;
 
 import static info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer.getTypeParsingResults;
 import static info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType.TABLE;
 import static info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType.VIEW;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import javax.lang.model.element.TypeElement;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;

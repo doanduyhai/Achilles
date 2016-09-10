@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.parser.validator.cassandra_2_1;
+package info.archinnov.achilles.internals.config;
 
-import info.archinnov.achilles.internals.parser.validator.FieldValidator;
+import info.archinnov.achilles.annotations.CompileTimeConfig;
+import info.archinnov.achilles.type.CassandraVersion;
 
-public class FieldValidator2_1 extends FieldValidator {
+@CompileTimeConfig(cassandraVersion = CassandraVersion.CASSANDRA_3_6, projectName = "IT_3_6")
+public interface AchillesConfig {
 }
