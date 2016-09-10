@@ -50,6 +50,7 @@ public class Options {
     private Optional<List<Function<Row, Row>>> rowAsyncListeners = Optional.empty();
     private Optional<Boolean> tracing = Optional.empty();
     private Optional<SchemaNameProvider> schemaNameProvider = Optional.empty();
+    private Optional<Integer> readTimeout = Optional.empty();
 
 
     public Options() {
@@ -219,6 +220,10 @@ public class Options {
         this.schemaNameProvider = schemaNameProvider;
     }
 
+    public void setReadTimeout(Integer readTimeout) {
+        this.readTimeout = Optional.ofNullable(readTimeout);
+    }
+
     public Statement applyOptions(OperationType operationType, AbstractEntityProperty<?> meta, Statement statement) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(String.format("Applying options %s to the current statement %s",
@@ -241,6 +246,7 @@ public class Options {
         if (pagingState.isPresent()) statement.setPagingState(pagingState.get());
         if (retryPolicy.isPresent()) statement.setRetryPolicy(retryPolicy.get());
         if (tracing.isPresent() || meta.entityLogger.isTraceEnabled()) statement.enableTracing();
+        if (readTimeout.isPresent()) statement.setReadTimeoutMillis(readTimeout.get());
 
         return statement;
     }
@@ -261,6 +267,7 @@ public class Options {
         sb.append(", rowAsyncListeners=").append(rowAsyncListeners);
         sb.append(", tracing=").append(tracing);
         sb.append(", schemaNameProvider=").append(schemaNameProvider);
+        sb.append(", readTimeoutInMillis=").append(readTimeout);
         sb.append('}');
         return sb.toString();
     }

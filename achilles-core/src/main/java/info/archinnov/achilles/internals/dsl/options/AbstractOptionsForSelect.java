@@ -259,4 +259,16 @@ public abstract class AbstractOptionsForSelect<T extends AbstractOptionsForSelec
         getOptions().setTracing(Optional.of(true));
         return getThis();
     }
+
+    /**
+     * Set read timeout in millisecs.
+     * <br/>
+     * This paramater is useful when using user-defined aggregates. You may want to increase the read timeout if the aggregates is expected to take longer than the defaut timeout
+     * @param readTimeoutInMillis read timeout in millis
+     */
+    public T withReadTimeoutInMillis(Integer readTimeoutInMillis) {
+        getOptions().setReadTimeout(readTimeoutInMillis);
+        return getThis();
+    }
+
 }
