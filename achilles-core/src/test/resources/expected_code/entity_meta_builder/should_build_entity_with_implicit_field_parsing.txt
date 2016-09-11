@@ -11,6 +11,7 @@ import info.archinnov.achilles.generated.function.String_Type;
 import info.archinnov.achilles.generated.function.TestUDTImplicitFieldParsing_Type;
 import info.archinnov.achilles.generated.function.UUID_Type;
 import info.archinnov.achilles.generated.meta.entity.TestEntityWithImplicitFieldParsing_AchillesMeta.ColumnsForFunctions;
+import info.archinnov.achilles.generated.meta.udt.TestUDTImplicitFieldParsing_AchillesMeta;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
 import info.archinnov.achilles.internals.codec.FallThroughCodec;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
@@ -96,7 +97,7 @@ public final class TestEntityWithImplicitFieldParsing_AchillesMeta extends Abstr
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  public static final UDTProperty<TestEntityWithImplicitFieldParsing, TestUDTImplicitFieldParsing> udt = new UDTProperty<TestEntityWithImplicitFieldParsing, TestUDTImplicitFieldParsing>(new FieldInfo<>((TestEntityWithImplicitFieldParsing entity$) -> entity$.getUdt(), (TestEntityWithImplicitFieldParsing entity$, TestUDTImplicitFieldParsing value$) -> entity$.setUdt(value$), "udt", "udt", ColumnType.NORMAL, new ColumnInfo(true), IndexInfo.noIndex()), TestUDTImplicitFieldParsing.class, info.archinnov.achilles.generated.meta.udt.TestUDTImplicitFieldParsing_AchillesMeta.INSTANCE);
+  public static final UDTProperty<TestEntityWithImplicitFieldParsing, TestUDTImplicitFieldParsing_AchillesMeta, TestUDTImplicitFieldParsing> udt = new UDTProperty<TestEntityWithImplicitFieldParsing, TestUDTImplicitFieldParsing_AchillesMeta, TestUDTImplicitFieldParsing>(new FieldInfo<>((TestEntityWithImplicitFieldParsing entity$) -> entity$.getUdt(), (TestEntityWithImplicitFieldParsing entity$, TestUDTImplicitFieldParsing value$) -> entity$.setUdt(value$), "udt", "udt", ColumnType.NORMAL, new ColumnInfo(true), IndexInfo.noIndex()), TestUDTImplicitFieldParsing.class, TestUDTImplicitFieldParsing_AchillesMeta.INSTANCE);
 
   /**
    * Static class to expose "TestEntityWithImplicitFieldParsing_AchillesMeta" fields for <strong>type-safe</strong> function calls */

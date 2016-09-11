@@ -16,51 +16,34 @@
 
 package info.archinnov.achilles.internals.sample_classes.parser.field;
 
-import java.util.List;
-import java.util.Map;
-
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Frozen;
-import info.archinnov.achilles.annotations.JSON;
+import info.archinnov.achilles.annotations.Counter;
+import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.annotations.UDT;
-import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 
-@APUnitTest
-@UDT(keyspace = "test", name = "my_type")
-public class TestUDT {
+@UDT
+public class TestUDTWithPartitionKey {
 
     @Column
-    private String name;
+    private String value;
 
-    @Frozen
+    @PartitionKey
     @Column
-    private List<String> list;
+    private Long count;
 
-    @Frozen
-    @Column
-    private Map<@JSON Integer, String> map;
-
-    public String getName() {
-        return name;
+    public String getValue() {
+        return value;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    public List<String> getList() {
-        return list;
+    public Long getCount() {
+        return count;
     }
 
-    public void setList(List<String> list) {
-        this.list = list;
-    }
-
-    public Map<Integer, String> getMap() {
-        return map;
-    }
-
-    public void setMap(Map<Integer, String> map) {
-        this.map = map;
+    public void setCount(Long count) {
+        this.count = count;
     }
 }

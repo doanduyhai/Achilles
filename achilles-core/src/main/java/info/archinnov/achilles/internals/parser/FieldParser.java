@@ -595,12 +595,6 @@ public class FieldParser {
             this.typeCode = typeCode;
             this.udtMetaSignature = Optional.empty();
         }
-//
-//        public String relationFQCNForUpdate() {
-//            return context.simpleClassName + UPDATE_DSL_SUFFIX + "."
-//                    + context.simpleClassName + UPDATE_COLUMNS_DSL_SUFFIX + "."
-//                    + upperCaseFirst(context.fieldName) + DSL_RELATION_SUFFIX;
-//        }
 
         public String relationClassnameForUpdate() {
             return upperCaseFirst(context.fieldName) + DSL_RELATION_SUFFIX;
@@ -669,11 +663,13 @@ public class FieldParser {
         final public String fieldName;
         final public String quotedCqlColumn;
         final public List<FieldMetaSignature> fieldMetaSignatures;
+        final public boolean isFrozen;
 
-        public UDTMetaSignature(String fieldName, String quotedCqlColumn, List<FieldMetaSignature> fieldMetaSignatures) {
+        public UDTMetaSignature(String fieldName, String quotedCqlColumn, List<FieldMetaSignature> fieldMetaSignatures, boolean isFrozen) {
             this.fieldName = fieldName;
             this.quotedCqlColumn = quotedCqlColumn;
             this.fieldMetaSignatures = fieldMetaSignatures;
+            this.isFrozen = isFrozen;
         }
     }
 

@@ -19,6 +19,7 @@ package info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.dsl.JSONFunctionCallSupport;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
@@ -26,8 +27,8 @@ import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 public class UpdateDSLCodeGen2_2 extends UpdateDSLCodeGen implements JSONFunctionCallSupport {
 
     @Override
-    protected void augmentUpdateRelationClass(TypeSpec.Builder relationClassBuilder, FieldMetaSignature parsingResult,
+    protected void augmentUpdateRelationClass(ParentSignature parentSignature, FieldMetaSignature fieldMeta,
                                               TypeName newTypeName, ReturnType returnType) {
-        buildSetFromJSONToRelationClass(relationClassBuilder, parsingResult, newTypeName, returnType);
+        buildSetFromJSONToRelationClass(parentSignature, fieldMeta, newTypeName, returnType);
     }
 }

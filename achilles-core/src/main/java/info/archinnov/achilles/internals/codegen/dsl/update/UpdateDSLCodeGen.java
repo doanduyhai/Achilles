@@ -19,12 +19,10 @@ package info.archinnov.achilles.internals.codegen.dsl.update;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import javax.lang.model.element.Modifier;
 
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.apt.AptUtils;
@@ -40,7 +38,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
     public static final Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
             (o1, o2) -> o1._2().order.compareTo(o2._2().order);
 
-    protected abstract void augmentUpdateRelationClass(TypeSpec.Builder relationClassBuilder,
+    protected abstract void augmentUpdateRelationClass(ParentSignature parentSignature,
                                                        FieldMetaSignature parsingResult,
                                                        TypeName newTypeName,
                                                        ReturnType returnType);
@@ -178,7 +176,8 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> candidateColumns.contains(x.context.columnType))
-                .forEach(x -> buildUpdateColumnMethods(aptUtils, builder, updateFromClassName, updateColumnsTypeName, x, ReturnType.NEW));
+                .forEach(x -> buildUpdateColumnMethods(ParentSignature.of(aptUtils, builder, updateFromClassName, Optional.empty(), Optional.empty()),
+                        updateColumnsTypeName, x, ReturnType.NEW));
 
         return builder.build();
     }
@@ -201,7 +200,8 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> candidateColumns.contains(x.context.columnType))
-                .forEach(x -> buildUpdateColumnMethods(aptUtils, builder, updateColumnsClassName, updateColumnsTypeName, x, ReturnType.THIS));
+                .forEach(x -> buildUpdateColumnMethods(ParentSignature.of(aptUtils, builder, updateColumnsClassName, Optional.empty(), Optional.empty()),
+                        updateColumnsTypeName, x, ReturnType.THIS));
 
         builder.addMethod(MethodSpec.methodBuilder("where")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -213,46 +213,61 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
     }
 
-    public void buildUpdateColumnMethods(AptUtils aptUtils, TypeSpec.Builder parentBuilder,
-                                          String parentClassName,
-                                          TypeName nextTypeName,
-                                          FieldMetaSignature parsingResult,
-                                          ReturnType returnType) {
+    public void buildUpdateColumnMethods(ParentSignature parentSignature,
+                                         TypeName nextTypeName,
+                                         FieldMetaSignature fieldMeta,
+                                         ReturnType returnType) {
 
-        final ColumnType columnType = parsingResult.context.columnType;
+        final ColumnType columnType = fieldMeta.context.columnType;
         final boolean isCounterColumn = columnType == COUNTER || columnType == STATIC_COUNTER;
-
-        final TypeName rawTargetType = getRawType(parsingResult.targetType);
+        final TypeName rawTargetType = getRawType(fieldMeta.targetType);
 
         if (rawTargetType.equals(LIST)) {
-            buildMethodsForListUpdate(aptUtils, parentBuilder, parentClassName, nextTypeName, parsingResult, returnType);
+            buildMethodsForListUpdate(parentSignature, nextTypeName, fieldMeta, returnType);
         } else if (rawTargetType.equals(SET)) {
-            buildMethodsForSetUpdate(aptUtils, parentBuilder, parentClassName, nextTypeName, parsingResult, returnType);
+            buildMethodsForSetUpdate(parentSignature, nextTypeName, fieldMeta, returnType);
         } else if (rawTargetType.equals(MAP)) {
-            buildMethodsForMapUpdate(aptUtils, parentBuilder, parentClassName, nextTypeName, parsingResult, returnType);
+            buildMethodsForMapUpdate(parentSignature, nextTypeName, fieldMeta, returnType);
         } else if (isCounterColumn) {
-            buildMethodsForCounterUpdate(parentBuilder, parentClassName, nextTypeName, parsingResult, returnType);
+            buildMethodsForCounterUpdate(parentSignature, nextTypeName, fieldMeta, returnType);
         } else {
-            buildMethodForSimpleUpdate(parentBuilder, parentClassName, nextTypeName, parsingResult, returnType);
+            buildMethodForSimpleUpdate(parentSignature, nextTypeName, fieldMeta, returnType);
         }
     }
 
-    public void buildMethodForSimpleUpdate(TypeSpec.Builder parentBuilder, String updateColumnsClassName, TypeName newTypeName,
-                                            FieldMetaSignature parsingResult, ReturnType returnType) {
-        final String fieldName = parsingResult.context.fieldName;
-        final String cqlColumn = parsingResult.context.quotedCqlColumn;
+    public void buildMethodForSimpleUpdate(ParentSignature parentSignature,
+                                           TypeName newTypeName,
+                                           FieldMetaSignature parsingResult,
+                                           ReturnType returnType) {
+
+        final String fieldName = parentSignature.parentFieldName
+                .map(x -> String.format("%s.udtClassProperty.%s",x, parsingResult.context.fieldName))
+                .orElse(parsingResult.context.fieldName);
+
+        final String param = parentSignature.parentFieldName
+                .map(x -> x + "_" + parsingResult.context.fieldName)
+                .orElse(parsingResult.context.fieldName);
+
+        final String cqlColumn = parentSignature.parentQuotedCQLColumn
+                .map(x -> x + "." + parsingResult.context.quotedCqlColumn)
+                .orElse(parsingResult.context.quotedCqlColumn);
+
         final TypeName sourceType = parsingResult.sourceType;
 
+        QueryBuilder
+                .update("")
+                .with()
+                .and(QueryBuilder.set("",""));
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("Set")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ?</strong>", cqlColumn)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, fieldName, Modifier.FINAL)
-                .addStatement("where.with($T.set($S, $T.bindMarker($S)))",
-                        QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addParameter(sourceType, param, Modifier.FINAL)
+                .addStatement("where.with($T.of($S, $T.bindMarker($S)))",
+                        NON_ESCAPING_ASSIGNMENT, cqlColumn, QUERY_BUILDER, cqlColumn)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
@@ -261,20 +276,31 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
             builder.addStatement("return $T.this", newTypeName);
         }
 
-        createRelationClassForColumn(parentBuilder, updateColumnsClassName,
+        createRelationClassForColumn(parentSignature,
                 parsingResult, newTypeName,
                 returnType, Arrays.asList(builder.build()));
     }
 
 
-    public void buildMethodsForListUpdate(AptUtils aptUtils, TypeSpec.Builder parentBuilder, String parentClassName,
-                                            TypeName newTypeName, FieldMetaSignature parsingResult,
-                                            ReturnType returnType) {
-        final String fieldName = parsingResult.context.fieldName;
-        final String param = fieldName + "_element";
-        final String cqlColumn = parsingResult.context.quotedCqlColumn;
-        final TypeName sourceType = parsingResult.sourceType;
-        final TypeName nestedType = aptUtils.extractTypeArgument(sourceType, 0);
+    public void buildMethodsForListUpdate(ParentSignature parentSignature,
+                                          TypeName newTypeName,
+                                          FieldMetaSignature fieldMetaSignature,
+                                          ReturnType returnType) {
+
+        final String fieldName = parentSignature.parentFieldName
+                .map(x -> String.format("%s.udtClassProperty.%s",x, fieldMetaSignature.context.fieldName))
+                .orElse(fieldMetaSignature.context.fieldName);
+
+        final String param = parentSignature.parentFieldName
+                .map(x -> x + "_" + fieldMetaSignature.context.fieldName + "_element")
+                .orElse(fieldMetaSignature.context.fieldName + "_element");
+
+        final String cqlColumn = parentSignature.parentQuotedCQLColumn
+                .map(x -> x + "." + fieldMetaSignature.context.quotedCqlColumn)
+                .orElse(fieldMetaSignature.context.quotedCqlColumn);
+
+        final TypeName sourceType = fieldMetaSignature.sourceType;
+        final TypeName nestedType = parentSignature.aptUtils.extractTypeArgument(sourceType, 0);
 
         List<MethodSpec> updateMethods = new ArrayList<>();
         final MethodSpec.Builder appendTo = MethodSpec.methodBuilder("AppendTo")
@@ -293,11 +319,11 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, fieldName, Modifier.FINAL)
+                .addParameter(sourceType, param, Modifier.FINAL)
                 .addStatement("where.with($T.appendAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
 
@@ -317,11 +343,11 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ? + $L</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, fieldName, Modifier.FINAL)
+                .addParameter(sourceType, param, Modifier.FINAL)
                 .addStatement("where.with($T.prependAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
         final MethodSpec.Builder setAtIndex = MethodSpec.methodBuilder("SetAtIndex")
@@ -360,22 +386,22 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L - ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, fieldName, Modifier.FINAL)
+                .addParameter(sourceType, param, Modifier.FINAL)
                 .addStatement("where.with($T.discardAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
         final MethodSpec.Builder set = MethodSpec.methodBuilder("Set")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ?</strong>", fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, fieldName, Modifier.FINAL)
-                .addStatement("where.with($T.set($S, $T.bindMarker($S)))",
-                        QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addParameter(sourceType, param, Modifier.FINAL)
+                .addStatement("where.with($T.of($S, $T.bindMarker($S)))",
+                        NON_ESCAPING_ASSIGNMENT, cqlColumn, QUERY_BUILDER, cqlColumn)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
@@ -400,29 +426,43 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
             set.addStatement("return $T.this", newTypeName);
         }
 
-        updateMethods.add(appendTo.build());
-        updateMethods.add(appendAllTo.build());
-        updateMethods.add(prependTo.build());
-        updateMethods.add(prependAllTo.build());
-        updateMethods.add(setAtIndex.build());
-        updateMethods.add(removeAtIndex.build());
-        updateMethods.add(removeFrom.build());
-        updateMethods.add(removeAllFrom.build());
+        // Extra update methods only for non frozen collections
+        if (!fieldMetaSignature.context.columnInfo.frozen == true) {
+            updateMethods.add(appendTo.build());
+            updateMethods.add(appendAllTo.build());
+            updateMethods.add(prependTo.build());
+            updateMethods.add(prependAllTo.build());
+            updateMethods.add(setAtIndex.build());
+            updateMethods.add(removeAtIndex.build());
+            updateMethods.add(removeFrom.build());
+            updateMethods.add(removeAllFrom.build());
+        }
+
         updateMethods.add(set.build());
 
-        createRelationClassForColumn(parentBuilder, parentClassName,
-                parsingResult, newTypeName,
+        createRelationClassForColumn(parentSignature,
+                fieldMetaSignature, newTypeName,
                 returnType, updateMethods);
     }
 
-    public void buildMethodsForSetUpdate(AptUtils aptUtils, TypeSpec.Builder parentBuilder, String parentClassName,
-                                            TypeName newTypeName, FieldMetaSignature parsingResult,
-                                            ReturnType returnType) {
-        final String fieldName = parsingResult.context.fieldName;
-        final String param = fieldName + "_element";
-        final String cqlColumn = parsingResult.context.quotedCqlColumn;
-        final TypeName sourceType = parsingResult.sourceType;
-        final TypeName nestedType = aptUtils.extractTypeArgument(sourceType, 0);
+    public void buildMethodsForSetUpdate(ParentSignature parentSignature,
+                                         TypeName newTypeName,
+                                         FieldMetaSignature fieldMetaSignature,
+                                         ReturnType returnType) {
+        final String fieldName = parentSignature.parentFieldName
+                .map(x -> String.format("%s.udtClassProperty.%s",x, fieldMetaSignature.context.fieldName))
+                .orElse(fieldMetaSignature.context.fieldName);
+
+        final String param = parentSignature.parentFieldName
+                .map(x -> x + "_" + fieldMetaSignature.context.fieldName + "_element")
+                .orElse(fieldMetaSignature.context.fieldName + "_element");
+
+        final String cqlColumn = parentSignature.parentQuotedCQLColumn
+                .map(x -> x + "." + fieldMetaSignature.context.quotedCqlColumn)
+                .orElse(fieldMetaSignature.context.quotedCqlColumn);
+
+        final TypeName sourceType = fieldMetaSignature.sourceType;
+        final TypeName nestedType = parentSignature.aptUtils.extractTypeArgument(sourceType, 0);
 
         List<MethodSpec> updateMethods = new ArrayList<>();
         final MethodSpec.Builder addTo = MethodSpec.methodBuilder("AddTo")
@@ -440,11 +480,11 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, fieldName, Modifier.FINAL)
+                .addParameter(sourceType, param, Modifier.FINAL)
                 .addStatement("where.with($T.addAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
         final MethodSpec.Builder removeFrom = MethodSpec.methodBuilder("RemoveFrom")
@@ -462,22 +502,22 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L - ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, fieldName, Modifier.FINAL)
+                .addParameter(sourceType, param, Modifier.FINAL)
                 .addStatement("where.with($T.removeAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
         final MethodSpec.Builder set = MethodSpec.methodBuilder("Set")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ?</strong>", fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, fieldName, Modifier.FINAL)
-                .addStatement("where.with($T.set($S, $T.bindMarker($S)))",
-                        QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addParameter(sourceType, param, Modifier.FINAL)
+                .addStatement("where.with($T.of($S, $T.bindMarker($S)))",
+                        NON_ESCAPING_ASSIGNMENT, cqlColumn, QUERY_BUILDER, cqlColumn)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
@@ -494,27 +534,48 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
             set.addStatement("return $T.this", newTypeName);
         }
 
-        updateMethods.add(addTo.build());
-        updateMethods.add(addAllTo.build());
-        updateMethods.add(removeFrom.build());
-        updateMethods.add(removeAllFrom.build());
+        // Extra update methods only for non frozen collections
+        if (!fieldMetaSignature.context.columnInfo.frozen == true) {
+            updateMethods.add(addTo.build());
+            updateMethods.add(addAllTo.build());
+            updateMethods.add(removeFrom.build());
+            updateMethods.add(removeAllFrom.build());
+        }
+
         updateMethods.add(set.build());
 
-        createRelationClassForColumn(parentBuilder, parentClassName,
-                parsingResult, newTypeName,
+        createRelationClassForColumn(parentSignature,
+                fieldMetaSignature, newTypeName,
                 returnType, updateMethods);
     }
 
-    public void buildMethodsForMapUpdate(AptUtils aptUtils, TypeSpec.Builder parentBuilder, String parentClassName,
-                                                      TypeName newTypeName, FieldMetaSignature parsingResult,
-                                                      ReturnType returnType) {
-        final String fieldName = parsingResult.context.fieldName;
-        final String paramKey = fieldName + "_key";
-        final String paramValue = fieldName + "_value";
-        final String cqlColumn = parsingResult.context.quotedCqlColumn;
-        final TypeName sourceType = parsingResult.sourceType;
-        final TypeName nestedKeyType = aptUtils.extractTypeArgument(sourceType, 0);
-        final TypeName nestedValueType = aptUtils.extractTypeArgument(sourceType, 1);
+    public void buildMethodsForMapUpdate(ParentSignature parentSignature,
+                                         TypeName newTypeName,
+                                         FieldMetaSignature fieldMetaSignature,
+                                         ReturnType returnType) {
+        final String fieldName = parentSignature.parentFieldName
+                .map(x -> String.format("%s.udtClassProperty.%s",x, fieldMetaSignature.context.fieldName))
+                .orElse(fieldMetaSignature.context.fieldName);
+
+        final String paramKey = parentSignature.parentFieldName
+                .map(x -> x + "_" + fieldMetaSignature.context.fieldName + "_key")
+                .orElse(fieldMetaSignature.context.fieldName + "_key");
+
+        final String paramValue = parentSignature.parentFieldName
+                .map(x -> x + "_" + fieldMetaSignature.context.fieldName + "_value")
+                .orElse(fieldMetaSignature.context.fieldName + "_value");
+
+        final String param = parentSignature.parentFieldName
+                .map(x -> x + "_" + fieldMetaSignature.context.fieldName)
+                .orElse(fieldMetaSignature.context.fieldName);
+
+        final String cqlColumn = parentSignature.parentQuotedCQLColumn
+                .map(x -> x + "." + fieldMetaSignature.context.quotedCqlColumn)
+                .orElse(fieldMetaSignature.context.quotedCqlColumn);
+
+        final TypeName sourceType = fieldMetaSignature.sourceType;
+        final TypeName nestedKeyType = parentSignature.aptUtils.extractTypeArgument(sourceType, 0);
+        final TypeName nestedValueType = parentSignature.aptUtils.extractTypeArgument(sourceType, 1);
 
         List<MethodSpec> updateMethods = new ArrayList<>();
         final MethodSpec.Builder putTo = MethodSpec.methodBuilder("PutTo")
@@ -534,11 +595,11 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, fieldName, Modifier.FINAL)
+                .addParameter(sourceType, param, Modifier.FINAL)
                 .addStatement("where.with($T.addAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
         final MethodSpec.Builder removeByKey = MethodSpec.methodBuilder("RemoveByKey")
@@ -558,11 +619,11 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = ?", fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, fieldName, Modifier.FINAL)
-                .addStatement("where.with($T.set($S, $T.bindMarker($S)))",
-                        QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addParameter(sourceType, param, Modifier.FINAL)
+                .addStatement("where.with($T.of($S, $T.bindMarker($S)))",
+                        NON_ESCAPING_ASSIGNMENT, cqlColumn, QUERY_BUILDER, cqlColumn)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
@@ -577,22 +638,29 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
             set.addStatement("return $T.this", newTypeName);
         }
 
-        updateMethods.add(putTo.build());
-        updateMethods.add(addAllTo.build());
-        updateMethods.add(removeByKey.build());
+        // Extra update methods only for non frozen collections
+        if (!fieldMetaSignature.context.columnInfo.frozen == true) {
+            updateMethods.add(putTo.build());
+            updateMethods.add(addAllTo.build());
+            updateMethods.add(removeByKey.build());
+        }
+
         updateMethods.add(set.build());
 
-        createRelationClassForColumn(parentBuilder, parentClassName,
-                parsingResult, newTypeName,
+        createRelationClassForColumn(parentSignature,
+                fieldMetaSignature, newTypeName,
                 returnType, updateMethods);
     }
 
-    public void buildMethodsForCounterUpdate(TypeSpec.Builder parentBuilder, String parentClassName, TypeName newTypeName,
+    public void buildMethodsForCounterUpdate(ParentSignature parentSignature,
+                                             TypeName newTypeName,
                                              FieldMetaSignature parsingResult,
                                              ReturnType returnType) {
-        final String fieldName = parsingResult.context.fieldName;
-        final String param = fieldName + "_increment";
+        final String fieldName =parsingResult.context.fieldName;
+        final String paramIncr = parsingResult.context.fieldName + "_increment";
+        final String paramDecr = parsingResult.context.fieldName + "_decrement";
         final String cqlColumn = parsingResult.context.quotedCqlColumn;
+
         final TypeName sourceType = parsingResult.sourceType;
 
         List<MethodSpec> updateMethods = new ArrayList<>();
@@ -608,11 +676,11 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L + ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, param, Modifier.FINAL)
+                .addParameter(sourceType, paramIncr, Modifier.FINAL)
                 .addStatement("where.with($T.incr($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("boundValues.add($N)", paramIncr)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, paramIncr)
                 .returns(newTypeName);
 
         final MethodSpec.Builder decrOne = MethodSpec.methodBuilder("Decr")
@@ -626,11 +694,11 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = $L - ?</strong>", fieldName, fieldName)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(sourceType, param, Modifier.FINAL)
+                .addParameter(sourceType, paramDecr, Modifier.FINAL)
                 .addStatement("where.with($T.decr($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("boundValues.add($N)", paramDecr)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, paramDecr)
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
@@ -650,22 +718,30 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
         updateMethods.add(decrOne.build());
         updateMethods.add(decr.build());
 
-        createRelationClassForColumn(parentBuilder, parentClassName,
+        createRelationClassForColumn(parentSignature,
                 parsingResult, newTypeName,
                 returnType, updateMethods);
     }
 
 
-    public void createRelationClassForColumn(TypeSpec.Builder parentBuilder, String parentClassName, FieldMetaSignature parsingResult,
+    public void createRelationClassForColumn(ParentSignature parentSignature, FieldMetaSignature fieldSignature,
                                              TypeName newTypeName, ReturnType returnType, List<MethodSpec> methods) {
-        TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + parsingResult.relationClassnameForUpdate());
-        String fieldName = parsingResult.context.fieldName;
-        final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(parsingResult.relationClassnameForUpdate())
+        final AptUtils aptUtils = parentSignature.aptUtils;
+        final String parentClassName = parentSignature.parentClassName;
+        final TypeSpec.Builder parentBuilder = parentSignature.parentBuilder;
+        TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + fieldSignature.relationClassnameForUpdate());
+        String fieldName = fieldSignature.context.fieldName;
+        final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(fieldSignature.relationClassnameForUpdate())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
         methods.forEach(relationClassBuilder::addMethod);
 
-        augmentUpdateRelationClass(relationClassBuilder, parsingResult, newTypeName, returnType);
+        augmentUpdateRelationClass(ParentSignature.of(aptUtils,
+                relationClassBuilder,
+                parentClassName + "." + fieldSignature.relationClassnameForUpdate(),
+                parentSignature.parentQuotedCQLColumn,
+                parentSignature.parentFieldName),
+                fieldSignature, newTypeName, returnType);
 
         final TypeSpec relationClass = relationClassBuilder.build();
 
@@ -675,5 +751,25 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("return new $T()", relationClassTypeName)
                 .returns(relationClassTypeName)
                 .build());
+    }
+
+    public static class ParentSignature {
+        public final AptUtils aptUtils;
+        public final TypeSpec.Builder parentBuilder;
+        public final String parentClassName;
+        public final Optional<String> parentQuotedCQLColumn;
+        public final Optional<String> parentFieldName;
+
+        private ParentSignature(AptUtils aptUtils, TypeSpec.Builder parentBuilder, String parentClassName, Optional<String> parentQuotedCQLColumn, Optional<String> parentFieldName) {
+            this.aptUtils = aptUtils;
+            this.parentBuilder = parentBuilder;
+            this.parentClassName = parentClassName;
+            this.parentQuotedCQLColumn = parentQuotedCQLColumn;
+            this.parentFieldName = parentFieldName;
+        }
+
+        public static ParentSignature of(AptUtils aptUtils, TypeSpec.Builder parentBuilder, String parentClassName, Optional<String> parentQuotedCQLColumn, Optional<String> parentFieldName) {
+            return new ParentSignature(aptUtils, parentBuilder, parentClassName, parentQuotedCQLColumn, parentFieldName);
+        }
     }
 }

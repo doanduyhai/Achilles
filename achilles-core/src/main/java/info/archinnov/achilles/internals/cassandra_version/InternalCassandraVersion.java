@@ -42,7 +42,9 @@ import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeG
 import info.archinnov.achilles.internals.codegen.function.cassandra2_2.FunctionsRegistryCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.function.cassandra3_2.FunctionsRegistryCodeGen3_2;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
+import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
 import info.archinnov.achilles.internals.parser.validator.cassandra3_0.BeanValidator3_0;
+import info.archinnov.achilles.internals.parser.validator.cassandra3_6.NestedTypeValidator3_6;
 
 public enum  InternalCassandraVersion implements BaseCassandraVersion {
 
@@ -202,6 +204,11 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
         }
 
         @Override
+        public NestedTypesValidator nestedTypesValidator() {
+            return NESTED_TYPES_VALIDATOR_3_6;
+        }
+
+        @Override
         public CrudAPICodeGen crudApiCodeGen() {
             return CRUD_API_CODE_GEN_2_2;
         }
@@ -218,7 +225,7 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
 
         @Override
         public UpdateDSLCodeGen updateDslCodeGen() {
-            return UPDATE_DSL_CODE_GEN_2_2;
+            return UPDATE_DSL_CODE_GEN_3_6;
         }
 
         @Override
@@ -247,12 +254,14 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
     private static final SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_2_2 = new SelectWhereDSLCodeGen2_2();
     private static final SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_3_6 = new SelectWhereDSLCodeGen3_6();
     private static final UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_2_2 = new UpdateDSLCodeGen2_2();
+    private static final UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_3_6 = new UpdateDSLCodeGen3_6();
     private static final UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN_2_2 = new UpdateWhereDSLCodeGen2_2();
     private static final UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN_3_0 = new UpdateWhereDSLCodeGen3_0();
     private static final DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN_2_2 = new DeleteWhereDSLCodeGen2_2();
     private static final DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN_3_0 = new DeleteWhereDSLCodeGen3_0();
 
     private static final BeanValidator BEAN_VALIDATOR_3_0 = new BeanValidator3_0();
+    private static final NestedTypesValidator NESTED_TYPES_VALIDATOR_3_6 = new NestedTypeValidator3_6();
     private static final FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN_2_2 = new FunctionsRegistryCodeGen2_2();
     private static final FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN_3_2 = new FunctionsRegistryCodeGen3_2();
 

@@ -17,6 +17,8 @@
 package info.archinnov.achilles.internals.parser.validator.cassandra2_1;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
+import static info.archinnov.achilles.internals.apt.AptUtils.getShortname;
+import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 
 import java.util.List;
 import java.util.Map;
@@ -30,7 +32,10 @@ import info.archinnov.achilles.annotations.Frozen;
 import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
+import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
 import info.archinnov.achilles.type.tuples.*;
 
@@ -67,7 +72,36 @@ public class NestedTypeValidator2_1 extends NestedTypesValidator {
         }
     }
 
-    private AnnotationTree validateNestedType(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
+    @Override
+    public void validateUDT(AptUtils aptUtils, UDTMetaSignature udtMetaSignature, String fieldName, TypeName rawClass) {
+        udtMetaSignature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.isUDT())
+                .forEach(x -> aptUtils.validateTrue(x.udtMetaSignature.get().isFrozen, "Nested udt type %s of field %s.%s should has @Frozen annotation",
+                        getShortname(getRawType(x.sourceType)), getShortname(rawClass), fieldName + "." + x.context.fieldName));
+
+        udtMetaSignature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.context.columnType == ColumnType.COUNTER)
+                .forEach(x -> aptUtils.printError("Counter column %s is not allowed inside UDT type %s", x.context.fieldName, getShortname(rawClass)));
+
+        udtMetaSignature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.context.columnType == ColumnType.PARTITION)
+                .forEach(x -> aptUtils.printError("Partition key column %s is not allowed inside UDT type %s", x.context.fieldName, getShortname(rawClass)));
+
+        udtMetaSignature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.context.columnType == ColumnType.CLUSTERING)
+                .forEach(x -> aptUtils.printError("Clustering column %s is not allowed inside UDT type %s", x.context.fieldName, getShortname(rawClass)));
+
+        udtMetaSignature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.context.columnType == ColumnType.STATIC)
+                .forEach(x -> aptUtils.printError("Static column %s is not allowed inside UDT type %s", x.context.fieldName, getShortname(rawClass)));
+    }
+
+    protected AnnotationTree validateNestedType(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
         final AnnotationTree next = annotationTree.next();
         final TypeMirror nextType = next.getCurrentType();
         if (aptUtils.isCompositeTypeForCassandra(nextType) && !containsAnnotation(next, JSON.class)) {

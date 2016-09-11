@@ -1,1 +1,0 @@
-Add support for type casting in selection clause (CASSANDRA-10310)

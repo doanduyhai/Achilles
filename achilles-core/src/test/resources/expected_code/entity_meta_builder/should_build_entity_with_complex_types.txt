@@ -30,6 +30,7 @@ import info.archinnov.achilles.generated.function.Tuple2_ConsistencyLevel_Intege
 import info.archinnov.achilles.generated.function.Tuple2_Integer_List_String_Type;
 import info.archinnov.achilles.generated.function.UUID_Type;
 import info.archinnov.achilles.generated.meta.entity.TestEntityWithComplexTypes_AchillesMeta.ColumnsForFunctions;
+import info.archinnov.achilles.generated.meta.udt.TestUDT_AchillesMeta;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
 import info.archinnov.achilles.internals.codec.ByteArrayCodec;
 import info.archinnov.achilles.internals.codec.ByteArrayPrimitiveCodec;
@@ -226,7 +227,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
    * </ul>
    */
-  public static final UDTProperty<TestEntityWithComplexTypes, TestUDT> simpleUdt = new UDTProperty<TestEntityWithComplexTypes, TestUDT>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getSimpleUdt(), (TestEntityWithComplexTypes entity$, TestUDT value$) -> entity$.setSimpleUdt(value$), "simpleUdt", "simpleudt", ColumnType.NORMAL, new ColumnInfo(true), IndexInfo.noIndex()), TestUDT.class, info.archinnov.achilles.generated.meta.udt.TestUDT_AchillesMeta.INSTANCE);
+  public static final UDTProperty<TestEntityWithComplexTypes, TestUDT_AchillesMeta, TestUDT> simpleUdt = new UDTProperty<TestEntityWithComplexTypes, TestUDT_AchillesMeta, TestUDT>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getSimpleUdt(), (TestEntityWithComplexTypes entity$, TestUDT value$) -> entity$.setSimpleUdt(value$), "simpleUdt", "simpleudt", ColumnType.NORMAL, new ColumnInfo(true), IndexInfo.noIndex()), TestUDT.class, TestUDT_AchillesMeta.INSTANCE);
 
   /**
    * Meta class for 'listUdt' property <br/>
@@ -237,7 +238,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("unchecked")
-  public static final ListProperty<TestEntityWithComplexTypes, TestUDT, UDTValue> listUdt = new ListProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getListUdt(), (TestEntityWithComplexTypes entity$, List<TestUDT> value$) -> entity$.setListUdt(value$), "listUdt", "listudt", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, UDTValue.class, new UDTProperty<TestEntityWithComplexTypes, TestUDT>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("listUdt", "listudt"), TestUDT.class, info.archinnov.achilles.generated.meta.udt.TestUDT_AchillesMeta.INSTANCE));
+  public static final ListProperty<TestEntityWithComplexTypes, TestUDT, UDTValue> listUdt = new ListProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getListUdt(), (TestEntityWithComplexTypes entity$, List<TestUDT> value$) -> entity$.setListUdt(value$), "listUdt", "listudt", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, UDTValue.class, new UDTProperty<TestEntityWithComplexTypes, TestUDT_AchillesMeta, TestUDT>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("listUdt", "listudt"), TestUDT.class, TestUDT_AchillesMeta.INSTANCE));
 
   /**
    * Meta class for 'mapUdt' property <br/>
@@ -248,7 +249,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings({"serial", "unchecked"})
-  public static final MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue> mapUdt = new MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getMapUdt(), (TestEntityWithComplexTypes entity$, Map<Integer, TestUDT> value$) -> entity$.setMapUdt(value$), "mapUdt", "mapudt", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("mapUdt", "mapudt"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new UDTProperty<TestEntityWithComplexTypes, TestUDT>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("mapUdt", "mapudt"), TestUDT.class, info.archinnov.achilles.generated.meta.udt.TestUDT_AchillesMeta.INSTANCE));
+  public static final MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue> mapUdt = new MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getMapUdt(), (TestEntityWithComplexTypes entity$, Map<Integer, TestUDT> value$) -> entity$.setMapUdt(value$), "mapUdt", "mapudt", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("mapUdt", "mapudt"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new UDTProperty<TestEntityWithComplexTypes, TestUDT_AchillesMeta, TestUDT>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("mapUdt", "mapudt"), TestUDT.class, TestUDT_AchillesMeta.INSTANCE));
 
   /**
    * Meta class for 'okSet' property <br/>

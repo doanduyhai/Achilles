@@ -17,6 +17,9 @@
 package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.findFieldInType;
+import static info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion.V3_6;
+import static info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter.EXPLICIT_ENTITY_FIELD_FILTER;
+import static info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter.EXPLICIT_UDT_FIELD_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -25,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
@@ -41,6 +45,7 @@ import com.squareup.javapoet.ClassName;
 
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
+import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
@@ -48,9 +53,12 @@ import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistry
 import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistry2;
 import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistryWrong;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs;
+import info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
+import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
 import info.archinnov.achilles.type.codec.Codec;
+import info.archinnov.achilles.type.strategy.InsertStrategy;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FieldParserTest extends AbstractTestProcessor {
@@ -1221,6 +1229,179 @@ public class FieldParserTest extends AbstractTestProcessor {
                     .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_jdk8_zoned_date_time.txt"));
         });
         launchTest();
+    }
+
+    @Test
+    public void should_parse_non_frozen_udt() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // private TestUDT nonFrozenUDT;
+            VariableElement elm = findFieldInType(typeElement, "nonFrozenUDT");
+
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo(UDTValue.class.getCanonicalName());
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_non_frozen_udt.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
+    public void should_fail_parsing_non_frozen_nested_udt() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // private TestNonFrozenNestedUDT nonFrozenNestedUDT;
+            VariableElement elm = findFieldInType(typeElement, "nonFrozenNestedUDT");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestCodecRegistryWrong.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("Nested udt type TestUDT of field TestEntityForCodecs.nonFrozenNestedUDT.udt should has @Frozen annotation");
+    }
+
+    @Test
+    public void should_fail_parsing_counter_in_udt() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // private TestUDTWithCounter udtWithCounter;
+            VariableElement elm = findFieldInType(typeElement, "udtWithCounter");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestCodecRegistryWrong.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("Counter column count is not allowed inside UDT type TestEntityForCodecs");
+    }
+
+    @Test
+    public void should_fail_parsing_partition_key_in_udt() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // private TestUDTWithPartitionKey udtWithPartitionKey;
+            VariableElement elm = findFieldInType(typeElement, "udtWithPartitionKey");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestCodecRegistryWrong.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("Partition key column count is not allowed inside UDT type TestEntityForCodecs");
+    }
+
+    @Test
+    public void should_fail_parsing_clustering_column_in_udt() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // private TestUDTWithClusteringColumn udtWithClusteringColumn;
+            VariableElement elm = findFieldInType(typeElement, "udtWithClusteringColumn");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestCodecRegistryWrong.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("Clustering column count is not allowed inside UDT type TestEntityForCodecs");
+    }
+
+    @Test
+    public void should_fail_parsing_static_column_in_udt() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // private TestUDTWithStaticColumn udtWithStaticColumn;
+            VariableElement elm = findFieldInType(typeElement, "udtWithStaticColumn");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestCodecRegistryWrong.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("Static column count is not allowed inside UDT type TestEntityForCodecs");
+    }
+
+    @Test
+    public void should_fail_parsing_non_frozen_collection_in_udt() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // private TestUDTWithNonFrozenCollection udtWithNonFrozenCollection;
+            VariableElement elm = findFieldInType(typeElement, "udtWithNonFrozenCollection");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestCodecRegistryWrong.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("Collection type List of field TestEntityForCodecs.udtWithNonFrozenCollection.li should has @Frozen annotation because TestEntityForCodecs.udtWithNonFrozenCollection is a non-frozen UDT");
     }
 
     public static class MyCodec implements Codec<List<String>, String>, Serializable {

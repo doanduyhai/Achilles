@@ -14,14 +14,35 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.config;
+package info.archinnov.achilles.internals.sample_classes.parser.field;
 
-import info.archinnov.achilles.annotations.CompileTimeConfig;
-import info.archinnov.achilles.type.CassandraVersion;
-import info.archinnov.achilles.type.strategy.ColumnMappingStrategy;
+import java.util.List;
 
-@CompileTimeConfig(cassandraVersion = CassandraVersion.CASSANDRA_3_6,
-        columnMappingStrategy = ColumnMappingStrategy.IMPLICIT,
-        projectName = "IT_3_6")
-public interface AchillesConfig {
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.UDT;
+
+@UDT
+public class TestUDTWithNonFrozenCollection {
+
+    @Column
+    private String name;
+
+    @Column
+    private List<String> li;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<String> getLi() {
+        return li;
+    }
+
+    public void setLi(List<String> li) {
+        this.li = li;
+    }
 }

@@ -380,6 +380,10 @@ public class AptUtils {
         return HAS_ECJ_CLASSES && (executableElement instanceof ExecutableElementImpl);
     }
 
+    public static String getShortname(TypeName typeName) {
+        return typeName.toString().replaceAll("[^.]+\\.", "");
+    }
+
     /**
      *
      * INSTANCE METHODS

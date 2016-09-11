@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internals.parser;
 
+import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
 import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
@@ -24,17 +25,14 @@ import java.util.Optional;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
-import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
+import info.archinnov.achilles.annotations.Frozen;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.meta.UDTMetaCodeGen;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
-import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
@@ -59,20 +57,25 @@ public class UDTParser extends AbstractBeanParser {
             final List<FieldMetaSignature> parsingResults = parseFields(typeElement, fieldParser, context.entityContext.globalContext);
             TypeSpec udtClassPropertyCode = udtMetaCodeGen.buildUDTClassProperty(typeElement, context.entityContext, parsingResults);
             context.addUDTMeta(rawUdtTypeName, udtClassPropertyCode);
-            context.addUDTMetaSignature(rawUdtTypeName, new UDTMetaSignature(context.fieldName, context.quotedCqlColumn, parsingResults));
+            final boolean isFrozen = containsAnnotation(annotationTree, Frozen.class);
+            final UDTMetaSignature udtMetaSignature = new UDTMetaSignature(context.fieldName, context.quotedCqlColumn, parsingResults, isFrozen);
+            context.entityContext.globalContext.nestedTypesValidator().validateUDT(aptUtils, udtMetaSignature, context.fieldName, context.entityRawType);
+            context.addUDTMetaSignature(rawUdtTypeName, udtMetaSignature);
         }
 
         Optional<UDTMetaSignature> udtMetaSignature = Optional.of(context.getUDTMetaSignature(rawUdtTypeName));
 
-        CodeBlock typeCode = CodeBlock.builder().add("new $T<$T, $T>($L, $T.class, $L.INSTANCE)",
+        TypeName udtClassMetaTypeName = ClassName.get(UDT_META_PACKAGE, typeElement.getSimpleName() + META_SUFFIX);
+        CodeBlock typeCode = CodeBlock.builder().add("new $T<$T, $T, $T>($L, $T.class, $T.INSTANCE)",
                 UDT_PROPERTY,
                 context.entityRawType,
+                udtClassMetaTypeName,
                 rawUdtTypeName.box(),
                 context.fieldInfoCode,
                 rawUdtTypeName.box(),
-                UDT_META_PACKAGE + "." + typeElement.getSimpleName() + META_SUFFIX)
+                udtClassMetaTypeName)
                 .build();
-        final ParameterizedTypeName propertyType = genericType(UDT_PROPERTY, context.entityRawType, rawUdtTypeName);
+        final ParameterizedTypeName propertyType = genericType(UDT_PROPERTY, context.entityRawType, udtClassMetaTypeName, rawUdtTypeName);
         return new FieldMetaSignature(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
                 udtTypeName, JAVA_DRIVER_UDT_VALUE_TYPE, propertyType, typeCode, udtMetaSignature);
     }

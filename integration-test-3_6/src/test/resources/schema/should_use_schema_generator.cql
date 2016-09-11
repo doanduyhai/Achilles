@@ -1,8 +1,17 @@
+CREATE TYPE IF NOT EXISTS test.adress_udt(
+		street text,
+		number int);
 CREATE TYPE IF NOT EXISTS test.layer2(
 		layer text,
 		layer3 frozen<test.layer3>);
 CREATE TYPE IF NOT EXISTS test.layer3(
 		layer text);
+CREATE TYPE IF NOT EXISTS test.non_frozen_udt(
+		val text,
+		li frozen<list<text>>,
+		se frozen<set<text>>,
+		ma frozen<map<int, text>>,
+		address frozen<it_3_6.adress_udt>);
 CREATE TYPE IF NOT EXISTS test.my_type(
 		name text,
 		list list<text>,
@@ -178,6 +187,11 @@ CREATE TABLE IF NOT EXISTS non_existing.test_table(
 		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.non_existing_table(
 		id bigint,
+		value text,
+		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS it_3_6.non_frozen_udt(
+		id bigint,
+		nonfrozen it_3_6.non_frozen_udt,
 		value text,
 		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.entitywithsimplepartitionkey(

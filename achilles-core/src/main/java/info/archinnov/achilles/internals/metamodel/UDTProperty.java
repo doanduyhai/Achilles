@@ -46,16 +46,16 @@ import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
 
-public class UDTProperty<ENTITY, A> extends AbstractProperty<ENTITY, A, UDTValue>
+public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A> extends AbstractProperty<ENTITY, A, UDTValue>
         implements InjectUserAndTupleTypeFactory, InjectBeanFactory, InjectKeyspace {
 
     public static final TypeToken<UDTValue> UDT_VALUE_TYPE_TOKEN = new TypeToken<UDTValue>() {
     };
     private static final Logger LOGGER = LoggerFactory.getLogger(UDTProperty.class);
     public final Class<A> valueClass;
-    public final AbstractUDTClassProperty<A> udtClassProperty;
+    public final UDT_META udtClassProperty;
 
-    public UDTProperty(FieldInfo<ENTITY, A> fieldInfo, Class<A> valueClass, AbstractUDTClassProperty<A> udtClassProperty) {
+    public UDTProperty(FieldInfo<ENTITY, A> fieldInfo, Class<A> valueClass, UDT_META udtClassProperty) {
         super(TypeToken.of(valueClass), UDT_VALUE_TYPE_TOKEN, fieldInfo);
         this.valueClass = valueClass;
         this.udtClassProperty = udtClassProperty;

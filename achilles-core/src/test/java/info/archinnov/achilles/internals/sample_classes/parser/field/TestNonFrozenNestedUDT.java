@@ -16,51 +16,33 @@
 
 package info.archinnov.achilles.internals.sample_classes.parser.field;
 
-import java.util.List;
-import java.util.Map;
-
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Frozen;
-import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 
 @APUnitTest
-@UDT(keyspace = "test", name = "my_type")
-public class TestUDT {
+@UDT(keyspace = "test", name = "non_frozen_nested_udt")
+public class TestNonFrozenNestedUDT {
 
     @Column
-    private String name;
+    private String val;
 
-    @Frozen
     @Column
-    private List<String> list;
+    private TestUDT udt;
 
-    @Frozen
-    @Column
-    private Map<@JSON Integer, String> map;
-
-    public String getName() {
-        return name;
+    public String getVal() {
+        return val;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setVal(String val) {
+        this.val = val;
     }
 
-    public List<String> getList() {
-        return list;
+    public TestUDT getUdt() {
+        return udt;
     }
 
-    public void setList(List<String> list) {
-        this.list = list;
-    }
-
-    public Map<Integer, String> getMap() {
-        return map;
-    }
-
-    public void setMap(Map<Integer, String> map) {
-        this.map = map;
+    public void setUdt(TestUDT udt) {
+        this.udt = udt;
     }
 }

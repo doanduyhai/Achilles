@@ -28,10 +28,13 @@ import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
+import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 
 public abstract class NestedTypesValidator {
 
     public abstract void validate(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass);
+    public abstract void validateUDT(AptUtils aptUtils, UDTMetaSignature udtMetaSignature, String fieldName, TypeName rawClass);
 
     public void validateMapKeys(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {
         final TypeMirror currentType = aptUtils.erasure(annotationTree.getCurrentType());

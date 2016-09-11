@@ -24,10 +24,13 @@ import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
+import com.datastax.driver.core.schemabuilder.UDTType;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
@@ -81,7 +84,14 @@ public class SchemaCreator {
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.normalColumns) {
-            table.addColumn(x.fieldInfo.quotedCqlColumn, x.buildType());
+            final DataType dataType = x.buildType();
+
+            if (!x.fieldInfo.columnInfo.frozen && (dataType instanceof UserType)) {
+                final String udtLiteral = dataType.toString().replaceAll("frozen<(.+)>", "$1");
+                table.addUDTColumn(x.fieldInfo.quotedCqlColumn, SchemaBuilder.udtLiteral(udtLiteral));
+            } else {
+                table.addColumn(x.fieldInfo.quotedCqlColumn, dataType);
+            }
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.counterColumns) {

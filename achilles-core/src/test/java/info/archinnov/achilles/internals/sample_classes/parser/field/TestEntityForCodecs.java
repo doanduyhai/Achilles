@@ -217,6 +217,27 @@ public class TestEntityForCodecs {
     @Frozen
     private TestNestedUDT nestedUDT;
 
+    @Column
+    private TestNonFrozenNestedUDT nonFrozenNestedUDT;
+
+    @Column
+    private TestUDT nonFrozenUDT;
+
+    @Column
+    private TestUDTWithCounter udtWithCounter;
+
+    @Column
+    private TestUDTWithPartitionKey udtWithPartitionKey;
+
+    @Column
+    private TestUDTWithClusteringColumn udtWithClusteringColumn;
+
+    @Column
+    private TestUDTWithStaticColumn udtWithStaticColumn;
+
+    @Column
+    private TestUDTWithNonFrozenCollection udtWithNonFrozenCollection;
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -676,6 +697,62 @@ public class TestEntityForCodecs {
 
     public void setNestedUDT(TestNestedUDT nestedUDT) {
         this.nestedUDT = nestedUDT;
+    }
+
+    public TestNonFrozenNestedUDT getNonFrozenNestedUDT() {
+        return nonFrozenNestedUDT;
+    }
+
+    public void setNonFrozenNestedUDT(TestNonFrozenNestedUDT nonFrozenNestedUDT) {
+        this.nonFrozenNestedUDT = nonFrozenNestedUDT;
+    }
+
+    public TestUDT getNonFrozenUDT() {
+        return nonFrozenUDT;
+    }
+
+    public void setNonFrozenUDT(TestUDT nonFrozenUDT) {
+        this.nonFrozenUDT = nonFrozenUDT;
+    }
+
+    public TestUDTWithCounter getUdtWithCounter() {
+        return udtWithCounter;
+    }
+
+    public void setUdtWithCounter(TestUDTWithCounter udtWithCounter) {
+        this.udtWithCounter = udtWithCounter;
+    }
+
+    public TestUDTWithPartitionKey getUdtWithPartitionKey() {
+        return udtWithPartitionKey;
+    }
+
+    public void setUdtWithPartitionKey(TestUDTWithPartitionKey udtWithPartitionKey) {
+        this.udtWithPartitionKey = udtWithPartitionKey;
+    }
+
+    public TestUDTWithClusteringColumn getUdtWithClusteringColumn() {
+        return udtWithClusteringColumn;
+    }
+
+    public void setUdtWithClusteringColumn(TestUDTWithClusteringColumn udtWithClusteringColumn) {
+        this.udtWithClusteringColumn = udtWithClusteringColumn;
+    }
+
+    public TestUDTWithStaticColumn getUdtWithStaticColumn() {
+        return udtWithStaticColumn;
+    }
+
+    public void setUdtWithStaticColumn(TestUDTWithStaticColumn udtWithStaticColumn) {
+        this.udtWithStaticColumn = udtWithStaticColumn;
+    }
+
+    public TestUDTWithNonFrozenCollection getUdtWithNonFrozenCollection() {
+        return udtWithNonFrozenCollection;
+    }
+
+    public void setUdtWithNonFrozenCollection(TestUDTWithNonFrozenCollection udtWithNonFrozenCollection) {
+        this.udtWithNonFrozenCollection = udtWithNonFrozenCollection;
     }
 }
 

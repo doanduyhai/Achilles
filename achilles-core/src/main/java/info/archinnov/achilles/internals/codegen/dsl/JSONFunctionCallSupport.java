@@ -28,6 +28,8 @@ import com.squareup.javapoet.*;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ClassSignatureInfo;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
+import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen.ParentSignature;
 import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
@@ -82,22 +84,28 @@ public interface JSONFunctionCallSupport {
 
         return toJSONFunctionBuilder.addStatement("return $L", toJSONAnonClassBuilder.build()).build();
     }
-    default void buildSetFromJSONToRelationClass(TypeSpec.Builder relationClassBuilder,
-                                                 FieldMetaSignature parsingResult,
+
+    default void buildSetFromJSONToRelationClass(ParentSignature parentSignature,
+                                                 FieldMetaSignature fieldMeta,
                                                  TypeName newTypeName,
                                                  ReturnType returnType) {
 
-        final String fieldName = parsingResult.context.fieldName;
-        final String cqlColumn = parsingResult.context.quotedCqlColumn;
+        final String param = parentSignature.parentFieldName
+                .map(x -> x + "_" + fieldMeta.context.fieldName + "_element")
+                .orElse(fieldMeta.context.fieldName + "_element");
+
+        final String cqlColumn = parentSignature.parentQuotedCQLColumn
+                .map(x -> x + "." + fieldMeta.context.quotedCqlColumn)
+                .orElse(fieldMeta.context.quotedCqlColumn);
 
         final MethodSpec.Builder setFromJSONMethodBuilder = MethodSpec.methodBuilder("Set_FromJSON")
                 .addJavadoc("Generate an UPDATE FROM ... <strong>SET $L = fromJson(?)</strong>", cqlColumn)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(STRING, fieldName, Modifier.FINAL)
-                .addStatement("where.with($T.set($S, $T.fromJson($T.bindMarker($S))))",
-                        QUERY_BUILDER, cqlColumn, QUERY_BUILDER, QUERY_BUILDER, cqlColumn)
-                .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add($N)", fieldName)
+                .addParameter(STRING, param, Modifier.FINAL)
+                .addStatement("where.with($T.of($S, $T.fromJson($T.bindMarker($S))))",
+                        NON_ESCAPING_ASSIGNMENT, cqlColumn, QUERY_BUILDER, QUERY_BUILDER, cqlColumn)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add($N)", param)
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
@@ -105,7 +113,7 @@ public interface JSONFunctionCallSupport {
         } else {
             setFromJSONMethodBuilder.addStatement("return $T.this", newTypeName);
         }
-        relationClassBuilder.addMethod(setFromJSONMethodBuilder.build());
+        parentSignature.parentBuilder.addMethod(setFromJSONMethodBuilder.build());
     }
 
     default void buildEqFromJSONToRelationClass(TypeSpec.Builder relationClassBuilder,

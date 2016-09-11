@@ -176,7 +176,11 @@ package info.archinnov.achilles.type;
  *             </td>
  *         </tr>
  *         <tr>
- *             <td>Support for non-frozen user-defined types, updating individual fields of user-defined types</td>
+ *             <td>
+ *                 Support for non-frozen user-defined types, updating individual fields of user-defined types
+ *                 <br/>
+ *                 <strong>Remark: collections inside non-frozen UDT MUST be set as frozen</strong>
+ *             </td>
  *             <td>
  *                 <ul>
  *                     <li>manager.dsl().update().fromBaseTable().userUDT().firstname_Set(...)</li>
@@ -231,7 +235,11 @@ public enum CassandraVersion {
      * <br/>
      * <ul>
      *     <li>Allow per-partition LIMIT clause in CQL (CASSANDRA-7017)</li>
-     *     <li>Support for non-frozen user-defined types, updating individual fields of user-defined types (CASSANDRA-7423)</li>
+     *     <li>
+     *         Support for non-frozen user-defined types, updating individual fields of user-defined types (CASSANDRA-7423)
+     *         <br/>
+     *         <strong>Remark: collections inside non-frozen UDT MUST be set as frozen</strong>
+     *     </li>
      * </ul>
      *
      */

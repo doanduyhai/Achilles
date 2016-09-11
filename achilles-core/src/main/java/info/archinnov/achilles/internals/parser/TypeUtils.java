@@ -304,6 +304,7 @@ public class TypeUtils {
     public static final TypeName PREPARED_STATEMENT = ClassName.get(PreparedStatement.class);
     public static final TypeName REGULAR_STATEMENT = ClassName.get(RegularStatement.class);
     public static final ClassName TYPE_TOKEN = ClassName.get(TypeToken.class);
+    public static final ClassName NON_ESCAPING_ASSIGNMENT = ClassName.get(NonEscapingSetAssignment.class);
 
     // Java 8 Types
     public static final TypeName JDK_ZONED_DATE_TIME = ClassName.get(ZonedDateTime.class);
