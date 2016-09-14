@@ -30,11 +30,39 @@ import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSig
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen.ParentSignature;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public interface JSONFunctionCallSupport {
+
+    default TypeSpec buildSelectFromJSON(EntityMetaCodeGen.EntityMetaSignature signature, String firstPartitionKey) {
+        TypeName selectWhereJSONTypeName = ClassName.get(DSL_PACKAGE, signature.selectWhereJSONReturnType(firstPartitionKey));
+
+        TypeName selectEndJSONTypeName = ClassName.get(DSL_PACKAGE, signature.selectEndJSONReturnType());
+
+        return TypeSpec.classBuilder(signature.className + SELECT_FROM_JSON_DSL_SUFFIX)
+                .superclass(ABSTRACT_SELECT_FROM_JSON)
+                .addModifiers(Modifier.PUBLIC)
+                .addMethod(MethodSpec.constructorBuilder()
+                        .addParameter(SELECT_DOT_WHERE, "where")
+                        .addStatement("super(where)")
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("where")
+                        .addJavadoc("Generate a SELECT ... FROM ... <strong>WHERE</strong> ...")
+                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                        .addStatement("return new $T(where)", selectWhereJSONTypeName)
+                        .returns(selectWhereJSONTypeName)
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("without_WHERE_Clause")
+                        .addJavadoc("Generate a SELECT statement <strong>without</strong> the <strong>WHERE</strong> clause")
+                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                        .addStatement("return new $T(where)", selectEndJSONTypeName)
+                        .returns(selectEndJSONTypeName)
+                        .build())
+                .build();
+    }
 
     default MethodSpec buildToJSONFunctionCall() {
         final TypeName STRING_TYPE = TypeUtils.determineTypeForFunctionParam(STRING);

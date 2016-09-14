@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.codegen.dsl;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -32,6 +31,8 @@ import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMe
 import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
+import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
+import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.utils.NamingHelper;
 import info.archinnov.achilles.type.tuples.Tuple2;
@@ -54,6 +55,9 @@ public abstract class AbstractDSLCodeGen {
 
     public static final Comparator<Tuple4<String, String, TypeName, ClusteringColumnInfo>> TUPLE4_CLUSTERING_COLUMN_SORTER =
             (o1, o2) -> o1._4().order.compareTo(o2._4().order);
+
+    public static final Comparator<IndexFieldSignatureInfo> INDEX_FIELD_SIGNATURE_SORTER =
+            (o1, o2) -> o1.fieldName.compareTo(o2.fieldName);
 
     public List<ClassSignatureInfo> buildClassesSignatureForWhereClause(EntityMetaSignature signature,
                                                                                   ClassSignatureParams classSignatureParams,
@@ -105,54 +109,6 @@ public abstract class AbstractDSLCodeGen {
                 .build();
 
     }
-
-//    public static MethodSpec buildColumnRelation(String relation, TypeName nextType, FieldSignatureInfo fieldInfo) {
-//        final String methodName = upperCaseFirst(relation);
-//        final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
-//                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fieldInfo.quotedCqlColumn, relationToSymbolForJavaDoc(relation))
-//                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
-//                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-//                .addParameter(fieldInfo.typeName, fieldInfo.fieldName)
-//                .addStatement("where.and($T.$L($S, $T.bindMarker($S)))",
-//                        QUERY_BUILDER, relation, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
-//                .addStatement("boundValues.add($N)", fieldInfo.fieldName)
-//                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, fieldInfo.fieldName)
-//                .returns(nextType);
-//
-//        return builder.addStatement("return new $T(where)", nextType).build();
-//    }
-//
-//    public static MethodSpec buildColumnInVarargs(TypeName nextType, FieldSignatureInfo fieldInfo) {
-//        final String methodName = "IN";
-//        final String param = fieldInfo.fieldName;
-//        final TypeName paramTypeName = fieldInfo.typeName;
-//        final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
-//                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L IN ?</strong>", fieldInfo.quotedCqlColumn)
-//                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
-//                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-//                .addParameter(ArrayTypeName.of(paramTypeName), param)
-//                .varargs()
-//                .addStatement("$T.validateTrue($T.isNotEmpty($L), \"Varargs for field '%s' should not be null/empty\", $S)",
-//                        VALIDATOR, ARRAYS_UTILS, fieldInfo.fieldName, fieldInfo.fieldName)
-//                .addStatement("where.and($T.in($S,$T.bindMarker($S)))",
-//                        QUERY_BUILDER, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn);
-//
-//        if (paramTypeName.isPrimitive()) {
-//            builder.addStatement("final $T varargs = $T.<Object>asList(($T[])$L)", LIST_OBJECT, ARRAYS, paramTypeName, param)
-//                    .addStatement("final $T encodedVarargs = $T.stream(($T[])$L).mapToObj(x -> meta.$L.encodeFromJava(x)).collect($T.toList())",
-//                            LIST_OBJECT, ARRAYS, paramTypeName, param, param, COLLECTORS);
-//        } else {
-//            builder.addStatement("final $T varargs = $T.<Object>asList((Object[])$L)", LIST_OBJECT, ARRAYS, param)
-//                    .addStatement("final $T encodedVarargs = $T.<$T>stream(($T[])$L).map(x -> meta.$L.encodeFromJava(x)).collect($T.toList())",
-//                            LIST_OBJECT, ARRAYS, paramTypeName, paramTypeName, param, param, COLLECTORS);
-//        }
-//
-//        builder.addStatement("boundValues.add(varargs)")
-//                .addStatement("encodedValues.add(encodedVarargs)")
-//                .returns(nextType);
-//
-//        return builder.addStatement("return new $T(where)", nextType).build();
-//    }
 
     public MethodSpec buildGetThis(TypeName currentType) {
         return MethodSpec
@@ -321,7 +277,14 @@ public abstract class AbstractDSLCodeGen {
                 .collect(toList()));
     }
 
-
+    public List<IndexFieldSignatureInfo> getIndexedColsSignatureInfo(List<FieldMetaSignature> parsingResults) {
+        return new ArrayList<>(parsingResults
+                .stream()
+                .filter(x -> x.context.indexInfo.type != IndexType.NONE)
+                .map(x -> IndexFieldSignatureInfo.of(x.context.fieldName, x.context.cqlColumn, x.sourceType, x.context.indexInfo))
+                .sorted(INDEX_FIELD_SIGNATURE_SORTER)
+                .collect(toList()));
+    }
 
     public static String relationToSymbolForJavaDoc(String relation) {
         switch (relation) {
@@ -370,6 +333,26 @@ public abstract class AbstractDSLCodeGen {
 
         public static FieldSignatureInfo of(String fieldName, String cqlColumn, TypeName typeName) {
             return new FieldSignatureInfo(fieldName, cqlColumn, typeName);
+        }
+    }
+
+    public static class IndexFieldSignatureInfo {
+        public final String fieldName;
+        public final String cqlColumn;
+        public final String quotedCqlColumn;
+        public final TypeName typeName;
+        public final IndexInfo indexInfo;
+
+        private IndexFieldSignatureInfo(String fieldName, String cqlColumn, TypeName typeName, IndexInfo indexInfo) {
+            this.fieldName = fieldName;
+            this.cqlColumn = cqlColumn;
+            this.quotedCqlColumn = NamingHelper.maybeQuote(cqlColumn);
+            this.typeName = typeName;
+            this.indexInfo = indexInfo;
+        }
+
+        public static IndexFieldSignatureInfo of(String fieldName, String cqlColumn, TypeName typeName, IndexInfo indexInfo) {
+            return new IndexFieldSignatureInfo(fieldName, cqlColumn, typeName, indexInfo);
         }
     }
 

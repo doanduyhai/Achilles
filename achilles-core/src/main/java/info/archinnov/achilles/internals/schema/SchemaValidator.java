@@ -90,14 +90,15 @@ public class SchemaValidator {
                     cqlColumn, indexMetadata.getTable().getName()));
         }
 
-        validateBeanMappingTrue(indexInfo.name.equals(indexMetadata.getName()),
+        final String indexName = indexInfo.name;
+        validateBeanMappingTrue(indexName.equals(indexMetadata.getName()),
                 "Index name '%s' for column '%s' of entity '%s' does not match name '%s' in live schema",
-                indexInfo.name, cqlColumn, entityClass, indexMetadata.getName());
+                indexName, cqlColumn, entityClass, indexMetadata.getName());
 
         final String indexTarget = indexMetadata.getTarget().toLowerCase();
-        final boolean isIndexOnFullCollection = indexTarget.contains(format("full(%s)", indexInfo.name));
-        final boolean isIndexOnMapEntries = indexTarget.contains(format("entries(%s)", indexInfo.name));
-        final boolean isIndexOnMapKeys = indexTarget.contains(format("keys(%s)", indexInfo.name));
+        final boolean isIndexOnFullCollection = indexTarget.contains(format("full(%s)", cqlColumn));
+        final boolean isIndexOnMapEntries = indexTarget.contains(format("entries(%s)", cqlColumn));
+        final boolean isIndexOnMapKeys = indexTarget.contains(format("keys(%s)", cqlColumn));
         final boolean isCustomIndex = indexMetadata.isCustomIndex();
 
         switch (indexInfo.type) {

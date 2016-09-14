@@ -424,6 +424,6 @@ public class CodecFactoryTest extends AbstractTestProcessor {
     private FieldParsingContext getFieldParsingContext(AptUtils aptUtils, TypeElement typeElement) {
         final EntityParsingContext epc = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), null, GlobalParsingContext.defaultContext());
         return new FieldParsingContext(epc, ClassName.get(aptUtils.erasure(typeElement)),
-                new FieldInfoContext(fieldInfoCode, "field", "column", ColumnType.NORMAL, new ColumnInfo((false))));
+                new FieldInfoContext(fieldInfoCode, "field", "column", ColumnType.NORMAL, new ColumnInfo((false)), indexInfo));
     }
 }

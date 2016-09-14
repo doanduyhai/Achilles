@@ -43,6 +43,7 @@ import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.cassandra_version.CassandraFeature;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
 import info.archinnov.achilles.internals.metamodel.columns.*;
+import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
@@ -506,6 +507,10 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
             return fieldMetaSignatures.stream().filter(x -> x.context.columnType == STATIC || x.context.columnType == STATIC_COUNTER).count() > 0;
         }
 
+        public boolean hasIndex() {
+            return fieldMetaSignatures.stream().filter(x -> x.context.indexInfo.type != IndexType.NONE).count() > 1;
+        }
+
         public boolean isCounterEntity() {
             return fieldMetaSignatures.stream()
                     .filter(x -> x.context.columnType == COUNTER || x.context.columnType == STATIC_COUNTER)
@@ -540,12 +545,24 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
             return className + SELECT_DSL_SUFFIX;
         }
 
+        public String indexSelectClassName() {
+            return className + INDEX_SELECT_DSL_SUFFIX;
+        }
+
         public String selectFromReturnType() {
             return selectClassName() + "." + className + SELECT_FROM_DSL_SUFFIX;
         }
 
+        public String indexSelectFromReturnType() {
+            return indexSelectClassName() + "." + className + SELECT_FROM_DSL_SUFFIX;
+        }
+
         public String selectFromTypedMapReturnType() {
             return selectClassName() + "." + className + SELECT_FROM_TYPED_MAP_DSL_SUFFIX;
+        }
+
+        public String indexSelectFromTypedMapReturnType() {
+            return indexSelectClassName() + "." + className + SELECT_FROM_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String selectFromJSONReturnType() {
@@ -556,20 +573,32 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
             return selectClassName() + "." + className + SELECT_COLUMNS_DSL_SUFFIX;
         }
 
+        public String indexSelectColumnsReturnType() {
+            return indexSelectClassName() + "." + className + SELECT_COLUMNS_DSL_SUFFIX;
+        }
+
         public String selectColumnsTypedMapReturnType() {
             return selectClassName() + "." + className + SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX;
         }
 
-        public String classNameInsideSelectColumns(String className) {
-            return selectColumnsReturnType() + "_" + className;
+        public String indexSelectColumnsTypedMapReturnType() {
+            return indexSelectClassName() + "." + className + SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String selectWhereReturnType(String fieldName) {
             return selectClassName() + "." + className + SELECT_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
         }
 
+        public String indexSelectWhereReturnType() {
+            return indexSelectClassName() + "." + className + SELECT_WHERE_DSL_SUFFIX;
+        }
+
         public String selectWhereTypedMapReturnType(String fieldName) {
             return selectClassName() + "." + className + SELECT_WHERE_TYPED_MAP_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+        }
+
+        public String indexSelectWhereTypedMapReturnType() {
+            return indexSelectClassName() + "." + className + SELECT_WHERE_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String selectWhereJSONReturnType(String fieldName) {
@@ -580,8 +609,16 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
             return selectClassName() + "." + className + SELECT_END_DSL_SUFFIX;
         }
 
+        public String indexSelectEndReturnType() {
+            return indexSelectClassName() + "." + className + SELECT_END_DSL_SUFFIX;
+        }
+
         public String selectEndTypedMapReturnType() {
             return selectClassName() + "." + className + SELECT_END_TYPED_MAP_DSL_SUFFIX;
+        }
+
+        public String indexSelectEndTypedMapReturnType() {
+            return indexSelectClassName() + "." + className + SELECT_END_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String selectEndJSONReturnType() {

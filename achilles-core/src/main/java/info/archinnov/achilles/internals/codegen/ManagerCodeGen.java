@@ -16,12 +16,9 @@
 
 package info.archinnov.achilles.internals.codegen;
 
-import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.CLUSTERING;
-import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.PARTITION;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 
@@ -29,11 +26,8 @@ import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
-import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
-import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.type.tuples.Tuple3;
 
 public class ManagerCodeGen {
 
@@ -57,7 +51,8 @@ public class ManagerCodeGen {
         // DSL
         final TypeSpec.Builder dslClass = TypeSpec.classBuilder(signature.className + DSL_SUFFIX)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildSelectMethod(signature));
+                .addMethod(buildSelectMethod(signature, SELECT_DSL_SUFFIX));
+        classes.add(context.selectDSLCodeGen().buildSelectClass(context, signature));
 
         if (signature.isTable()) {
             dslClass.addMethod(buildDeleteMethod(signature))
@@ -74,9 +69,18 @@ public class ManagerCodeGen {
             }
         }
 
-        classes.add(context.selectDSLCodeGen().buildSelectClass(context, signature));
 
-        // Query
+        // INDEX
+        if (signature.hasIndex() && signature.isTable()) {
+            builder.addMethod(buildINDEX(signature));
+            final TypeSpec.Builder indexClass = TypeSpec.classBuilder(signature.className + INDEX_SUFFIX)
+                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                    .addMethod(buildSelectMethod(signature, INDEX_SELECT_DSL_SUFFIX));
+
+            builder.addType(indexClass.build());
+        }
+
+        // Raw
         final TypeSpec.Builder queryClass = TypeSpec.classBuilder(signature.className + RAW_QUERY_SUFFIX)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
@@ -147,6 +151,21 @@ public class ManagerCodeGen {
         return builder.build();
     }
 
+    private static MethodSpec buildINDEX(EntityMetaSignature signature) {
+        TypeName dslClass = ClassName.get(MANAGER_PACKAGE, signature.className + MANAGER_SUFFIX, signature.className + INDEX_SUFFIX);
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("dsl")
+                .addJavadoc("Provide INDEX query methods: <br/>\n")
+                .addJavadoc("<ul>\n")
+                .addJavadoc("   <li>SELECT</li>\n")
+                .addJavadoc("   <li>ITERATION ON SELECT</li>\n");
+        builder.addJavadoc("</ul>\n")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addStatement("return new $T()", dslClass)
+                .returns(dslClass);
+
+        return builder.build();
+    }
+
     private static MethodSpec buildRawQuery(EntityMetaSignature signature) {
         TypeName dslClass = ClassName.get(MANAGER_PACKAGE, signature.className + MANAGER_SUFFIX, signature.className + RAW_QUERY_SUFFIX);
         return MethodSpec.methodBuilder("raw")
@@ -161,8 +180,8 @@ public class ManagerCodeGen {
                 .build();
     }
 
-    private static MethodSpec buildSelectMethod(EntityMetaSignature signature) {
-        TypeName selectTypeName = ClassName.get(DSL_PACKAGE, signature.className + SELECT_DSL_SUFFIX);
+    private static MethodSpec buildSelectMethod(EntityMetaSignature signature, String suffix) {
+        TypeName selectTypeName = ClassName.get(DSL_PACKAGE, signature.className + suffix);
         return MethodSpec.methodBuilder("select")
                 .addJavadoc("Generate a <strong>SELECT</strong> statement")
                 .addJavadoc("@return $T", selectTypeName)

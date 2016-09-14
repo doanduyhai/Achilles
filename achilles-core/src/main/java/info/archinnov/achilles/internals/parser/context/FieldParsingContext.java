@@ -26,16 +26,13 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.annotations.Enumerated.Encoding;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.parser.CodecFactory;
-import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
-import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.parser.validator.TypeValidator;
-import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 import info.archinnov.achilles.internals.utils.NamingHelper;
 
 public class FieldParsingContext {
@@ -49,6 +46,7 @@ public class FieldParsingContext {
     public final TypeName entityRawType;
     public final ColumnType columnType;
     public final ColumnInfo columnInfo;
+    public final IndexInfo indexInfo;
     public boolean buildExtractor;
 
     public static FieldParsingContext forConfig(GlobalParsingContext parsingContext, TypeElement typeElement, TypeName typeName, String className, String fieldName) {
@@ -62,6 +60,7 @@ public class FieldParsingContext {
         this.entityContext = new EntityParsingContext(typeElement, typeName, parsingContext.namingStrategy, parsingContext);
         this.columnType = null;
         this.columnInfo = null;
+        this.indexInfo = null;
         this.cqlColumn = null;
         this.quotedCqlColumn = null;
         this.entityRawType = null;
@@ -76,6 +75,7 @@ public class FieldParsingContext {
         this.entityContext = entityContext;
         this.columnType = fieldInfoContext.columnType;
         this.columnInfo = fieldInfoContext.columnInfo;
+        this.indexInfo = fieldInfoContext.indexInfo;
         this.className = entityContext.className;
         this.simpleClassName = className.replaceAll("([^.]+\\.)" ,"");
         this.cqlColumn = fieldInfoContext.cqlColumn;
@@ -92,14 +92,14 @@ public class FieldParsingContext {
         return new FieldParsingContext(entityContext, entityRawType, new FieldInfoContext(
                 CodeBlock.builder().add("$T.<$T, $T> of($S, $S)", FIELD_INFO, entityType, sourceType,
                         fieldName, cqlColumn).build(),
-                fieldName, cqlColumn, columnType, columnInfo), false);
+                fieldName, cqlColumn, columnType, columnInfo, indexInfo), false);
     }
 
     public FieldParsingContext forOptionalType(TypeName entityType, TypeName nestedType) {
         return new FieldParsingContext(entityContext, entityRawType, new FieldInfoContext(
                 CodeBlock.builder().add("$T.<$T, $T> of($S, $S)", FIELD_INFO, entityType, nestedType,
                         fieldName, cqlColumn).build(),
-                fieldName, cqlColumn, columnType, columnInfo), true);
+                fieldName, cqlColumn, columnType, columnInfo, indexInfo), true);
     }
 
     @Override

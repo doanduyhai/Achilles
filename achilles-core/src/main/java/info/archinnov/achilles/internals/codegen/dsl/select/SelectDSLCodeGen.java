@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.internals.cassandra_version.CassandraFeature;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
@@ -58,14 +57,25 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
         TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsReturnType());
         TypeName selectColumnsTypeMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsTypedMapReturnType());
 
+        SelectColumnsSignature signatureForSelectColumns = SelectColumnsSignature
+                .forSelectColumns(signature.selectColumnsReturnType(),
+                        signature.selectColumnsTypedMapReturnType(),
+                        signature.selectFromReturnType(),
+                        signature.className + SELECT_COLUMNS_DSL_SUFFIX);
+
+        SelectColumnsSignature signatureForSelectColumnsTypedMap = SelectColumnsSignature
+                .forSelectColumnsTypedMap(signature.selectColumnsTypedMapReturnType(),
+                        signature.selectFromTypedMapReturnType(),
+                        signature.className + SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX);
+
         final TypeSpec.Builder selectClassBuilder = TypeSpec.classBuilder(signature.selectClassName())
                 .superclass(ABSTRACT_SELECT)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildSelectConstructor(signature))
                 .addField(buildExactEntityMetaField(signature))
                 .addField(buildEntityClassField(signature))
-                .addType(buildSelectColumns(signature))
-                .addType(buildSelectColumnsTypeMap(signature))
+                .addType(buildSelectColumns(signature, signatureForSelectColumns))
+                .addType(buildSelectColumnsTypedMap(signature, signatureForSelectColumnsTypedMap))
                 .addType(buildSelectFrom(signature, firstPartitionKey))
                 .addType(buildSelectFromTypedMap(signature, firstPartitionKey));
 
@@ -111,14 +121,14 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
         return builder.build();
     }
 
-    public TypeSpec buildSelectColumns(EntityMetaSignature signature) {
+    public TypeSpec buildSelectColumns(EntityMetaSignature signature, SelectColumnsSignature classesSignature) {
 
-        TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsReturnType());
-        TypeName selectColumnsTypedMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsTypedMapReturnType());
+        TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, classesSignature.selectColumnsReturnType);
+        TypeName selectColumnsTypedMapTypeName = ClassName.get(DSL_PACKAGE, classesSignature.selectColumnsTypedMapReturnType);
 
-        TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, signature.selectFromReturnType());
+        TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, classesSignature.selectFromReturnType);
 
-        final TypeSpec.Builder selectColumnsBuilder = TypeSpec.classBuilder(signature.className + SELECT_COLUMNS_DSL_SUFFIX)
+        final TypeSpec.Builder selectColumnsBuilder = TypeSpec.classBuilder(classesSignature.selectColumnsClassName)
                 .superclass(ABSTRACT_SELECT_COLUMNS)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
@@ -150,13 +160,13 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
         return selectColumnsBuilder.build();
     }
 
-    public TypeSpec buildSelectColumnsTypeMap(EntityMetaSignature signature) {
+    public TypeSpec buildSelectColumnsTypedMap(EntityMetaSignature signature, SelectColumnsSignature classesSignature) {
 
-        TypeName selectColumnsTypedMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsTypedMapReturnType());
+        TypeName selectColumnsTypedMapTypeName = ClassName.get(DSL_PACKAGE, classesSignature.selectColumnsTypedMapReturnType);
 
-        TypeName selectFromTypedMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectFromTypedMapReturnType());
+        TypeName selectFromTypedMapTypeName = ClassName.get(DSL_PACKAGE, classesSignature.selectFromTypedMapReturnType);
 
-        final TypeSpec.Builder selectColumnsBuilder = TypeSpec.classBuilder(signature.className + SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX)
+        final TypeSpec.Builder selectColumnsBuilder = TypeSpec.classBuilder(classesSignature.selectColumnsClassName)
                 .superclass(ABSTRACT_SELECT_COLUMNS_TYPED_MAP)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
@@ -173,7 +183,7 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
         signature.fieldMetaSignatures
                 .stream()
                 .filter(x -> x.isUDT())
-                .forEach(x -> buildSelectUDTClassAndMethods(selectColumnsBuilder, selectColumnsTypedMapTypeName, signature.selectColumnsTypedMapReturnType(), "", x, "selection", THIS));
+                .forEach(x -> buildSelectUDTClassAndMethods(selectColumnsBuilder, selectColumnsTypedMapTypeName, classesSignature.selectColumnsTypedMapReturnType, "", x, "selection", THIS));
 
         signature.fieldMetaSignatures
                 .stream()
@@ -238,33 +248,6 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                         .addStatement("return new $T(where)", selectEndTypedMapTypeName)
                         .returns(selectEndTypedMapTypeName)
-                        .build())
-                .build();
-    }
-
-    public TypeSpec buildSelectFromJSON(EntityMetaSignature signature, String firstPartitionKey) {
-        TypeName selectWhereJSONTypeName = ClassName.get(DSL_PACKAGE, signature.selectWhereJSONReturnType(firstPartitionKey));
-
-        TypeName selectEndJSONTypeName = ClassName.get(DSL_PACKAGE, signature.selectEndJSONReturnType());
-
-        return TypeSpec.classBuilder(signature.className + SELECT_FROM_JSON_DSL_SUFFIX)
-                .superclass(ABSTRACT_SELECT_FROM_JSON)
-                .addModifiers(Modifier.PUBLIC)
-                .addMethod(MethodSpec.constructorBuilder()
-                        .addParameter(SELECT_DOT_WHERE, "where")
-                        .addStatement("super(where)")
-                        .build())
-                .addMethod(MethodSpec.methodBuilder("where")
-                        .addJavadoc("Generate a SELECT ... FROM ... <strong>WHERE</strong> ...")
-                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                        .addStatement("return new $T(where)", selectWhereJSONTypeName)
-                        .returns(selectWhereJSONTypeName)
-                        .build())
-                .addMethod(MethodSpec.methodBuilder("without_WHERE_Clause")
-                        .addJavadoc("Generate a SELECT statement <strong>without</strong> the <strong>WHERE</strong> clause")
-                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                        .addStatement("return new $T(where)", selectEndJSONTypeName)
-                        .returns(selectEndJSONTypeName)
                         .build())
                 .build();
     }
@@ -449,6 +432,41 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
             return builder.addStatement("return new $T(select)", newTypeName).build();
         } else {
             return builder.addStatement("return this").build();
+        }
+    }
+
+
+    public static class SelectColumnsSignature {
+        public final String selectColumnsReturnType;
+        public final String selectColumnsTypedMapReturnType;
+        public final String selectFromReturnType;
+        public final String selectFromTypedMapReturnType;
+        public final String selectColumnsClassName;
+
+        private SelectColumnsSignature(String selectColumnsReturnType,
+                                       String selectColumnsTypedMapReturnType,
+                                       String selectFromReturnType,
+                                       String selectFromTypedMapReturnType,
+                                       String selectColumnsClassName) {
+            this.selectColumnsReturnType = selectColumnsReturnType;
+            this.selectColumnsTypedMapReturnType = selectColumnsTypedMapReturnType;
+            this.selectFromReturnType = selectFromReturnType;
+            this.selectFromTypedMapReturnType = selectFromTypedMapReturnType;
+            this.selectColumnsClassName = selectColumnsClassName;
+        }
+
+        public static SelectColumnsSignature forSelectColumns(String selectColumnsReturnType,
+                                                              String selectColumnsTypedMapReturnType,
+                                                              String selectFromReturnType,
+                                                              String selectColumnsClassName) {
+
+            return new SelectColumnsSignature(selectColumnsReturnType, selectColumnsTypedMapReturnType, selectFromReturnType, null, selectColumnsClassName);
+        }
+
+        public static SelectColumnsSignature forSelectColumnsTypedMap(String selectColumnsTypedMapReturnType,
+                                                                      String selectFromTypedMapReturnType,
+                                                                      String selectColumnsClassName) {
+            return new SelectColumnsSignature(null, selectColumnsTypedMapReturnType, null, selectFromTypedMapReturnType, selectColumnsClassName);
         }
     }
 }

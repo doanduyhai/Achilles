@@ -38,6 +38,7 @@ import com.squareup.javapoet.TypeName;
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.metamodel.columns.*;
+import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
@@ -68,7 +69,7 @@ public class FieldInfoParser {
 
         final Tuple2<CodeBlock, ColumnType> columnTypeCode = buildColumnType(context.globalContext, elm, fieldName, rawEntityClass);
         final Tuple2<CodeBlock, ColumnInfo> columnInfoCode = buildColumnInfo(context.globalContext, annotationTree, elm, fieldName, rawEntityClass);
-        final CodeBlock indexInfoCode = buildIndexInfo(annotationTree, elm, context);
+        final Tuple2<CodeBlock, IndexInfo> indexInfoCode = buildIndexInfo(annotationTree, elm, context);
 
         CodeBlock getterLambda = CodeBlock.builder()
                 .add("($T entity$$) -> entity$$.$L()", rawEntityClass, getter.getSimpleName().toString())
@@ -81,7 +82,7 @@ public class FieldInfoParser {
         return new FieldInfoContext(CodeBlock.builder()
                 .add("new $T<>($L, $L, $S, $S, $L, $L, $L)", FIELD_INFO, getterLambda, setterLambda,
                         fieldName, cqlColumn, columnTypeCode._1(), columnInfoCode._1(), indexInfoCode)
-                .build(), fieldName, cqlColumn, columnTypeCode._2(), columnInfoCode._2());
+                .build(), fieldName, cqlColumn, columnTypeCode._2(), columnInfoCode._2(), indexInfoCode._2());
     }
 
     protected List<String> deriveGetterName(VariableElement elm) {
@@ -180,10 +181,12 @@ public class FieldInfoParser {
         }
     }
 
-    protected CodeBlock buildIndexInfo(AnnotationTree annotationTree, VariableElement elm, EntityParsingContext context) {
+    protected Tuple2<CodeBlock, IndexInfo> buildIndexInfo(AnnotationTree annotationTree, VariableElement elm, EntityParsingContext context) {
         final CodeBlock.Builder builder = CodeBlock.builder();
         final TypeMirror currentType = aptUtils.erasure(annotationTree.getCurrentType());
         final Optional<TypedMap> indexAnnot = extractTypedMap(annotationTree, Index.class);
+
+        final IndexInfo indexInfo;
 
         final Name fieldName = elm.getSimpleName();
         final Name className = enclosingClass(elm).getQualifiedName();
@@ -191,45 +194,53 @@ public class FieldInfoParser {
         final boolean hasJSON = containsAnnotation(annotationTree, JSON.class);
         if (currentType.getKind().isPrimitive()) {
             if (indexAnnot.isPresent()) {
-                final IndexInfoContext indexInfo = indexAnnot.get()
+                final IndexInfoContext indexInfoContext = indexAnnot.get()
                         .<IndexInfoContext>getTyped("indexInfoContext")
                         .computeIndexName(elm, context);
-                builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, IndexType.NORMAL, indexInfo.indexName,
-                        indexInfo.indexClassName, indexInfo.indexOptions);
+                builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, IndexType.NORMAL, indexInfoContext.indexName,
+                        indexInfoContext.indexClassName, indexInfoContext.indexOptions);
+
+                indexInfo = new IndexInfo(IndexType.NORMAL, indexInfoContext.indexName, indexInfoContext.indexClassName, indexInfoContext.indexOptions);
+
             } else {
                 noIndex(builder);
+                indexInfo = IndexInfo.noIndex();
             }
 
-            return builder.build();
+            return Tuple2.of(builder.build(), indexInfo);
         }
 
         if (aptUtils.isAssignableFrom(List.class, currentType) || aptUtils.isAssignableFrom(Set.class, currentType)) {
             final AnnotationTree next = hasJSON ? annotationTree : annotationTree.next();
             if (indexAnnot.isPresent()) {
-                final IndexInfoContext indexInfo = indexAnnot.get()
+                final IndexInfoContext indexInfoContext = indexAnnot.get()
                         .<IndexInfoContext>getTyped("indexInfoContext")
                         .computeIndexName(elm, context);
-                buildIndexForListOrSet(builder, isFrozen, indexInfo);
+                indexInfo = buildIndexForListOrSet(builder, isFrozen, indexInfoContext);
             } else if (containsAnnotation(next, Index.class)) {
                 final TypedMap typedMap = extractTypedMap(next, Index.class).get();
-                buildIndexForListOrSet(builder, isFrozen, typedMap.<IndexInfoContext>getTyped("indexInfoContext").computeIndexName(elm, context));
+                indexInfo = buildIndexForListOrSet(builder, isFrozen, typedMap.<IndexInfoContext>getTyped("indexInfoContext").computeIndexName(elm, context));
             } else {
                 noIndex(builder);
+                indexInfo = IndexInfo.noIndex();
             }
         } else if (aptUtils.isAssignableFrom(Map.class, currentType)) {
             final AnnotationTree keyAnnotationTree = hasJSON ? annotationTree : annotationTree.next();
             final AnnotationTree valueAnnotationTree = hasJSON ? annotationTree : annotationTree.next().next();
             if (indexAnnot.isPresent()) {
-                final IndexInfoContext indexInfo = indexAnnot.get().<IndexInfoContext>getTyped("indexInfoContext").computeIndexName(elm, context);
+                final IndexInfoContext indexInfoContext = indexAnnot.get().<IndexInfoContext>getTyped("indexInfoContext").computeIndexName(elm, context);
 
                 if (isFrozen) {
-                    IndexType indexType = isBlank(indexInfo.indexClassName) ? IndexType.FULL : IndexType.CUSTOM;
-                    builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfo.indexName,
-                            indexInfo.indexClassName, indexInfo.indexOptions);
+                    IndexType indexType = isBlank(indexInfoContext.indexClassName) ? IndexType.FULL : IndexType.CUSTOM;
+                    builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfoContext.indexName,
+                            indexInfoContext.indexClassName, indexInfoContext.indexOptions);
+
+                    indexInfo = new IndexInfo(indexType, indexInfoContext.indexName, indexInfoContext.indexClassName, indexInfoContext.indexOptions);
                 } else {
-                    IndexType indexType = isBlank(indexInfo.indexClassName) ? IndexType.MAP_ENTRY : IndexType.CUSTOM;
-                    builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfo.indexName,
-                            indexInfo.indexClassName, indexInfo.indexOptions);
+                    IndexType indexType = isBlank(indexInfoContext.indexClassName) ? IndexType.MAP_ENTRY : IndexType.CUSTOM;
+                    builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfoContext.indexName,
+                            indexInfoContext.indexClassName, indexInfoContext.indexOptions);
+                    indexInfo = new IndexInfo(indexType, indexInfoContext.indexName, indexInfoContext.indexClassName, indexInfoContext.indexOptions);
                 }
                 aptUtils.validateFalse(containsAnnotation(keyAnnotationTree, Index.class),
                         "Cannot have @Index on Map AND key type in field '%s' of class '%s'", fieldName, className);
@@ -238,48 +249,57 @@ public class FieldInfoParser {
             } else if (containsAnnotation(keyAnnotationTree, Index.class)) {
                 aptUtils.validateFalse(containsAnnotation(valueAnnotationTree, Index.class),
                         "Cannot have @Index on Map key AND value type in field '%s' of class '%s'", fieldName, className);
-                IndexInfoContext indexInfo = extractTypedMap(keyAnnotationTree, Index.class)
+                IndexInfoContext indexInfoContext = extractTypedMap(keyAnnotationTree, Index.class)
                     .get()
                     .<IndexInfoContext>getTyped("indexInfoContext")
                     .computeIndexName(elm, context);
-                IndexType indexType = isBlank(indexInfo.indexClassName) ? IndexType.MAP_KEY : IndexType.CUSTOM;
-                builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfo.indexName,
-                        indexInfo.indexClassName, indexInfo.indexOptions);
+                IndexType indexType = isBlank(indexInfoContext.indexClassName) ? IndexType.MAP_KEY : IndexType.CUSTOM;
+                builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfoContext.indexName,
+                        indexInfoContext.indexClassName, indexInfoContext.indexOptions);
+                indexInfo = new IndexInfo(indexType, indexInfoContext.indexName, indexInfoContext.indexClassName, indexInfoContext.indexOptions);
+
             } else if (containsAnnotation(valueAnnotationTree, Index.class)) {
                 aptUtils.validateFalse(containsAnnotation(keyAnnotationTree, Index.class),
                         "Cannot have @Index on Map key AND value type in field '%s' of class '%s'", fieldName, className);
-                IndexInfoContext indexInfo = extractTypedMap(valueAnnotationTree, Index.class)
+                IndexInfoContext indexInfoContext = extractTypedMap(valueAnnotationTree, Index.class)
                     .get()
                     .<IndexInfoContext>getTyped("indexInfoContext")
                     .computeIndexName(elm, context);
-                IndexType indexType = isBlank(indexInfo.indexClassName) ? IndexType.COLLECTION : IndexType.CUSTOM;
-                builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfo.indexName,
-                        indexInfo.indexClassName, indexInfo.indexOptions);
+                IndexType indexType = isBlank(indexInfoContext.indexClassName) ? IndexType.COLLECTION : IndexType.CUSTOM;
+                builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfoContext.indexName,
+                        indexInfoContext.indexClassName, indexInfoContext.indexOptions);
+
+                indexInfo = new IndexInfo(indexType, indexInfoContext.indexName, indexInfoContext.indexClassName, indexInfoContext.indexOptions);
             } else {
                 noIndex(builder);
+                indexInfo = IndexInfo.noIndex();
             }
         } else if (indexAnnot.isPresent()) {
-            final IndexInfoContext indexInfo = indexAnnot.get()
+            final IndexInfoContext indexInfoContext = indexAnnot.get()
                     .<IndexInfoContext>getTyped("indexInfoContext")
                     .computeIndexName(elm, context);
-            IndexType indexType = isBlank(indexInfo.indexClassName) ? IndexType.NORMAL : IndexType.CUSTOM;
-            builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfo.indexName,
-                    indexInfo.indexClassName, indexInfo.indexOptions);
+            IndexType indexType = isBlank(indexInfoContext.indexClassName) ? IndexType.NORMAL : IndexType.CUSTOM;
+            builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfoContext.indexName,
+                    indexInfoContext.indexClassName, indexInfoContext.indexOptions);
+            indexInfo = new IndexInfo(indexType, indexInfoContext.indexName, indexInfoContext.indexClassName, indexInfoContext.indexOptions);
         } else {
             noIndex(builder);
+            indexInfo = IndexInfo.noIndex();
         }
-        return builder.build();
+        return Tuple2.of(builder.build(), indexInfo);
     }
 
-    private void buildIndexForListOrSet(CodeBlock.Builder builder, boolean isFrozen, IndexInfoContext indexInfo) {
+    private IndexInfo buildIndexForListOrSet(CodeBlock.Builder builder, boolean isFrozen, IndexInfoContext indexInfo) {
         if (isFrozen) {
             IndexType indexType = isBlank(indexInfo.indexClassName) ? IndexType.FULL : IndexType.CUSTOM;
             builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfo.indexName,
                     indexInfo.indexClassName, indexInfo.indexOptions);
+            return new IndexInfo(indexType, indexInfo.indexName, indexInfo.indexClassName, indexInfo.indexOptions);
         } else {
             IndexType indexType = isBlank(indexInfo.indexClassName) ? IndexType.COLLECTION : IndexType.CUSTOM;
             builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfo.indexName,
                     indexInfo.indexClassName, indexInfo.indexOptions);
+            return new IndexInfo(indexType, indexInfo.indexName, indexInfo.indexClassName, indexInfo.indexOptions);
         }
     }
 

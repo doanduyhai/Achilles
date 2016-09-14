@@ -28,6 +28,7 @@ public class IndexInfo {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexInfo.class);
 
+//    public final IndexImpl impl;
     public final IndexType type;
     public final String name;
     public final Optional<String> indexClassName;
