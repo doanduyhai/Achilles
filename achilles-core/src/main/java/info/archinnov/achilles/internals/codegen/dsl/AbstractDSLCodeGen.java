@@ -34,6 +34,7 @@ import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
+import info.archinnov.achilles.internals.parser.FieldParser.IndexMetaSignature;
 import info.archinnov.achilles.internals.utils.NamingHelper;
 import info.archinnov.achilles.type.tuples.Tuple2;
 import info.archinnov.achilles.type.tuples.Tuple4;
@@ -281,7 +282,7 @@ public abstract class AbstractDSLCodeGen {
         return new ArrayList<>(parsingResults
                 .stream()
                 .filter(x -> x.context.indexInfo.type != IndexType.NONE)
-                .map(x -> IndexFieldSignatureInfo.of(x.context.fieldName, x.context.cqlColumn, x.sourceType, x.context.indexInfo))
+                .map(x -> IndexFieldSignatureInfo.of(x.context.fieldName, x.context.cqlColumn, x.sourceType, x.context.indexInfo, x.indexMetaSignature))
                 .sorted(INDEX_FIELD_SIGNATURE_SORTER)
                 .collect(toList()));
     }
@@ -336,23 +337,20 @@ public abstract class AbstractDSLCodeGen {
         }
     }
 
-    public static class IndexFieldSignatureInfo {
-        public final String fieldName;
-        public final String cqlColumn;
-        public final String quotedCqlColumn;
-        public final TypeName typeName;
+    public static class IndexFieldSignatureInfo extends FieldSignatureInfo {
         public final IndexInfo indexInfo;
+        public final IndexMetaSignature indexMetaSignature;
 
-        private IndexFieldSignatureInfo(String fieldName, String cqlColumn, TypeName typeName, IndexInfo indexInfo) {
-            this.fieldName = fieldName;
-            this.cqlColumn = cqlColumn;
-            this.quotedCqlColumn = NamingHelper.maybeQuote(cqlColumn);
-            this.typeName = typeName;
+        private IndexFieldSignatureInfo(String fieldName, String cqlColumn, TypeName typeName, IndexInfo indexInfo,
+                                        IndexMetaSignature indexMetaSignature) {
+            super(fieldName, cqlColumn, typeName);
             this.indexInfo = indexInfo;
+            this.indexMetaSignature = indexMetaSignature;
         }
 
-        public static IndexFieldSignatureInfo of(String fieldName, String cqlColumn, TypeName typeName, IndexInfo indexInfo) {
-            return new IndexFieldSignatureInfo(fieldName, cqlColumn, typeName, indexInfo);
+        public static IndexFieldSignatureInfo of(String fieldName, String cqlColumn, TypeName typeName, IndexInfo indexInfo,
+                                                 IndexMetaSignature indexMetaSignature) {
+            return new IndexFieldSignatureInfo(fieldName, cqlColumn, typeName, indexInfo, indexMetaSignature);
         }
     }
 

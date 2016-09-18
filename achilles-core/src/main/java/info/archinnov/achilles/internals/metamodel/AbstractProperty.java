@@ -144,4 +144,6 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
         sb.append('}');
         return sb.toString();
     }
+
+
 }

@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.codegen.dsl.update.cassandra3_0;
+package info.archinnov.achilles.internals.codegen.index.cassandra2_1;
 
 import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2.UpdateWhereDSLCodeGen2_2;
+import info.archinnov.achilles.internals.codegen.index.IndexSelectDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
-public class UpdateWhereDSLCodeGen3_0 extends UpdateWhereDSLCodeGen2_2 {
-
+public class IndexSelectDSLCodeGen2_1 extends IndexSelectDSLCodeGen {
     @Override
-    public void augmentClusteringColRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldInfo, ClassSignatureInfo nextSignature) {
-        super.augmentClusteringColRelationClassForWhereClause(relationClassBuilder, fieldInfo, nextSignature);
-        relationClassBuilder.addMethod(buildColumnInVarargs(nextSignature.returnClassType, fieldInfo, ReturnType.NEW));
+    public void augmentSelectClass(GlobalParsingContext context, EntityMetaCodeGen.EntityMetaSignature signature, TypeSpec.Builder builder) {
+        //No Op
     }
 
 }

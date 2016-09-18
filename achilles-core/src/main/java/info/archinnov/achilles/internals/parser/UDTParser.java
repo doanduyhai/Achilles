@@ -77,7 +77,8 @@ public class UDTParser extends AbstractBeanParser {
                 .build();
         final ParameterizedTypeName propertyType = genericType(UDT_PROPERTY, context.entityRawType, udtClassMetaTypeName, rawUdtTypeName);
         return new FieldMetaSignature(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
-                udtTypeName, JAVA_DRIVER_UDT_VALUE_TYPE, propertyType, typeCode, udtMetaSignature);
+                udtTypeName, JAVA_DRIVER_UDT_VALUE_TYPE, propertyType, typeCode, FieldParser.IndexMetaSignature.simpleType(udtTypeName),
+                udtMetaSignature);
     }
 
     void validateUDT(GlobalParsingContext context, TypeName udtTypeName, TypeElement typeElement) {

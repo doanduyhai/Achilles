@@ -44,6 +44,8 @@ import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGe
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
+import info.archinnov.achilles.internals.codegen.index.IndexSelectDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.index.IndexSelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.parser.CodecFactory.CodecInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
@@ -163,8 +165,16 @@ public class GlobalParsingContext {
         return cassandraVersion.selectDslCodeGen();
     }
 
+    public IndexSelectDSLCodeGen indexSelectDSLCodeGen() {
+        return cassandraVersion.indexSelectDslCodeGen();
+    }
+
     public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
         return cassandraVersion.selectWhereDSLCodeGen();
+    }
+
+    public IndexSelectWhereDSLCodeGen indexSelectWhereDSLCodeGen() {
+        return cassandraVersion.indexSelectWhereDSLCodeGen();
     }
 
     public UpdateDSLCodeGen updateDSLCodeGen() {

@@ -81,7 +81,7 @@ public class FieldInfoParser {
 
         return new FieldInfoContext(CodeBlock.builder()
                 .add("new $T<>($L, $L, $S, $S, $L, $L, $L)", FIELD_INFO, getterLambda, setterLambda,
-                        fieldName, cqlColumn, columnTypeCode._1(), columnInfoCode._1(), indexInfoCode)
+                        fieldName, cqlColumn, columnTypeCode._1(), columnInfoCode._1(), indexInfoCode._1())
                 .build(), fieldName, cqlColumn, columnTypeCode._2(), columnInfoCode._2(), indexInfoCode._2());
     }
 
@@ -265,7 +265,7 @@ public class FieldInfoParser {
                     .get()
                     .<IndexInfoContext>getTyped("indexInfoContext")
                     .computeIndexName(elm, context);
-                IndexType indexType = isBlank(indexInfoContext.indexClassName) ? IndexType.COLLECTION : IndexType.CUSTOM;
+                IndexType indexType = isBlank(indexInfoContext.indexClassName) ? IndexType.MAP_VALUE : IndexType.CUSTOM;
                 builder.add("new $T($T.$L, $S, $S, $S)", INDEX_INFO, INDEX_TYPE, indexType, indexInfoContext.indexName,
                         indexInfoContext.indexClassName, indexInfoContext.indexOptions);
 

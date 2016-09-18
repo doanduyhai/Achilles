@@ -140,7 +140,7 @@ public class FieldParser {
         final ParameterizedTypeName propertyType = genericType(COMPUTED_PROPERTY, context.entityRawType, codecInfo.sourceType, codecInfo.targetType);
 
         return new FieldMetaSignature(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
-                sourceType, codecInfo.targetType, propertyType, typeCode);
+                sourceType, codecInfo.targetType, propertyType, typeCode, IndexMetaSignature.simpleType(sourceType));
     }
 
     private FieldMetaSignature parseSimpleType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
@@ -186,7 +186,7 @@ public class FieldParser {
         final ParameterizedTypeName propertyType = genericType(SIMPLE_PROPERTY, context.entityRawType, codecInfo.sourceType.box(), codecInfo.targetType.box());
 
         return new FieldMetaSignature(context, annotationTree.hasNext() ? annotationTree.next() : annotationTree,
-                sourceType, codecInfo.targetType, propertyType, typeCode);
+                sourceType, codecInfo.targetType, propertyType, typeCode, IndexMetaSignature.simpleType(sourceType));
     }
 
     protected FieldMetaSignature parseOptional(AnnotationTree annotationTree, FieldParsingContext context) {
@@ -199,7 +199,8 @@ public class FieldParser {
                 context.fieldInfoCode,
                 parsingResult.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(JDK_OPTIONAL_PROPERTY, context.entityRawType, sourceType1, parsingResult.targetType);
-        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, parsingResult.targetType, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, parsingResult.targetType, propertyType, codeBlock,
+                IndexMetaSignature.simpleType(sourceType1));
     }
 
     private FieldMetaSignature parseMap(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
@@ -227,7 +228,8 @@ public class FieldParser {
                         valueParsingResult.typeCode).build();
         final TypeName targetType = genericType(MAP, keyParsingResult.targetType, valueParsingResult.targetType);
         final ParameterizedTypeName propertyType = genericType(MAP_PROPERTY, context.entityRawType, sourceKeyType, keyParsingResult.targetType, sourceValueType, valueParsingResult.targetType);
-        return new FieldMetaSignature(context, valueParsingResult.annotationTree, sourceType, targetType, propertyType, typeCode);
+        return new FieldMetaSignature(context, valueParsingResult.annotationTree, sourceType, targetType, propertyType, typeCode,
+                IndexMetaSignature.mapType(sourceKeyType, sourceValueType));
     }
 
     private FieldMetaSignature parseSet(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
@@ -247,7 +249,8 @@ public class FieldParser {
                         parsingResult.typeCode).build();
         final TypeName targetType = genericType(SET, parsingResult.targetType);
         final ParameterizedTypeName propertyType = genericType(SET_PROPERTY, context.entityRawType, sourceType1, parsingResult.targetType);
-        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, targetType, propertyType, typeCode);
+        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, targetType, propertyType, typeCode,
+                IndexMetaSignature.collectionElementType(sourceType1));
     }
 
     private FieldMetaSignature parseList(AnnotationTree annotationTree, FieldParsingContext context, Map<Class<? extends Annotation>, TypedMap> annotationsInfo, List<? extends TypeMirror> typeArguments) {
@@ -267,7 +270,8 @@ public class FieldParser {
                         parsingResult.typeCode).build();
         final TypeName targetType = genericType(LIST, parsingResult.targetType);
         final ParameterizedTypeName propertyType = genericType(LIST_PROPERTY, context.entityRawType, sourceType1, parsingResult.targetType);
-        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, targetType, propertyType, typeCode);
+        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, targetType, propertyType, typeCode,
+                IndexMetaSignature.collectionElementType(sourceType1));
     }
 
 
@@ -281,7 +285,8 @@ public class FieldParser {
                 context.fieldInfoCode,
                 parsingResult.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE1_PROPERTY, context.entityRawType, sourceType1);
-        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock,
+                IndexMetaSignature.simpleType(sourceType));
     }
 
     protected FieldMetaSignature parseTuple2(AnnotationTree annotationTree, FieldParsingContext context) {
@@ -298,7 +303,8 @@ public class FieldParser {
                 parsingResult1.typeCode,
                 parsingResult2.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE2_PROPERTY, context.entityRawType, sourceType1, sourceType2);
-        return new FieldMetaSignature(context, parsingResult2.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult2.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock,
+                IndexMetaSignature.simpleType(sourceType));
     }
 
     protected FieldMetaSignature parseTuple3(AnnotationTree annotationTree, FieldParsingContext context) {
@@ -319,7 +325,8 @@ public class FieldParser {
                 parsingResult3.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE3_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3);
-        return new FieldMetaSignature(context, parsingResult3.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult3.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock,
+                IndexMetaSignature.simpleType(sourceType));
     }
 
     protected FieldMetaSignature parseTuple4(AnnotationTree annotationTree, FieldParsingContext context) {
@@ -343,7 +350,8 @@ public class FieldParser {
                 parsingResult4.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE4_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4);
-        return new FieldMetaSignature(context, parsingResult4.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult4.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock,
+                IndexMetaSignature.simpleType(sourceType));
     }
 
     protected FieldMetaSignature parseTuple5(AnnotationTree annotationTree, FieldParsingContext context) {
@@ -370,7 +378,8 @@ public class FieldParser {
                 parsingResult5.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE5_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5);
-        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock,
+                IndexMetaSignature.simpleType(sourceType));
     }
 
     protected FieldMetaSignature parseTuple6(AnnotationTree annotationTree, FieldParsingContext context) {
@@ -400,7 +409,8 @@ public class FieldParser {
                 parsingResult6.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE6_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5, sourceType6);
-        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock,
+                IndexMetaSignature.simpleType(sourceType));
     }
 
     protected FieldMetaSignature parseTuple7(AnnotationTree annotationTree, FieldParsingContext context) {
@@ -433,7 +443,8 @@ public class FieldParser {
                 parsingResult7.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE7_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5, sourceType6, sourceType7);
-        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock,
+                IndexMetaSignature.simpleType(sourceType));
     }
 
     protected FieldMetaSignature parseTuple8(AnnotationTree annotationTree, FieldParsingContext context) {
@@ -469,7 +480,8 @@ public class FieldParser {
                 parsingResult8.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE8_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5, sourceType6, sourceType7, sourceType8);
-        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock,
+                IndexMetaSignature.simpleType(sourceType));
     }
 
     protected FieldMetaSignature parseTuple9(AnnotationTree annotationTree, FieldParsingContext context) {
@@ -508,7 +520,8 @@ public class FieldParser {
                 parsingResult9.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE9_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5, sourceType6, sourceType7, sourceType8, sourceType9);
-        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock,
+                IndexMetaSignature.simpleType(sourceType));
     }
 
     protected FieldMetaSignature parseTuple10(AnnotationTree annotationTree, FieldParsingContext context) {
@@ -550,7 +563,8 @@ public class FieldParser {
                 parsingResult10.typeCode).build();
         final ParameterizedTypeName propertyType = genericType(TUPLE10_PROPERTY, context.entityRawType, sourceType1,
                 sourceType2, sourceType3, sourceType4, sourceType5, sourceType6, sourceType7, sourceType8, sourceType9, sourceType10);
-        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock);
+        return new FieldMetaSignature(context, parsingResult5.annotationTree, sourceType, JAVA_DRIVER_TUPLE_VALUE_TYPE, propertyType, codeBlock,
+                IndexMetaSignature.simpleType(sourceType));
     }
 
     private CodecInfo buildOrGetCodecFromRegistry(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
@@ -562,37 +576,41 @@ public class FieldParser {
          * FIELD_MODIFIERS should contains static because static fields are initialized BEFORE constructor body ...
          */
         private static final Modifier[] FIELD_MODIFIERS = new Modifier[]{Modifier.FINAL, Modifier.PUBLIC, Modifier.STATIC};
-        final public FieldParsingContext context;
-        final public AnnotationTree annotationTree;
-        final public TypeName sourceType;
-        final public TypeName targetType;
-        final public CodeBlock typeCode;
-        final public TypeName propertyType;
-        final public Optional<UDTMetaSignature> udtMetaSignature;
+        public final FieldParsingContext context;
+        public final AnnotationTree annotationTree;
+        public final TypeName sourceType;
+        public final TypeName targetType;
+        public final CodeBlock typeCode;
+        public final TypeName propertyType;
+        public final Optional<UDTMetaSignature> udtMetaSignature;
+        public final IndexMetaSignature indexMetaSignature;
 
         public boolean isUDT() {
             return udtMetaSignature.isPresent();
         }
 
         public FieldMetaSignature(FieldParsingContext context, AnnotationTree annotationTree, TypeName sourceType, TypeName targetType,
-                                  TypeName propertyType, CodeBlock typeCode, Optional<UDTMetaSignature> udtMetaSignature) {
+                                  TypeName propertyType, CodeBlock typeCode, IndexMetaSignature indexMetaSignature,
+                                  Optional<UDTMetaSignature> udtMetaSignature) {
             this.context = context;
             this.annotationTree = annotationTree;
             this.sourceType = sourceType;
             this.targetType = targetType;
             this.propertyType = propertyType;
             this.typeCode = typeCode;
+            this.indexMetaSignature = indexMetaSignature;
             this.udtMetaSignature = udtMetaSignature;
         }
 
         public FieldMetaSignature(FieldParsingContext context, AnnotationTree annotationTree, TypeName sourceType, TypeName targetType,
-                                  TypeName propertyType, CodeBlock typeCode) {
+                                  TypeName propertyType, CodeBlock typeCode, IndexMetaSignature indexMetaSignature) {
             this.context = context;
             this.annotationTree = annotationTree;
             this.sourceType = sourceType;
             this.targetType = targetType;
             this.propertyType = propertyType;
             this.typeCode = typeCode;
+            this.indexMetaSignature = indexMetaSignature;
             this.udtMetaSignature = Optional.empty();
         }
 
@@ -673,4 +691,29 @@ public class FieldParser {
         }
     }
 
+    public static class IndexMetaSignature {
+        public final TypeName collectionElementType;
+        public final TypeName mapKeyType;
+        public final TypeName mapValueType;
+        public final TypeName simpleType;
+
+        private IndexMetaSignature(TypeName collectionElementType, TypeName mapKeyType, TypeName mapValueType, TypeName simpleType) {
+            this.collectionElementType = collectionElementType;
+            this.mapKeyType = mapKeyType;
+            this.mapValueType = mapValueType;
+            this.simpleType = simpleType;
+        }
+
+        public static IndexMetaSignature collectionElementType(TypeName collectionElementType) {
+            return new IndexMetaSignature(collectionElementType, null, null, null);
+        }
+
+        public static IndexMetaSignature mapType(TypeName mapKeyType, TypeName mapValueType) {
+            return new IndexMetaSignature(mapValueType, mapKeyType, mapValueType, null);
+        }
+
+        public static IndexMetaSignature simpleType(TypeName simpleType) {
+            return new IndexMetaSignature(null, null, null, simpleType);
+        }
+    }
 }

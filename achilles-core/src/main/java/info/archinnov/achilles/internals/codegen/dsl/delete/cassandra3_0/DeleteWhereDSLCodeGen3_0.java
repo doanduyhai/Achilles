@@ -31,7 +31,7 @@ public class DeleteWhereDSLCodeGen3_0 extends DeleteWhereDSLCodeGen2_2
     public void augmentClusteringColRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldInfo,
                                                                 ClassSignatureInfo nextSignature, ClassSignatureInfo lastSignature) {
         super.augmentClusteringColRelationClassForWhereClause(relationClassBuilder, fieldInfo, nextSignature, lastSignature);
-        addSingleColumnSliceRestrictions(relationClassBuilder, fieldInfo, nextSignature, lastSignature);
+        addSingleColumnSliceRestrictions(relationClassBuilder, fieldInfo, nextSignature, lastSignature, ReturnType.NEW);
     }
 
     @Override
@@ -40,6 +40,7 @@ public class DeleteWhereDSLCodeGen3_0 extends DeleteWhereDSLCodeGen2_2
                                   List<FieldSignatureInfo> clusteringCols,
                                   List<ClassSignatureInfo> classesSignature,
                                   ClassSignatureInfo lastSignature) {
-        addMultipleColumnsSliceRestrictions(whereClassBuilder, signature.deleteClassName(), clusteringCols, classesSignature, lastSignature);
+        String parentClassName = signature.deleteClassName() + "." + classesSignature.get(0).className;
+        addMultipleColumnsSliceRestrictions(whereClassBuilder, parentClassName, clusteringCols, lastSignature, ReturnType.NEW);
     }
 }

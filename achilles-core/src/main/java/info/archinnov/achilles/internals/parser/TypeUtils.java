@@ -75,6 +75,7 @@ public class TypeUtils {
 
     public static final String META_SUFFIX = "_AchillesMeta";
     public static final String DSL_RELATION_SUFFIX = "_Relation";
+    public static final String INDEX_DSL_RELATION_SUFFIX = "_IndexRelation";
     public static final String DSL_RELATION = "Relation";
     public static final String SELECT_COLUMNS_DSL_SUFFIX = "_SelectColumns";
     public static final String INDEX_SELECT_COLUMNS_DSL_SUFFIX = "_IndexSelectColumns";
@@ -85,6 +86,7 @@ public class TypeUtils {
     public static final String SELECT_FROM_DSL_SUFFIX = "_SelectFrom";
     public static final String INDEX_SELECT_FROM_DSL_SUFFIX = "_IndexSelectFrom";
     public static final String SELECT_FROM_JSON_DSL_SUFFIX = "_SelectFromJSON";
+    public static final String INDEX_SELECT_FROM_JSON_DSL_SUFFIX = "_IndexSelectFromJSON";
     public static final String SELECT_FROM_TYPED_MAP_DSL_SUFFIX = "_SelectFromTypedMap";
     public static final String INDEX_SELECT_FROM_TYPED_MAP_DSL_SUFFIX = "_IndexSelectFromTypedMap";
     public static final String SELECT_WHERE_DSL_SUFFIX = "_SelectWhere";
@@ -92,9 +94,13 @@ public class TypeUtils {
     public static final String SELECT_WHERE_TYPED_MAP_DSL_SUFFIX = "_SelectWhereTypedMap";
     public static final String INDEX_SELECT_WHERE_TYPED_MAP_DSL_SUFFIX = "_IndexSelectWhereTypedMap";
     public static final String SELECT_WHERE_JSON_DSL_SUFFIX = "_SelectWhereJSON";
+    public static final String INDEX_SELECT_WHERE_JSON_DSL_SUFFIX = "_IndexSelectWhereJSON";
     public static final String SELECT_END_DSL_SUFFIX = "_SelectEnd";
+    public static final String INDEX_SELECT_END_DSL_SUFFIX = "_IndexSelectEnd";
     public static final String SELECT_END_TYPED_MAP_DSL_SUFFIX = "_SelectEndTypedMap";
+    public static final String INDEX_SELECT_END_TYPED_MAP_DSL_SUFFIX = "_IndexSelectEndTypedMap";
     public static final String SELECT_END_JSON_DSL_SUFFIX = "_SelectEndJSON";
+    public static final String INDEX_SELECT_END_JSON_DSL_SUFFIX = "_IndexSelectEndJSON";
 
     public static final String DELETE_DSL_SUFFIX = "_Delete";
     public static final String DELETE_STATIC_DSL_SUFFIX = "_DeleteStatic";
@@ -194,8 +200,11 @@ public class TypeUtils {
     public static final ClassName ABSTRACT_SELECT_FROM_TYPED_MAP = ClassName.get(AbstractSelectFromTypeMap.class);
     public static final ClassName ABSTRACT_SELECT_FROM_JSON = ClassName.get(AbstractSelectFromJSON.class);
     public static final ClassName ABSTRACT_SELECT_WHERE = ClassName.get(AbstractSelectWhere.class);
+    public static final ClassName ABSTRACT_INDEX_SELECT_WHERE = ClassName.get(AbstractIndexSelectWhere.class);
     public static final ClassName ABSTRACT_SELECT_WHERE_TYPED_MAP = ClassName.get(AbstractSelectWhereTypeMap.class);
+    public static final ClassName ABSTRACT_INDEX_SELECT_WHERE_TYPED_MAP = ClassName.get(AbstractIndexSelectWhereTypeMap.class);
     public static final ClassName ABSTRACT_SELECT_WHERE_JSON = ClassName.get(AbstractSelectWhereJSON.class);
+    public static final ClassName ABSTRACT_INDEX_SELECT_WHERE_JSON = ClassName.get(AbstractIndexSelectWhereJSON.class);
     public static final ClassName ABSTRACT_SELECT_WHERE_PARTITION = ClassName.get(AbstractSelectWherePartition.class);
     public static final ClassName ABSTRACT_SELECT_WHERE_PARTITION_TYPED_MAP = ClassName.get(AbstractSelectWherePartitionTypeMap.class);
     public static final ClassName ABSTRACT_SELECT_WHERE_PARTITION_JSON = ClassName.get(AbstractSelectWherePartitionJSON.class);
@@ -313,6 +322,7 @@ public class TypeUtils {
     public static final TypeName REGULAR_STATEMENT = ClassName.get(RegularStatement.class);
     public static final ClassName TYPE_TOKEN = ClassName.get(TypeToken.class);
     public static final ClassName NON_ESCAPING_ASSIGNMENT = ClassName.get(NonEscapingSetAssignment.class);
+    public static final ClassName MAP_ENTRY_CLAUSE = ClassName.get(MapEntryClause.class);
 
     // Java 8 Types
     public static final TypeName JDK_ZONED_DATE_TIME = ClassName.get(ZonedDateTime.class);

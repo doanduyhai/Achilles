@@ -41,6 +41,10 @@ import info.archinnov.achilles.internals.codegen.dsl.update.cassandra3_6.UpdateD
 import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
 import info.archinnov.achilles.internals.codegen.function.cassandra2_2.FunctionsRegistryCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.function.cassandra3_2.FunctionsRegistryCodeGen3_2;
+import info.archinnov.achilles.internals.codegen.index.IndexSelectDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.index.IndexSelectWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.index.cassandra2_2.IndexSelectDSLCodeGen2_2;
+import info.archinnov.achilles.internals.codegen.index.cassandra2_2.IndexSelectWhereDSLCodeGen2_2;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
 import info.archinnov.achilles.internals.parser.validator.cassandra3_0.BeanValidator3_0;
@@ -75,8 +79,18 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
         }
 
         @Override
+        public IndexSelectDSLCodeGen indexSelectDslCodeGen() {
+            return INDEX_SELECT_DSL_CODE_GEN_2_2;
+        }
+
+        @Override
         public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
             return SELECT_WHERE_DSL_CODE_GEN_2_2;
+        }
+
+        @Override
+        public IndexSelectWhereDSLCodeGen indexSelectWhereDSLCodeGen() {
+            return INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2;
         }
 
         @Override
@@ -118,8 +132,18 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
         }
 
         @Override
+        public IndexSelectDSLCodeGen indexSelectDslCodeGen() {
+            return INDEX_SELECT_DSL_CODE_GEN_2_2;
+        }
+
+        @Override
         public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
             return SELECT_WHERE_DSL_CODE_GEN_2_2;
+        }
+
+        @Override
+        public IndexSelectWhereDSLCodeGen indexSelectWhereDSLCodeGen() {
+            return INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2;
         }
 
         @Override
@@ -166,8 +190,18 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
         }
 
         @Override
+        public IndexSelectDSLCodeGen indexSelectDslCodeGen() {
+            return INDEX_SELECT_DSL_CODE_GEN_2_2;
+        }
+
+        @Override
         public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
             return SELECT_WHERE_DSL_CODE_GEN_2_2;
+        }
+
+        @Override
+        public IndexSelectWhereDSLCodeGen indexSelectWhereDSLCodeGen() {
+            return INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2;
         }
 
         @Override
@@ -251,7 +285,9 @@ public enum  InternalCassandraVersion implements BaseCassandraVersion {
 
     private static final CrudAPICodeGen CRUD_API_CODE_GEN_2_2 = new CrudAPICodeGen2_2();
     private static final SelectDSLCodeGen SELECT_DSL_CODE_GEN_2_2 = new SelectDSLCodeGen2_2();
+    private static final IndexSelectDSLCodeGen INDEX_SELECT_DSL_CODE_GEN_2_2 = new IndexSelectDSLCodeGen2_2();
     private static final SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_2_2 = new SelectWhereDSLCodeGen2_2();
+    private static final IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2 = new IndexSelectWhereDSLCodeGen2_2();
     private static final SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_3_6 = new SelectWhereDSLCodeGen3_6();
     private static final UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_2_2 = new UpdateDSLCodeGen2_2();
     private static final UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_3_6 = new UpdateDSLCodeGen3_6();

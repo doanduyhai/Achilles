@@ -94,12 +94,17 @@ CREATE TABLE IF NOT EXISTS test.entity_complex_counters(
 	WITH CLUSTERING ORDER BY(uuid ASC);
 CREATE TABLE IF NOT EXISTS test.entitywithcomplexindices(
 		id bigint,
+		clust1 int,
+		clust2 int,
+		clust3 text,
 		collectionindex list<text>,
 		fullindexoncollection frozen<set<text>>,
 		indexonmapentry map<int, text>,
 		indexonmapkey map<text, text>,
+		indexonmapvalue map<int, text>,
 		simpleindex text,
-		PRIMARY KEY(id));
+		PRIMARY KEY(id, clust1, clust2, clust3))
+	WITH CLUSTERING ORDER BY(clust1 ASC, clust2 ASC, clust3 ASC);
 
 
 CREATE  INDEX IF NOT EXISTS collectionindex_index ON test.entitywithcomplexindices ( collectionindex );
@@ -112,6 +117,9 @@ CREATE  INDEX IF NOT EXISTS indexonmapentry_index ON test.entitywithcomplexindic
 
 
 CREATE  INDEX IF NOT EXISTS indexonmapkey_index ON test.entitywithcomplexindices ( KEYS(indexonmapkey) );
+
+
+CREATE  INDEX IF NOT EXISTS indexonmapvalue_index ON test.entitywithcomplexindices ( indexonmapvalue );
 
 
 CREATE  INDEX IF NOT EXISTS simpleindex_index ON test.entitywithcomplexindices ( simpleindex );
@@ -176,6 +184,37 @@ CREATE TABLE IF NOT EXISTS test.entitywithimplicitfieldparsing(
 		uuid uuid,
 		PRIMARY KEY(id, uuid))
 	WITH CLUSTERING ORDER BY(uuid ASC);
+CREATE TABLE IF NOT EXISTS test.entity_with_indices_for_json(
+		id bigint,
+		clust1 int,
+		clust2 int,
+		clust3 text,
+		collectionindex list<text>,
+		fullindexoncollection frozen<set<text>>,
+		indexonmapentry map<int, text>,
+		indexonmapkey map<text, text>,
+		indexonmapvalue map<int, text>,
+		simpleindex text,
+		PRIMARY KEY(id, clust1, clust2, clust3))
+	WITH CLUSTERING ORDER BY(clust1 ASC, clust2 ASC, clust3 ASC);
+
+
+CREATE  INDEX IF NOT EXISTS collectionindex_index ON test.entity_with_indices_for_json ( collectionindex );
+
+
+CREATE  INDEX IF NOT EXISTS fullindexoncollection_index ON test.entity_with_indices_for_json ( FULL(fullindexoncollection) );
+
+
+CREATE  INDEX IF NOT EXISTS indexonmapentry_index ON test.entity_with_indices_for_json ( ENTRIES(indexonmapentry) );
+
+
+CREATE  INDEX IF NOT EXISTS indexonmapkey_index ON test.entity_with_indices_for_json ( KEYS(indexonmapkey) );
+
+
+CREATE  INDEX IF NOT EXISTS indexonmapvalue_index ON test.entity_with_indices_for_json ( indexonmapvalue );
+
+
+CREATE  INDEX IF NOT EXISTS simpleindex_index ON test.entity_with_indices_for_json ( simpleindex );
 CREATE TABLE IF NOT EXISTS test.table_with_nested_udt(
 		id bigint,
 		complexudt frozen<test.having_nested_type>,

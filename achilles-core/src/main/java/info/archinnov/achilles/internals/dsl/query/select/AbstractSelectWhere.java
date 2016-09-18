@@ -216,7 +216,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
         return getEncodedValuesInternal();
     }
 
-    private StatementWrapper getInternalBoundStatementWrapper() {
+    protected StatementWrapper getInternalBoundStatementWrapper() {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Get bound statement wrapper"));
         }

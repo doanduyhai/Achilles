@@ -78,6 +78,8 @@ public class ManagerCodeGen {
                     .addMethod(buildSelectMethod(signature, INDEX_SELECT_DSL_SUFFIX));
 
             builder.addType(indexClass.build());
+
+            classes.add(context.indexSelectDSLCodeGen().buildSelectClass(context, signature));
         }
 
         // Raw
@@ -152,16 +154,16 @@ public class ManagerCodeGen {
     }
 
     private static MethodSpec buildINDEX(EntityMetaSignature signature) {
-        TypeName dslClass = ClassName.get(MANAGER_PACKAGE, signature.className + MANAGER_SUFFIX, signature.className + INDEX_SUFFIX);
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder("dsl")
+        TypeName indexDslClass = ClassName.get(MANAGER_PACKAGE, signature.className + MANAGER_SUFFIX, signature.className + INDEX_SUFFIX);
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("indexed")
                 .addJavadoc("Provide INDEX query methods: <br/>\n")
                 .addJavadoc("<ul>\n")
                 .addJavadoc("   <li>SELECT</li>\n")
                 .addJavadoc("   <li>ITERATION ON SELECT</li>\n");
         builder.addJavadoc("</ul>\n")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addStatement("return new $T()", dslClass)
-                .returns(dslClass);
+                .addStatement("return new $T()", indexDslClass)
+                .returns(indexDslClass);
 
         return builder.build();
     }

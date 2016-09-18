@@ -27,22 +27,19 @@ import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ClassSignatureInfo;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
+import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.IndexFieldSignatureInfo;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
-import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen.ParentSignature;
-import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
-import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public interface JSONFunctionCallSupport {
 
-    default TypeSpec buildSelectFromJSON(EntityMetaCodeGen.EntityMetaSignature signature, String firstPartitionKey) {
-        TypeName selectWhereJSONTypeName = ClassName.get(DSL_PACKAGE, signature.selectWhereJSONReturnType(firstPartitionKey));
+    default TypeSpec buildSelectFromJSON(String className,
+                                         TypeName selectWhereJSONTypeName,
+                                         TypeName selectEndJSONTypeName) {
 
-        TypeName selectEndJSONTypeName = ClassName.get(DSL_PACKAGE, signature.selectEndJSONReturnType());
-
-        return TypeSpec.classBuilder(signature.className + SELECT_FROM_JSON_DSL_SUFFIX)
+        return TypeSpec.classBuilder(className)
                 .superclass(ABSTRACT_SELECT_FROM_JSON)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
@@ -161,6 +158,108 @@ public interface JSONFunctionCallSupport {
                 .build();
 
         relationClassBuilder.addMethod(fromJsonMethod);
+    }
+
+    default void buildJSONIndexRelationForMapEntry(TypeSpec.Builder relationClassBuilder,
+                                               IndexFieldSignatureInfo indexFieldInfo,
+                                               TypeName returnClassType,
+                                               ReturnType returnType) {
+
+        final String paramKey = indexFieldInfo.fieldName + "_JSONKey";
+        final String paramValue = indexFieldInfo.fieldName + "_JSONValue";
+
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("ContainsEntry_FromJSON")
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L[fromJson(?)] = fromJson(?)</strong>", indexFieldInfo.quotedCqlColumn)
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addParameter(STRING, paramKey)
+                .addParameter(STRING, paramValue)
+                .addStatement("where.and($T.of($S, $T.fromJson($T.bindMarker($S)), $T.fromJson($T.bindMarker($S))))",
+                        MAP_ENTRY_CLAUSE, indexFieldInfo.quotedCqlColumn,
+                        QUERY_BUILDER, QUERY_BUILDER, paramKey,
+                        QUERY_BUILDER, QUERY_BUILDER, paramValue)
+                .addStatement("boundValues.add($N)", paramKey)
+                .addStatement("boundValues.add($N)", paramValue)
+                .addStatement("encodedValues.add($N)", paramKey)
+                .addStatement("encodedValues.add($N)", paramValue)
+                .returns(returnClassType);
+
+        if(returnType == ReturnType.THIS) {
+            relationClassBuilder.addMethod(builder.addStatement("return $T.this", returnClassType).build());
+        } else {
+            relationClassBuilder.addMethod(builder.addStatement("return new $T(where)", returnClassType).build());
+        }
+    }
+
+    default void buildJSONIndexRelationForMapKey(TypeSpec.Builder relationClassBuilder,
+                                                     IndexFieldSignatureInfo indexFieldInfo,
+                                                     TypeName returnClassType,
+                                                     ReturnType returnType) {
+
+        final String param = indexFieldInfo.fieldName + "_JSONKey";
+
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("ContainsKey_FromJSON")
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L CONTAINS KEY fromJson(?)</strong>", indexFieldInfo.quotedCqlColumn)
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addParameter(STRING, param)
+                .addStatement("where.and($T.containsKey($S, $T.fromJson($T.bindMarker($S))))",
+                        QUERY_BUILDER, indexFieldInfo.quotedCqlColumn, QUERY_BUILDER, QUERY_BUILDER, indexFieldInfo.quotedCqlColumn)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add($N)", param)
+                .returns(returnClassType);
+
+        if(returnType == ReturnType.THIS) {
+            relationClassBuilder.addMethod(builder.addStatement("return $T.this", returnClassType).build());
+        } else {
+            relationClassBuilder.addMethod(builder.addStatement("return new $T(where)", returnClassType).build());
+        }
+    }
+
+    default void buildJSONIndexRelationForMapValue(TypeSpec.Builder relationClassBuilder,
+                                                       IndexFieldSignatureInfo indexFieldInfo,
+                                                       TypeName returnClassType,
+                                                       ReturnType returnType) {
+        final String param = indexFieldInfo.fieldName + "_JSONValue";
+
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("ContainsValue_FromJSON")
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L CONTAINS fromJson(?)</strong>", indexFieldInfo.quotedCqlColumn)
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addParameter(STRING, param)
+                .addStatement("where.and($T.contains($S, $T.fromJson($T.bindMarker($S))))",
+                        QUERY_BUILDER, indexFieldInfo.quotedCqlColumn, QUERY_BUILDER, QUERY_BUILDER, indexFieldInfo.quotedCqlColumn)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add($N)", param)
+                .returns(returnClassType);
+
+        if(returnType == ReturnType.THIS) {
+            relationClassBuilder.addMethod(builder.addStatement("return $T.this", returnClassType).build());
+        } else {
+            relationClassBuilder.addMethod(builder.addStatement("return new $T(where)", returnClassType).build());
+        }
+    }
+
+    default void buildJSONIndexRelationForCollection(TypeSpec.Builder relationClassBuilder,
+                                                         IndexFieldSignatureInfo indexFieldInfo,
+                                                         TypeName returnClassType,
+                                                         ReturnType returnType) {
+        final String param = indexFieldInfo.fieldName + "_JSONElement";
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("Contains_FromJson")
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L CONTAINS fromJson(?)</strong>", indexFieldInfo.quotedCqlColumn)
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addParameter(STRING, param)
+                .addStatement("where.and($T.contains($S, $T.fromJson($T.bindMarker($S))))",
+                        QUERY_BUILDER, indexFieldInfo.quotedCqlColumn, QUERY_BUILDER, QUERY_BUILDER, indexFieldInfo.quotedCqlColumn)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add($N)", param)
+                .returns(returnClassType);
+        if(returnType == ReturnType.THIS) {
+            relationClassBuilder.addMethod(builder.addStatement("return $T.this", returnClassType).build());
+        } else {
+            relationClassBuilder.addMethod(builder.addStatement("return new $T(where)", returnClassType).build());
+        }
     }
 
     default void buildIfEqFromJSONToConditionClass(TypeSpec.Builder conditionClassBuilder,

@@ -69,7 +69,7 @@ import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener;
 import info.archinnov.achilles.type.tuples.Tuple3;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TestJSONCallIT {
+public class TestJSONCall {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();

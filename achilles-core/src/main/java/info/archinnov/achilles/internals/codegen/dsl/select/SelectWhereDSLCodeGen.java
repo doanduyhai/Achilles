@@ -45,7 +45,8 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen
 
     public abstract void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
                                                             FieldSignatureInfo fieldSignatureInfo,
-                                                            ClassSignatureInfo nextSignature);
+                                                            ClassSignatureInfo nextSignature,
+                                                            ReturnType returnType);
 
     public List<TypeSpec> buildWhereClasses(GlobalParsingContext context, EntityMetaSignature signature) {
         SelectWhereDSLCodeGen selectWhereDSLCodeGen = context.selectWhereDSLCodeGen();
@@ -185,10 +186,10 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen
 
         final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(DSL_RELATION)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo))
-                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo, ReturnType.NEW))
+                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo, ReturnType.NEW));
 
-        augmentRelationClassForWhereClause(relationClassBuilder, partitionInfo, nextSignature);
+        augmentRelationClassForWhereClause(relationClassBuilder, partitionInfo, nextSignature, ReturnType.NEW);
 
         return TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
@@ -250,16 +251,18 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen
 
         TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(DSL_RELATION)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo, ReturnType.NEW));
 
-        addSingleColumnSliceRestrictions(relationClassBuilder, clusteringColumnInfo, nextSignature, lastSignature);
+        addSingleColumnSliceRestrictions(relationClassBuilder, clusteringColumnInfo, nextSignature, lastSignature, ReturnType.NEW);
 
-        augmentRelationClassForWhereClause(relationClassBuilder, clusteringColumnInfo, nextSignature);
+        augmentRelationClassForWhereClause(relationClassBuilder, clusteringColumnInfo, nextSignature, ReturnType.NEW);
 
         builder.addType(relationClassBuilder.build());
         builder.addMethod(buildRelationMethod(clusteringColumnInfo.fieldName, relationClassTypeName));
 
-        addMultipleColumnsSliceRestrictions(builder, signature.selectClassName(), clusteringCols, classesSignature, lastSignature);
+        String parentClassName = signature.selectClassName() + "." + classesSignature.get(0).className;
+
+        addMultipleColumnsSliceRestrictions(builder, parentClassName, clusteringCols, lastSignature, ReturnType.NEW);
 
         maybeBuildOrderingBy(classSignature, firstClusteringCol, builder);
 

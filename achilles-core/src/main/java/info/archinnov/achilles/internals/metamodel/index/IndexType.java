@@ -21,6 +21,7 @@ public enum IndexType {
     COLLECTION,
     FULL,
     MAP_KEY,
+    MAP_VALUE,
     MAP_ENTRY,
     CUSTOM,
     NONE

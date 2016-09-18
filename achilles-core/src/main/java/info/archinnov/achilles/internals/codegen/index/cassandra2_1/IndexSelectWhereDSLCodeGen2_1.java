@@ -14,35 +14,30 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_1;
+package info.archinnov.achilles.internals.codegen.index.cassandra2_1;
 
 import java.util.Collections;
 import java.util.List;
 
 import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.index.IndexSelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
-public class SelectWhereDSLCodeGen2_1 extends SelectWhereDSLCodeGen {
+public class IndexSelectWhereDSLCodeGen2_1 extends IndexSelectWhereDSLCodeGen {
     @Override
     public void augmentSelectEndClass(TypeSpec.Builder selectEndClassBuilder, ClassSignatureInfo lastSignature) {
         //NO Op
     }
 
     @Override
-    public List<TypeSpec> generateExtraWhereClasses(GlobalParsingContext context,
-                                                    EntityMetaCodeGen.EntityMetaSignature signature,
-                                                    List<FieldSignatureInfo> partitionKeys,
-                                                    List<FieldSignatureInfo> clusteringCols) {
-        return Collections.emptyList();
+    public List<TypeSpec> generateExtraWhereClasses(GlobalParsingContext context, EntityMetaCodeGen.EntityMetaSignature signature, List<FieldSignatureInfo> partitionKeys, List<FieldSignatureInfo> clusteringCols) {
+        return Collections.EMPTY_LIST;
     }
 
     @Override
     public void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo nextSignature, ReturnType returnType) {
-        // No Op
+        //NO Op
     }
-
-
 }

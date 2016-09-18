@@ -34,9 +34,9 @@ public abstract class IndexSelectDSLCodeGen extends SelectDSLCodeGen {
 
     public TypeSpec buildSelectClass(GlobalParsingContext context, EntityMetaSignature signature) {
 
-        TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, signature.selectFromReturnType());
-        TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsReturnType());
-        TypeName selectColumnsTypeMapTypeName = ClassName.get(DSL_PACKAGE, signature.selectColumnsTypedMapReturnType());
+        TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, signature.indexSelectFromReturnType());
+        TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, signature.indexSelectColumnsReturnType());
+        TypeName selectColumnsTypeMapTypeName = ClassName.get(DSL_PACKAGE, signature.indexSelectColumnsTypedMapReturnType());
 
         SelectColumnsSignature signatureForSelectColumns = SelectColumnsSignature
                 .forSelectColumns(signature.indexSelectColumnsReturnType(),
@@ -49,7 +49,7 @@ public abstract class IndexSelectDSLCodeGen extends SelectDSLCodeGen {
                         signature.indexSelectFromTypedMapReturnType(),
                         signature.className + INDEX_SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX);
 
-        final TypeSpec.Builder selectClassBuilder = TypeSpec.classBuilder(signature.selectClassName())
+        final TypeSpec.Builder selectClassBuilder = TypeSpec.classBuilder(signature.indexSelectClassName())
                 .superclass(ABSTRACT_SELECT)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildSelectConstructor(signature))
@@ -83,7 +83,7 @@ public abstract class IndexSelectDSLCodeGen extends SelectDSLCodeGen {
 
         augmentSelectClass(context, signature, selectClassBuilder);
 
-        context.selectWhereDSLCodeGen().buildWhereClasses(context, signature).forEach(selectClassBuilder::addType);
+        context.indexSelectWhereDSLCodeGen().buildWhereClasses(context, signature).forEach(selectClassBuilder::addType);
 
         return selectClassBuilder.build();
     }

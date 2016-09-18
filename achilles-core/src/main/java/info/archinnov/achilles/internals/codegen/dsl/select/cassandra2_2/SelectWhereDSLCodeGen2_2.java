@@ -18,19 +18,12 @@ package info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_2;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_SELECT_WHERE_JSON;
-import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 
 import java.util.List;
 import java.util.Optional;
 
-import javax.lang.model.element.Modifier;
-
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.JSONFunctionCallSupport;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
@@ -64,7 +57,7 @@ public class SelectWhereDSLCodeGen2_2 extends SelectWhereDSLCodeGen
     @Override
     public void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
                                                    FieldSignatureInfo fieldInfo,
-                                                   ClassSignatureInfo nextSignature) {
+                                                   ClassSignatureInfo nextSignature, ReturnType returnType) {
         buildEqFromJSONToRelationClass(relationClassBuilder, fieldInfo, nextSignature);
     }
 }

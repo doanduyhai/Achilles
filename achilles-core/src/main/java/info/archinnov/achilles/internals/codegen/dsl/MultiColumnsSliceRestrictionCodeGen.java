@@ -35,27 +35,26 @@ import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSig
 public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRestriction {
 
     default void addSingleColumnSliceRestrictions(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldInfo,
-                                                  ClassSignatureInfo nextSignature, ClassSignatureInfo lastSignature) {
+                                                  ClassSignatureInfo nextSignature, ClassSignatureInfo lastSignature,
+                                                  ReturnType returnType) {
 
-        relationClassBuilder.addMethod(buildColumnInVarargs(nextSignature.returnClassType, fieldInfo))
-                .addMethod(buildColumnRelation(GT, lastSignature.returnClassType, fieldInfo))
-                .addMethod(buildColumnRelation(GTE, lastSignature.returnClassType, fieldInfo))
-                .addMethod(buildColumnRelation(LT, lastSignature.returnClassType, fieldInfo))
-                .addMethod(buildColumnRelation(LTE, lastSignature.returnClassType, fieldInfo))
-                .addMethod(buildDoubleColumnRelation(GT, LT, lastSignature.returnClassType, fieldInfo))
-                .addMethod(buildDoubleColumnRelation(GT, LTE, lastSignature.returnClassType, fieldInfo))
-                .addMethod(buildDoubleColumnRelation(GTE, LT, lastSignature.returnClassType, fieldInfo))
-                .addMethod(buildDoubleColumnRelation(GTE, LTE, lastSignature.returnClassType, fieldInfo));
+        relationClassBuilder.addMethod(buildColumnInVarargs(nextSignature.returnClassType, fieldInfo, returnType))
+                .addMethod(buildColumnRelation(GT, lastSignature.returnClassType, fieldInfo, returnType))
+                .addMethod(buildColumnRelation(GTE, lastSignature.returnClassType, fieldInfo, returnType))
+                .addMethod(buildColumnRelation(LT, lastSignature.returnClassType, fieldInfo, returnType))
+                .addMethod(buildColumnRelation(LTE, lastSignature.returnClassType, fieldInfo, returnType))
+                .addMethod(buildDoubleColumnRelation(GT, LT, lastSignature.returnClassType, fieldInfo, returnType))
+                .addMethod(buildDoubleColumnRelation(GT, LTE, lastSignature.returnClassType, fieldInfo, returnType))
+                .addMethod(buildDoubleColumnRelation(GTE, LT, lastSignature.returnClassType, fieldInfo, returnType))
+                .addMethod(buildDoubleColumnRelation(GTE, LTE, lastSignature.returnClassType, fieldInfo, returnType));
 
     }
 
     default void addMultipleColumnsSliceRestrictions(TypeSpec.Builder parentClassBuilder,
                                                      String parentClassName,
                                                      List<FieldSignatureInfo> clusteringCols,
-                                                     List<ClassSignatureInfo> classesSignature,
-                                                     ClassSignatureInfo lastSignature) {
-        final ClassSignatureInfo classSignature = classesSignature.get(0);
-
+                                                     ClassSignatureInfo lastSignature,
+                                                     ReturnType returnType) {
         // Tuple notation (col1, col2, ..., colN) < (:col1, :col2, ..., :colN)
         for (int i = 2; i <= clusteringCols.size(); i++) {
             final List<FieldSignatureInfo> fieldInfos = clusteringCols.stream().limit(i).collect(toList());
@@ -66,30 +65,29 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
                     .get();
 
             TypeName multiRelationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName
-                    + "." + classSignature.className
                     + "." + multiRelationName + DSL_RELATION_SUFFIX);
 
             TypeSpec multiRelationClass = TypeSpec.classBuilder(multiRelationName + DSL_RELATION_SUFFIX)
                     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                    .addMethod(buildTuplesColumnRelation(GT, lastSignature.returnClassType, fieldInfos))
-                    .addMethod(buildTuplesColumnRelation(GTE, lastSignature.returnClassType, fieldInfos))
-                    .addMethod(buildTuplesColumnRelation(LT, lastSignature.returnClassType, fieldInfos))
-                    .addMethod(buildTuplesColumnRelation(LTE, lastSignature.returnClassType, fieldInfos))
+                    .addMethod(buildTuplesColumnRelation(GT, lastSignature.returnClassType, fieldInfos, returnType))
+                    .addMethod(buildTuplesColumnRelation(GTE, lastSignature.returnClassType, fieldInfos, returnType))
+                    .addMethod(buildTuplesColumnRelation(LT, lastSignature.returnClassType, fieldInfos, returnType))
+                    .addMethod(buildTuplesColumnRelation(LTE, lastSignature.returnClassType, fieldInfos, returnType))
 
-                    .addMethod(buildSymmetricColumnDoubleRelation(GT, LT, lastSignature.returnClassType, fieldInfos))
-                    .addMethod(buildSymmetricColumnDoubleRelation(GT, LTE, lastSignature.returnClassType, fieldInfos))
-                    .addMethod(buildSymmetricColumnDoubleRelation(GTE, LT, lastSignature.returnClassType, fieldInfos))
-                    .addMethod(buildSymmetricColumnDoubleRelation(GTE, LTE, lastSignature.returnClassType, fieldInfos))
+                    .addMethod(buildSymmetricColumnDoubleRelation(GT, LT, lastSignature.returnClassType, fieldInfos, returnType))
+                    .addMethod(buildSymmetricColumnDoubleRelation(GT, LTE, lastSignature.returnClassType, fieldInfos, returnType))
+                    .addMethod(buildSymmetricColumnDoubleRelation(GTE, LT, lastSignature.returnClassType, fieldInfos, returnType))
+                    .addMethod(buildSymmetricColumnDoubleRelation(GTE, LTE, lastSignature.returnClassType, fieldInfos, returnType))
 
-                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LT, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne))
-                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LTE, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne))
-                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LT, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne))
-                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LTE, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LT, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne, returnType))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LTE, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne, returnType))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LT, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne, returnType))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LTE, lastSignature.returnClassType, fieldInfos, fieldInfosMinusOne, returnType))
 
-                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LT, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos))
-                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LTE, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos))
-                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LT, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos))
-                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LTE, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LT, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos, returnType))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GT, LTE, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos, returnType))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LT, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos, returnType))
+                    .addMethod(buildAsymmetricColumnDoubleRelation(GTE, LTE, lastSignature.returnClassType, fieldInfosMinusOne, fieldInfos, returnType))
                     .build();
 
             parentClassBuilder.addType(multiRelationClass);
@@ -98,14 +96,14 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
 
     }
 
-    default MethodSpec buildDoubleColumnRelation(String relation1, String relation2, TypeName nextType, FieldSignatureInfo fieldInfo) {
+    default MethodSpec buildDoubleColumnRelation(String relation1, String relation2, TypeName nextType, FieldSignatureInfo fieldInfo, ReturnType returnType) {
         final String methodName = upperCaseFirst(relation1) + "_And_" + upperCaseFirst(relation2);
         final String param1 = fieldInfo.fieldName + "_" + upperCaseFirst(relation1);
         final String param2 = fieldInfo.fieldName + "_" + upperCaseFirst(relation2);
         final String column1 = fieldInfo.cqlColumn + "_" + upperCaseFirst(relation2);
         final String column2 = fieldInfo.cqlColumn + "_" + upperCaseFirst(relation2);
 
-        return MethodSpec.methodBuilder(methodName)
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ? AND $L $L ?</strong>",
                         fieldInfo.quotedCqlColumn, relationToSymbolForJavaDoc(relation1),
                         fieldInfo.quotedCqlColumn, relationToSymbolForJavaDoc(relation2))
@@ -121,12 +119,18 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, param1)
                 .addStatement("boundValues.add($L)", param2)
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, param2)
-                .addStatement("return new $T(where)", nextType)
-                .returns(nextType)
-                .build();
+                .returns(nextType);
+
+        if (returnType == ReturnType.NEW) {
+            builder.addStatement("return new $T(where)", nextType);
+        } else {
+            builder.addStatement("return $T.this", nextType);
+        }
+
+        return builder.build();
     }
 
-    default MethodSpec buildTuplesColumnRelation(String relation, TypeName nextType, List<FieldSignatureInfo> fieldInfos) {
+    default MethodSpec buildTuplesColumnRelation(String relation, TypeName nextType, List<FieldSignatureInfo> fieldInfos, ReturnType returnType) {
         final String methodName = upperCaseFirst(relation);
 
         StringJoiner paramsJoiner = new StringJoiner(",");
@@ -156,10 +160,15 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
 
         builder.returns(nextType);
 
-        return builder.addStatement("return new $T(where)", nextType).build();
+        if (returnType == ReturnType.NEW) {
+            builder.addStatement("return new $T(where)", nextType);
+        } else {
+            builder.addStatement("return $T.this", nextType);
+        }
+        return builder.build();
     }
 
-    default MethodSpec buildSymmetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos) {
+    default MethodSpec buildSymmetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos, ReturnType returnType) {
         final String methodName = upperCaseFirst(relation1) + "_And_" + upperCaseFirst(relation2);
 
         StringJoiner paramsJoinerRelation1AsString = new StringJoiner(",");
@@ -204,10 +213,16 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
 
         builder.returns(nextType);
 
-        return builder.addStatement("return new $T(where)", nextType).build();
+        if (returnType == ReturnType.NEW) {
+            builder.addStatement("return new $T(where)", nextType);
+        } else {
+            builder.addStatement("return $T.this", nextType);
+        }
+
+        return builder.build();
     }
 
-    default MethodSpec buildAsymmetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos1, List<FieldSignatureInfo> fieldInfos2) {
+    default MethodSpec buildAsymmetricColumnDoubleRelation(String relation1, String relation2, TypeName nextType, List<FieldSignatureInfo> fieldInfos1, List<FieldSignatureInfo> fieldInfos2, ReturnType returnType) {
         final String methodName =
                 fieldInfos1
                         .stream()
@@ -264,7 +279,13 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
 
         builder.returns(nextType);
 
-        return builder.addStatement("return new $T(where)", nextType).build();
+        if (returnType == ReturnType.NEW) {
+            builder.addStatement("return new $T(where)", nextType);
+        } else {
+            builder.addStatement("return $T.this", nextType);
+        }
+
+        return builder.build();
     }
 
 }

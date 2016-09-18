@@ -148,8 +148,8 @@ public abstract class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen
 
         final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(DSL_RELATION)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo))
-                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo, ReturnType.NEW))
+                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo, ReturnType.NEW));
 
         augmentPartitionKeyRelationClassForWhereClause(relationClassBuilder, partitionInfo, nextSignature);
 
@@ -193,7 +193,7 @@ public abstract class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen
 
         final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(DSL_RELATION)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo));
+                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo, ReturnType.NEW));
 
         augmentClusteringColRelationClassForWhereClause(relationClassBuilder, clusteringColumnInfo, nextSignature);
 

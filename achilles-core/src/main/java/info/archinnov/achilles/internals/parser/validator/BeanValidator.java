@@ -80,7 +80,7 @@ public abstract class BeanValidator {
                 .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
                 .filter(x -> x.getParameters().size() == 0) //No arg constructor
                 .count();
-        aptUtils.validateTrue(constructorCount == 1, "Bean type '%s' should have a public constructor", typeName);
+        aptUtils.validateTrue(constructorCount == 1, "Bean type '%s' should have a public no-args constructor", typeName);
     }
 
     public void validateNoDuplicateNames(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {

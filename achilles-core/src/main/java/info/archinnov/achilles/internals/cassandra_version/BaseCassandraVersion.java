@@ -32,6 +32,10 @@ import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_1.UpdateD
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_1.UpdateWhereDSLCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
 import info.archinnov.achilles.internals.codegen.function.cassandra2_1.FunctionsRegistryCodeGen2_1;
+import info.archinnov.achilles.internals.codegen.index.IndexSelectDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.index.IndexSelectWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.index.cassandra2_1.IndexSelectDSLCodeGen2_1;
+import info.archinnov.achilles.internals.codegen.index.cassandra2_1.IndexSelectWhereDSLCodeGen2_1;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
@@ -50,6 +54,9 @@ public interface BaseCassandraVersion {
     CrudAPICodeGen CRUD_API_CODE_GEN = new CrudAPICodeGen2_1();
     SelectDSLCodeGen SELECT_DSL_CODE_GEN = new SelectDSLCodeGen2_1();
     SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN = new SelectWhereDSLCodeGen2_1();
+
+    IndexSelectDSLCodeGen INDEX_SELECT_DSL_CODE_GEN = new IndexSelectDSLCodeGen2_1();
+    IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN = new IndexSelectWhereDSLCodeGen2_1();
 
     UpdateDSLCodeGen UPDATE_DSL_CODE_GEN = new UpdateDSLCodeGen2_1();
     UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN = new UpdateWhereDSLCodeGen2_1();
@@ -83,8 +90,16 @@ public interface BaseCassandraVersion {
         return SELECT_DSL_CODE_GEN;
     }
 
+    default IndexSelectDSLCodeGen indexSelectDslCodeGen() {
+        return INDEX_SELECT_DSL_CODE_GEN;
+    }
+
     default SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
         return SELECT_WHERE_DSL_CODE_GEN;
+    }
+
+    default IndexSelectWhereDSLCodeGen indexSelectWhereDSLCodeGen() {
+        return INDEX_SELECT_WHERE_DSL_CODE_GEN;
     }
 
     default UpdateDSLCodeGen updateDslCodeGen() {

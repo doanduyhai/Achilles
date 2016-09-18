@@ -24,107 +24,78 @@ import java.util.List;
 import java.util.Optional;
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.BaseSingleColumnRestriction;
 import info.archinnov.achilles.internals.codegen.dsl.MultiColumnsSliceRestrictionCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
+import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
 public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         implements BaseSingleColumnRestriction, MultiColumnsSliceRestrictionCodeGen {
 
-    public abstract void augmentSelectEndClass(TypeSpec.Builder selectEndClassBuilder, ClassSignatureInfo lastSignature);
-
-    public abstract List<TypeSpec> generateExtraWhereClasses(GlobalParsingContext context,
-                                                             EntityMetaSignature signature,
-                                                             List<FieldSignatureInfo> partitionKeys,
-                                                             List<FieldSignatureInfo> clusteringCols);
-
-    public abstract void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder,
-                                                            FieldSignatureInfo fieldSignatureInfo,
-                                                            ClassSignatureInfo nextSignature);
-
     public List<TypeSpec> buildWhereClasses(GlobalParsingContext context, EntityMetaSignature signature) {
-        //TODO
-        IndexSelectWhereDSLCodeGen indexSelectWhereDSLCodeGen = null; //context.selectWhereDSLCodeGen();
 
+        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(INDEX_SELECT_DSL_SUFFIX,
+                INDEX_SELECT_WHERE_DSL_SUFFIX, INDEX_SELECT_END_DSL_SUFFIX,
+                ABSTRACT_SELECT_WHERE_PARTITION, ABSTRACT_INDEX_SELECT_WHERE);
 
+        final ClassSignatureParams typedMapClassSignatureParams = ClassSignatureParams.of(INDEX_SELECT_DSL_SUFFIX,
+                INDEX_SELECT_WHERE_TYPED_MAP_DSL_SUFFIX, INDEX_SELECT_END_TYPED_MAP_DSL_SUFFIX,
+                ABSTRACT_SELECT_WHERE_PARTITION_TYPED_MAP, ABSTRACT_INDEX_SELECT_WHERE_TYPED_MAP);
 
-        final Optional<FieldSignatureInfo> firstClustering = clusteringCols.stream().limit(1).findFirst();
+        final List<TypeSpec> typeSpecs = buildWhereClassesInternal(signature, classSignatureParams);
+        typeSpecs.addAll(buildWhereClassesInternal(signature, typedMapClassSignatureParams));
 
-        final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(SELECT_DSL_SUFFIX,
-                SELECT_WHERE_DSL_SUFFIX, SELECT_END_DSL_SUFFIX,
-                ABSTRACT_SELECT_WHERE_PARTITION, ABSTRACT_SELECT_WHERE);
+        typeSpecs.addAll(generateExtraWhereClasses(context, signature,
+                getPartitionKeysSignatureInfo(signature.fieldMetaSignatures),
+                getClusteringColsSignatureInfo(signature.fieldMetaSignatures)));
 
-        final ClassSignatureParams typedMapClassSignatureParams = ClassSignatureParams.of(SELECT_DSL_SUFFIX,
-                SELECT_WHERE_TYPED_MAP_DSL_SUFFIX, SELECT_END_TYPED_MAP_DSL_SUFFIX,
-                ABSTRACT_SELECT_WHERE_PARTITION_TYPED_MAP, ABSTRACT_SELECT_WHERE_TYPED_MAP);
-
-        final List<TypeSpec> partitionKeysWhereClasses = buildWhereClassesInternal(signature, indexSelectWhereDSLCodeGen, partitionKeys, clusteringCols,
-                firstClustering, classSignatureParams);
-        final List<TypeSpec> partitionKeysWhereTypedMapClasses = buildWhereClassesInternal(signature, indexSelectWhereDSLCodeGen, partitionKeys, clusteringCols,
-                firstClustering, typedMapClassSignatureParams);
-        partitionKeysWhereClasses.addAll(partitionKeysWhereTypedMapClasses);
-
-        partitionKeysWhereClasses.addAll(generateExtraWhereClasses(context, signature, partitionKeys, clusteringCols));
-
-        return partitionKeysWhereClasses;
+        return typeSpecs;
     }
 
-    public List<TypeSpec> buildWhereClassesInternal(EntityMetaSignature signature, TypeName abstractSElectWhereTypeName) {
+    public List<TypeSpec> buildWhereClassesInternal(EntityMetaSignature signature, ClassSignatureParams classSignatureParams) {
 
-        final List<IndexFieldSignatureInfo> indexCols = getIndexedColsSignatureInfo(signature.fieldMetaSignatures);
+        List<TypeSpec> typeSpecs = new ArrayList<>();
 
-        final TypeSpec.Builder indexSelectWhereBuilder = TypeSpec.classBuilder(signature.indexSelectWhereReturnType())
-                .superclass(abstractSElectWhereTypeName)
+
+        String indexSelectWhereClassName = signature.className + classSignatureParams.whereDslSuffix;
+        final TypeSpec.Builder indexSelectWhereBuilder = TypeSpec.classBuilder(indexSelectWhereClassName)
+                .superclass(classSignatureParams.abstractWherePartitionType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildWhereConstructor(SELECT_DOT_WHERE));
 
-        for (IndexFieldSignatureInfo indexSignature : indexCols) {
+        final String endClassName = signature.endClassName(classSignatureParams.endDslSuffix);
+        final TypeName endTypeName = ClassName.get(DSL_PACKAGE, endClassName);
+        final TypeName endReturnTypeName = ClassName.get(DSL_PACKAGE, signature.endReturnType(classSignatureParams.dslSuffix, classSignatureParams.endDslSuffix));
+        final TypeName abstractEndType = genericType(classSignatureParams.abstractWhereType, endReturnTypeName, signature.entityRawClass);
 
-            final String className = signature.whereType(indexSignature.fieldName, INDEX_SELECT_WHERE_DSL_SUFFIX);
-            final TypeName typeName = ClassName.get(DSL_PACKAGE, className);
-            final TypeName returnTypeName = ClassName.get(DSL_PACKAGE, signature.whereReturnType(x.fieldName,
-                    classSignatureParams.dslSuffix, classSignatureParams.whereDslSuffix));
+        final ClassSignatureInfo lastSignature = ClassSignatureInfo.of(endTypeName, endReturnTypeName, abstractEndType, endClassName);
 
-            TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, signature.indexSelectClassName()
-                    + "." + classSignature.className
-                    + "." + DSL_RELATION);
+        String parentClassName = signature.indexSelectClassName()
+                + "." + signature.className + classSignatureParams.whereDslSuffix;
 
-            final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(DSL_RELATION)
-                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                    .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo))
-                    .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo));
+        final List<IndexFieldSignatureInfo> indexCols = getIndexedColsSignatureInfo(signature.fieldMetaSignatures);
+        indexCols.forEach(x -> buildIndexRelation(indexSelectWhereBuilder,
+                                                    x,
+                                                    parentClassName,
+                                                    lastSignature,
+                                                    ReturnType.NEW));
 
-            augmentRelationClassForWhereClause(relationClassBuilder, partitionInfo, nextSignature);
-        }
+        typeSpecs.add(indexSelectWhereBuilder.build());
+        typeSpecs.add(buildSelectEndClass(signature, lastSignature, classSignatureParams));
 
-
-        .addType(relationClassBuilder.build())
-                .addMethod(buildRelationMethod(partitionInfo.fieldName, relationClassTypeName));
-
-        final List<ClassSignatureInfo> classesSignature = indexSelectWhereDSLCodeGen.buildClassesSignatureForWhereClause(signature, classSignatureParams,
-                partitionKeysCopy, clusteringColsCopy, WhereClauseFor.NORMAL);
-
-        final ClassSignatureInfo lastSignature = classesSignature.get(classesSignature.size() - 1);
-        final List<TypeSpec> partitionKeysWhereClasses = buildWhereClassesForPartitionKeys(signature.selectClassName(), partitionKeysCopy, classesSignature);
-        final List<TypeSpec> clusteringColsWhereClasses = buildWhereClassesForClusteringColumns(signature, firstClustering,
-                clusteringColsCopy, classesSignature, lastSignature);
-
-        final TypeSpec selectEndClass = buildSelectEndClass(signature, lastSignature, firstClustering);
-
-        partitionKeysWhereClasses.addAll(clusteringColsWhereClasses);
-        partitionKeysWhereClasses.add(selectEndClass);
-        return partitionKeysWhereClasses;
+        return typeSpecs;
     }
 
-    public TypeSpec buildSelectEndClass(EntityMetaSignature signature, ClassSignatureInfo lastSignature, Optional<FieldSignatureInfo> firstClustering) {
+    public TypeSpec buildSelectEndClass(EntityMetaSignature signature, ClassSignatureInfo lastSignature, ClassSignatureParams classSignatureParams) {
+
+        final Optional<FieldSignatureInfo> firstClustering = getClusteringColsSignatureInfo(signature.fieldMetaSignatures)
+                .stream()
+                .limit(1)
+                .findFirst();
 
         final TypeSpec.Builder builder = TypeSpec.classBuilder(lastSignature.className)
                 .superclass(lastSignature.superType)
@@ -141,156 +112,200 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
 
         augmentSelectEndClass(builder, lastSignature);
 
+        final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
+        final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
+
+        final List<IndexFieldSignatureInfo> indexCols = getIndexedColsSignatureInfo(signature.fieldMetaSignatures);
+
+        partitionKeys.forEach(x -> this.buildPartitionKeyRelation(builder, signature,x, lastSignature, classSignatureParams));
+        clusteringCols.forEach(x -> this.buildClusteringColumnRelation(builder, signature,x, lastSignature, classSignatureParams));
+
+        String parentClassName = signature.indexSelectClassName()
+                + "." + signature.className + classSignatureParams.endDslSuffix;
+
+        indexCols.forEach(x -> buildIndexRelation(builder, x, parentClassName, lastSignature, ReturnType.THIS));
+
+        addMultipleColumnsSliceRestrictions(builder, parentClassName, clusteringCols, lastSignature, ReturnType.THIS);
+
         maybeBuildOrderingBy(lastSignature, firstClustering, builder);
 
         return builder.build();
     }
 
-    public void maybeBuildOrderingBy(ClassSignatureInfo lastSignature, Optional<FieldSignatureInfo> firstClustering, TypeSpec.Builder builder) {
-        if (firstClustering.isPresent()) {
+    public void buildIndexRelation(TypeSpec.Builder indexSelectWhereBuilder,
+                                   IndexFieldSignatureInfo indexFieldInfo,
+                                   String parentClassName,
+                                   ClassSignatureInfo lastSignature,
+                                   ReturnType returnType) {
 
-            final FieldSignatureInfo fieldSignatureInfo = firstClustering.get();
-            final MethodSpec orderByAsc = MethodSpec
-                    .methodBuilder("orderBy" + upperCaseFirst(fieldSignatureInfo.fieldName) + "Ascending")
-                    .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY $L ASC</strong>", fieldSignatureInfo.cqlColumn)
-                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                    .returns(lastSignature.returnClassType)
-                    .addStatement("where.orderBy($T.asc($S))", QUERY_BUILDER, fieldSignatureInfo.cqlColumn)
-                    .addStatement("return this")
-                    .build();
+        final String relationClassName = upperCaseFirst(indexFieldInfo.fieldName) + DSL_RELATION_SUFFIX;
+        TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + relationClassName);
 
-            final MethodSpec orderByDesc = MethodSpec
-                    .methodBuilder("orderBy" + upperCaseFirst(fieldSignatureInfo.fieldName) + "Descending")
-                    .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY $L DESC</strong>", fieldSignatureInfo.cqlColumn)
-                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                    .returns(lastSignature.returnClassType)
-                    .addStatement("where.orderBy($T.desc($S))", QUERY_BUILDER, fieldSignatureInfo.cqlColumn)
-                    .addStatement("return this")
-                    .build();
+        final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(relationClassName)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
-            builder.addMethod(orderByAsc).addMethod(orderByDesc);
+        final IndexType indexType = indexFieldInfo.indexInfo.type;
+
+        switch (indexType) {
+            case COLLECTION:
+                relationClassBuilder.addMethod(buildIndexRelationForCollection(indexFieldInfo, lastSignature.returnClassType, returnType));
+                break;
+            case MAP_KEY:
+                relationClassBuilder.addMethod(buildIndexRelationForMapKey(indexFieldInfo, lastSignature.returnClassType, returnType));
+                break;
+            case MAP_VALUE:
+                relationClassBuilder.addMethod(buildIndexRelationForMapValue(indexFieldInfo, lastSignature.returnClassType, returnType));
+                break;
+            case MAP_ENTRY:
+                relationClassBuilder.addMethod(buildIndexRelationForMapEntry(indexFieldInfo, lastSignature.returnClassType, returnType));
+                break;
+            case FULL:
+            case NORMAL:
+                relationClassBuilder.addMethod(buildColumnRelation(EQ, lastSignature.returnClassType, indexFieldInfo, returnType));
+                break;
+            case NONE:
+                break;
         }
+
+        augmentRelationClassForWhereClause(relationClassBuilder, indexFieldInfo, lastSignature, returnType);
+
+        indexSelectWhereBuilder.addType(relationClassBuilder.build());
+
+        indexSelectWhereBuilder.addMethod(buildRelationMethod(indexFieldInfo.fieldName, relationClassTypeName));
     }
 
-    public MethodSpec buildLimit(ClassSignatureInfo lastSignature) {
-        return MethodSpec.methodBuilder("limit")
-                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>LIMIT :limit</strong>")
+    public MethodSpec buildIndexRelationForMapEntry(IndexFieldSignatureInfo indexFieldInfo, TypeName returnClassType, ReturnType returnType) {
+        final String paramKey = indexFieldInfo.fieldName + "_key";
+        final String paramValue = indexFieldInfo.fieldName + "_value";
+
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("ContainsEntry")
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L[?] = ?</strong>", indexFieldInfo.quotedCqlColumn)
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(TypeName.INT.box(), "limit", Modifier.FINAL)
-                .returns(lastSignature.returnClassType)
-                .addStatement("where.limit($T.bindMarker($S))", QUERY_BUILDER, "lim")
-                .addStatement("boundValues.add($N)", "limit")
-                .addStatement("encodedValues.add($N)", "limit")
-                .addStatement("return this")
-                .build();
-    }
+                .addParameter(indexFieldInfo.indexMetaSignature.mapKeyType, paramKey)
+                .addParameter(indexFieldInfo.indexMetaSignature.mapValueType, paramValue)
+                .addStatement("where.and($T.of($S, $T.bindMarker($S), $T.bindMarker($S)))",
+                        MAP_ENTRY_CLAUSE, indexFieldInfo.quotedCqlColumn,
+                        QUERY_BUILDER, paramKey,
+                        QUERY_BUILDER, paramValue)
+                .addStatement("boundValues.add($N)", paramKey)
+                .addStatement("boundValues.add($N)", paramValue)
+                .addStatement("encodedValues.add(meta.$L.encodeSingleKeyElement($N))", indexFieldInfo.fieldName, paramKey)
+                .addStatement("encodedValues.add(meta.$L.encodeSingleValueElement($N))", indexFieldInfo.fieldName, paramValue)
+                .returns(returnClassType);
 
-
-    public List<TypeSpec> buildWhereClassesForPartitionKeys(String rootClassName,
-                                                            List<FieldSignatureInfo> partitionKeys,
-                                                            List<ClassSignatureInfo> classesSignature) {
-        if (partitionKeys.isEmpty()) {
-            return new ArrayList<>();
+        if(returnType == ReturnType.THIS) {
+            return builder.addStatement("return $T.this", returnClassType).build();
         } else {
-            final FieldSignatureInfo partitionKeyInfo = partitionKeys.remove(0);
-            final ClassSignatureInfo classSignature = classesSignature.remove(0);
-            final TypeSpec typeSpec = buildSelectWhereForPartitionKey(rootClassName, partitionKeyInfo, classSignature, classesSignature.get(0));
-            final List<TypeSpec> typeSpecs = buildWhereClassesForPartitionKeys(rootClassName, partitionKeys, classesSignature);
-            typeSpecs.add(0, typeSpec);
-            return typeSpecs;
+            return builder.addStatement("return new $T(where)", returnClassType).build();
         }
     }
 
-    public TypeSpec buildSelectWhereForPartitionKey(String rootClassName,
-                                                    FieldSignatureInfo partitionInfo,
-                                                    ClassSignatureInfo classSignature,
-                                                    ClassSignatureInfo nextSignature) {
+    protected MethodSpec buildIndexRelationForMapKey(IndexFieldSignatureInfo indexFieldInfo, TypeName returnClassType, ReturnType returnType) {
+        final String param = indexFieldInfo.fieldName + "_key";
 
-        TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, rootClassName
-                + "." + classSignature.className
-                + "." + DSL_RELATION);
-
-        final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(DSL_RELATION)
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("ContainsKey")
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L CONTAINS KEY ?</strong>", indexFieldInfo.quotedCqlColumn)
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, partitionInfo))
-                .addMethod(buildColumnInVarargs(nextSignature.returnClassType, partitionInfo));
+                .addParameter(indexFieldInfo.indexMetaSignature.mapKeyType, param)
+                .addStatement("where.and($T.containsKey($S, $T.bindMarker($S)))",
+                        QUERY_BUILDER, indexFieldInfo.quotedCqlColumn, QUERY_BUILDER, indexFieldInfo.quotedCqlColumn)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeSingleKeyElement($N))", indexFieldInfo.fieldName, param)
+                .returns(returnClassType);
 
-        augmentRelationClassForWhereClause(relationClassBuilder, partitionInfo, nextSignature);
+        if(returnType == ReturnType.THIS) {
+            return builder.addStatement("return $T.this", returnClassType).build();
+        } else {
+            return builder.addStatement("return new $T(where)", returnClassType).build();
+        }
+    }
 
-        return TypeSpec.classBuilder(classSignature.className)
-                .superclass(classSignature.superType)
+    protected MethodSpec buildIndexRelationForMapValue(IndexFieldSignatureInfo indexFieldInfo, TypeName returnClassType, ReturnType returnType) {
+        final String param = indexFieldInfo.fieldName + "_value";
+
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("ContainsValue")
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L CONTAINS ?</strong>", indexFieldInfo.quotedCqlColumn)
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(SELECT_DOT_WHERE))
+                .addParameter(indexFieldInfo.indexMetaSignature.mapValueType, param)
+                .addStatement("where.and($T.contains($S, $T.bindMarker($S)))",
+                        QUERY_BUILDER, indexFieldInfo.quotedCqlColumn, QUERY_BUILDER, indexFieldInfo.quotedCqlColumn)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeSingleValueElement($N))", indexFieldInfo.fieldName, param)
+                .returns(returnClassType);
+
+        if(returnType == ReturnType.THIS) {
+            return builder.addStatement("return $T.this", returnClassType).build();
+        } else {
+            return builder.addStatement("return new $T(where)", returnClassType).build();
+        }
+    }
+
+    protected MethodSpec buildIndexRelationForCollection(IndexFieldSignatureInfo indexFieldInfo, TypeName returnClassType, ReturnType returnType) {
+        final String param = indexFieldInfo.fieldName + "_element";
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("Contains")
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L CONTAINS ?</strong>", indexFieldInfo.quotedCqlColumn)
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addParameter(indexFieldInfo.indexMetaSignature.collectionElementType, param)
+                .addStatement("where.and($T.contains($S, $T.bindMarker($S)))",
+                        QUERY_BUILDER, indexFieldInfo.quotedCqlColumn, QUERY_BUILDER, indexFieldInfo.quotedCqlColumn)
+                .addStatement("boundValues.add($N)", param)
+                .addStatement("encodedValues.add(meta.$L.encodeSingleElement($N))", indexFieldInfo.fieldName, param)
+                .returns(returnClassType);
+        if(returnType == ReturnType.THIS) {
+            return builder.addStatement("return $T.this", returnClassType).build();
+        } else {
+            return builder.addStatement("return new $T(where)", returnClassType).build();
+        }
+    }
+
+    private void buildPartitionKeyRelation(TypeSpec.Builder builder,
+                                          EntityMetaSignature signature,
+                                          FieldSignatureInfo partitionInfo,
+                                          ClassSignatureInfo lastSignature,
+                                          ClassSignatureParams classSignatureParams) {
+
+        final String relationClassName = upperCaseFirst(partitionInfo.fieldName) + DSL_RELATION_SUFFIX;
+        TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, signature.indexSelectClassName()
+                + "." + signature.className + classSignatureParams.endDslSuffix
+                + "." + relationClassName);
+
+        final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(relationClassName)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addMethod(buildColumnRelation(EQ, lastSignature.returnClassType, partitionInfo, ReturnType.THIS))
+                .addMethod(buildColumnInVarargs(lastSignature.returnClassType, partitionInfo, ReturnType.THIS));
+
+        augmentRelationClassForWhereClause(relationClassBuilder, partitionInfo, lastSignature, ReturnType.NEW);
+
+        builder
                 .addType(relationClassBuilder.build())
-                .addMethod(buildRelationMethod(partitionInfo.fieldName, relationClassTypeName))
-                .build();
+                .addMethod(buildRelationMethod(partitionInfo.fieldName, relationClassTypeName));
     }
 
+    private void buildClusteringColumnRelation(TypeSpec.Builder builder,
+                                              EntityMetaSignature signature,
+                                              FieldSignatureInfo clusteringColumnInfo,
+                                              ClassSignatureInfo lastSignature,
+                                              ClassSignatureParams classSignatureParams) {
 
-    public List<TypeSpec> buildWhereClassesForClusteringColumns(EntityMetaSignature signature,
-                                                                Optional<FieldSignatureInfo> firstClusteringCol,
-                                                                List<FieldSignatureInfo> clusteringCols,
-                                                                List<ClassSignatureInfo> classesSignature,
-                                                                ClassSignatureInfo lastSignature) {
-        if (clusteringCols.isEmpty()) {
-            return new ArrayList<>();
-        } else {
-            final List<FieldSignatureInfo> copyClusteringCols = new ArrayList<>(clusteringCols);
-            final List<ClassSignatureInfo> copyClassesSignature = new ArrayList<>(classesSignature);
-            clusteringCols.remove(0);
-            classesSignature.remove(0);
-            final TypeSpec currentType = buildSelectWhereForClusteringColumn(signature, firstClusteringCol,
-                    copyClusteringCols, copyClassesSignature, lastSignature);
-            final List<TypeSpec> typeSpecs = buildWhereClassesForClusteringColumns(signature, firstClusteringCol,
-                    clusteringCols, classesSignature, lastSignature);
-            typeSpecs.add(0, currentType);
-            return typeSpecs;
-        }
-    }
+        final String relationClassName = upperCaseFirst(clusteringColumnInfo.fieldName) + DSL_RELATION_SUFFIX;
+        TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, signature.indexSelectClassName()
+                + "." + signature.className + classSignatureParams.endDslSuffix
+                + "." + relationClassName);
 
-    public TypeSpec buildSelectWhereForClusteringColumn(EntityMetaSignature signature,
-                                                        Optional<FieldSignatureInfo> firstClusteringCol,
-                                                        List<FieldSignatureInfo> clusteringCols,
-                                                        List<ClassSignatureInfo> classesSignature,
-                                                        ClassSignatureInfo lastSignature) {
-
-        final String rootClassName = signature.selectClassName();
-        final ClassSignatureInfo classSignature = classesSignature.get(0);
-        final ClassSignatureInfo nextSignature = classesSignature.get(1);
-        final FieldSignatureInfo clusteringColumnInfo = clusteringCols.get(0);
-        final TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, rootClassName
-                + "." + classSignature.className
-                + "." + DSL_RELATION);
-
-        final TypeSpec.Builder builder = TypeSpec.classBuilder(classSignature.className)
-                .superclass(classSignature.superType)
+        TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(relationClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(SELECT_DOT_WHERE))
-                .addMethod(buildGetThis(classSignature.returnClassType))
-                .addMethod(buildGetMetaInternal(signature.entityRawClass))
-                .addMethod(buildGetEntityClass(signature))
-                .addMethod(buildGetRte())
-                .addMethod(buildGetOptions())
-                .addMethod(buildGetBoundValuesInternal())
-                .addMethod(buildGetEncodedBoundValuesInternal())
-                .addMethod(buildLimit(classSignature));
+                .addMethod(buildColumnRelation(EQ, lastSignature.returnClassType, clusteringColumnInfo, ReturnType.THIS));
 
-        TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(DSL_RELATION)
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo));
+        addSingleColumnSliceRestrictions(relationClassBuilder, clusteringColumnInfo, lastSignature, lastSignature, ReturnType.THIS);
 
-        addSingleColumnSliceRestrictions(relationClassBuilder, clusteringColumnInfo, nextSignature, lastSignature);
+        augmentRelationClassForWhereClause(relationClassBuilder, clusteringColumnInfo, lastSignature, ReturnType.NEW);
 
-        augmentRelationClassForWhereClause(relationClassBuilder, clusteringColumnInfo, nextSignature);
-
-        builder.addType(relationClassBuilder.build());
-        builder.addMethod(buildRelationMethod(clusteringColumnInfo.fieldName, relationClassTypeName));
-
-        addMultipleColumnsSliceRestrictions(builder, signature.selectClassName(), clusteringCols, classesSignature, lastSignature);
-
-        maybeBuildOrderingBy(classSignature, firstClusteringCol, builder);
-
-        return builder.build();
+        builder.addType(relationClassBuilder.build())
+                .addMethod(buildRelationMethod(clusteringColumnInfo.fieldName, relationClassTypeName));
     }
 }
 

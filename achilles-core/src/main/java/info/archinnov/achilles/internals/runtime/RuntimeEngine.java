@@ -92,10 +92,14 @@ public class RuntimeEngine {
     }
 
     public PreparedStatement prepareDynamicQuery(RegularStatement statement) {
+        return prepareDynamicQuery(statement.getQueryString());
+    }
+
+    public PreparedStatement prepareDynamicQuery(String queryString) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format("Preparing dynamic query %s", statement.getQueryString()));
+            LOGGER.debug(format("Preparing dynamic query %s", queryString));
         }
-        return cache.getDynamicCache(statement.getQueryString(), session);
+        return cache.getDynamicCache(queryString, session);
     }
 
     public Optional<PreparedStatement> maybePrepareIfDifferentSchemaNameFromCache(AbstractEntityProperty<?> entityProperty,

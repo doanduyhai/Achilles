@@ -28,10 +28,11 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
+import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
 
 public interface BaseSingleColumnRestriction {
 
-    default MethodSpec buildColumnRelation(String relation, TypeName nextType, FieldSignatureInfo fieldInfo) {
+    default MethodSpec buildColumnRelation(String relation, TypeName nextType, FieldSignatureInfo fieldInfo, ReturnType returnType) {
         final String methodName = upperCaseFirst(relation);
         final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fieldInfo.quotedCqlColumn, relationToSymbolForJavaDoc(relation))
@@ -44,10 +45,16 @@ public interface BaseSingleColumnRestriction {
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, fieldInfo.fieldName)
                 .returns(nextType);
 
-        return builder.addStatement("return new $T(where)", nextType).build();
+        if (returnType == ReturnType.NEW) {
+            builder.addStatement("return new $T(where)", nextType);
+        } else {
+            builder.addStatement("return $T.this", nextType);
+        }
+
+        return builder.build();
     }
 
-    default MethodSpec buildColumnInVarargs(TypeName nextType, FieldSignatureInfo fieldInfo) {
+    default MethodSpec buildColumnInVarargs(TypeName nextType, FieldSignatureInfo fieldInfo, ReturnType returnType) {
         final String methodName = "IN";
         final String param = fieldInfo.fieldName;
         final TypeName paramTypeName = fieldInfo.typeName;
@@ -76,6 +83,12 @@ public interface BaseSingleColumnRestriction {
                 .addStatement("encodedValues.add(encodedVarargs)")
                 .returns(nextType);
 
-        return builder.addStatement("return new $T(where)", nextType).build();
+        if (returnType == ReturnType.NEW) {
+            builder.addStatement("return new $T(where)", nextType);
+        } else {
+            builder.addStatement("return $T.this", nextType);
+        }
+
+        return builder.build();
     }
 }

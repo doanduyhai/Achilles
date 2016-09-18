@@ -22,8 +22,8 @@ import java.util.Set;
 
 import info.archinnov.achilles.annotations.*;
 
-@Table
-public class EntityWithComplexIndices {
+@Table(table = "entity_with_indices_for_json")
+public class EntityWithIndicesForJSON {
 
     @PartitionKey
     private Long id;
@@ -42,14 +42,11 @@ public class EntityWithComplexIndices {
     private String simpleIndex;
 
 
-    @Index
     @Column
-    private List<String> collectionIndex;
+    private @Index List<String> collectionIndex;
 
-    @Index
     @Column
-    @Frozen
-    private Set<String> fullIndexOnCollection;
+    private @Frozen @Index Set<String> fullIndexOnCollection;
 
     @Column
     private Map<@Index String, String> indexOnMapKey;
@@ -125,19 +122,19 @@ public class EntityWithComplexIndices {
         this.indexOnMapKey = indexOnMapKey;
     }
 
-    public Map<Integer, String> getIndexOnMapEntry() {
-        return indexOnMapEntry;
-    }
-
-    public void setIndexOnMapEntry(Map<Integer, String> indexOnMapEntry) {
-        this.indexOnMapEntry = indexOnMapEntry;
-    }
-
     public Map<Integer, String> getIndexOnMapValue() {
         return indexOnMapValue;
     }
 
     public void setIndexOnMapValue(Map<Integer, String> indexOnMapValue) {
         this.indexOnMapValue = indexOnMapValue;
+    }
+
+    public Map<Integer, String> getIndexOnMapEntry() {
+        return indexOnMapEntry;
+    }
+
+    public void setIndexOnMapEntry(Map<Integer, String> indexOnMapEntry) {
+        this.indexOnMapEntry = indexOnMapEntry;
     }
 }

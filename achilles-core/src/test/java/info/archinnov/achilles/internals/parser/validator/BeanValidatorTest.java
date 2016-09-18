@@ -76,6 +76,6 @@ public class BeanValidatorTest extends AbstractTestProcessor {
             final TypeName typeName = ClassName.get(TestEntityWithNoPublicConstructor.class);
             beanValidator.validateHasPublicConstructor(aptUtils, typeName, typeElement);
         });
-        failTestWithMessage("Bean type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithNoPublicConstructor' should have a public constructor", TestEntityWithNoPublicConstructor.class);
+        failTestWithMessage("Bean type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithNoPublicConstructor' should have a public no-args constructor", TestEntityWithNoPublicConstructor.class);
     }
 }
