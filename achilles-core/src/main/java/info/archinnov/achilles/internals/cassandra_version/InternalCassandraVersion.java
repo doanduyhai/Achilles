@@ -16,291 +16,151 @@
 
 package info.archinnov.achilles.internals.cassandra_version;
 
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.*;
-
 import java.util.Set;
 
-import com.google.common.collect.ImmutableSet;
-
 import info.archinnov.achilles.internals.codegen.crud.CrudAPICodeGen;
+import info.archinnov.achilles.internals.codegen.crud.cassandra2_1.CrudAPICodeGen2_1;
 import info.archinnov.achilles.internals.codegen.crud.cassandra2_2.CrudAPICodeGen2_2;
+import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.delete.cassandra2_1.DeleteDSLCodeGen2_1;
+import info.archinnov.achilles.internals.codegen.dsl.delete.cassandra2_1.DeleteWhereDSLCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.dsl.delete.cassandra2_2.DeleteWhereDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.delete.cassandra3_0.DeleteWhereDSLCodeGen3_0;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_1.SelectDSLCodeGen2_1;
+import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_1.SelectWhereDSLCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_2.SelectDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_2.SelectWhereDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.select.cassandra3_6.SelectWhereDSLCodeGen3_6;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_1.UpdateDSLCodeGen2_1;
+import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_1.UpdateWhereDSLCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2.UpdateDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2.UpdateWhereDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra3_0.UpdateWhereDSLCodeGen3_0;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra3_6.UpdateDSLCodeGen3_6;
 import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
+import info.archinnov.achilles.internals.codegen.function.cassandra2_1.FunctionsRegistryCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.function.cassandra2_2.FunctionsRegistryCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.function.cassandra3_2.FunctionsRegistryCodeGen3_2;
 import info.archinnov.achilles.internals.codegen.index.IndexSelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.index.IndexSelectWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.index.cassandra2_1.IndexSelectDSLCodeGen2_1;
+import info.archinnov.achilles.internals.codegen.index.cassandra2_1.IndexSelectWhereDSLCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.index.cassandra2_2.IndexSelectDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.index.cassandra2_2.IndexSelectWhereDSLCodeGen2_2;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
+import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
+import info.archinnov.achilles.internals.parser.validator.TypeValidator;
+import info.archinnov.achilles.internals.parser.validator.cassandra2_1.BeanValidator2_1;
+import info.archinnov.achilles.internals.parser.validator.cassandra2_1.FieldValidator2_1;
+import info.archinnov.achilles.internals.parser.validator.cassandra2_1.NestedTypeValidator2_1;
+import info.archinnov.achilles.internals.parser.validator.cassandra2_1.TypeValidator2_1;
 import info.archinnov.achilles.internals.parser.validator.cassandra3_0.BeanValidator3_0;
 import info.archinnov.achilles.internals.parser.validator.cassandra3_6.NestedTypeValidator3_6;
 
-public enum  InternalCassandraVersion implements BaseCassandraVersion {
+public interface InternalCassandraVersion {
+    BeanValidator BEAN_VALIDATOR = new BeanValidator2_1();
+    FieldValidator FIELD_VALIDATOR = new FieldValidator2_1();
+    TypeValidator TYPE_VALIDATOR = new TypeValidator2_1();
+    NestedTypesValidator NESTED_TYPES_VALIDATOR = new NestedTypeValidator2_1();
 
-    V2_1 {
-        private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT);
+    CrudAPICodeGen CRUD_API_CODE_GEN = new CrudAPICodeGen2_1();
+    SelectDSLCodeGen SELECT_DSL_CODE_GEN = new SelectDSLCodeGen2_1();
+    SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN = new SelectWhereDSLCodeGen2_1();
 
-        @Override
-        public boolean supportsFeature(CassandraFeature feature) {
-            return SUPPORTED_FEATURES.contains(feature);
-        }
-    },
-    V2_2 {
-        private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA);
+    IndexSelectDSLCodeGen INDEX_SELECT_DSL_CODE_GEN = new IndexSelectDSLCodeGen2_1();
+    IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN = new IndexSelectWhereDSLCodeGen2_1();
 
-        @Override
-        public boolean supportsFeature(CassandraFeature feature) {
-            return SUPPORTED_FEATURES.contains(feature);
-        }
+    UpdateDSLCodeGen UPDATE_DSL_CODE_GEN = new UpdateDSLCodeGen2_1();
+    UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN = new UpdateWhereDSLCodeGen2_1();
 
-        @Override
-        public CrudAPICodeGen crudApiCodeGen() {
-            return CRUD_API_CODE_GEN_2_2;
-        }
+    DeleteDSLCodeGen DELETE_DSL_CODE_GEN = new DeleteDSLCodeGen2_1();
+    DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN = new DeleteWhereDSLCodeGen2_1();
 
-        @Override
-        public SelectDSLCodeGen selectDslCodeGen() {
-            return SELECT_DSL_CODE_GEN_2_2;
-        }
+    FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN = new FunctionsRegistryCodeGen2_1();
 
-        @Override
-        public IndexSelectDSLCodeGen indexSelectDslCodeGen() {
-            return INDEX_SELECT_DSL_CODE_GEN_2_2;
-        }
+    CrudAPICodeGen CRUD_API_CODE_GEN_2_2 = new CrudAPICodeGen2_2();
+    SelectDSLCodeGen SELECT_DSL_CODE_GEN_2_2 = new SelectDSLCodeGen2_2();
+    IndexSelectDSLCodeGen INDEX_SELECT_DSL_CODE_GEN_2_2 = new IndexSelectDSLCodeGen2_2();
+    SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_2_2 = new SelectWhereDSLCodeGen2_2();
+    IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2 = new IndexSelectWhereDSLCodeGen2_2();
+    SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_3_6 = new SelectWhereDSLCodeGen3_6();
+    UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_2_2 = new UpdateDSLCodeGen2_2();
+    UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_3_6 = new UpdateDSLCodeGen3_6();
+    UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN_2_2 = new UpdateWhereDSLCodeGen2_2();
+    UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN_3_0 = new UpdateWhereDSLCodeGen3_0();
+    DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN_2_2 = new DeleteWhereDSLCodeGen2_2();
+    DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN_3_0 = new DeleteWhereDSLCodeGen3_0();
 
-        @Override
-        public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
-            return SELECT_WHERE_DSL_CODE_GEN_2_2;
-        }
+    BeanValidator BEAN_VALIDATOR_3_0 = new BeanValidator3_0();
+    NestedTypesValidator NESTED_TYPES_VALIDATOR_3_6 = new NestedTypeValidator3_6();
+    FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN_2_2 = new FunctionsRegistryCodeGen2_2();
+    FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN_3_2 = new FunctionsRegistryCodeGen3_2();
 
-        @Override
-        public IndexSelectWhereDSLCodeGen indexSelectWhereDSLCodeGen() {
-            return INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2;
-        }
+    Set<CassandraFeature> getFeatures();
 
-        @Override
-        public UpdateDSLCodeGen updateDslCodeGen() {
-            return UPDATE_DSL_CODE_GEN_2_2;
-        }
+    default boolean supportsFeature(CassandraFeature feature) {
+        return getFeatures().contains(feature);
+    }
 
-        @Override
-        public UpdateWhereDSLCodeGen updateWhereDslCodeGen() {
-            return UPDATE_WHERE_DSL_CODE_GEN_2_2;
-        }
+    default BeanValidator beanValidator() {
+        return BEAN_VALIDATOR;
+    }
 
-        @Override
-        public DeleteWhereDSLCodeGen deleteWhereDslCodeGen() {
-            return DELETE_WHERE_DSL_CODE_GEN_2_2;
-        }
+    default FieldValidator fieldValidator() {
+        return FIELD_VALIDATOR;
+    }
 
-        @Override
-        public FunctionsRegistryCodeGen functionsRegistryCodeGen() {
-            return FUNCTIONS_REGISTRY_CODE_GEN_2_2;
-        }
-    },
-    V3_0 {
-        private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA, MATERIALIZED_VIEW);
+    default TypeValidator typeValidator() {
+        return TYPE_VALIDATOR;
+    }
 
-        @Override
-        public BeanValidator beanValidator() {
-            return BEAN_VALIDATOR_3_0;
-        }
+    default NestedTypesValidator nestedTypesValidator() {
+        return NESTED_TYPES_VALIDATOR;
+    }
 
-        @Override
-        public CrudAPICodeGen crudApiCodeGen() {
-            return CRUD_API_CODE_GEN_2_2;
-        }
+    default CrudAPICodeGen crudApiCodeGen() {
+        return CRUD_API_CODE_GEN;
+    }
 
-        @Override
-        public SelectDSLCodeGen selectDslCodeGen() {
-            return SELECT_DSL_CODE_GEN_2_2;
-        }
+    default SelectDSLCodeGen selectDslCodeGen() {
+        return SELECT_DSL_CODE_GEN;
+    }
 
-        @Override
-        public IndexSelectDSLCodeGen indexSelectDslCodeGen() {
-            return INDEX_SELECT_DSL_CODE_GEN_2_2;
-        }
+    default IndexSelectDSLCodeGen indexSelectDslCodeGen() {
+        return INDEX_SELECT_DSL_CODE_GEN;
+    }
 
-        @Override
-        public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
-            return SELECT_WHERE_DSL_CODE_GEN_2_2;
-        }
+    default SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
+        return SELECT_WHERE_DSL_CODE_GEN;
+    }
 
-        @Override
-        public IndexSelectWhereDSLCodeGen indexSelectWhereDSLCodeGen() {
-            return INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2;
-        }
+    default IndexSelectWhereDSLCodeGen indexSelectWhereDSLCodeGen() {
+        return INDEX_SELECT_WHERE_DSL_CODE_GEN;
+    }
 
-        @Override
-        public UpdateDSLCodeGen updateDslCodeGen() {
-            return UPDATE_DSL_CODE_GEN_2_2;
-        }
+    default UpdateDSLCodeGen updateDslCodeGen() {
+        return UPDATE_DSL_CODE_GEN;
+    }
 
-        @Override
-        public UpdateWhereDSLCodeGen updateWhereDslCodeGen() {
-            return UPDATE_WHERE_DSL_CODE_GEN_3_0;
-        }
+    default UpdateWhereDSLCodeGen updateWhereDslCodeGen() {
+        return UPDATE_WHERE_DSL_CODE_GEN;
+    }
 
-        @Override
-        public DeleteWhereDSLCodeGen deleteWhereDslCodeGen() {
-            return DELETE_WHERE_DSL_CODE_GEN_3_0;
-        }
+    default DeleteDSLCodeGen deleteDslCodeGen() {
+        return DELETE_DSL_CODE_GEN;
+    }
 
-        @Override
-        public FunctionsRegistryCodeGen functionsRegistryCodeGen() {
-            return FUNCTIONS_REGISTRY_CODE_GEN_2_2;
-        }
+    default DeleteWhereDSLCodeGen deleteWhereDslCodeGen() {
+        return DELETE_WHERE_DSL_CODE_GEN;
+    }
 
-        @Override
-        public boolean supportsFeature(CassandraFeature feature) {
-            return SUPPORTED_FEATURES.contains(feature);
-        }
-    },
-    V3_2 {
-        private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA, MATERIALIZED_VIEW);
-
-        @Override
-        public BeanValidator beanValidator() {
-            return BEAN_VALIDATOR_3_0;
-        }
-
-        @Override
-        public CrudAPICodeGen crudApiCodeGen() {
-            return CRUD_API_CODE_GEN_2_2;
-        }
-
-        @Override
-        public SelectDSLCodeGen selectDslCodeGen() {
-            return SELECT_DSL_CODE_GEN_2_2;
-        }
-
-        @Override
-        public IndexSelectDSLCodeGen indexSelectDslCodeGen() {
-            return INDEX_SELECT_DSL_CODE_GEN_2_2;
-        }
-
-        @Override
-        public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
-            return SELECT_WHERE_DSL_CODE_GEN_2_2;
-        }
-
-        @Override
-        public IndexSelectWhereDSLCodeGen indexSelectWhereDSLCodeGen() {
-            return INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2;
-        }
-
-        @Override
-        public UpdateDSLCodeGen updateDslCodeGen() {
-            return UPDATE_DSL_CODE_GEN_2_2;
-        }
-
-        @Override
-        public UpdateWhereDSLCodeGen updateWhereDslCodeGen() {
-            return UPDATE_WHERE_DSL_CODE_GEN_3_0;
-        }
-
-        @Override
-        public DeleteWhereDSLCodeGen deleteWhereDslCodeGen() {
-            return DELETE_WHERE_DSL_CODE_GEN_3_0;
-        }
-
-        @Override
-        public FunctionsRegistryCodeGen functionsRegistryCodeGen() {
-            return FUNCTIONS_REGISTRY_CODE_GEN_3_2;
-        }
-
-        @Override
-        public boolean supportsFeature(CassandraFeature feature) {
-            return SUPPORTED_FEATURES.contains(feature);
-        }
-    },
-    V3_6 {
-        private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA, MATERIALIZED_VIEW);
-
-        @Override
-        public BeanValidator beanValidator() {
-            return BEAN_VALIDATOR_3_0;
-        }
-
-        @Override
-        public NestedTypesValidator nestedTypesValidator() {
-            return NESTED_TYPES_VALIDATOR_3_6;
-        }
-
-        @Override
-        public CrudAPICodeGen crudApiCodeGen() {
-            return CRUD_API_CODE_GEN_2_2;
-        }
-
-        @Override
-        public SelectDSLCodeGen selectDslCodeGen() {
-            return SELECT_DSL_CODE_GEN_2_2;
-        }
-
-        @Override
-        public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
-            return SELECT_WHERE_DSL_CODE_GEN_3_6;
-        }
-
-        @Override
-        public UpdateDSLCodeGen updateDslCodeGen() {
-            return UPDATE_DSL_CODE_GEN_3_6;
-        }
-
-        @Override
-        public UpdateWhereDSLCodeGen updateWhereDslCodeGen() {
-            return UPDATE_WHERE_DSL_CODE_GEN_3_0;
-        }
-
-        @Override
-        public DeleteWhereDSLCodeGen deleteWhereDslCodeGen() {
-            return DELETE_WHERE_DSL_CODE_GEN_3_0;
-        }
-
-        @Override
-        public FunctionsRegistryCodeGen functionsRegistryCodeGen() {
-            return FUNCTIONS_REGISTRY_CODE_GEN_3_2;
-        }
-
-        @Override
-        public boolean supportsFeature(CassandraFeature feature) {
-            return SUPPORTED_FEATURES.contains(feature);
-        }
-    };
-
-    private static final CrudAPICodeGen CRUD_API_CODE_GEN_2_2 = new CrudAPICodeGen2_2();
-    private static final SelectDSLCodeGen SELECT_DSL_CODE_GEN_2_2 = new SelectDSLCodeGen2_2();
-    private static final IndexSelectDSLCodeGen INDEX_SELECT_DSL_CODE_GEN_2_2 = new IndexSelectDSLCodeGen2_2();
-    private static final SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_2_2 = new SelectWhereDSLCodeGen2_2();
-    private static final IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2 = new IndexSelectWhereDSLCodeGen2_2();
-    private static final SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_3_6 = new SelectWhereDSLCodeGen3_6();
-    private static final UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_2_2 = new UpdateDSLCodeGen2_2();
-    private static final UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_3_6 = new UpdateDSLCodeGen3_6();
-    private static final UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN_2_2 = new UpdateWhereDSLCodeGen2_2();
-    private static final UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN_3_0 = new UpdateWhereDSLCodeGen3_0();
-    private static final DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN_2_2 = new DeleteWhereDSLCodeGen2_2();
-    private static final DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN_3_0 = new DeleteWhereDSLCodeGen3_0();
-
-    private static final BeanValidator BEAN_VALIDATOR_3_0 = new BeanValidator3_0();
-    private static final NestedTypesValidator NESTED_TYPES_VALIDATOR_3_6 = new NestedTypeValidator3_6();
-    private static final FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN_2_2 = new FunctionsRegistryCodeGen2_2();
-    private static final FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN_3_2 = new FunctionsRegistryCodeGen3_2();
-
-    public abstract boolean supportsFeature(CassandraFeature feature);
-
+    default FunctionsRegistryCodeGen functionsRegistryCodeGen() {
+        return FUNCTIONS_REGISTRY_CODE_GEN;
+    }
 }

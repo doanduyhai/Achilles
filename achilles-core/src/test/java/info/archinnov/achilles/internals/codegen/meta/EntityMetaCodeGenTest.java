@@ -17,10 +17,8 @@
 package info.archinnov.achilles.internals.codegen.meta;
 
 import static info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer.getTypeParsingResults;
-import static info.archinnov.achilles.type.strategy.InsertStrategy.ALL_FIELDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.rmi.Naming;
 import java.util.List;
 import java.util.Optional;
 import javax.lang.model.element.TypeElement;
@@ -32,7 +30,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
-import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
+import info.archinnov.achilles.internals.cassandra_version.V3_0;
 import info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
 import info.archinnov.achilles.internals.parser.FieldParser;
@@ -43,7 +41,6 @@ import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSens
 import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewStatic;
 import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewWithEntityAnnotation;
 import info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter;
-import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 
@@ -251,7 +248,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             final String className = TestEntityWithImplicitFieldParsing.class.getCanonicalName();
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
 
-            GlobalParsingContext globalParsingContext = new GlobalParsingContext(InternalCassandraVersion.V3_0,
+            GlobalParsingContext globalParsingContext = new GlobalParsingContext(V3_0.INSTANCE,
                     InsertStrategy.ALL_FIELDS, new SnakeCaseNaming(), FieldFilter.IMPLICIT_ENTITY_FIELD_FILTER,
                     FieldFilter.IMPLICIT_UDT_FIELD_FILTER, Optional.empty());
 

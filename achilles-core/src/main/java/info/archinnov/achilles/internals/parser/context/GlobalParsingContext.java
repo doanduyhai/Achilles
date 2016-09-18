@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.internals.parser.context;
 
-import static info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter.*;
 import static info.archinnov.achilles.type.CassandraVersion.*;
@@ -34,8 +33,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.annotations.CompileTimeConfig;
-import info.archinnov.achilles.internals.cassandra_version.CassandraFeature;
-import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
+import info.archinnov.achilles.internals.cassandra_version.*;
 import info.archinnov.achilles.internals.codegen.crud.CrudAPICodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteWhereDSLCodeGen;
@@ -67,15 +65,15 @@ public class GlobalParsingContext {
     private static final Map<ColumnMappingStrategy, Tuple2<FieldFilter, FieldFilter>> COLUMNS_MAPPING = new HashMap<>();
 
     static {
-        VERSION_MAPPING.put(CASSANDRA_2_1_X, V2_1);
-        VERSION_MAPPING.put(CASSANDRA_2_2_X, V2_2);
-        VERSION_MAPPING.put(CASSANDRA_3_0_X, V3_0);
-        VERSION_MAPPING.put(CASSANDRA_3_1, V3_0);
-        VERSION_MAPPING.put(CASSANDRA_3_2, V3_2);
-        VERSION_MAPPING.put(CASSANDRA_3_3, V3_2);
-        VERSION_MAPPING.put(CASSANDRA_3_4, V3_2);
-        VERSION_MAPPING.put(CASSANDRA_3_5, V3_2);
-        VERSION_MAPPING.put(CASSANDRA_3_6, V3_6);
+        VERSION_MAPPING.put(CASSANDRA_2_1_X, V2_1.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_2_2_X, V2_2.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_0_X, V3_0.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_1, V3_0.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_2, V3_2.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_3, V3_2.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_4, V3_2.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_5, V3_2.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_6, V3_6.INSTANCE);
 
         COLUMNS_MAPPING.put(EXPLICIT, Tuple2.of(EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER));
         COLUMNS_MAPPING.put(IMPLICIT, Tuple2.of(IMPLICIT_ENTITY_FIELD_FILTER, IMPLICIT_UDT_FIELD_FILTER));
@@ -103,7 +101,7 @@ public class GlobalParsingContext {
     }
 
     public static GlobalParsingContext defaultContext() {
-        return new GlobalParsingContext(V3_0, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+        return new GlobalParsingContext(V3_0.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
                 EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
     }
 

@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.findFieldInType;
-import static info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion.V3_6;
 import static info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter.EXPLICIT_ENTITY_FIELD_FILTER;
 import static info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter.EXPLICIT_UDT_FIELD_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,7 +44,7 @@ import com.squareup.javapoet.ClassName;
 
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
-import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
+import info.archinnov.achilles.internals.cassandra_version.V3_6;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
@@ -53,7 +52,6 @@ import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistry
 import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistry2;
 import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistryWrong;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs;
-import info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
@@ -1234,7 +1232,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     @Test
     public void should_parse_non_frozen_udt() throws Exception {
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
                     EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -1257,7 +1255,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_parsing_non_frozen_nested_udt() throws Exception {
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
                     EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -1282,7 +1280,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_parsing_counter_in_udt() throws Exception {
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
                     EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -1307,7 +1305,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_parsing_partition_key_in_udt() throws Exception {
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
                     EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -1332,7 +1330,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_parsing_clustering_column_in_udt() throws Exception {
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
                     EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -1357,7 +1355,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_parsing_static_column_in_udt() throws Exception {
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
                     EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
@@ -1382,7 +1380,7 @@ public class FieldParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_parsing_non_frozen_collection_in_udt() throws Exception {
         setExec(aptUtils -> {
-            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_6.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
                     EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
             final FieldParser fieldParser = new FieldParser(aptUtils);
             final String className = TestEntityForCodecs.class.getCanonicalName();
