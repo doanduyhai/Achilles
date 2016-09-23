@@ -52,6 +52,7 @@ import info.archinnov.achilles.internals.codegen.index.cassandra2_1.IndexSelectD
 import info.archinnov.achilles.internals.codegen.index.cassandra2_1.IndexSelectWhereDSLCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.index.cassandra2_2.IndexSelectDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.index.cassandra2_2.IndexSelectWhereDSLCodeGen2_2;
+import info.archinnov.achilles.internals.codegen.index.cassandra3_7.IndexSelectWhereDSLCodeGen3_7;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
@@ -62,10 +63,12 @@ import info.archinnov.achilles.internals.parser.validator.cassandra2_1.NestedTyp
 import info.archinnov.achilles.internals.parser.validator.cassandra2_1.TypeValidator2_1;
 import info.archinnov.achilles.internals.parser.validator.cassandra3_0.BeanValidator3_0;
 import info.archinnov.achilles.internals.parser.validator.cassandra3_6.NestedTypeValidator3_6;
+import info.archinnov.achilles.internals.parser.validator.cassandra3_7.FieldValidator3_7;
 
 public interface InternalCassandraVersion {
     BeanValidator BEAN_VALIDATOR = new BeanValidator2_1();
     FieldValidator FIELD_VALIDATOR = new FieldValidator2_1();
+    FieldValidator FIELD_VALIDATOR_3_7 = new FieldValidator3_7();
     TypeValidator TYPE_VALIDATOR = new TypeValidator2_1();
     NestedTypesValidator NESTED_TYPES_VALIDATOR = new NestedTypeValidator2_1();
 
@@ -90,6 +93,8 @@ public interface InternalCassandraVersion {
     SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_2_2 = new SelectWhereDSLCodeGen2_2();
     IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2 = new IndexSelectWhereDSLCodeGen2_2();
     SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_3_6 = new SelectWhereDSLCodeGen3_6();
+    IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_3_7 = new IndexSelectWhereDSLCodeGen3_7();
+
     UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_2_2 = new UpdateDSLCodeGen2_2();
     UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_3_6 = new UpdateDSLCodeGen3_6();
     UpdateWhereDSLCodeGen UPDATE_WHERE_DSL_CODE_GEN_2_2 = new UpdateWhereDSLCodeGen2_2();
@@ -103,6 +108,8 @@ public interface InternalCassandraVersion {
     FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN_3_2 = new FunctionsRegistryCodeGen3_2();
 
     Set<CassandraFeature> getFeatures();
+
+    String version();
 
     default boolean supportsFeature(CassandraFeature feature) {
         return getFeatures().contains(feature);

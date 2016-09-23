@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.squareup.javapoet.TypeSpec;
 
+import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.index.IndexSelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
@@ -38,6 +39,11 @@ public class IndexSelectWhereDSLCodeGen2_1 extends IndexSelectWhereDSLCodeGen {
 
     @Override
     public void augmentRelationClassForWhereClause(TypeSpec.Builder relationClassBuilder, FieldSignatureInfo fieldSignatureInfo, ClassSignatureInfo nextSignature, ReturnType returnType) {
+        //NO Op
+    }
+
+    @Override
+    public void buildSASIIndexRelation(TypeSpec.Builder indexSelectWhereBuilder, EntityMetaCodeGen.EntityMetaSignature signature, String parentClassName, ClassSignatureInfo lastSignature, ReturnType returnType) {
         //NO Op
     }
 }

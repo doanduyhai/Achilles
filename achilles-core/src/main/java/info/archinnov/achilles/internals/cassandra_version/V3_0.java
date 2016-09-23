@@ -38,6 +38,11 @@ public class V3_0 extends V2_2 {
     }
 
     @Override
+    public String version() {
+        return "3.0.X";
+    }
+
+    @Override
     public Set<CassandraFeature> getFeatures() {
         return SUPPORTED_FEATURES;
     }

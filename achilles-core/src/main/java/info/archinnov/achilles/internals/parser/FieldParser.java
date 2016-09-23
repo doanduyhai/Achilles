@@ -66,7 +66,14 @@ public class FieldParser {
         // Tuple types are frozen by default
         entityContext.globalContext.nestedTypesValidator().validate(aptUtils, annotationTree, context.fieldName, context.entityRawType);
 
-        return parseType(annotationTree, context, TypeName.get(elm.asType()));
+        final FieldMetaSignature fieldMetaSignature = parseType(annotationTree, context, TypeName.get(elm.asType()));
+
+        //Validate SASI annotation
+        if (fieldMetaSignature.context.indexInfo.sasiInfoContext.isPresent()) {
+            entityContext.globalContext.fieldValidator().validateSASIOptions(aptUtils, fieldMetaSignature, fieldMetaSignature.context.indexInfo.sasiInfoContext.get());
+        }
+
+        return fieldMetaSignature;
     }
 
     protected FieldMetaSignature parseType(AnnotationTree annotationTree, FieldParsingContext context, TypeName sourceType) {
@@ -587,6 +594,22 @@ public class FieldParser {
 
         public boolean isUDT() {
             return udtMetaSignature.isPresent();
+        }
+
+        public boolean isList() {
+            return getRawType(targetType).equals(LIST);
+        }
+
+        public boolean isSet() {
+            return getRawType(targetType).equals(SET);
+        }
+
+        public boolean isMap() {
+            return getRawType(targetType).equals(MAP);
+        }
+
+        public boolean isCollection() {
+            return isList() || isSet() || isMap();
         }
 
         public FieldMetaSignature(FieldParsingContext context, AnnotationTree annotationTree, TypeName sourceType, TypeName targetType,

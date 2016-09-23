@@ -31,6 +31,7 @@ import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMe
 import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
+import info.archinnov.achilles.internals.metamodel.index.IndexImpl;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
@@ -278,10 +279,11 @@ public abstract class AbstractDSLCodeGen {
                 .collect(toList()));
     }
 
-    public List<IndexFieldSignatureInfo> getIndexedColsSignatureInfo(List<FieldMetaSignature> parsingResults) {
+    public List<IndexFieldSignatureInfo> getIndexedColsSignatureInfo(IndexImpl indexImpl, List<FieldMetaSignature> parsingResults) {
         return new ArrayList<>(parsingResults
                 .stream()
                 .filter(x -> x.context.indexInfo.type != IndexType.NONE)
+                .filter(x -> x.context.indexInfo.impl == indexImpl)
                 .map(x -> IndexFieldSignatureInfo.of(x.context.fieldName, x.context.cqlColumn, x.sourceType, x.context.indexInfo, x.indexMetaSignature))
                 .sorted(INDEX_FIELD_SIGNATURE_SORTER)
                 .collect(toList()));

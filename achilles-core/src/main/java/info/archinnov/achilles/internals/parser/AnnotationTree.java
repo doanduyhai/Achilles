@@ -43,11 +43,11 @@ import com.sun.tools.javac.code.SymbolMetadata;
 import com.sun.tools.javac.code.TargetType;
 
 import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.annotations.SASI.Analyzer;
+import info.archinnov.achilles.annotations.SASI.IndexMode;
+import info.archinnov.achilles.annotations.SASI.Normalization;
 import info.archinnov.achilles.internals.apt.AptUtils;
-import info.archinnov.achilles.internals.parser.context.CodecContext;
-import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.parser.context.IndexInfoContext;
-import info.archinnov.achilles.internals.parser.context.RuntimeCodecContext;
+import info.archinnov.achilles.internals.parser.context.*;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.*;
 
@@ -249,6 +249,7 @@ public class AnnotationTree {
                             Codec.class.getCanonicalName().equals(annotationName) ||
                             RuntimeCodec.class.getCanonicalName().equals(annotationName) ||
                             Index.class.getCanonicalName().equals(annotationName) ||
+                            SASI.class.getCanonicalName().equals(annotationName) ||
                             PartitionKey.class.getCanonicalName().equals(annotationName) ||
                             ClusteringColumn.class.getCanonicalName().equals(annotationName);
                 })
@@ -277,6 +278,7 @@ public class AnnotationTree {
                                     areSameByClass(x, Codec.class) ||
                                     areSameByClass(x, RuntimeCodec.class) ||
                                     areSameByClass(x, Index.class) ||
+                                    areSameByClass(x, SASI.class) ||
                                     areSameByClass(x, PartitionKey.class) ||
                                     areSameByClass(x, ClusteringColumn.class)
                     )
@@ -532,6 +534,18 @@ public class AnnotationTree {
             final String indexClassName = getElementValue(annotation, "indexClassName", String.class, true);
             typedMap.put("indexInfoContext", new IndexInfoContext(indexName, indexClassName, indexOptions));
             return typedMap;
+        } else if(areSameByClass(annotation, SASI.class)) {
+            final String indexName = getElementValue(annotation, "name", String.class, true);
+            final IndexMode indexMode = getElementValueEnum(annotation, "indexMode", IndexMode.class, true);
+            final boolean analyzed = getElementValue(annotation, "analyzed", Boolean.class, true);
+            final Analyzer analyzerClass = getElementValueEnum(annotation, "analyzerClass", Analyzer.class, true);
+            final int maxCompactionFlushMemoryInMb = getElementValue(annotation, "maxCompactionFlushMemoryInMb", Integer.class, true);
+            final Normalization normalization = getElementValueEnum(annotation, "normalization", Normalization.class, true);
+            final String locale = getElementValue(annotation, "locale", String.class, true);
+            final boolean enableStemming = getElementValue(annotation, "enableStemming", Boolean.class, true);
+            final boolean skipStopWords = getElementValue(annotation, "skipStopWords", Boolean.class, true);
+            typedMap.put("sasiInfoContext", new SASIInfoContext(indexName, indexMode, analyzed, analyzerClass, maxCompactionFlushMemoryInMb, normalization, locale, enableStemming, skipStopWords));
+            return typedMap;
         } else if (areSameByClass(annotation, PartitionKey.class)) {
             typedMap.put("order", getElementValue(annotation, "value", Integer.class, true));
             return typedMap;
@@ -565,6 +579,8 @@ public class AnnotationTree {
             return RuntimeCodec.class;
         } else if (areSameByClass(annotationMirror, Index.class)) {
             return Index.class;
+        } else if (areSameByClass(annotationMirror, SASI.class)) {
+            return SASI.class;
         } else if (areSameByClass(annotationMirror, PartitionKey.class)) {
             return PartitionKey.class;
         } else if (areSameByClass(annotationMirror, ClusteringColumn.class)) {
@@ -712,6 +728,81 @@ public class AnnotationTree {
 
             typedMap.put("indexInfoContext", new IndexInfoContext(name, indexClassName, indexOptions));
             return Tuple2.of(Index.class, typedMap);
+        } else if (SASI.class.getCanonicalName().equals(annotationName)) {
+
+            final List<ElementValuePair> pairs = Arrays.asList(annotationBinding.getElementValuePairs());
+
+            final String indexName = pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("name"))
+                    .map(pair -> ((StringConstant) pair.getValue()).stringValue())
+                    .findFirst().orElse("");
+
+            final IndexMode indexMode = pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("indexMode"))
+                    .map(pair -> pair.getValue())
+                    .filter(value -> value instanceof FieldBinding)
+                    .map(value -> (FieldBinding) value)
+                    .filter(value -> IndexMode.class.getCanonicalName().equals(value.type.debugName()))
+                    .map(value -> IndexMode.valueOf(IndexMode.class, new String(value.name)))
+                    .findFirst()
+                    .orElse(IndexMode.PREFIX);
+
+            final boolean analyzed = pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("analyzed"))
+                    .map(pair -> ((BooleanConstant) pair.getValue()).booleanValue())
+                    .findFirst().orElse(false);
+
+            final Analyzer analyzerClass = pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("analyzerClass"))
+                    .map(pair -> pair.getValue())
+                    .filter(value -> value instanceof FieldBinding)
+                    .map(value -> (FieldBinding) value)
+                    .filter(value -> Analyzer.class.getCanonicalName().equals(value.type.debugName()))
+                    .map(value -> Analyzer.valueOf(Analyzer.class, new String(value.name)))
+                    .findFirst()
+                    .orElse(Analyzer.NO_OP_ANALYZER);
+
+            final int maxCompactionFlushMemoryInMb = pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("maxCompactionFlushMemoryInMb"))
+                    .map(pair -> ((IntConstant) pair.getValue()).intValue())
+                    .findFirst().orElse(1024);
+
+            final Normalization normalization = pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("normalization"))
+                    .map(pair -> pair.getValue())
+                    .filter(value -> value instanceof FieldBinding)
+                    .map(value -> (FieldBinding) value)
+                    .filter(value -> Normalization.class.getCanonicalName().equals(value.type.debugName()))
+                    .map(value -> Analyzer.valueOf(Normalization.class, new String(value.name)))
+                    .findFirst()
+                    .orElse(Normalization.NONE);
+
+            final String locale = pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("locale"))
+                    .map(pair -> ((StringConstant) pair.getValue()).stringValue())
+                    .findFirst().orElse("en");
+
+            final boolean enableStemming = pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("enableStemming"))
+                    .map(pair -> ((BooleanConstant) pair.getValue()).booleanValue())
+                    .findFirst().orElse(false);
+
+            final boolean skipStopWords = pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("skipStopWords"))
+                    .map(pair -> ((BooleanConstant) pair.getValue()).booleanValue())
+                    .findFirst().orElse(false);
+
+            typedMap.put("sasiInfoContext", new SASIInfoContext(indexName, indexMode, analyzed, analyzerClass, maxCompactionFlushMemoryInMb, normalization, locale, enableStemming, skipStopWords));
+            return Tuple2.of(SASI.class, typedMap);
         } else if (PartitionKey.class.getCanonicalName().equals(annotationName)) {
             final List<ElementValuePair> pairs = Arrays.asList(annotationBinding.getElementValuePairs());
             final Integer order = pairs

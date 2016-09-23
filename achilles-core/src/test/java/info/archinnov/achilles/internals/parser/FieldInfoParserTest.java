@@ -439,9 +439,9 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "indexedList");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
-            final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context)._1();
+            final CodeBlock codeBlock = parser.buildNativeIndexInfo(annotationTree, elm, context)._1();
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
-                    .isEqualTo("new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.COLLECTION, \"indexed_list_index\", \"\", \"\")");
+                    .isEqualTo("info.archinnov.achilles.internals.metamodel.index.IndexInfo.forNative(info.archinnov.achilles.internals.metamodel.index.IndexType.COLLECTION, \"indexed_list_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -458,9 +458,9 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "nestedIndexList");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
-            final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context)._1();
+            final CodeBlock codeBlock = parser.buildNativeIndexInfo(annotationTree, elm, context)._1();
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
-                    .isEqualTo("new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.COLLECTION, \"list_index\", \"\", \"\")");
+                    .isEqualTo("info.archinnov.achilles.internals.metamodel.index.IndexInfo.forNative(info.archinnov.achilles.internals.metamodel.index.IndexType.COLLECTION, \"list_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -477,7 +477,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "notIndexedList");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
-            final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context)._1();
+            final CodeBlock codeBlock = parser.buildNativeIndexInfo(annotationTree, elm, context)._1();
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo("info.archinnov.achilles.internals.metamodel.index.IndexInfo.noIndex()");
         });
@@ -496,10 +496,10 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "indexedEntryMap");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
-            final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context)._1();
+            final CodeBlock codeBlock = parser.buildNativeIndexInfo(annotationTree, elm, context)._1();
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(
-                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.CUSTOM, \"indexed_entry_map_index\", \"java.lang.Long\", \"\")");
+                            "info.archinnov.achilles.internals.metamodel.index.IndexInfo.forNative(info.archinnov.achilles.internals.metamodel.index.IndexType.CUSTOM, \"indexed_entry_map_index\", \"java.lang.Long\", \"\")");
         });
         launchTest();
     }
@@ -516,10 +516,10 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "indexedKeyMap");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
-            final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context)._1();
+            final CodeBlock codeBlock = parser.buildNativeIndexInfo(annotationTree, elm, context)._1();
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(
-                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.MAP_KEY, \"indexed_key_map_index\", \"\", \"\")");
+                            "info.archinnov.achilles.internals.metamodel.index.IndexInfo.forNative(info.archinnov.achilles.internals.metamodel.index.IndexType.MAP_KEY, \"indexed_key_map_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -536,10 +536,10 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "indexedValueMap");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
-            final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context)._1();
+            final CodeBlock codeBlock = parser.buildNativeIndexInfo(annotationTree, elm, context)._1();
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(
-                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.MAP_VALUE, \"indexed_value_map_index\", \"\", \"\")");
+                            "info.archinnov.achilles.internals.metamodel.index.IndexInfo.forNative(info.archinnov.achilles.internals.metamodel.index.IndexType.MAP_VALUE, \"indexed_value_map_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -556,7 +556,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "duplicatedIndicesForMap");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
-            parser.buildIndexInfo(annotationTree, elm, context);
+            parser.buildNativeIndexInfo(annotationTree, elm, context);
 
         });
         failTestWithMessage("Cannot have @Index on Map key AND value type in field 'duplicatedIndicesForMap' of class 'info.archinnov.achilles.internals.sample_classes.parser.field_info.TestEntityForFieldInfo'",
@@ -575,7 +575,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "notIndexedMap");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
-            final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context)._1();
+            final CodeBlock codeBlock = parser.buildNativeIndexInfo(annotationTree, elm, context)._1();
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo("info.archinnov.achilles.internals.metamodel.index.IndexInfo.noIndex()");
         });
@@ -593,10 +593,10 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "indexedUdt");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
-            final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context)._1();
+            final CodeBlock codeBlock = parser.buildNativeIndexInfo(annotationTree, elm, context)._1();
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(
-                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.NORMAL, \"indexed_udt_index\", \"\", \"\")");
+                            "info.archinnov.achilles.internals.metamodel.index.IndexInfo.forNative(info.archinnov.achilles.internals.metamodel.index.IndexType.NORMAL, \"indexed_udt_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -613,10 +613,10 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "indexedFrozenList");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
-            final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context)._1();
+            final CodeBlock codeBlock = parser.buildNativeIndexInfo(annotationTree, elm, context)._1();
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(
-                            "new info.archinnov.achilles.internals.metamodel.index.IndexInfo(info.archinnov.achilles.internals.metamodel.index.IndexType.FULL, \"indexed_frozen_list_index\", \"\", \"\")");
+                            "info.archinnov.achilles.internals.metamodel.index.IndexInfo.forNative(info.archinnov.achilles.internals.metamodel.index.IndexType.FULL, \"indexed_frozen_list_index\", \"\", \"\")");
         });
         launchTest();
     }
@@ -632,7 +632,7 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
             VariableElement elm = findFieldInType(typeElement, "normal");
             final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
 
-            final CodeBlock codeBlock = parser.buildIndexInfo(annotationTree, elm, context)._1();
+            final CodeBlock codeBlock = parser.buildNativeIndexInfo(annotationTree, elm, context)._1();
             assertThat(codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo("info.archinnov.achilles.internals.metamodel.index.IndexInfo.noIndex()");
         });

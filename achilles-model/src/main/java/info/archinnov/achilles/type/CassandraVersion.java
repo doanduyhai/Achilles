@@ -243,17 +243,16 @@ public enum CassandraVersion {
      * </ul>
      *
      */
-    CASSANDRA_3_6
+    CASSANDRA_3_6,
     /**
      * New features:
      * <br/>
      * <ul>
-     *     <li>Add static column support to SASI index (CASSANDRA-11183)</li>
      *     <li><strong>Stable</strong> SASI index with Support LIKE operator in prepared statements (CASSANDRA-11456)</li>
      * </ul>
      *
      */
-    //CASSANDRA_3_7,
+    CASSANDRA_3_7
     /**
      * New features:
      * <br/>

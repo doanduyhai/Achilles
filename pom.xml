@@ -151,6 +151,7 @@
         <module>integration-test-3_0</module>
         <module>integration-test-3_2</module>
         <module>integration-test-3_6</module>
+        <module>integration-test-3_7</module>
     </modules>
 
     <dependencyManagement>

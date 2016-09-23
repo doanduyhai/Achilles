@@ -16,22 +16,29 @@
 
 package info.archinnov.achilles.internals.schema;
 
+import static info.archinnov.achilles.annotations.SASI.Analyzer.NON_TOKENIZING_ANALYZER;
+import static info.archinnov.achilles.annotations.SASI.Analyzer.STANDARD_ANALYZER;
 import static info.archinnov.achilles.internals.metamodel.index.IndexType.*;
 import static info.archinnov.achilles.validation.Validator.validateBeanMappingFalse;
 import static info.archinnov.achilles.validation.Validator.validateBeanMappingTrue;
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.*;
 
+import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.metamodel.index.IndexImpl;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
+import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 
 public class SchemaValidator {
 
@@ -71,8 +78,13 @@ public class SchemaValidator {
                     staticType, cqlColumn, entityClass, runtimeType);
 
             if (x.fieldInfo.hasIndex()) {
-                final TableMetadata tableMetadata = (TableMetadata) metadata;
-                validateIndex(entityClass, x, cqlColumn, tableMetadata.getIndex(x.fieldInfo.indexInfo.name));
+                if (x.fieldInfo.indexInfo.impl == IndexImpl.NATIVE) {
+                    final TableMetadata tableMetadata = (TableMetadata) metadata;
+                    validateNativeIndex(entityClass, x, cqlColumn, tableMetadata.getIndex(x.fieldInfo.indexInfo.name));
+                } else if (x.fieldInfo.indexInfo.impl == IndexImpl.SASI) {
+                    final TableMetadata tableMetadata = (TableMetadata) metadata;
+                    validateSASIIndex(entityClass, x, cqlColumn, tableMetadata.getIndex(x.fieldInfo.indexInfo.name));
+                }
             }
 
             if (x.fieldInfo.columnType == ColumnType.STATIC || x.fieldInfo.columnType == ColumnType.STATIC_COUNTER) {
@@ -81,7 +93,64 @@ public class SchemaValidator {
         }
     }
 
-    private static void validateIndex(Class<?> entityClass, AbstractProperty<?, ?, ?> x, String cqlColumn, IndexMetadata indexMetadata) {
+    private static void validateSASIIndex(Class<?> entityClass, AbstractProperty<?, ?, ?> x, String cqlColumn, IndexMetadata indexMetadata) {
+        final SASIInfoContext sasiInfo = x.fieldInfo.indexInfo.sasiInfoContext.get();
+        final String indexName = sasiInfo.indexName;
+
+        validateBeanMappingTrue(sasiInfo.indexMode.name().equals(indexMetadata.getOption("mode")),
+                "Index name %s for column '%s' of entity '%s' should have option 'mode' = %s",
+                indexName, cqlColumn, entityClass, indexMetadata.getOption("mode"));
+
+        validateBeanMappingTrue((sasiInfo.maxCompactionFlushMemoryInMb + "").equals(indexMetadata.getOption("max_compaction_flush_memory_in_mb")),
+                "Index name %s for column '%s' of entity '%s' should have option 'max_compaction_flush_memory_in_mb' = %s",
+                indexName, cqlColumn, entityClass, indexMetadata.getOption("max_compaction_flush_memory_in_mb"));
+
+        if (sasiInfo.analyzed) {
+            validateBeanMappingTrue(indexMetadata.getOption("analyzed").equals("true"),
+                    "Index name %s for column '%s' of entity '%s' should have option 'analyzed' = true",
+                    indexName, cqlColumn, entityClass);
+
+            validateBeanMappingTrue(sasiInfo.analyzerClass.analyzerClass().equals(indexMetadata.getOption("analyzer_class")),
+                "Index name %s for column '%s' of entity '%s' should have option 'analyzerClass' = %s",
+                indexName, cqlColumn, entityClass, indexMetadata.getOption("analyzerClass"));
+
+            if (sasiInfo.analyzerClass == STANDARD_ANALYZER) {
+                validateBeanMappingTrue(sasiInfo.locale.trim().toLowerCase().equals(indexMetadata.getOption("tokenization_locale")),
+                        "Index name %s for column '%s' of entity '%s' should have option 'tokenization_locale' = %s",
+                        indexName, cqlColumn, entityClass, indexMetadata.getOption("tokenization_locale"));
+
+                validateBeanMappingTrue((sasiInfo.enableStemming + "").equals(indexMetadata.getOption("tokenization_enable_stemming")),
+                        "Index name %s for column '%s' of entity '%s' should have option 'tokenization_enable_stemming' = %s",
+                        indexName, cqlColumn, entityClass, indexMetadata.getOption("tokenization_enable_stemming"));
+
+                validateBeanMappingTrue((sasiInfo.skipStopWords + "").equals(indexMetadata.getOption("tokenization_skip_stop_words")),
+                        "Index name %s for column '%s' of entity '%s' should have option 'tokenization_skip_stop_words' = %s",
+                        indexName, cqlColumn, entityClass, indexMetadata.getOption("tokenization_skip_stop_words"));
+
+                final String normalization = sasiInfo.normalization.forStandardAnalyzer();
+                final String liveNormalization = indexMetadata.getOption(normalization);
+                validateBeanMappingTrue(isNotBlank(liveNormalization) && liveNormalization.equals("true"),
+                        "Index name %s for column '%s' of entity '%s' should have option '%s' = true",
+                        indexName, cqlColumn, entityClass, normalization);
+            } else if (sasiInfo.analyzerClass == NON_TOKENIZING_ANALYZER) {
+                if (sasiInfo.normalization == SASI.Normalization.NONE) {
+                    final String liveCasseSensitive = indexMetadata.getOption("case_sensitive");
+                    validateBeanMappingTrue(isNotBlank(liveCasseSensitive) && liveCasseSensitive.equals("true"),
+                            "Index name %s for column '%s' of entity '%s' should have option 'case_sensitive' = true",
+                            indexName, cqlColumn, entityClass);
+                } else {
+                    final String normalization = sasiInfo.normalization.forNonTokenizingAnalyzer();
+                    final String liveNormalization = indexMetadata.getOption(normalization);
+                    validateBeanMappingTrue(isNotBlank(liveNormalization) && liveNormalization.equals("true"),
+                            "Index name %s for column '%s' of entity '%s' should have option '%s' = true",
+                            indexName, cqlColumn, entityClass, normalization);
+                }
+            }
+
+        }
+    }
+
+    private static void validateNativeIndex(Class<?> entityClass, AbstractProperty<?, ?, ?> x, String cqlColumn, IndexMetadata indexMetadata) {
         final IndexInfo indexInfo = x.fieldInfo.indexInfo;
 
 

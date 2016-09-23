@@ -16,7 +16,33 @@
 
 package info.archinnov.achilles.internals.parser.validator.cassandra2_1;
 
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.SASI_INDEX;
+
+import java.util.Optional;
+
+import com.squareup.javapoet.TypeName;
+
+import info.archinnov.achilles.annotations.Index;
+import info.archinnov.achilles.annotations.SASI;
+import info.archinnov.achilles.internals.apt.AptUtils;
+import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
+import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 
 public class FieldValidator2_1 extends FieldValidator {
+    @Override
+    public void validateCompatibleIndexAnnotationsOnField(GlobalParsingContext context, AptUtils aptUtils, String fieldName, TypeName rawEntityClass, Optional<Index> index, Optional<SASI> sasi) {
+
+        if (sasi.isPresent()) {
+            aptUtils.validateTrue(context.supportsFeature(SASI_INDEX),
+                    "@SASI annotation is not allowed if using Cassandra version %s", context.cassandraVersion.version());
+        }
+
+    }
+
+    @Override
+    public void validateSASIOptions(AptUtils aptUtils, FieldParser.FieldMetaSignature fieldMetaSignature, SASIInfoContext sasiInfoContext) {
+        //NO Op
+    }
 }

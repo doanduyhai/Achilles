@@ -64,8 +64,8 @@ public interface StatementWrapper {
             logBuilder.append(String.format("Query ID %s : [%s] with CONSISTENCY LEVEL [%s]",
                     queryId.toString(), queryString, consistencyLevel));
             if (ArrayUtils.isNotEmpty(boundValues)) {
-                logBuilder.append(String.format("\t Java bound values : %s", replaceByteBuffersByHexString(boundValues)));
-                logBuilder.append(String.format("\t Encoded bound values : %s", replaceByteBuffersByHexString(encodedValues)));
+                logBuilder.append(String.format("\n\t Java bound values : %s", replaceByteBuffersByHexString(boundValues)));
+                logBuilder.append(String.format("\n\t Encoded bound values : %s", replaceByteBuffersByHexString(encodedValues)));
             }
             actualLogger.debug(logBuilder.toString());
         }

@@ -39,6 +39,10 @@ import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.squareup.javapoet.*;
 
+import info.archinnov.achilles.annotations.SASI;
+import info.archinnov.achilles.annotations.SASI.Analyzer;
+import info.archinnov.achilles.annotations.SASI.IndexMode;
+import info.archinnov.achilles.annotations.SASI.Normalization;
 import info.archinnov.achilles.bootstrap.AbstractManagerFactoryBuilder;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
@@ -180,6 +184,9 @@ public class TypeUtils {
     public static final ClassName CLUSTERING_ORDER = ClassName.get(ClusteringOrder.class);
     public static final ClassName INDEX_INFO = ClassName.get(IndexInfo.class);
     public static final ClassName INDEX_TYPE = ClassName.get(IndexType.class);
+    public static final ClassName SASI_INDEX_MODE = ClassName.get(IndexMode.class);
+    public static final ClassName SASI_ANALYZER = ClassName.get(Analyzer.class);
+    public static final ClassName SASI_NORMALIZATION = ClassName.get(Normalization.class);
 
     public static final ClassName ABSTRACT_PROPERTY = ClassName.get(AbstractProperty.class);
     public static final ClassName ABSTRACT_UDT_CLASS_PROPERTY = ClassName.get(AbstractUDTClassProperty.class);

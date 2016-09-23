@@ -26,15 +26,24 @@ import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
 
+import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.internals.codegen.dsl.BaseSingleColumnRestriction;
 import info.archinnov.achilles.internals.codegen.dsl.MultiColumnsSliceRestrictionCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
+import info.archinnov.achilles.internals.metamodel.index.IndexImpl;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
+import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 
 public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         implements BaseSingleColumnRestriction, MultiColumnsSliceRestrictionCodeGen {
+
+    public abstract void buildSASIIndexRelation(TypeSpec.Builder indexSelectWhereBuilder,
+                                                EntityMetaSignature signature,
+                                                String parentClassName,
+                                                ClassSignatureInfo lastSignature,
+                                                ReturnType returnType);
 
     public List<TypeSpec> buildWhereClasses(GlobalParsingContext context, EntityMetaSignature signature) {
 
@@ -77,13 +86,14 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         String parentClassName = signature.indexSelectClassName()
                 + "." + signature.className + classSignatureParams.whereDslSuffix;
 
-        final List<IndexFieldSignatureInfo> indexCols = getIndexedColsSignatureInfo(signature.fieldMetaSignatures);
-        indexCols.forEach(x -> buildIndexRelation(indexSelectWhereBuilder,
+        final List<IndexFieldSignatureInfo> nativeIndexCols = getIndexedColsSignatureInfo(IndexImpl.NATIVE, signature.fieldMetaSignatures);
+        nativeIndexCols.forEach(x -> buildNativeIndexRelation(indexSelectWhereBuilder,
                                                     x,
                                                     parentClassName,
                                                     lastSignature,
                                                     ReturnType.NEW));
 
+        buildSASIIndexRelation(indexSelectWhereBuilder, signature, parentClassName, lastSignature, ReturnType.NEW);
         typeSpecs.add(indexSelectWhereBuilder.build());
         typeSpecs.add(buildSelectEndClass(signature, lastSignature, classSignatureParams));
 
@@ -115,7 +125,7 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
-        final List<IndexFieldSignatureInfo> indexCols = getIndexedColsSignatureInfo(signature.fieldMetaSignatures);
+        final List<IndexFieldSignatureInfo> nativeIndexCols = getIndexedColsSignatureInfo(IndexImpl.NATIVE, signature.fieldMetaSignatures);
 
         partitionKeys.forEach(x -> this.buildPartitionKeyRelation(builder, signature,x, lastSignature, classSignatureParams));
         clusteringCols.forEach(x -> this.buildClusteringColumnRelation(builder, signature,x, lastSignature, classSignatureParams));
@@ -123,7 +133,9 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         String parentClassName = signature.indexSelectClassName()
                 + "." + signature.className + classSignatureParams.endDslSuffix;
 
-        indexCols.forEach(x -> buildIndexRelation(builder, x, parentClassName, lastSignature, ReturnType.THIS));
+        nativeIndexCols.forEach(x -> buildNativeIndexRelation(builder, x, parentClassName, lastSignature, ReturnType.THIS));
+
+        buildSASIIndexRelation(builder, signature, parentClassName, lastSignature, ReturnType.THIS);
 
         addMultipleColumnsSliceRestrictions(builder, parentClassName, clusteringCols, lastSignature, ReturnType.THIS);
 
@@ -132,11 +144,11 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         return builder.build();
     }
 
-    public void buildIndexRelation(TypeSpec.Builder indexSelectWhereBuilder,
-                                   IndexFieldSignatureInfo indexFieldInfo,
-                                   String parentClassName,
-                                   ClassSignatureInfo lastSignature,
-                                   ReturnType returnType) {
+    public void buildNativeIndexRelation(TypeSpec.Builder indexSelectWhereBuilder,
+                                         IndexFieldSignatureInfo indexFieldInfo,
+                                         String parentClassName,
+                                         ClassSignatureInfo lastSignature,
+                                         ReturnType returnType) {
 
         final String relationClassName = upperCaseFirst(indexFieldInfo.fieldName) + DSL_RELATION_SUFFIX;
         TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + relationClassName);

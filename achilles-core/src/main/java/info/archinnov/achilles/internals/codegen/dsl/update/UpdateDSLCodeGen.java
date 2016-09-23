@@ -220,13 +220,12 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
         final ColumnType columnType = fieldMeta.context.columnType;
         final boolean isCounterColumn = columnType == COUNTER || columnType == STATIC_COUNTER;
-        final TypeName rawTargetType = getRawType(fieldMeta.targetType);
 
-        if (rawTargetType.equals(LIST)) {
+        if (fieldMeta.isList()) {
             buildMethodsForListUpdate(parentSignature, nextTypeName, fieldMeta, returnType);
-        } else if (rawTargetType.equals(SET)) {
+        } else if (fieldMeta.isSet()) {
             buildMethodsForSetUpdate(parentSignature, nextTypeName, fieldMeta, returnType);
-        } else if (rawTargetType.equals(MAP)) {
+        } else if (fieldMeta.isMap()) {
             buildMethodsForMapUpdate(parentSignature, nextTypeName, fieldMeta, returnType);
         } else if (isCounterColumn) {
             buildMethodsForCounterUpdate(parentSignature, nextTypeName, fieldMeta, returnType);

@@ -233,6 +233,27 @@ CREATE TABLE IF NOT EXISTS it_3_6.non_frozen_udt(
 		nonfrozen it_3_6.non_frozen_udt,
 		value text,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS it_3_7.entity_with_sasi_indices(
+		id bigint,
+		clust int,
+		containsstandardanalyzer text,
+		numeric int,
+		prefixnontokenizer text,
+		sparse int,
+		PRIMARY KEY(id, clust))
+	WITH CLUSTERING ORDER BY(clust ASC);
+
+
+CREATE CUSTOM INDEX IF NOT EXISTS containsstandardanalyzer_index ON test.entity_with_sasi_indices ( containsstandardanalyzer )  USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH OPTIONS = {'max_compaction_flush_memory_in_mb' : '1024','mode' : 'CONTAINS','analyzed' : 'true','analyzer_class' : 'org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer','tokenization_locale': 'en','tokenization_enable_stemming': 'false','tokenization_skip_stop_words': 'false','tokenization_normalize_lowercase': 'true'};
+
+
+CREATE CUSTOM INDEX IF NOT EXISTS numeric_index ON test.entity_with_sasi_indices ( numeric )  USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH OPTIONS = {'max_compaction_flush_memory_in_mb' : '1024','mode' : 'PREFIX'};
+
+
+CREATE CUSTOM INDEX IF NOT EXISTS prefixnontokenizer_index ON test.entity_with_sasi_indices ( prefixnontokenizer )  USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH OPTIONS = {'max_compaction_flush_memory_in_mb' : '1024','mode' : 'PREFIX','analyzed' : 'true','analyzer_class' : 'org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer','normalize_lowercase': 'true'};
+
+
+CREATE CUSTOM INDEX IF NOT EXISTS sparse_index ON test.entity_with_sasi_indices ( sparse )  USING 'org.apache.cassandra.index.sasi.SASIIndex' WITH OPTIONS = {'max_compaction_flush_memory_in_mb' : '1024','mode' : 'SPARSE'};
 CREATE TABLE IF NOT EXISTS test.entitywithsimplepartitionkey(
 		id bigint,
 		value text,

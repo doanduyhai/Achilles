@@ -42,9 +42,11 @@ import com.google.common.collect.Sets;
 import com.google.testing.compile.JavaSourcesSubjectFactory;
 import com.squareup.javapoet.ClassName;
 
+import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.cassandra_version.V3_6;
+import info.archinnov.achilles.internals.cassandra_version.V3_7;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
@@ -52,6 +54,7 @@ import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistry
 import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistry2;
 import info.archinnov.achilles.internals.sample_classes.config.TestCodecRegistryWrong;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs;
+import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForSASI;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
@@ -1400,6 +1403,477 @@ public class FieldParserTest extends AbstractTestProcessor {
                 .processedWith(this)
                 .failsToCompile()
                 .withErrorContaining("Collection type List of field TestEntityForCodecs.udtWithNonFrozenCollection.li should has @Frozen annotation because TestEntityForCodecs.udtWithNonFrozenCollection is a non-frozen UDT");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_analyzed_but_not_string() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(analyzed = true)
+            // private Long analyzedNotString;
+            VariableElement elm = findFieldInType(typeElement, "analyzedNotString");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The target type java.lang.Long of field analyzedNotString from entity " +
+                        "info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs is not text/ascii " +
+                        "so @SASI option 'analyzed' should be false AND 'analyzerClass' should be NO_OP_ANALYZER");
+    }
+
+
+    @Test
+    public void should_fail_parsing_SASI_analyzed_but_SPARSE() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(analyzed = true, indexMode = SPARSE)
+            // private String analyzedSparse;
+            VariableElement elm = findFieldInType(typeElement, "analyzedSparse");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The @SASI option 'indexMode' for field analyzedSparse from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs cannot be SPARSE because @SASI option 'analyzed' = true");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_analyzed_but_NoOpAnalyzer() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(analyzed = true, analyzerClass = NO_OP_ANALYZER)
+            // private String analyzedNoOpAnalyzer
+            VariableElement elm = findFieldInType(typeElement, "analyzedNoOpAnalyzer");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The @SASI option 'analyzerClass' for field analyzedNoOpAnalyzer from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs cannot be NO_OP_ANALYZER because @SASI option 'analyzed' = true");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_standardAnalyzer_Not_String() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(analyzed = true, analyzerClass = STANDARD_ANALYZER)
+            // private Long standardAnalyzerNotString
+            VariableElement elm = findFieldInType(typeElement, "standardAnalyzerNotString");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The target type java.lang.Long of field standardAnalyzerNotString from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs is not text/ascii so @SASI option 'analyzed' should be false AND 'analyzerClass' should be NO_OP_ANALYZER");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_standardAnalyzer_But_SPARSE() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(analyzed = false, analyzerClass = STANDARD_ANALYZER, indexMode = SPARSE)
+            // private String standardAnalyzerSparse
+            VariableElement elm = findFieldInType(typeElement, "standardAnalyzerSparse");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The @SASI option 'indexMode' for field standardAnalyzerSparse from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs cannot be SPARSE because @SASI option 'analyzerClass' = STANDARD_ANALYZER");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_standardAnalyzer_But_NotAnalyzed() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(analyzed = false, analyzerClass = STANDARD_ANALYZER)
+            // private String standardAnalyzerNotAnalyzed
+            VariableElement elm = findFieldInType(typeElement, "standardAnalyzerNotAnalyzed");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The @SASI option 'analyzed' for field standardAnalyzerNotAnalyzed from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs cannot be false because @SASI option 'analyzerClass' = STANDARD_ANALYZER");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_lowercase_But_Not_String() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(analyzed = true, analyzerClass = NON_TOKENIZING_ANALYZER, normalization = LOWERCASE)
+            // private Long normalizationNotString
+            VariableElement elm = findFieldInType(typeElement, "normalizationNotString");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The target type java.lang.Long of field normalizationNotString from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs is not text/ascii so @SASI option 'analyzed' should be false AND 'analyzerClass' should be NO_OP_ANALYZER");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_lowercase_But_SPARSE() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(analyzed = true, analyzerClass = NON_TOKENIZING_ANALYZER, normalization = LOWERCASE, indexMode = SPARSE)
+            // private String normalizationSparse
+            VariableElement elm = findFieldInType(typeElement, "normalizationSparse");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The @SASI option 'indexMode' for field normalizationSparse from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs cannot be SPARSE because @SASI option 'normalization' = LOWERCASE");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_lowercase_But_NotAnalyzed() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(analyzed = false, analyzerClass = NON_TOKENIZING_ANALYZER, normalization = LOWERCASE)
+            // private String normalizationNotAnalyzed
+            VariableElement elm = findFieldInType(typeElement, "normalizationNotAnalyzed");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The @SASI option 'analyzed' for field normalizationNotAnalyzed from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs cannot be false because @SASI option 'normalization' = LOWERCASE");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_lowercase_But_NoAnalyzer() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(analyzed = true, analyzerClass = NO_OP_ANALYZER, normalization = LOWERCASE)
+            // private String normalizationNoAnalyzer
+            VariableElement elm = findFieldInType(typeElement, "normalizationNoAnalyzer");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The @SASI option 'analyzerClass' for field normalizationNoAnalyzer from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs cannot be NO_OP_ANALYZER because @SASI option 'analyzed' = true");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_stemming_But_NotString() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(enableStemming = true)
+            // private Long stemmingNotString
+            VariableElement elm = findFieldInType(typeElement, "stemmingNotString");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The target type java.lang.Long of field stemmingNotString from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs should be text/ascii because @SASI options 'enableStemming'/'skipStopWords' are true");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_stemming_But_SPARSE() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(enableStemming = true, indexMode = SPARSE)
+            // private String stemmingSparse
+            VariableElement elm = findFieldInType(typeElement, "stemmingSparse");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The @SASI option 'indexMode' for field stemmingSparse from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs cannot be SPARSE because @SASI options 'enableStemming'/'skipStopWords' are true");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_stemming_But_NotAnalyzed() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(enableStemming = true, analyzed = false)
+            // private String stemmingNotAnalyzed
+            VariableElement elm = findFieldInType(typeElement, "stemmingNotAnalyzed");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The @SASI option 'analyzed' for field stemmingNotAnalyzed from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs cannot be false because @SASI options 'enableStemming'/'skipStopWords' are true");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_stemming_But_NonTokeninzingAnalyzer() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(enableStemming = true, analyzed = true, analyzerClass = NON_TOKENIZING_ANALYZER)
+            // private String stemmingNonTokenizingAnalyzer
+            VariableElement elm = findFieldInType(typeElement, "stemmingNonTokenizingAnalyzer");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The @SASI option 'analyzerClass' for field stemmingNonTokenizingAnalyzer from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs should be STANDARD_ANALYZER because @SASI options 'enableStemming'/'skipStopWords' are true");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_SPARSE_But_String() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI(indexMode = SPARSE)
+            // private String sparsedButString
+            VariableElement elm = findFieldInType(typeElement, "sparsedButString");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The @SASI 'indexMode' SPARSE is incompatible with data type java.lang.String for field sparsedButString of entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_on_list() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI
+            // private List<String> indexedList
+            VariableElement elm = findFieldInType(typeElement, "indexedList");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The target type java.util.List<java.lang.String> of field indexedList from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs is a collection (list/set/map). @SASI is not allowed because collections are not (yet) supported");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_on_set() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI
+            // private Set<String> indexedSet
+            VariableElement elm = findFieldInType(typeElement, "indexedSet");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The target type java.util.Set<java.lang.String> of field indexedSet from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs is a collection (list/set/map). @SASI is not allowed because collections are not (yet) supported");
+    }
+
+    @Test
+    public void should_fail_parsing_SASI_on_map() throws Exception {
+        setExec(aptUtils -> {
+            final GlobalParsingContext globalContext = new GlobalParsingContext(V3_7.INSTANCE, InsertStrategy.ALL_FIELDS, new LowerCaseNaming(),
+                    EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER, Optional.empty());
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForSASI.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalContext);
+
+            // @Column
+            // @SASI
+            // private Map<Integer, String> indexedMap
+            VariableElement elm = findFieldInType(typeElement, "indexedMap");
+
+            fieldParser.parse(elm, entityContext);
+
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForSASI.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("The target type java.util.Map<java.lang.Integer, java.lang.String> of field indexedMap from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs is a collection (list/set/map). @SASI is not allowed because collections are not (yet) supported");
     }
 
     public static class MyCodec implements Codec<List<String>, String>, Serializable {

@@ -30,7 +30,6 @@ import com.squareup.javapoet.TypeName;
 import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
-import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 import info.archinnov.achilles.internals.parser.validator.cassandra2_1.NestedTypeValidator2_1;
 import info.archinnov.achilles.type.tuples.Tuple;
@@ -66,10 +65,7 @@ public class NestedTypeValidator3_6 extends NestedTypeValidator2_1 {
         if (!udtMetaSignature.isFrozen) {
             udtMetaSignature.fieldMetaSignatures
                     .stream()
-                    .filter(x -> {
-                        final TypeName rawType = getRawType(x.targetType);
-                        return rawType.equals(LIST) || rawType.equals(SET) || rawType.equals(MAP);
-                    })
+                    .filter(x -> x.isCollection())
                     .forEach(x -> aptUtils.validateTrue(x.context.columnInfo.frozen,
                             "Collection type %s of field %s.%s should has @Frozen annotation because %s.%s is a non-frozen UDT",
                             getShortname(getRawType(x.sourceType)), getShortname(rawClass), fieldName + "." + x.context.fieldName,

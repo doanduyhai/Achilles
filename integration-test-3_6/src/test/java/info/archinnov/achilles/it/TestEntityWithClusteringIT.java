@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.it;
 
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -26,8 +25,6 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
 
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_3_6;

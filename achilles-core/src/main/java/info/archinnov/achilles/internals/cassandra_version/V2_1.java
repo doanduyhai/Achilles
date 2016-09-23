@@ -32,6 +32,11 @@ public class V2_1 implements InternalCassandraVersion {
     private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT);
 
     @Override
+    public String version() {
+        return "2.1.X";
+    }
+
+    @Override
     public Set<CassandraFeature> getFeatures() {
         return SUPPORTED_FEATURES;
     }

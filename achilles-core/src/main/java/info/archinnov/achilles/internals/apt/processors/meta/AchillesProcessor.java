@@ -192,12 +192,12 @@ public class AchillesProcessor extends AbstractProcessor {
         aptUtils.validateFalse(containsElementsAnnotatedBy(annotations, FunctionRegistry.class)
                 && !version.supportsFeature(UDF_UDA),
                 "Cassandra version %s does not support feature %s so @FunctionRegistry cannot be used",
-                version.getClass().getSimpleName(), UDF_UDA.name());
+                version.version(), UDF_UDA.name());
 
         aptUtils.validateFalse(containsElementsAnnotatedBy(annotations, MaterializedView.class)
                 && !version.supportsFeature(MATERIALIZED_VIEW),
                 "Cassandra version %s does not support feature %s so @MaterializedView cannot be used",
-                version.getClass().getSimpleName(), MATERIALIZED_VIEW.name());
+                version.version(), MATERIALIZED_VIEW.name());
     }
 
     private GlobalParsingContext initGlobalParsingContext(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {

@@ -16,11 +16,10 @@
 
 package info.archinnov.achilles.internals.parser.context;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import javax.lang.model.element.VariableElement;
 
-public class IndexInfoContext {
+public class IndexInfoContext implements IndexInfoHelper{
 
     public final String indexName;
     public final String indexClassName;
@@ -32,10 +31,8 @@ public class IndexInfoContext {
         this.indexOptions = indexOptions;
     }
 
-    public IndexInfoContext computeIndexName(VariableElement elm, EntityParsingContext context) {
-        String newIndexName = isBlank(indexName)
-                ? context.namingStrategy.apply(elm.getSimpleName().toString() + "_index")
-                : indexName;
+    public IndexInfoContext build(VariableElement elm, EntityParsingContext context) {
+        String newIndexName = computeIndexName(indexName, elm, context);
         return new IndexInfoContext(newIndexName, indexClassName, indexOptions);
     }
 }
