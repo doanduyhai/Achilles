@@ -33,8 +33,8 @@ import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
-import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
 import info.archinnov.achilles.type.tuples.*;
@@ -99,6 +99,12 @@ public class NestedTypeValidator2_1 extends NestedTypesValidator {
                 .stream()
                 .filter(x -> x.context.columnType == ColumnType.STATIC)
                 .forEach(x -> aptUtils.printError("Static column %s is not allowed inside UDT type %s", x.context.fieldName, getShortname(rawClass)));
+
+        udtMetaSignature.fieldMetaSignatures
+                .stream()
+                .filter(x -> x.context.indexInfo.type != IndexType.NONE)
+                .forEach(x -> aptUtils.printError("Indexed column %s is not allowed inside UDT type %s", x.context.fieldName, getShortname(rawClass)));
+
     }
 
     protected AnnotationTree validateNestedType(AptUtils aptUtils, AnnotationTree annotationTree, String fieldName, TypeName rawClass) {

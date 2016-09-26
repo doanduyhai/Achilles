@@ -18,7 +18,6 @@ package info.archinnov.achilles.internals.parser.validator;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 import java.util.*;
 import javax.lang.model.element.ElementKind;
@@ -29,8 +28,6 @@ import javax.lang.model.util.ElementFilter;
 
 import org.apache.commons.collections.map.HashedMap;
 
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.internals.apt.AptUtils;
@@ -38,7 +35,6 @@ import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMe
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
-import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public abstract class BeanValidator {
