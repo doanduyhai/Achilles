@@ -41,7 +41,6 @@ public interface FieldFilter extends Predicate<VariableElement> {
     FieldFilter CODEC_RELATED_ANNOTATIONS = elm ->
             (elm.getAnnotation(Codec.class) != null ||
                 elm.getAnnotation(RuntimeCodec.class) != null ||
-                elm.getAnnotation(DriverCodec.class) != null ||
                 elm.getAnnotation(JSON.class) != null ||
                 elm.getAnnotation(Enumerated.class) != null)
             && (elm.getAnnotation(Computed.class) == null);
