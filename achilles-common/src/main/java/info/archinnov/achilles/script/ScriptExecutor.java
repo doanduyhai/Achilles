@@ -89,7 +89,7 @@ public class ScriptExecutor {
             if (isDMLStatement(statement)) {
                 DML_LOGGER.debug("\tSCRIPT : {}", statement.getQueryString());
             } else {
-                DDL_LOGGER.debug("\t\tSCRIPT : {}", statement.getQueryString());
+                DDL_LOGGER.debug("\tSCRIPT : {}\n", statement.getQueryString());
             }
             session.execute(statement);
         }
