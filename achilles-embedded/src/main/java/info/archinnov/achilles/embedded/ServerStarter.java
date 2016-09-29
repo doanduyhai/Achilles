@@ -277,7 +277,7 @@ public enum ServerStarter {
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT, cqlPort.toString());
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT, storagePort.toString());
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_SSL_PORT, storageSSLPort.toString());
-        System.setProperty("com.sun.management.jmxremote.port", jmxPort.toString());
+        System.setProperty("cassandra.jmx.local.port", jmxPort.toString());
         System.setProperty("cassandra.skip_wait_for_gossip_to_settle", "0");
 
         ServerStarter.cqlPort = cqlPort;
