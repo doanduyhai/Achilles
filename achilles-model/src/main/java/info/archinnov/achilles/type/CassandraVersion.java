@@ -98,6 +98,43 @@ package info.archinnov.achilles.type;
  *                 </ul>
  *             </td>
  *         </tr>
+ *         <tr>
+ *             <td>3.7</td>
+ *             <td>
+ *                 <ul>
+ *                     <li>Full support for <strong>stable</strong> SASI index</li>
+ *                 </ul>
+ *             </td>
+ *             <td>
+ *                 <ul>
+ *                     <li>CASSANDRA-10661</li>
+ *                     <li>CASSANDRA-11130</li>
+ *                     <li>CASSANDRA-11136</li>
+ *                     <li>CASSANDRA-11159</li>
+ *                     <li>CASSANDRA-11169</li>
+ *                     <li>CASSANDRA-11183</li>
+ *                     <li>CASSANDRA-11434</li>
+ *                 </ul>
+ *             </td>
+ *         </tr>
+ *         <tr>
+ *             <td>DSE 4.8.X</td>
+ *             <td>
+ *                 <ul>
+ *                     <li>Full support for <strong>DSE Search</strong></li>
+ *                 </ul>
+ *             </td>
+ *             <td>N/A</td>
+ *         </tr>
+ *         <tr>
+ *             <td>DSE 5.0.X</td>
+ *             <td>
+ *                 <ul>
+ *                     <li>Full support for <strong>DSE Search</strong></li>
+ *                 </ul>
+ *             </td>
+ *             <td>N/A</td>
+ *         </tr>
  *     </tbody>
  * </table>
  *
@@ -183,9 +220,33 @@ package info.archinnov.achilles.type;
  *             </td>
  *             <td>
  *                 <ul>
- *                     <li>manager.dsl().update().fromBaseTable().userUDT().firstname_Set(...)</li>
- *                     <li>manager.dsl().update().fromBaseTable().userUDT().lastname_Set(...)</li>
+ *                     <li>manager.dsl().update().fromBaseTable().userUDT().firstname.Set(...)</li>
+ *                     <li>manager.dsl().update().fromBaseTable().userUDT().lastname.Set(...)</li>
  *                 </ul>
+ *             </td>
+ *         </tr>
+ *         <tr>
+ *             <td>
+ *                 Support for SASI index/DSE Search (on text/ascii columns):
+ *             </td>
+ *             <td>
+ *                 SASI:
+ *                 <br/>
+ *                 <ul>
+ *                     <li>manager.indexed().select()..where().firstname().StartWith(String prefix)</li>
+ *                     <li>manager.indexed().select()..where().firstname().EndWith(String suffix)</li>
+ *                     <li>manager.indexed().select()..where().firstname().Contain(String substring)</li>
+ *                 </ul>
+ *                 DSE Search:
+ *                 <br/>
+ *                 <ul>
+ *                     <li>manager.indexed().select()..where().firstname().StartWith(String prefix)</li>
+ *                     <li>manager.indexed().select()..where().firstname().EndWith(String suffix)</li>
+ *                     <li>manager.indexed().select()..where().firstname().Contain(String substring)</li>
+ *                     <li>manager.indexed().select()..where().firstname().rawPredicate(String rawSolrPredicate)</li>
+ *                     <li>manager.indexed().select()..where().rawSolrQuery(String rawSolrQueryString)</li>
+ *                 </ul>
+ *
  *             </td>
  *         </tr>
  *     </tbody>
@@ -252,7 +313,37 @@ public enum CassandraVersion {
      * </ul>
      *
      */
-    CASSANDRA_3_7
+    CASSANDRA_3_7,
+
+    /**
+     * Feature:
+     * <ul>
+     *     <li>Support for DSE_Search</li>
+     * </ul>
+     */
+    DSE_4_8_X,
+
+    /**
+     * Feature:
+     * <ul>
+     *     <li>Support for DSE_Search</li>
+     * </ul>
+     */
+    DSE_5_0_0,
+    /**
+     * Feature:
+     * <ul>
+     *     <li>Support for DSE_Search</li>
+     * </ul>
+     */
+    DSE_5_0_1,
+    /**
+     * Feature:
+     * <ul>
+     *     <li>Support for DSE_Search</li>
+     * </ul>
+     */
+    DSE_5_0_2
     /**
      * New features:
      * <br/>

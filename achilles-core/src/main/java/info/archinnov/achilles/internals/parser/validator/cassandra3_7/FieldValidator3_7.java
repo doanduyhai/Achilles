@@ -18,6 +18,7 @@ package info.archinnov.achilles.internals.parser.validator.cassandra3_7;
 
 import static info.archinnov.achilles.annotations.SASI.Analyzer.NO_OP_ANALYZER;
 import static info.archinnov.achilles.annotations.SASI.IndexMode.SPARSE;
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.DSE_SEARCH;
 import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
 import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static java.util.Arrays.asList;
@@ -26,6 +27,7 @@ import java.util.Optional;
 
 import com.squareup.javapoet.TypeName;
 
+import info.archinnov.achilles.annotations.DSE_Search;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.internals.apt.AptUtils;
@@ -39,18 +41,27 @@ import info.archinnov.achilles.internals.parser.validator.cassandra2_1.FieldVali
 public class FieldValidator3_7 extends FieldValidator2_1 {
 
     @Override
-    public void validateCompatibleIndexAnnotationsOnField(GlobalParsingContext context, AptUtils aptUtils, String fieldName, TypeName rawEntityClass, Optional<Index> index, Optional<SASI> sasi) {
-        checkNoMutuallyExclusiveAnnotations(aptUtils, fieldName, rawEntityClass, asList(index, sasi));
+    public void validateCompatibleIndexAnnotationsOnField(GlobalParsingContext context, AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
+                                                          Optional<Index> index, Optional<SASI> sasi, Optional<DSE_Search> dseSearch) {
+
+        super.validateCompatibleIndexAnnotationsOnField(context, aptUtils, fieldName, rawEntityClass, index, sasi, dseSearch);
+        checkNoMutuallyExclusiveAnnotations(aptUtils, fieldName, rawEntityClass, asList(index, sasi, dseSearch));
     }
 
     @Override
-    public void validateSASIOptions(AptUtils aptUtils, FieldMetaSignature fieldMetaSignature, SASIInfoContext sasiInfoContext) {
+    public void validateSASIIndex(AptUtils aptUtils, FieldMetaSignature fieldMetaSignature) {
+        SASIInfoContext sasiInfoContext = fieldMetaSignature.context.indexInfo.sasiInfoContext.get();
         final String fieldName = fieldMetaSignature.context.fieldName;
         final TypeName entityRawType = fieldMetaSignature.context.entityRawType;
 
         aptUtils.validateFalse(fieldMetaSignature.isCollection(),
                 "The target type %s of field %s from entity %s is a collection (list/set/map). " +
                 "@SASI is not allowed because collections are not (yet) supported",
+                fieldMetaSignature.targetType.toString(), fieldName, entityRawType.toString());
+
+        aptUtils.validateFalse(fieldMetaSignature.isUDT(),
+                "The target type %s of field %s from entity %s is an UDT. " +
+                "@SASI is not allowed because UDT are not supported",
                 fieldMetaSignature.targetType.toString(), fieldName, entityRawType.toString());
 
         if (sasiInfoContext.analyzed == true) {

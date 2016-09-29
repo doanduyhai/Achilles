@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -51,12 +52,40 @@ public class Options {
     private Optional<Boolean> tracing = Optional.empty();
     private Optional<SchemaNameProvider> schemaNameProvider = Optional.empty();
     private Optional<Integer> readTimeout = Optional.empty();
+    private Optional<StringJoiner> dseSearchSolrQuery = Optional.empty();
+    private Optional<String> dseSearchRawSolrQuery = Optional.empty();
+
+    public Options() {}
 
 
-    public Options() {
-
+    public void appendToSolrQuery(String solrQuery) {
+        if (!dseSearchSolrQuery.isPresent()) {
+            dseSearchSolrQuery = Optional.of(new StringJoiner(" AND "));
+        }
+        dseSearchSolrQuery = dseSearchSolrQuery.map(content -> content.add(solrQuery));
+        dseSearchRawSolrQuery = Optional.empty();
     }
 
+    public void rawSolrQuery(String rawSolrQuery) {
+        this.dseSearchRawSolrQuery = Optional.of(rawSolrQuery);
+        this.dseSearchSolrQuery = Optional.empty();
+    }
+
+    public boolean hasSolrQuery() {
+        return dseSearchSolrQuery.isPresent() || dseSearchRawSolrQuery.isPresent();
+    }
+
+    public boolean hasRawSolrQuery() {
+        return dseSearchRawSolrQuery.isPresent();
+    }
+
+    public String generateSolrQuery() {
+        return dseSearchSolrQuery.get().toString();
+    }
+
+    public String generateRawSolrQuery() {
+        return dseSearchRawSolrQuery.get();
+    }
 
     public boolean hasCl() {
         return cl.isPresent();

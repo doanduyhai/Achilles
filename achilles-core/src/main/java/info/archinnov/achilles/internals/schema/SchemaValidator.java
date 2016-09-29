@@ -38,6 +38,7 @@ import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.index.IndexImpl;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
+import info.archinnov.achilles.internals.parser.context.DSESearchInfoContext;
 import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 
 public class SchemaValidator {
@@ -84,6 +85,9 @@ public class SchemaValidator {
                 } else if (x.fieldInfo.indexInfo.impl == IndexImpl.SASI) {
                     final TableMetadata tableMetadata = (TableMetadata) metadata;
                     validateSASIIndex(entityClass, x, cqlColumn, tableMetadata.getIndex(x.fieldInfo.indexInfo.name));
+                } else if (x.fieldInfo.indexInfo.impl == IndexImpl.DSE_SEARCH) {
+                    final TableMetadata tableMetadata = (TableMetadata) metadata;
+                    validateDSESearchIndex(entityClass, tableMetadata);
                 }
             }
 
@@ -91,6 +95,22 @@ public class SchemaValidator {
                 validateBeanMappingTrue(columnMeta.isStatic(), "Column '%s' of entity '%s' should be static", cqlColumn, entityClass);
             }
         }
+    }
+
+    private static void validateDSESearchIndex(Class<?> entityClass, TableMetadata tableMetadata) {
+        final String tableName = tableMetadata.getName().toLowerCase();
+        final String keyspaceName = tableMetadata.getKeyspace().getName().toLowerCase();
+        final String indexName = keyspaceName + "_" + tableName + "_solr_query_index";
+        final Optional<IndexMetadata> indexMeta = Optional.ofNullable(tableMetadata.getIndex(indexName));
+
+        validateBeanMappingTrue(indexMeta.isPresent(),
+                "Index name %s for entity '%s' cannot be found", indexName, entityClass);
+
+        final IndexMetadata indexMetadata = indexMeta.get();
+        final String indexClassName = indexMetadata.getIndexClassName();
+        validateBeanMappingTrue(indexClassName.equals(DSESearchInfoContext.DSE_SEARCH_INDEX_CLASSNAME),
+                "Index class name %s for entity '%s' should be %s",
+                indexClassName, entityClass, DSESearchInfoContext.DSE_SEARCH_INDEX_CLASSNAME);
     }
 
     private static void validateSASIIndex(Class<?> entityClass, AbstractProperty<?, ?, ?> x, String cqlColumn, IndexMetadata indexMetadata) {

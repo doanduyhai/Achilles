@@ -289,6 +289,16 @@ public abstract class AbstractDSLCodeGen {
                 .collect(toList()));
     }
 
+    public static List<IndexFieldSignatureInfo> getDSESearchColsSignatureInfo(List<FieldMetaSignature> parsingResults) {
+        return new ArrayList<>(parsingResults
+                .stream()
+                .filter(x -> x.context.indexInfo.type != IndexType.NONE)
+                .filter(x -> x.context.indexInfo.impl == IndexImpl.DSE_SEARCH)
+                .map(x -> IndexFieldSignatureInfo.of(x.context.fieldName, x.context.cqlColumn, x.targetType, x.context.indexInfo, x.indexMetaSignature))
+                .sorted(INDEX_FIELD_SIGNATURE_SORTER)
+                .collect(toList()));
+    }
+
     public static String relationToSymbolForJavaDoc(String relation) {
         switch (relation) {
             case EQ:

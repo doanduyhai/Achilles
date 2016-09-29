@@ -64,8 +64,20 @@ public abstract class AbstractIndexSelectWhereJSON<T extends AbstractIndexSelect
         final AbstractEntityProperty<ENTITY> meta = getMetaInternal();
         final Options options = getOptions();
 
-        final String queryWithAllowFiltering = where.getQueryString().trim().replaceFirst(";$", " ALLOW FILTERING;");
-        final PreparedStatement ps = rte.prepareDynamicQuery(queryWithAllowFiltering);
+        final String queryString;
+        if (options.hasRawSolrQuery()) {
+            getBoundValuesInternal().add(0, options.generateRawSolrQuery());
+            getEncodedValuesInternal().add(0, options.generateRawSolrQuery());
+            queryString = where.getQueryString();
+        } else if (options.hasSolrQuery()) {
+            getBoundValuesInternal().add(0, options.generateSolrQuery());
+            getEncodedValuesInternal().add(0, options.generateSolrQuery());
+            queryString = where.getQueryString();
+        } else {
+            queryString = where.getQueryString().trim().replaceFirst(";$", " ALLOW FILTERING;");
+        }
+
+        final PreparedStatement ps = rte.prepareDynamicQuery(queryString);
 
         final StatementWrapper statementWrapper = new BoundStatementWrapper(OperationType.SELECT,
                 meta, ps,

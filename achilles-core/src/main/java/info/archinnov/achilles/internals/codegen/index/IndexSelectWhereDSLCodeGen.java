@@ -45,6 +45,12 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
                                                 ClassSignatureInfo lastSignature,
                                                 ReturnType returnType);
 
+    public abstract void buildDSESearchIndexRelation(TypeSpec.Builder indexSelectWhereBuilder,
+                                                EntityMetaSignature signature,
+                                                String parentClassName,
+                                                ClassSignatureInfo lastSignature,
+                                                ReturnType returnType);
+
     public List<TypeSpec> buildWhereClasses(GlobalParsingContext context, EntityMetaSignature signature) {
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(INDEX_SELECT_DSL_SUFFIX,
@@ -94,6 +100,8 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
                                                     ReturnType.NEW));
 
         buildSASIIndexRelation(indexSelectWhereBuilder, signature, parentClassName, lastSignature, ReturnType.NEW);
+        buildDSESearchIndexRelation(indexSelectWhereBuilder, signature, parentClassName, lastSignature, ReturnType.NEW);
+
         typeSpecs.add(indexSelectWhereBuilder.build());
         typeSpecs.add(buildSelectEndClass(signature, lastSignature, classSignatureParams));
 
@@ -136,6 +144,7 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         nativeIndexCols.forEach(x -> buildNativeIndexRelation(builder, x, parentClassName, lastSignature, ReturnType.THIS));
 
         buildSASIIndexRelation(builder, signature, parentClassName, lastSignature, ReturnType.THIS);
+        buildDSESearchIndexRelation(builder, signature, parentClassName, lastSignature, ReturnType.THIS);
 
         addMultipleColumnsSliceRestrictions(builder, parentClassName, clusteringCols, lastSignature, ReturnType.THIS);
 
@@ -274,7 +283,7 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         }
     }
 
-    private void buildPartitionKeyRelation(TypeSpec.Builder builder,
+    protected void buildPartitionKeyRelation(TypeSpec.Builder builder,
                                           EntityMetaSignature signature,
                                           FieldSignatureInfo partitionInfo,
                                           ClassSignatureInfo lastSignature,
@@ -297,7 +306,7 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
                 .addMethod(buildRelationMethod(partitionInfo.fieldName, relationClassTypeName));
     }
 
-    private void buildClusteringColumnRelation(TypeSpec.Builder builder,
+    protected void buildClusteringColumnRelation(TypeSpec.Builder builder,
                                               EntityMetaSignature signature,
                                               FieldSignatureInfo clusteringColumnInfo,
                                               ClassSignatureInfo lastSignature,
