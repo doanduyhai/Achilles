@@ -16,33 +16,51 @@
 
 package info.archinnov.achilles.internals.parser.validator.cassandra2_1;
 
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.DSE_SEARCH;
 import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.SASI_INDEX;
+import static java.util.Arrays.asList;
 
 import java.util.Optional;
 
 import com.squareup.javapoet.TypeName;
 
+import info.archinnov.achilles.annotations.DSE_Search;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
+import info.archinnov.achilles.internals.parser.context.DSESearchInfoContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 
 public class FieldValidator2_1 extends FieldValidator {
     @Override
-    public void validateCompatibleIndexAnnotationsOnField(GlobalParsingContext context, AptUtils aptUtils, String fieldName, TypeName rawEntityClass, Optional<Index> index, Optional<SASI> sasi) {
+    public void validateCompatibleIndexAnnotationsOnField(GlobalParsingContext context, AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
+                                                          Optional<Index> index, Optional<SASI> sasi, Optional<DSE_Search> dseSearch) {
 
         if (sasi.isPresent()) {
             aptUtils.validateTrue(context.supportsFeature(SASI_INDEX),
                     "@SASI annotation is not allowed if using Cassandra version %s", context.cassandraVersion.version());
         }
 
+        if (dseSearch.isPresent()) {
+            aptUtils.validateTrue(context.supportsFeature(DSE_SEARCH),
+                    "@DSE_Search annotation is not allowed if using Cassandra version %s. " +
+                    "Consider setting your Cassandra version to DSE_X_X", context.cassandraVersion.version());
+        }
+
+        checkNoMutuallyExclusiveAnnotations(aptUtils, fieldName, rawEntityClass, asList(index, dseSearch));
     }
 
     @Override
-    public void validateSASIOptions(AptUtils aptUtils, FieldParser.FieldMetaSignature fieldMetaSignature, SASIInfoContext sasiInfoContext) {
+    public void validateSASIIndex(AptUtils aptUtils, FieldMetaSignature fieldMetaSignature) {
+        //NO Op
+    }
+
+    @Override
+    public void validateDSESearchIndex(AptUtils aptUtils, FieldMetaSignature fieldMetaSignature) {
         //NO Op
     }
 }

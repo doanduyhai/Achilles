@@ -26,6 +26,7 @@ import com.squareup.javapoet.TypeSpec;
 import info.archinnov.achilles.internals.codegen.dsl.JSONFunctionCallSupport;
 import info.archinnov.achilles.internals.codegen.index.cassandra2_1.IndexSelectWhereDSLCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
+import info.archinnov.achilles.internals.metamodel.index.IndexImpl;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
@@ -55,7 +56,8 @@ public class IndexSelectWhereDSLCodeGen2_2 extends IndexSelectWhereDSLCodeGen2_1
                                                    ClassSignatureInfo nextSignature,
                                                    ReturnType returnType) {
         // Secondary index
-        if (fieldInfo instanceof IndexFieldSignatureInfo) {
+        final boolean isIndex = fieldInfo instanceof IndexFieldSignatureInfo;
+        if (isIndex && ((IndexFieldSignatureInfo)fieldInfo).indexInfo.impl != IndexImpl.DSE_SEARCH) {
             final IndexFieldSignatureInfo indexFieldInfo = (IndexFieldSignatureInfo) fieldInfo;
             final IndexType indexType = indexFieldInfo.indexInfo.type;
 

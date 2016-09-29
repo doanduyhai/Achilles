@@ -24,10 +24,10 @@ import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.annotations.SASI.Analyzer;
 import info.archinnov.achilles.annotations.SASI.IndexMode;
 import info.archinnov.achilles.annotations.SASI.Normalization;
+import info.archinnov.achilles.internals.parser.context.DSESearchInfoContext;
 import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 
 public class IndexInfo {
@@ -40,18 +40,23 @@ public class IndexInfo {
     public final Optional<String> indexClassName;
     public final Optional<String> indexOptions;
     public final Optional<SASIInfoContext> sasiInfoContext;
+    public final Optional<DSESearchInfoContext> dseSearchInfoContext;
 
-    private IndexInfo(IndexImpl indexImpl, IndexType type, String name, String indexClassName, String indexOptions, Optional<SASIInfoContext> sasiInfoContext) {
+    private IndexInfo(IndexImpl indexImpl, IndexType type, String name, String indexClassName, String indexOptions,
+                      Optional<SASIInfoContext> sasiInfoContext,
+                      Optional<DSESearchInfoContext> dseSearchInfoContext) {
         this.impl = indexImpl;
         this.type = type;
         this.name = name;
         this.sasiInfoContext = sasiInfoContext;
+        this.dseSearchInfoContext = dseSearchInfoContext;
         this.indexClassName = isNotBlank(indexClassName) ? Optional.of(indexClassName): Optional.empty();
         this.indexOptions = isNotBlank(indexOptions) ? Optional.of(indexOptions): Optional.empty();
     }
 
     public static IndexInfo forNative(IndexType indexType, String indexName, String indexClassName, String indexOptions) {
-        return new IndexInfo(IndexImpl.NATIVE, indexType, indexName, indexClassName, indexOptions, Optional.empty());
+        return new IndexInfo(IndexImpl.NATIVE, indexType, indexName, indexClassName, indexOptions,
+                Optional.empty(), Optional.empty());
     }
 
     public static IndexInfo forSASI(String indexName,
@@ -66,7 +71,18 @@ public class IndexInfo {
 
         String options = buildOptionsForSASI(indexMode, analyzed, analyzer, maxCompactionFlushMemoryInMb, normalization, locale, enableStemming, skipStopWords);
         final SASIInfoContext sasiInfoContext = new SASIInfoContext(indexName, indexMode, analyzed, analyzer, maxCompactionFlushMemoryInMb, normalization, locale, enableStemming, skipStopWords);
-        return new IndexInfo(IndexImpl.SASI, IndexType.NORMAL, indexName, "org.apache.cassandra.index.sasi.SASIIndex", options, Optional.of(sasiInfoContext));
+        return new IndexInfo(IndexImpl.SASI, IndexType.NORMAL, indexName, "org.apache.cassandra.index.sasi.SASIIndex", options,
+                Optional.of(sasiInfoContext),
+                Optional.empty());
+    }
+
+    public static IndexInfo forDSESearch(boolean fullTextSearchEnable) {
+        return new IndexInfo(IndexImpl.DSE_SEARCH, IndexType.NORMAL,
+                "",
+                DSESearchInfoContext.DSE_SEARCH_INDEX_CLASSNAME,
+                "",
+                Optional.empty(),
+                Optional.of(new DSESearchInfoContext(fullTextSearchEnable)));
     }
 
     private static String buildOptionsForSASI(IndexMode indexMode, boolean analyzed, Analyzer analyzer, int maxCompactionFlushMemoryInMb, Normalization normalization, String locale, boolean enableStemming, boolean skipStopWords) {
@@ -94,7 +110,7 @@ public class IndexInfo {
 
 
     public static IndexInfo noIndex() {
-        return new IndexInfo(IndexImpl.NATIVE, IndexType.NONE, null, null, null, Optional.empty());
+        return new IndexInfo(IndexImpl.NATIVE, IndexType.NONE, null, null, null, Optional.empty(), Optional.empty());
     }
 
     public String generate(Optional<String> keyspace, String table, String columnName) {
@@ -108,8 +124,6 @@ public class IndexInfo {
                 return generateNativeIndex(keyspace, table, columnName);
             case SASI:
                 return generateSASI(keyspace, table, columnName);
-            case DSE_SEARCH:
-                throw new UnsupportedOperationException("DSE Search is not yet supported by Achilles");
             default:
                 return "";
         }

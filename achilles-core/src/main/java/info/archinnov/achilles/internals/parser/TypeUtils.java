@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.squareup.javapoet.*;
 
+import info.archinnov.achilles.annotations.DSE_Search;
 import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.annotations.SASI.Analyzer;
 import info.archinnov.achilles.annotations.SASI.IndexMode;
@@ -79,7 +81,6 @@ public class TypeUtils {
 
     public static final String META_SUFFIX = "_AchillesMeta";
     public static final String DSL_RELATION_SUFFIX = "_Relation";
-    public static final String INDEX_DSL_RELATION_SUFFIX = "_IndexRelation";
     public static final String DSL_RELATION = "Relation";
     public static final String SELECT_COLUMNS_DSL_SUFFIX = "_SelectColumns";
     public static final String INDEX_SELECT_COLUMNS_DSL_SUFFIX = "_IndexSelectColumns";
@@ -198,6 +199,7 @@ public class TypeUtils {
     public static final ClassName BIMAP = ClassName.get(BiMap.class);
     public static final ClassName HASHBIMAP = ClassName.get(HashBiMap.class);
     public static final ClassName ACHILLES_META_ANNOT = ClassName.get(AchillesMeta.class);
+    public static final ClassName DSE_SEARCH_ANNOT = ClassName.get(DSE_Search.class);
 
     // DSL
     public static final ClassName ABSTRACT_SELECT = ClassName.get(AbstractSelect.class);
@@ -268,6 +270,7 @@ public class TypeUtils {
     public static final ClassName ARRAYS = ClassName.get(Arrays.class);
     public static final ClassName COLLECTORS = ClassName.get(Collectors.class);
     public static final ClassName SETS = ClassName.get(Sets.class);
+    public static final ClassName SIMPLE_DATE_FORMAT = ClassName.get(SimpleDateFormat.class);
     public static final TypeName LIST_OBJECT = ParameterizedTypeName.get(ClassName.get(List.class), TypeName.OBJECT);
     public static final TypeName OVERRIDE_ANNOTATION = ClassName.get(Override.class);
 

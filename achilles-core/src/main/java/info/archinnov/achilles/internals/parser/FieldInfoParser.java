@@ -71,10 +71,13 @@ public class FieldInfoParser {
         final Tuple2<CodeBlock, ColumnInfo> columnInfoCode = buildColumnInfo(context.globalContext, annotationTree, elm, fieldName, rawEntityClass);
 
         final Optional<TypedMap> sasiAnnot = extractTypedMap(annotationTree, SASI.class);
+        final Optional<TypedMap> dseSearchAnnot = extractTypedMap(annotationTree, DSE_Search.class);
 
         final Tuple2<CodeBlock, IndexInfo> indexInfoCode;
         if (sasiAnnot.isPresent()) {
             indexInfoCode = buildSASIIndexInfo(annotationTree, elm, context);
+        } else if (dseSearchAnnot.isPresent()) {
+            indexInfoCode = buildDSESearchIndexInfo(annotationTree);
         } else {
             indexInfoCode = buildNativeIndexInfo(annotationTree, elm, context);
         }
@@ -119,11 +122,12 @@ public class FieldInfoParser {
         final Optional<Counter> counter = Optional.ofNullable(elm.getAnnotation(Counter.class));
         final Optional<Index> index = Optional.ofNullable(elm.getAnnotation(Index.class));
         final Optional<SASI> sasi = Optional.ofNullable(elm.getAnnotation(SASI.class));
+        final Optional<DSE_Search> dseSearch = Optional.ofNullable(elm.getAnnotation(DSE_Search.class));
 
         context.fieldValidator().validateCompatibleColumnAnnotationsOnField(aptUtils, fieldName, rawEntityClass,
                 partitionKey, clusteringColumn, staticColumn, computed, counter);
 
-        context.fieldValidator().validateCompatibleIndexAnnotationsOnField(context, aptUtils, fieldName, rawEntityClass, index, sasi);
+        context.fieldValidator().validateCompatibleIndexAnnotationsOnField(context, aptUtils, fieldName, rawEntityClass, index, sasi, dseSearch);
 
         if (partitionKey.isPresent()) {
             builder.add("$T.$L", COLUMN_TYPE, PARTITION.name());
@@ -306,6 +310,19 @@ public class FieldInfoParser {
         return indexAnnot.get()
                             .<IndexInfoContext>getTyped("indexInfoContext")
                             .build(elm, context);
+    }
+
+    protected Tuple2<CodeBlock, IndexInfo> buildDSESearchIndexInfo(AnnotationTree annotationTree) {
+        final CodeBlock.Builder builder = CodeBlock.builder();
+        final DSESearchInfoContext dseSearchInfoContext = extractTypedMap(annotationTree, DSE_Search.class)
+                .get()
+                .<DSESearchInfoContext>getTyped("dseSearchInfoContext");
+
+        builder.add("$T.forDSESearch($L)",
+                    INDEX_INFO,
+                    dseSearchInfoContext.fullTextSearchEnabled);
+
+        return Tuple2.of(builder.build(), IndexInfo.forDSESearch(dseSearchInfoContext.fullTextSearchEnabled));
     }
 
     protected Tuple2<CodeBlock, IndexInfo> buildSASIIndexInfo(AnnotationTree annotationTree, VariableElement elm, EntityParsingContext context) {

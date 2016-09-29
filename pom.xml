@@ -504,6 +504,7 @@
         </dependency>
     </dependencies>
 
+
     <build>
         <finalName>Achilles</finalName>
         <plugins>
@@ -600,6 +601,7 @@
             </plugin>
         </plugins>
     </build>
+
     <profiles>
         <profile>
             <id>release-sign-artifacts</id>
@@ -636,6 +638,31 @@
                 <clean.data.files>false</clean.data.files>
             </properties>
         </profile>
+        <profile>
+            <id>DSE</id>
+            <modules>
+                <module>integration-test-DSE_4-8</module>
+                <module>integration-test-DSE_5-0-0</module>
+            </modules>
+            <dependencyManagement>
+                <dependencies>
+
+                    <dependency>
+                        <groupId>info.archinnov</groupId>
+                        <artifactId>integration-test-DSE_4-8</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>info.archinnov</groupId>
+                        <artifactId>integration-test-DSE_5-0-0</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+
     </profiles>
     <scm>
         <url>https://github.com/doanduyhai/achilles</url>

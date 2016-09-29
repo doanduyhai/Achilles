@@ -250,6 +250,7 @@ public class AnnotationTree {
                             RuntimeCodec.class.getCanonicalName().equals(annotationName) ||
                             Index.class.getCanonicalName().equals(annotationName) ||
                             SASI.class.getCanonicalName().equals(annotationName) ||
+                            DSE_Search.class.getCanonicalName().equals(annotationName) ||
                             PartitionKey.class.getCanonicalName().equals(annotationName) ||
                             ClusteringColumn.class.getCanonicalName().equals(annotationName);
                 })
@@ -279,6 +280,7 @@ public class AnnotationTree {
                                     areSameByClass(x, RuntimeCodec.class) ||
                                     areSameByClass(x, Index.class) ||
                                     areSameByClass(x, SASI.class) ||
+                                    areSameByClass(x, DSE_Search.class) ||
                                     areSameByClass(x, PartitionKey.class) ||
                                     areSameByClass(x, ClusteringColumn.class)
                     )
@@ -546,6 +548,10 @@ public class AnnotationTree {
             final boolean skipStopWords = getElementValue(annotation, "skipStopWords", Boolean.class, true);
             typedMap.put("sasiInfoContext", new SASIInfoContext(indexName, indexMode, analyzed, analyzerClass, maxCompactionFlushMemoryInMb, normalization, locale, enableStemming, skipStopWords));
             return typedMap;
+        } else if(areSameByClass(annotation, DSE_Search.class)) {
+            final boolean fullTextSearchEnabled = getElementValue(annotation, "fullTextSearchEnabled", Boolean.class, true);
+            typedMap.put("dseSearchInfoContext", new DSESearchInfoContext(fullTextSearchEnabled));
+            return typedMap;
         } else if (areSameByClass(annotation, PartitionKey.class)) {
             typedMap.put("order", getElementValue(annotation, "value", Integer.class, true));
             return typedMap;
@@ -581,6 +587,8 @@ public class AnnotationTree {
             return Index.class;
         } else if (areSameByClass(annotationMirror, SASI.class)) {
             return SASI.class;
+        } else if (areSameByClass(annotationMirror, DSE_Search.class)) {
+            return DSE_Search.class;
         } else if (areSameByClass(annotationMirror, PartitionKey.class)) {
             return PartitionKey.class;
         } else if (areSameByClass(annotationMirror, ClusteringColumn.class)) {
@@ -803,6 +811,15 @@ public class AnnotationTree {
 
             typedMap.put("sasiInfoContext", new SASIInfoContext(indexName, indexMode, analyzed, analyzerClass, maxCompactionFlushMemoryInMb, normalization, locale, enableStemming, skipStopWords));
             return Tuple2.of(SASI.class, typedMap);
+        } else if (DSE_Search.class.getCanonicalName().equals(annotationName)) {
+            final List<ElementValuePair> pairs = Arrays.asList(annotationBinding.getElementValuePairs());
+            final boolean fullTextSearchEnabled = pairs
+                    .stream()
+                    .filter(pair -> new String(pair.getName()).equals("fullTextSearchEnabled"))
+                    .map(pair -> ((BooleanConstant) pair.getValue()).booleanValue())
+                    .findFirst().orElse(false);
+            typedMap.put("dseSearchInfoContext", new DSESearchInfoContext(fullTextSearchEnabled));
+            return Tuple2.of(DSE_Search.class, typedMap);
         } else if (PartitionKey.class.getCanonicalName().equals(annotationName)) {
             final List<ElementValuePair> pairs = Arrays.asList(annotationBinding.getElementValuePairs());
             final Integer order = pairs

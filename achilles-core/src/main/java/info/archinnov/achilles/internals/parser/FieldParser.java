@@ -68,9 +68,10 @@ public class FieldParser {
 
         final FieldMetaSignature fieldMetaSignature = parseType(annotationTree, context, TypeName.get(elm.asType()));
 
-        //Validate SASI annotation
         if (fieldMetaSignature.context.indexInfo.sasiInfoContext.isPresent()) {
-            entityContext.globalContext.fieldValidator().validateSASIOptions(aptUtils, fieldMetaSignature, fieldMetaSignature.context.indexInfo.sasiInfoContext.get());
+            entityContext.globalContext.fieldValidator().validateSASIIndex(aptUtils, fieldMetaSignature);
+        } else if (fieldMetaSignature.context.indexInfo.dseSearchInfoContext.isPresent()) {
+            entityContext.globalContext.fieldValidator().validateDSESearchIndex(aptUtils, fieldMetaSignature);
         }
 
         return fieldMetaSignature;

@@ -26,6 +26,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.google.common.collect.ImmutableMap;
 
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_3_7;

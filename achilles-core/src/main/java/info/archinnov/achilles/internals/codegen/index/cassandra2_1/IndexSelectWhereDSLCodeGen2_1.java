@@ -46,4 +46,9 @@ public class IndexSelectWhereDSLCodeGen2_1 extends IndexSelectWhereDSLCodeGen {
     public void buildSASIIndexRelation(TypeSpec.Builder indexSelectWhereBuilder, EntityMetaCodeGen.EntityMetaSignature signature, String parentClassName, ClassSignatureInfo lastSignature, ReturnType returnType) {
         //NO Op
     }
+
+    @Override
+    public void buildDSESearchIndexRelation(TypeSpec.Builder indexSelectWhereBuilder, EntityMetaCodeGen.EntityMetaSignature signature, String parentClassName, ClassSignatureInfo lastSignature, ReturnType returnType) {
+        //NO Op
+    }
 }

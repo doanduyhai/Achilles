@@ -53,6 +53,8 @@ import info.archinnov.achilles.internals.codegen.index.cassandra2_1.IndexSelectW
 import info.archinnov.achilles.internals.codegen.index.cassandra2_2.IndexSelectDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.index.cassandra2_2.IndexSelectWhereDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.index.cassandra3_7.IndexSelectWhereDSLCodeGen3_7;
+import info.archinnov.achilles.internals.codegen.index.dse_4_8.IndexSelectWhereDSLCodeGen_DSE_4_8;
+import info.archinnov.achilles.internals.codegen.index.dse_5_0_0.IndexSelectWhereDSLCodeGen_DSE_5_0_0;
 import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
@@ -64,11 +66,13 @@ import info.archinnov.achilles.internals.parser.validator.cassandra2_1.TypeValid
 import info.archinnov.achilles.internals.parser.validator.cassandra3_0.BeanValidator3_0;
 import info.archinnov.achilles.internals.parser.validator.cassandra3_6.NestedTypeValidator3_6;
 import info.archinnov.achilles.internals.parser.validator.cassandra3_7.FieldValidator3_7;
+import info.archinnov.achilles.internals.parser.validator.dse_4_8.FieldValidator_DSE_4_8;
 
 public interface InternalCassandraVersion {
     BeanValidator BEAN_VALIDATOR = new BeanValidator2_1();
     FieldValidator FIELD_VALIDATOR = new FieldValidator2_1();
     FieldValidator FIELD_VALIDATOR_3_7 = new FieldValidator3_7();
+    FieldValidator FIELD_VALIDATOR_4_8 = new FieldValidator_DSE_4_8();
     TypeValidator TYPE_VALIDATOR = new TypeValidator2_1();
     NestedTypesValidator NESTED_TYPES_VALIDATOR = new NestedTypeValidator2_1();
 
@@ -94,6 +98,8 @@ public interface InternalCassandraVersion {
     IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2 = new IndexSelectWhereDSLCodeGen2_2();
     SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_3_6 = new SelectWhereDSLCodeGen3_6();
     IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_3_7 = new IndexSelectWhereDSLCodeGen3_7();
+    IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_DSE_4_8 = new IndexSelectWhereDSLCodeGen_DSE_4_8();
+    IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_DSE_5_0_0 = new IndexSelectWhereDSLCodeGen_DSE_5_0_0();
 
     UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_2_2 = new UpdateDSLCodeGen2_2();
     UpdateDSLCodeGen UPDATE_DSL_CODE_GEN_3_6 = new UpdateDSLCodeGen3_6();

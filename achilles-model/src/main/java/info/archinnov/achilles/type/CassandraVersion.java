@@ -252,7 +252,37 @@ public enum CassandraVersion {
      * </ul>
      *
      */
-    CASSANDRA_3_7
+    CASSANDRA_3_7,
+
+    /**
+     * Feature:
+     * <ul>
+     *     <li>Support for DSE_Search</li>
+     * </ul>
+     */
+    DSE_4_8_X,
+
+    /**
+     * Feature:
+     * <ul>
+     *     <li>Support for DSE_Search</li>
+     * </ul>
+     */
+    DSE_5_0_0,
+    /**
+     * Feature:
+     * <ul>
+     *     <li>Support for DSE_Search</li>
+     * </ul>
+     */
+    DSE_5_0_1,
+    /**
+     * Feature:
+     * <ul>
+     *     <li>Support for DSE_Search</li>
+     * </ul>
+     */
+    DSE_5_0_2
     /**
      * New features:
      * <br/>

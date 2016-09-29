@@ -33,10 +33,7 @@ import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.metamodel.columns.KeyColumnInfo;
 import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
-import info.archinnov.achilles.internals.parser.context.CodecContext;
-import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
-import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
+import info.archinnov.achilles.internals.parser.context.*;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 
@@ -44,9 +41,11 @@ public abstract class FieldValidator {
 
     public abstract void validateCompatibleIndexAnnotationsOnField(GlobalParsingContext context, AptUtils aptUtils,
                                                                    String fieldName, TypeName rawEntityClass,
-                                                                   Optional<Index> index, Optional<SASI> sasi);
+                                                                   Optional<Index> index, Optional<SASI> sasi,
+                                                                   Optional<DSE_Search> dseSearch);
 
-    public abstract void validateSASIOptions(AptUtils aptUtils, FieldMetaSignature fieldMetaSignature, SASIInfoContext sasiInfoContext);
+    public abstract void validateSASIIndex(AptUtils aptUtils, FieldMetaSignature fieldMetaSignature);
+    public abstract void validateDSESearchIndex(AptUtils aptUtils, FieldMetaSignature fieldMetaSignature);
 
     public void checkNoMutuallyExclusiveAnnotations(AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
                                                             List<Optional<? extends Annotation>> annotations) {
