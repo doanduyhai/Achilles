@@ -35,6 +35,13 @@ public class CassandraEmbeddedConfigParameters {
 
     public static final String CLEAN_CASSANDRA_CONFIG_FILE = "cleanCassandraConfigFile";
 
+    public static final String LISTEN_ADDRESS = "listenAddress";
+    public static final String RPC_ADDRESS = "rpcAddress";
+    public static final String BROADCAST_ADDRESS = "broadcastAddress";
+    public static final String BROADCAST_RPC_ADDRESS = "broadcastRpcAddress";
+
+    public static final String SHUTDOWN_HOOK = "shutdownHook";
+
     public static final String DATA_FILE_FOLDER = "datafileFolder";
 
     public static final String COMMIT_LOG_FOLDER = "commitlogFolder";
@@ -79,7 +86,6 @@ public class CassandraEmbeddedConfigParameters {
     /*
      * Default values
      */
-    public static final String DEFAULT_CASSANDRA_HOST = "localhost";
     public static final String DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME = "achilles_embedded";
     static final String DEFAULT_ACHILLES_TEST_DATA_FOLDER = "target/cassandra_embedded/data";
     static final String DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER = "target/cassandra_embedded/commitlog";
@@ -92,6 +98,10 @@ public class CassandraEmbeddedConfigParameters {
     static final String DEFAULT_CASSANDRA_EMBEDDED_LOGBACK_FILE = "target/cassandra_embedded/logback.xml";
     static final String DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME = "Achilles Embedded Cassandra Cluster";
     static final Boolean DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE = false;
+    static final String DEFAULT_CASSANDRA_EMBEDDED_LISTEN_ADDRESS = "localhost";
+    static final String DEFAULT_CASSANDRA_EMBEDDED_RPC_ADDRESS = "localhost";
+    static final String DEFAULT_CASSANDRA_EMBEDDED_BROADCAST_ADDRESS = "localhost";
+    static final String DEFAULT_CASSANDRA_EMBEDDED_BROADCAST_RPC_ADDRESS = "localhost";
 
     /**
      * Default values
@@ -99,6 +109,12 @@ public class CassandraEmbeddedConfigParameters {
 
     static TypedMap mergeWithDefaultParameters(TypedMap parameters) {
         TypedMap defaultParams = new TypedMap();
+
+        defaultParams.put(LISTEN_ADDRESS, DEFAULT_CASSANDRA_EMBEDDED_LISTEN_ADDRESS);
+        defaultParams.put(RPC_ADDRESS, DEFAULT_CASSANDRA_EMBEDDED_RPC_ADDRESS);
+        defaultParams.put(BROADCAST_ADDRESS, DEFAULT_CASSANDRA_EMBEDDED_BROADCAST_ADDRESS);
+        defaultParams.put(BROADCAST_RPC_ADDRESS, DEFAULT_CASSANDRA_EMBEDDED_BROADCAST_RPC_ADDRESS);
+
         defaultParams.put(USE_UNSAFE_CASSANDRA_DAEMON, false);
         defaultParams.put(CLEAN_CASSANDRA_DATA_FILES, true);
         defaultParams.put(CLEAN_CASSANDRA_CONFIG_FILE, true);

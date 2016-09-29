@@ -32,9 +32,9 @@ public class CassandraEmbeddedServer {
 
     public static final String CASSANDRA_HOST = "cassandraHost";
 
-    private static final Object SEMAPHORE = new Object();
+    static final Object SEMAPHORE = new Object();
+    static boolean embeddedServerStarted = false;
     private static final AchillesInitializer initializer = new AchillesInitializer();
-    private static boolean embeddedServerStarted = false;
 
 
     /**

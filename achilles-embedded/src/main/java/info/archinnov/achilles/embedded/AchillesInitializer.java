@@ -60,6 +60,7 @@ public class AchillesInitializer {
                 createKeyspaceIfNeeded(tempSession, keyspaceName, durableWrite);
                 tempSession.close();
                 singletonSession = singletonCluster.connect(keyspaceName);
+                ServerStarter.CASSANDRA_EMBEDDED.getShutdownHook().addSession(singletonSession);
                 executeStartupScripts(singletonSession, parameters);
                 STARTED.getAndSet(true);
             } else {
@@ -91,7 +92,7 @@ public class AchillesInitializer {
             hostname = split[0];
             cqlPort = Integer.parseInt(split[1]);
         } else {
-            hostname = DEFAULT_CASSANDRA_HOST;
+            hostname = parameters.getTyped(RPC_ADDRESS);
             cqlPort = parameters.getTyped(CASSANDRA_CQL_PORT);
         }
         return createCluster(hostname, cqlPort, parameters);
