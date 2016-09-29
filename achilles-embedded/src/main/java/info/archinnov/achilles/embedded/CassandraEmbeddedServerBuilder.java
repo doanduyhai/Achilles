@@ -17,6 +17,7 @@
 package info.archinnov.achilles.embedded;
 
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +40,10 @@ import info.archinnov.achilles.validation.Validator;
 
  * CassandraEmbeddedServerBuilder
  * .builder()
+ * .withListenAdress("127.0.0.1")
+ * .withRpcAdress("127.0.0.1")
+ * .withBroadcastAdress("127.0.0.1")
+ * .withBroadcastRPCAdress("127.0.0.1")
  * .withClusterName("Test Cluster")
  * .withDataFolder("/home/user/cassandra/data")
  * .withCommitLogFolder("/home/user/cassandra/commitlog")
@@ -58,6 +63,12 @@ import info.archinnov.achilles.validation.Validator;
  */
 public class CassandraEmbeddedServerBuilder {
 
+    private String listenAddress;
+    private String rpcAddress;
+    private String broadcastAddress = "";
+    private String broadcastRpcAddress = "";
+
+    private CassandraShutDownHook cassandraShutDownHook;
 
     private String dataFileFolder;
 
@@ -108,6 +119,88 @@ public class CassandraEmbeddedServerBuilder {
      */
     public static CassandraEmbeddedServerBuilder builder() {
         return new CassandraEmbeddedServerBuilder();
+    }
+
+    /**
+     * Specify the listen address. Default value = <strong>localhost</strong>
+     *
+     * @param listenAddress the listen address
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withListenAddress(String listenAddress) {
+        this.listenAddress = listenAddress;
+        return this;
+    }
+
+    /**
+     * Specify the rpc address. Default value = <strong>localhost</strong>
+     *
+     * @param rpcAddress the RPC address
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withRpcAddress(String rpcAddress) {
+        this.rpcAddress = rpcAddress;
+        return this;
+    }
+
+    /**
+     * Specify the broadcast address. Default value = <strong>localhost</strong>
+     * <br/>
+     * <br/>
+     * Leaving this blank will set it to the same value as <strong>listen_address</strong>
+     * @param broadcastAddress the address to broadcast to other Cassandra nodes.
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withBroadcastAddress(String broadcastAddress) {
+        this.broadcastAddress = broadcastAddress;
+        return this;
+    }
+
+    /**
+     * Specify the broadcast RPC address. Default value = <strong>localhost</strong>
+     * <br/>
+     * <br/>
+     * This cannot be set to <strong>0.0.0.0</strong>. If left blank, this will be set to the value of
+     * <strong>rpc_address</strong>.
+     * If <strong>rpc_address</strong> is set to <strong>0.0.0.0</strong>,
+     * <strong>broadcast_rpc_address</strong> must be set
+     * @param broadcastRpcAddress the RPC address to broadcast to drivers and other Cassandra nodes
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withBroadcastRpcAddress(String broadcastRpcAddress) {
+        this.broadcastRpcAddress = broadcastRpcAddress;
+        return this;
+    }
+
+    /**
+     * Inject a shutdown hook to control when to shutdown the embedded Cassandra process.
+     * <br/>
+     * <pre class="code"><code class="java">
+     *
+     * CassandraShutDownHook shutdownHook = new CassandraShutDownHook();
+     *
+     * Session session = CassandraEmbeddedServerBuilder.builder()
+     *   .withShutdownHook(shutdownHook)
+     *   ...
+     *   .buildNativeSession();
+     *
+     * ...
+     *
+     * shutdownHook.shutdownNow();
+     * </code></pre>
+     * <br/>
+     * <strong>Please note that upon call on <em>shutdownNow()</em>, Achilles will trigger the shutdown of:</strong>
+     * <ul>
+     *     <li><strong>the embedded Cassandra server</strong></li>
+     *     <li><strong>the associated Cluster object</strong></li>
+     *     <li><strong>the associated Session object</strong></li>
+     * </ul>
+     * @param cassandraShutDownHook shutdown hook to control the shutdown of the embedded Cassandra process;
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withShutdownHook(CassandraShutDownHook cassandraShutDownHook) {
+        this.cassandraShutDownHook = cassandraShutDownHook;
+        return this;
     }
 
     /**
@@ -436,22 +529,37 @@ public class CassandraEmbeddedServerBuilder {
         cassandraParams.put(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles);
         cassandraParams.put(CLEAN_CASSANDRA_CONFIG_FILE, cleanConfigFile);
 
-        if (StringUtils.isNotBlank(dataFileFolder))
+        if (isNotBlank(listenAddress))
+            cassandraParams.put(LISTEN_ADDRESS, listenAddress);
+
+        if (isNotBlank(rpcAddress))
+            cassandraParams.put(RPC_ADDRESS, rpcAddress);
+
+        if (broadcastAddress != null)
+            cassandraParams.put(BROADCAST_ADDRESS, broadcastAddress);
+
+        if (broadcastRpcAddress != null)
+            cassandraParams.put(BROADCAST_RPC_ADDRESS, broadcastRpcAddress);
+
+        if (cassandraShutDownHook != null)
+            cassandraParams.put(SHUTDOWN_HOOK, cassandraShutDownHook);
+
+        if (isNotBlank(dataFileFolder))
             cassandraParams.put(DATA_FILE_FOLDER, dataFileFolder);
 
-        if (StringUtils.isNotBlank(commitLogFolder))
+        if (isNotBlank(commitLogFolder))
             cassandraParams.put(COMMIT_LOG_FOLDER, commitLogFolder);
 
-        if (StringUtils.isNotBlank(savedCachesFolder))
+        if (isNotBlank(savedCachesFolder))
             cassandraParams.put(SAVED_CACHES_FOLDER, savedCachesFolder);
 
-        if (StringUtils.isNotBlank(hintsFolder))
+        if (isNotBlank(hintsFolder))
             cassandraParams.put(HINTS_FOLDER, hintsFolder);
 
-        if (StringUtils.isNotBlank(clusterName))
+        if (isNotBlank(clusterName))
             cassandraParams.put(CLUSTER_NAME, clusterName);
 
-        if (StringUtils.isNotBlank(keyspaceName))
+        if (isNotBlank(keyspaceName))
             cassandraParams.put(DEFAULT_KEYSPACE_NAME, keyspaceName);
 
         if (cqlPort > 0)

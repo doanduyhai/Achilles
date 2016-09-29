@@ -1,10 +1,13 @@
 package info.archinnov.achilles.embedded;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import org.apache.cassandra.config.Config;
 import org.apache.cassandra.config.ConfigurationLoader;
 import org.apache.cassandra.config.EncryptionOptions;
 import org.apache.cassandra.config.ParameterizedClass;
 import org.apache.cassandra.exceptions.ConfigurationException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +18,11 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
     static final String ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT = "ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT";
     static final String ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT = "ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT";
     static final String ACHILLES_EMBEDDED_CASSANDRA_STORAGE_SSL_PORT = "ACHILLES_EMBEDDED_CASSANDRA_STORAGE_SSL_PORT";
-    static final String ACHILLES_EMBEDDED_CASSANDRA_JMX_PORT = "ACHILLES_EMBEDDED_CASSANDRA_JMX_PORT";
+    static final String ACHILLES_EMBEDDED_CASSANDRA_LISTEN_ADDRESS = "ACHILLES_EMBEDDED_CASSANDRA_LISTEN_ADDRESS";
+    static final String ACHILLES_EMBEDDED_CASSANDRA_BROADCAST_ADDRESS = "ACHILLES_EMBEDDED_CASSANDRA_BROADCAST_ADDRESS";
+    static final String ACHILLES_EMBEDDED_CASSANDRA_RPC_ADDRESS = "ACHILLES_EMBEDDED_CASSANDRA_RPC_ADDRESS";
+    static final String ACHILLES_EMBEDDED_CASSANDRA_BROADCAST_RPC_ADDRESS = "ACHILLES_EMBEDDED_CASSANDRA_BROADCAST_RPC_ADDRESS";
+
 
     static final String ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER";
     static final String ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER";
@@ -28,6 +35,18 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
 
         final int numTokens = Integer.parseInt(System.getProperty("cassandra-num-tokens", "256"));
         config.num_tokens = numTokens;
+
+        config.listen_address = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_LISTEN_ADDRESS);
+        config.rpc_address = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_RPC_ADDRESS);
+        final String broadcastAddress = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_BROADCAST_ADDRESS);
+
+        if(isNotBlank(broadcastAddress))
+            config.broadcast_address = broadcastAddress;
+
+        final String broadcastRPCAddress = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_BROADCAST_RPC_ADDRESS);
+        if(isNotBlank(broadcastRPCAddress))
+            config.broadcast_rpc_address = broadcastRPCAddress;
+
         config.rpc_port = Integer.parseInt(System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_THRIFT_PORT));
         config.native_transport_port = Integer.parseInt(System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT));
         config.storage_port = Integer.parseInt(System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT));
@@ -53,10 +72,8 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.memtable_allocation_type = Config.MemtableAllocationType.heap_buffers;
         config.trickle_fsync = false;
         config.trickle_fsync_interval_in_kb = 10240;
-        config.listen_address = "localhost";
         config.start_native_transport = true;
         config.start_rpc = false;
-        config.rpc_address = "localhost";
         config.rpc_keepalive = true;
         config.rpc_server_type = "sync";
         config.thrift_framed_transport_size_in_mb = 15;
@@ -83,8 +100,6 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.client_encryption_options.keystore_password = "cassandra";
         config.internode_compression = Config.InternodeCompression.all;
         config.inter_dc_tcp_nodelay = true;
-        config.broadcast_address = "localhost";
-        config.broadcast_rpc_address = "localhost";
         config.enable_user_defined_functions = true;
         config.enable_user_defined_functions_threads = true;
         config.enable_scripted_user_defined_functions = false;
@@ -96,7 +111,7 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.disk_failure_policy = Config.DiskFailurePolicy.stop_paranoid;
 
         final Map<String, String> seedsMap = new HashMap<>();
-        seedsMap.put("seeds", "localhost");
+        seedsMap.put("seeds", config.listen_address);
         config.seed_provider = new ParameterizedClass("org.apache.cassandra.locator.SimpleSeedProvider", seedsMap);
 
         config.data_file_directories = new String[]{System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER)};

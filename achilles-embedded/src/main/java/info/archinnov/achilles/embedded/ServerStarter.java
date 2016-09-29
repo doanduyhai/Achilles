@@ -59,7 +59,6 @@ public enum ServerStarter {
     private static int cqlPort;
 
     private static int thriftPort;
-    private final Logger log = LoggerFactory.getLogger(ServerStarter.class);
 
     private static int storageRandomPort() {
         return PortFinder.findAvailableBetween(7001, 7500);
@@ -84,7 +83,7 @@ public enum ServerStarter {
     public void startServer(String cassandraHost, TypedMap parameters) {
         if (StringUtils.isBlank(cassandraHost)) {
 
-            log.debug("Do start embedded Cassandra server ");
+            LOGGER.debug("Do start embedded Cassandra server ");
             validateDataFolders(parameters);
             cleanCassandraDataFiles(parameters);
             randomizePortsIfNeeded(parameters);
@@ -96,7 +95,7 @@ public enum ServerStarter {
     }
 
     public void checkAndConfigurePorts(TypedMap parameters) {
-        log.trace("Check and configure Thrift/CQL ports");
+        LOGGER.trace("Check and configure Thrift/CQL ports");
         Integer cqlPort = parameters.getTyped(CASSANDRA_CQL_PORT);
         Integer thriftPort = parameters.getTyped(CASSANDRA_THRIFT_PORT);
         if (cqlPort != null && ServerStarter.cqlPort != cqlPort.intValue()) {
@@ -117,21 +116,25 @@ public enum ServerStarter {
     }
 
     private void start(final TypedMap parameters) {
-        if (isAlreadyRunning()) {
-            log.debug("Cassandra is already running, not starting new one");
+        if (isAlreadyRunning() && CassandraEmbeddedServer.embeddedServerStarted == true) {
+            LOGGER.debug("Cassandra is already running, not starting new one");
             return;
         }
 
         final String triggersDir = createTriggersFolder();
 
-        log.info(" Random embedded Cassandra RPC port/Thrift port = {}", parameters.<Integer>getTyped(CASSANDRA_THRIFT_PORT));
-        log.info(" Random embedded Cassandra Native port/CQL port = {}", parameters.<Integer>getTyped(CASSANDRA_CQL_PORT));
-        log.info(" Random embedded Cassandra Storage port = {}", parameters.<Integer>getTyped(CASSANDRA_STORAGE_PORT));
-        log.info(" Random embedded Cassandra Storage SSL port = {}", parameters.<Integer>getTyped(CASSANDRA_STORAGE_SSL_PORT));
-        log.info(" Random embedded Cassandra Remote JMX port = {}", System.getProperty("com.sun.management.jmxremote.port", "null"));
-        log.info(" Embedded Cassandra triggers directory = {}", triggersDir);
+        LOGGER.info(" Cassandra listen address = {}", parameters.<String>getTyped(LISTEN_ADDRESS));
+        LOGGER.info(" Cassandra RPC address = {}", parameters.<String>getTyped(RPC_ADDRESS));
+        LOGGER.info(" Cassandra broadcast address = {}", parameters.<String>getTyped(BROADCAST_ADDRESS));
+        LOGGER.info(" Cassandra RPC broadcast address = {}", parameters.<String>getTyped(BROADCAST_RPC_ADDRESS));
+        LOGGER.info(" Random embedded Cassandra RPC port/Thrift port = {}", parameters.<Integer>getTyped(CASSANDRA_THRIFT_PORT));
+        LOGGER.info(" Random embedded Cassandra Native port/CQL port = {}", parameters.<Integer>getTyped(CASSANDRA_CQL_PORT));
+        LOGGER.info(" Random embedded Cassandra Storage port = {}", parameters.<Integer>getTyped(CASSANDRA_STORAGE_PORT));
+        LOGGER.info(" Random embedded Cassandra Storage SSL port = {}", parameters.<Integer>getTyped(CASSANDRA_STORAGE_SSL_PORT));
+        LOGGER.info(" Random embedded Cassandra Remote JMX port = {}", System.getProperty("com.sun.management.jmxremote.port", "null"));
+        LOGGER.info(" Embedded Cassandra triggers directory = {}", triggersDir);
 
-        log.info("Starting Cassandra...");
+        LOGGER.info("Starting Cassandra...");
 
         System.setProperty("cassandra.triggers_dir", triggersDir);
         System.setProperty("cassandra.embedded.concurrent.reads", parameters.getTypedOr(CASSANDRA_CONCURRENT_READS, 32).toString());
@@ -167,25 +170,33 @@ public enum ServerStarter {
         try {
             startupLatch.await(30, SECONDS);
         } catch (InterruptedException e) {
-            log.error("Timeout starting Cassandra embedded", e);
+            LOGGER.error("Timeout starting Cassandra embedded", e);
             throw new IllegalStateException("Timeout starting Cassandra embedded", e);
         }
 
-        // Generate an OrderedShutdownHook to shutdown all connections from java clients before closing the server
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                log.info("Calling stop on Embedded Cassandra server");
-                daemonRef.get().stop();
+        if (parameters.containsKey(SHUTDOWN_HOOK)) {
+            CassandraShutDownHook shutDownHook = parameters.getTyped(SHUTDOWN_HOOK);
+            shutDownHook.addCassandraDaemonRef(daemonRef);
+            shutDownHook.addOrderedShutdownHook(orderedShutdownHook);
+            shutDownHook.addExecutorService(executor);
+        } else {
+            // Generate an OrderedShutdownHook to shutdown all connections from java clients before closing the server
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    LOGGER.info("Calling stop on Embedded Cassandra server");
+                    daemonRef.get().stop();
 
-                log.info("Calling shutdown on all Cluster instances");
-                // First call shutdown on all registered Java driver Cluster instances
-                orderedShutdownHook.callShutDown();
+                    LOGGER.info("Calling shutdown on all Cluster instances");
+                    // First call shutdown on all registered Java driver Cluster instances
+                    orderedShutdownHook.callShutDown();
 
-                log.info("Shutting down embedded Cassandra server");
-                // Then shutdown the server
-                executor.shutdownNow();
-            }
-        });
+                    LOGGER.info("Shutting down embedded Cassandra server");
+                    // Then shutdown the server
+                    executor.shutdownNow();
+                }
+            });
+        }
+
     }
 
     private void validateDataFolders(Map<String, Object> parameters) {
@@ -194,10 +205,10 @@ public enum ServerStarter {
         final String savedCachesFolder = (String) parameters.get(SAVED_CACHES_FOLDER);
         final String hintsFolder = (String) parameters.get(HINTS_FOLDER);
 
-        log.debug(" Embedded Cassandra data directory = {}", dataFolder);
-        log.debug(" Embedded Cassandra commitlog directory = {}", commitLogFolder);
-        log.debug(" Embedded Cassandra saved caches directory = {}", savedCachesFolder);
-        log.debug(" Embedded Cassandra hints directory = {}", hintsFolder);
+        LOGGER.debug(" Embedded Cassandra data directory = {}", dataFolder);
+        LOGGER.debug(" Embedded Cassandra commitlog directory = {}", commitLogFolder);
+        LOGGER.debug(" Embedded Cassandra saved caches directory = {}", savedCachesFolder);
+        LOGGER.debug(" Embedded Cassandra hints directory = {}", hintsFolder);
 
         validateFolder(dataFolder);
         validateFolder(commitLogFolder);
@@ -221,13 +232,13 @@ public enum ServerStarter {
             Validator.validateTrue(folder.canWrite(), "No write credential. Please grant write permission for the current user '%s' on folder '%s'", currentUser, folder.getAbsolutePath());
         } else if (!folder.exists()) {
             try {
-                log.info("Creating folder : " + folder.getAbsolutePath());
+                LOGGER.info("Creating folder : " + folder.getAbsolutePath());
                 FileUtils.forceMkdir(folder);
             } catch (IOException e) {
                 throw new RuntimeException("Cannot create Cassandra data folder " + folderPath, e);
             }
         } else {
-            log.info("Using existing data folder for unit tests : " + folder.getAbsolutePath());
+            LOGGER.info("Using existing data folder for unit tests : " + folder.getAbsolutePath());
         }
     }
 
@@ -240,7 +251,7 @@ public enum ServerStarter {
             for (String dataFolder : dataFolders) {
                 File dataFolderFile = new File(dataFolder);
                 if (dataFolderFile.exists() && dataFolderFile.isDirectory()) {
-                    log.info("Cleaning up embedded Cassandra data directory '{}'", dataFolderFile.getAbsolutePath());
+                    LOGGER.info("Cleaning up embedded Cassandra data directory '{}'", dataFolderFile.getAbsolutePath());
                     try {
                         FileUtils.cleanDirectory(dataFolderFile);
                     } catch (IOException e) {
@@ -272,11 +283,16 @@ public enum ServerStarter {
         parameters.put(CASSANDRA_STORAGE_PORT, storagePort);
         parameters.put(CASSANDRA_STORAGE_SSL_PORT, storageSSLPort);
 
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_LISTEN_ADDRESS, parameters.getTyped(LISTEN_ADDRESS));
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_RPC_ADDRESS, parameters.getTyped(RPC_ADDRESS));
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_BROADCAST_ADDRESS, parameters.getTyped(BROADCAST_ADDRESS));
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_BROADCAST_RPC_ADDRESS, parameters.getTyped(BROADCAST_RPC_ADDRESS));
 
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_THRIFT_PORT, thriftPort.toString());
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_CQL_PORT, cqlPort.toString());
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_PORT, storagePort.toString());
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_STORAGE_SSL_PORT, storageSSLPort.toString());
+
         System.setProperty("cassandra.jmx.local.port", jmxPort.toString());
         System.setProperty("cassandra.skip_wait_for_gossip_to_settle", "0");
 
@@ -292,7 +308,7 @@ public enum ServerStarter {
     }
 
     private String createTriggersFolder() {
-        log.trace("Create triggers folder");
+        LOGGER.trace("Create triggers folder");
         final File triggersDir = new File(DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER);
         if (!triggersDir.exists()) {
             triggersDir.mkdir();
@@ -301,7 +317,7 @@ public enum ServerStarter {
     }
 
     private boolean isAlreadyRunning() {
-        log.trace("Check whether an embedded Cassandra is already running");
+        LOGGER.trace("Check whether an embedded Cassandra is already running");
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         try {
             MBeanInfo mBeanInfo = mbs.getMBeanInfo(new ObjectName("org.apache.cassandra.db:type=StorageService"));

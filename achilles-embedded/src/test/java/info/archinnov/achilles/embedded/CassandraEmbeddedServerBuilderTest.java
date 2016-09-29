@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
@@ -32,17 +33,26 @@ import com.datastax.driver.core.Session;
 public class CassandraEmbeddedServerBuilderTest {
 
     @Test
-    public void should_start_new_embedded_server() throws Exception {
+    public void should_start_embedded_server_with_listen_and_rpc_address() throws Exception {
         //Given
+        CassandraShutDownHook shutDownHook = new CassandraShutDownHook();
+
         String keyspace = RandomStringUtils.randomAlphabetic(9);
+
         final Session session = CassandraEmbeddedServerBuilder.builder()
                 .withKeyspaceName(keyspace)
+                .withShutdownHook(shutDownHook)
+                .withListenAddress("127.0.0.1")
+                .withRpcAddress("127.0.0.1")
                 .buildNativeSession();
 
         //Then
-        assertThat(session).isNotNull();
-        final Row one = session.execute("SELECT * FROM system.local LIMIT 1").one();
-        assertThat(one).isNotNull();
+        try {
+            assertThat(session).isNotNull();
+            final Row one = session.execute("SELECT * FROM system.local LIMIT 1").one();
+            assertThat(one).isNotNull();
+        } finally {
+            shutDownHook.shutDownNow();
+        }
     }
-
 }
