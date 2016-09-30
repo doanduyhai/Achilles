@@ -21,6 +21,7 @@
 - Support for typed-safe **Function calls**
 - Support for the new **JSON** API
 - Support for multi-project compilation unit
+- Support for native index, **SASI** and **DSE Search**
 - Flexible naming strategy & insert strategy
 - Runtime **Schema Name Provider** for multi-tenant environments
 - Full compatibility with Java 8 **CompletableFuture**
@@ -42,6 +43,11 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 		</tr>
 	</thead>
 	<tbody>
+                <tr>
+                        <td>5.1.0</td>
+                	<td>3.1.0</td>
+                	<td>3.7</td>
+            	</tr>   
                 <tr>
                         <td>5.0.0</td>
                         <td>3.1.0</td>
