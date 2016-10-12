@@ -8,6 +8,7 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.datastax.driver.core.AbstractGettableData;
 import com.datastax.driver.core.ColumnDefinitionBuilder;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.DataType;

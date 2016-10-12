@@ -49,17 +49,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ExecutionInfo;
-import com.datastax.driver.core.QueryTrace;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+
+import com.datastax.driver.core.*;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.LogInterceptionRule.DMLStatementInterceptor;
@@ -73,6 +64,7 @@ import info.archinnov.achilles.test.sample.entity.Entity1;
 @RunWith(MockitoJUnitRunner.class)
 public class RegularStatementWrapperTest {
 
+    private CodecRegistry codecRegistry = new CodecRegistry();
     private RegularStatementWrapper wrapper;
 
     @Mock
@@ -194,8 +186,8 @@ public class RegularStatementWrapperTest {
         Definition col2 = buildColumnDef("keyspace", "table", "name", DataType.text());
         when(columnDefinitions.iterator().next()).thenReturn(col1, col2);
 
-        when(invoker.invokeOnRowForType(row, DataType.cboolean().asJavaClass(), "[applied]")).thenReturn(false);
-        when(invoker.invokeOnRowForType(row, DataType.text().asJavaClass(), "name")).thenReturn("Helen");
+        when(invoker.invokeOnRowForType(row, codecRegistry.codecFor(DataType.cboolean()).getJavaType().getRawType(), "[applied]")).thenReturn(false);
+        when(invoker.invokeOnRowForType(row, codecRegistry.codecFor(DataType.text()).getJavaType().getRawType(), "name")).thenReturn("Helen");
 
         //When
         wrapper.checkForLWTSuccess(resultSet);
@@ -222,8 +214,8 @@ public class RegularStatementWrapperTest {
         Definition col2 = buildColumnDef("keyspace", "table", "id", DataType.bigint());
         when(columnDefinitions.iterator().next()).thenReturn(col1, col2);
 
-        when(invoker.invokeOnRowForType(row, DataType.cboolean().asJavaClass(), "[applied]")).thenReturn(false);
-        when(invoker.invokeOnRowForType(row, DataType.bigint().asJavaClass(), "id")).thenReturn(10L);
+        when(invoker.invokeOnRowForType(row, codecRegistry.codecFor(DataType.cboolean()).getJavaType().getRawType(), "[applied]")).thenReturn(false);
+        when(invoker.invokeOnRowForType(row, codecRegistry.codecFor(DataType.bigint()).getJavaType().getRawType(), "id")).thenReturn(10L);
 
         AchillesLightWeightTransactionException caughtEx = null;
         //When

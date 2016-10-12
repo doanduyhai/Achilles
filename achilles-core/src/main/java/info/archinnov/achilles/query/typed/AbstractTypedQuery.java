@@ -63,7 +63,7 @@ public abstract class AbstractTypedQuery<T> {
         this.daoContext = daoContext;
         this.executorService = configContext.getExecutorService();
         this.boundValues = boundValues;
-        this.nativeStatementWrapper = new NativeStatementWrapper(entityClass, statement, this.boundValues, Optional.<LWTResultListener>absent());
+        this.nativeStatementWrapper = new NativeStatementWrapper(daoContext, entityClass, statement, this.boundValues, Optional.<LWTResultListener>absent());
         this.meta = meta;
         this.contextFactory = contextFactory;
         this.propertiesMap = transformPropertiesMap(meta);

@@ -1,5 +1,6 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
+import com.datastax.driver.core.AbstractTableMetadata;
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
@@ -25,7 +26,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
 
     private ColumnMetaDataComparator columnMetaDataComparator = ColumnMetaDataComparator.Singleton.INSTANCE.get();
 
-    public void validatePrimaryKeyComponents(TableMetadata tableMetadata, boolean partitionKey) {
+    public void validatePrimaryKeyComponents(AbstractTableMetadata tableMetadata, boolean partitionKey) {
         log.debug("Validate existing primary key component from table {} against entity class {}",tableMetadata.getName(), meta.getEntityClassName());
         Validator.validateNotNull(meta.getCompoundPKProperties(), "Cannot validate compound primary keys components against Cassandra meta data because entity '%s' does not have a compound primary key", meta.getEntityClassName());
         if (partitionKey) {
@@ -39,7 +40,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
         }
     }
 
-    public void validateColumn(TableMetadata tableMetaData, EntityMeta entityMeta, ConfigurationContext configContext) {
+    public void validateColumn(AbstractTableMetadata tableMetaData, EntityMeta entityMeta, ConfigurationContext configContext) {
         final String cqlColumnName = meta.getCQLColumnName();
         final Class<?> columnJavaType = meta.structure().getCQLValueType();
         final boolean schemaUpdateEnabled = entityMeta.config().isSchemaUpdateEnabled();
@@ -62,14 +63,13 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
         validateColumnType(tableName, cqlColumnName, columnMetadata, columnJavaType);
         validateStatic(cqlColumnName, tableName, columnMetadata);
 
-
-        if (!configContext.isRelaxIndexValidation()) {
-            boolean columnIsIndexed = columnMetadata.getIndex() != null;
-            Validator.validateTableFalse((columnIsIndexed ^ meta.structure().isIndexed()),"Column '%s' in the table '%s' is indexed (or not) whereas metadata indicates it is (or not)",cqlColumnName, tableName);
-        }
+//        if (!configContext.isRelaxIndexValidation()) {
+//            boolean columnIsIndexed = columnMetadata.getIndex() != null;
+//            Validator.validateTableFalse((columnIsIndexed ^ meta.structure().isIndexed()),"Column '%s' in the table '%s' is indexed (or not) whereas metadata indicates it is (or not)",cqlColumnName, tableName);
+//        }
     }
 
-    public void validateCollectionAndMapColumn(TableMetadata tableMetadata, EntityMeta entityMeta) {
+    public void validateCollectionAndMapColumn(AbstractTableMetadata tableMetadata, EntityMeta entityMeta) {
         final String cqlColumnName = meta.getCQLColumnName();
         final String tableName = tableMetadata.getName();
 
@@ -133,7 +133,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
         }
     }
 
-    public void validateClusteredCounterColumn(TableMetadata tableMetaData, EntityMeta entityMeta) {
+    public void validateClusteredCounterColumn(AbstractTableMetadata tableMetaData, EntityMeta entityMeta) {
         final String cqlColumnName = meta.getCQLColumnName();
 
         if (log.isDebugEnabled()) {
@@ -161,7 +161,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
         Validator.validateBeanMappingTrue(columnMetadata.isStatic() == meta.isStaticColumn(), "Column '%s' of table '%s' is declared as static='%s' in Java but as static='%s' in Cassandra", cqlColumnName, tableName, meta.isStaticColumn(), columnMetadata.isStatic());
     }
 
-    private void validatePartitionComponent(TableMetadata tableMetaData, PropertyMeta partitionMeta) {
+    private void validatePartitionComponent(AbstractTableMetadata tableMetaData, PropertyMeta partitionMeta) {
         final String tableName = tableMetaData.getName();
         final String cqlColumnName = partitionMeta.getCQLColumnName();
         final Class<?> columnJavaType = partitionMeta.structure().getCQLValueType();
@@ -179,7 +179,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
     }
 
 
-    private void validateClusteringComponent(TableMetadata tableMetaData, PropertyMeta clusteringMeta) {
+    private void validateClusteringComponent(AbstractTableMetadata tableMetaData, PropertyMeta clusteringMeta) {
         final String tableName = tableMetaData.getName();
         final String cqlColumnName = clusteringMeta.getCQLColumnName();
         final Class<?> columnJavaType = clusteringMeta.structure().getCQLValueType();

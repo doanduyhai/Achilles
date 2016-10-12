@@ -25,6 +25,6 @@ public class ColumnDefinitionBuilder {
 	}
 
 	public static ColumnDefinitions buildColumnDefinitions(Definition... defs) {
-		return new ColumnDefinitions(defs);
+		return new ColumnDefinitions(defs, new CodecRegistry());
 	}
 }

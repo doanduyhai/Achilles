@@ -44,7 +44,7 @@ public abstract class AbstractNativeQuery<T extends AbstractNativeQuery<T>> {
 
     protected AbstractNativeQuery(DaoContext daoContext, ConfigurationContext configContext, Statement statement, Options options, Object... boundValues) {
         this.daoContext = daoContext;
-        this.nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, boundValues, options.getLWTResultListener());
+        this.nativeStatementWrapper = new NativeStatementWrapper(daoContext, NativeQueryLog.class, statement, boundValues, options.getLWTResultListener());
         this.executorService = configContext.getExecutorService();
     }
 

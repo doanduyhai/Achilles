@@ -70,6 +70,7 @@ public class QueryIT {
             AchillesCounter.ACHILLES_COUNTER_TABLE);
 
     private PersistenceManager manager = resource.getPersistenceManager();
+    private CodecRegistry codecRegistry = manager.getNativeSession().getCluster().getConfiguration().getCodecRegistry();
 
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
@@ -857,7 +858,7 @@ public class QueryIT {
         manager.insert(entity);
 
         final Select.Where select = select().from("Tweet").where(QueryBuilder.eq("id", entity.getId()));
-        final ByteBuffer[] values = select.getValues(ProtocolVersion.V2);
+        final ByteBuffer[] values = select.getValues(ProtocolVersion.V2, codecRegistry);
         final TypedQuery<Tweet> queryBuilder = manager.typedQuery(Tweet.class, select, new Object[]{values});
 
         // When

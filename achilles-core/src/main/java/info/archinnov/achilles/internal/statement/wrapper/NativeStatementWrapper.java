@@ -22,28 +22,30 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import com.datastax.driver.core.PagingState;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
+
+import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.statement.StatementHelper;
 import info.archinnov.achilles.listener.LWTResultListener;
 
 public class NativeStatementWrapper extends AbstractStatementWrapper {
 
 
+    private final DaoContext daoContext;
     private Statement statement;
     private PagingState pagingState;
 
-    private static final List<ProtocolVersion> SUPPORTED_NATIVE_PROTOCOLS = Arrays.asList(ProtocolVersion.V1, ProtocolVersion.V2, ProtocolVersion.V3);
+    private static final List<ProtocolVersion> SUPPORTED_NATIVE_PROTOCOLS = Arrays.asList(
+            ProtocolVersion.V1,
+            ProtocolVersion.V2,
+            ProtocolVersion.V3,
+            ProtocolVersion.V4);
 
-    public NativeStatementWrapper(Class<?> entityClass, Statement statement, Object[] values, Optional<LWTResultListener> LWTResultListener) {
+    public NativeStatementWrapper(DaoContext daoContext, Class<?> entityClass, Statement statement, Object[] values, Optional<LWTResultListener> LWTResultListener) {
         super(entityClass, values);
+        this.daoContext = daoContext;
         this.statement = statement;
         super.lwtResultListener = LWTResultListener;
     }
@@ -91,11 +93,14 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
 
     public Statement buildParameterizedStatement() {
         if (statement instanceof RegularStatement) {
+
+            final ProtocolVersion protocolVersion = daoContext.getSession().getCluster().getConfiguration().getProtocolOptions().getProtocolVersion();
+            final CodecRegistry codecRegistry = daoContext.getSession().getCluster().getConfiguration().getCodecRegistry();
             final RegularStatement regularStatement = (RegularStatement) statement;
             boolean statementHasNoBoundValue = true;
 
-            for (ProtocolVersion protocolVersion : SUPPORTED_NATIVE_PROTOCOLS) {
-                statementHasNoBoundValue &= isEmpty(regularStatement.getValues(protocolVersion));
+            for (ProtocolVersion proto : SUPPORTED_NATIVE_PROTOCOLS) {
+                statementHasNoBoundValue &= isEmpty(regularStatement.getValues(proto, codecRegistry));
             }
 
             if (statementHasNoBoundValue && isNotEmpty(values)) {
@@ -107,8 +112,8 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
                 statement.setDefaultTimestamp(this.statement.getDefaultTimestamp());
                 statement.setRetryPolicy(this.statement.getRetryPolicy());
 
-                if (this.statement.getRoutingKey() != null) {
-                    statement.setRoutingKey(this.statement.getRoutingKey());
+                if (this.statement.getRoutingKey(protocolVersion, codecRegistry) != null) {
+                    statement.setRoutingKey(this.statement.getRoutingKey(protocolVersion, codecRegistry));
                 }
 
                 if (this.statement.getConsistencyLevel() != null) {

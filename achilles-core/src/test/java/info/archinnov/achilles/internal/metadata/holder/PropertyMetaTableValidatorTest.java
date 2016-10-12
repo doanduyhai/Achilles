@@ -18,6 +18,7 @@ import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.type.Counter;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -141,6 +142,7 @@ public class PropertyMetaTableValidatorTest {
         verifyZeroInteractions(configContext);
     }
 
+    @Ignore
     @Test
     public void should_verify_indexed_simple_column() throws Exception {
         //Given

@@ -30,8 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import com.datastax.driver.core.ExecutionInfo;
-import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.*;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.async.RowsWithExecutionInfo;
 import info.archinnov.achilles.internal.persistence.operations.TypedMapIterator;
@@ -43,9 +42,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Row;
+
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -134,6 +131,9 @@ public class NativeQueryTest {
         query = new NativeQuery(daoContext, configContext,regularStatement, OptionsBuilder.noOptions(), boundValues);
         query.asyncUtils = asyncUtils;
         query.mapper = mapper;
+
+        when(daoContext.getSession().getCluster().getConfiguration().getCodecRegistry()).thenReturn(new CodecRegistry());
+        when(daoContext.getSession().getCluster().getConfiguration().getProtocolOptions().getProtocolVersion()).thenReturn(ProtocolVersion.V2);
     }
 
     @Test

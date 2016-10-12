@@ -344,7 +344,7 @@ abstract class CommonBatch extends CommonPersistenceManager {
         log.debug("Batch native statement '{}' with bound values '{}'", statement, boundValues);
         Validator.validateFalse(statement instanceof BatchStatement, "Cannot add raw batch statement into batch");
         validator.validateUpsertOrDelete(statement);
-        final NativeStatementWrapper nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, boundValues, Optional.fromNullable(LWTResultListener));
+        final NativeStatementWrapper nativeStatementWrapper = new NativeStatementWrapper(daoContext, NativeQueryLog.class, statement, boundValues, Optional.fromNullable(LWTResultListener));
         flushContext.pushStatement(nativeStatementWrapper);
     }
 

@@ -38,11 +38,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.datastax.driver.core.ColumnDefinitionBuilder;
-import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NativeQueryMapperTest {
@@ -72,13 +69,10 @@ public class NativeQueryMapperTest {
 		columnDefs = ColumnDefinitionBuilder.buildColumnDefinitions(def1, def2);
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
-		when(cqlRowInvoker.invokeOnRowForType(row, Long.class, "id")).thenReturn(id);
-		when(cqlRowInvoker.invokeOnRowForType(row, String.class, "name")).thenReturn(name);
+		when(row.getObject("id")).thenReturn(id);
+		when(row.getObject("name")).thenReturn(name);
 
 		List<TypedMap> result = mapper.mapRows(Arrays.asList(row));
-
-		verify(cqlRowInvoker).invokeOnRowForType(row, Long.class, "id");
-		verify(cqlRowInvoker).invokeOnRowForType(row, String.class, "name");
 
 		assertThat(result).hasSize(1);
 		TypedMap line = result.get(0);
@@ -96,7 +90,7 @@ public class NativeQueryMapperTest {
 		columnDefs = ColumnDefinitionBuilder.buildColumnDefinitions(def1);
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
-		when(row.getList("friends", String.class)).thenReturn(friends);
+		when(row.getObject("friends")).thenReturn(friends);
 
 		List<TypedMap> result = mapper.mapRows(Arrays.asList(row));
 
@@ -115,7 +109,7 @@ public class NativeQueryMapperTest {
 		columnDefs = ColumnDefinitionBuilder.buildColumnDefinitions(def1);
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
-		when(row.getSet("followers", String.class)).thenReturn(followers);
+		when(row.getObject("followers")).thenReturn(followers);
 		List<TypedMap> result = mapper.mapRows(Arrays.asList(row));
 
 		assertThat(result).hasSize(1);
@@ -134,7 +128,7 @@ public class NativeQueryMapperTest {
 		columnDefs = ColumnDefinitionBuilder.buildColumnDefinitions(def1);
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
-		when(row.getMap("preferences", BigInteger.class, String.class)).thenReturn(preferences);
+		when(row.getObject("preferences")).thenReturn(preferences);
 		List<TypedMap> result = mapper.mapRows(Arrays.asList(row));
 
 		assertThat(result).hasSize(1);
@@ -142,15 +136,6 @@ public class NativeQueryMapperTest {
 
 		assertThat(line).hasSize(1);
 		assertThat(line.get("preferences")).isSameAs(preferences);
-	}
-
-	@Test(expected = AchillesException.class)
-	public void should_throw_exception_when_no_columns_definitions() throws Exception {
-		def1 = ColumnDefinitionBuilder.buildColumnDef("keyspace", "table", "id", DataType.bigint());
-
-		when(row.getColumnDefinitions()).thenReturn(null);
-
-		mapper.mapRows(Arrays.asList(row));
 	}
 
 	@Test

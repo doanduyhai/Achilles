@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.*;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +44,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import com.datastax.driver.core.ResultSet;
+
 import com.datastax.driver.core.querybuilder.Insert;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.async.AchillesFuture;
@@ -82,7 +82,7 @@ public class BatchTest {
     @Mock
     private PersistenceContext.PersistenceManagerFacade facade;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private DaoContext daoContext;
 
     @Mock
@@ -143,6 +143,8 @@ public class BatchTest {
         batch.validator = validator;
         Whitebox.setInternalState(batch, BatchingFlushContext.class, flushContext);
 
+        when(daoContext.getSession().getCluster().getConfiguration().getCodecRegistry()).thenReturn(new CodecRegistry());
+        when(daoContext.getSession().getCluster().getConfiguration().getProtocolOptions().getProtocolVersion()).thenReturn(ProtocolVersion.V2);
     }
 
     @Test

@@ -37,6 +37,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import com.datastax.driver.core.AbstractGettableData;
 import com.datastax.driver.core.Row;
 
 public class TypeMapperTest {
@@ -102,7 +103,7 @@ public class TypeMapperTest {
 
 	@Test
 	public void should_get_string_value_from_row() throws Exception {
-		Row row = mock(Row.class);
+		AbstractGettableData row = mock(AbstractGettableData.class);
 		when(row.getString("name")).thenReturn("value");
 
 		Method method = getRowMethod(String.class);
@@ -112,7 +113,7 @@ public class TypeMapperTest {
 
 	@Test
 	public void should_get_string_value_from_row_for_object_type() throws Exception {
-		Row row = mock(Row.class);
+		AbstractGettableData row = mock(AbstractGettableData.class);
 		when(row.getString("object")).thenReturn("object_value");
 
 		Method method = getRowMethod(UserBean.class);

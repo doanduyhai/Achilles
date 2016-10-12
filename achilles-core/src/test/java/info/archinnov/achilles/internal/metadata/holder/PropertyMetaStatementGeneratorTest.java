@@ -56,7 +56,7 @@ public class PropertyMetaStatementGeneratorTest {
         final Insert actual = view.generateInsertPrimaryKey(insert, false);
 
         //Then
-        assertThat(actual.getQueryString()).isEqualTo("INSERT INTO table(id,name) VALUES (:id,:name);");
+        assertThat(actual.getQueryString()).isEqualTo("INSERT INTO table (id,name) VALUES (:id,:name);");
     }
 
     @Test
@@ -74,7 +74,7 @@ public class PropertyMetaStatementGeneratorTest {
         final Insert actual = view.generateInsertPrimaryKey(insert, true);
 
         //Then
-        assertThat(actual.getQueryString()).isEqualTo("INSERT INTO table(id) VALUES (:id);");
+        assertThat(actual.getQueryString()).isEqualTo("INSERT INTO table (id) VALUES (:id);");
     }
 
     @Test
@@ -88,7 +88,7 @@ public class PropertyMetaStatementGeneratorTest {
         final Insert actual = view.generateInsertPrimaryKey(insert, false);
 
         //Then
-        assertThat(actual.getQueryString()).isEqualTo("INSERT INTO table(id) VALUES (:id);");
+        assertThat(actual.getQueryString()).isEqualTo("INSERT INTO table (id) VALUES (:id);");
     }
 
     @Test
@@ -450,6 +450,6 @@ public class PropertyMetaStatementGeneratorTest {
         final Assignments actual = view.generateUpdateForRemovedAtIndexElement(conditions, 2);
 
         //Then
-        assertThat(actual.getQueryString()).isEqualTo("UPDATE table SET names[2]=?;");
+        assertThat(actual.getQueryString()).isEqualTo("UPDATE table SET names[2]=null;");
     }
 }

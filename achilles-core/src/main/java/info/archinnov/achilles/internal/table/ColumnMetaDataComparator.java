@@ -17,25 +17,26 @@
 package info.archinnov.achilles.internal.table;
 
 import java.util.List;
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TableMetadata;
+
+import com.datastax.driver.core.*;
 import com.google.common.collect.ComparisonChain;
 
 public class ColumnMetaDataComparator {
 
+    private static final CodecRegistry CODEC_REGISTRY = new CodecRegistry();
+
     public boolean isEqual(ColumnMetadata source, ColumnMetadata target) {
         boolean isEqual;
         final String sourceName = source.getName();
-        final TableMetadata sourceTable = source.getTable();
+        final AbstractTableMetadata sourceTable = source.getParent();
         final DataType sourceType = source.getType();
-        final Class<?> sourceClass = sourceType.asJavaClass();
+        final Class<?> sourceClass = CODEC_REGISTRY.codecFor(sourceType).getJavaType().getRawType();
         final List<DataType> sourceTypeParams = sourceType.getTypeArguments();
 
         final String targetName = target.getName();
-        final TableMetadata targetTable = target.getTable();
+        final AbstractTableMetadata targetTable = target.getParent();
         final DataType targetType = target.getType();
-        final Class<?> targetClass = targetType.asJavaClass();
+        final Class<?> targetClass = CODEC_REGISTRY.codecFor(targetType).getJavaType().getRawType();
         final List<DataType> targetTypeParams = targetType.getTypeArguments();
 
         final boolean isPartiallyEqual = ComparisonChain.start()

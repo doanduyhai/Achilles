@@ -28,6 +28,8 @@ import java.util.Collection;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTableValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.datastax.driver.core.AbstractTableMetadata;
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -43,7 +45,7 @@ public class TableValidator {
 
     private ColumnMetaDataComparator columnMetaDataComparator = ColumnMetaDataComparator.Singleton.INSTANCE.get();
 
-    public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetadata, ConfigurationContext configContext) {
+    public void validateForEntity(EntityMeta entityMeta, AbstractTableMetadata tableMetadata, ConfigurationContext configContext) {
         log.debug("Validate existing table {} for {}", tableMetadata.getName(), entityMeta);
 
         // Primary key Validation

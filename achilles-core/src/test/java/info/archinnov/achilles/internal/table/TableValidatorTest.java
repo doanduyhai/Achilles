@@ -43,7 +43,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 
-import com.datastax.driver.core.ColumnMetadataBuilder;
+import com.datastax.driver.core.*;
+
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import info.archinnov.achilles.test.parser.entity.CompoundPK;
@@ -55,10 +56,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
+
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;

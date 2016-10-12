@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import info.archinnov.achilles.annotations.*;
 import org.apache.commons.lang3.RandomUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
@@ -126,6 +127,7 @@ public class SchemaUpdateIT {
         session.close();
     }
 
+    @Ignore
     @Test(expected = AchillesInvalidTableException.class)
     public void should_fail_bootstrapping_if_index_validation_fails() throws Exception {
         //Given

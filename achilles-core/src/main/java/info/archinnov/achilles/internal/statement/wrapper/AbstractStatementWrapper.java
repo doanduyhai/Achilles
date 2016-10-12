@@ -32,15 +32,8 @@ import java.util.concurrent.ExecutorService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.BatchStatement;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ExecutionInfo;
-import com.datastax.driver.core.QueryTrace;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.exceptions.TraceRetrievalException;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -53,7 +46,7 @@ import info.archinnov.achilles.type.TypedMap;
 
 public abstract class AbstractStatementWrapper {
     public static final EventComparator EVENT_TRACE_COMPARATOR = new EventComparator();
-
+    protected static final CodecRegistry CODEC_REGISTRY = new CodecRegistry();
     protected static final String IF_NOT_EXIST_CLAUSE = " IF NOT EXISTS";
     protected static final String IF_CLAUSE = " IF ";
     protected static final String LWT_RESULT_COLUMN = "[applied]";
@@ -181,17 +174,18 @@ public abstract class AbstractStatementWrapper {
                     Object columnValue;
                     switch (name) {
                         case LIST:
-                            columnValue = LWTResult.getList(columnDefName, dataType.getTypeArguments().get(0).asJavaClass());
+                            columnValue = LWTResult.getList(columnDefName, CODEC_REGISTRY.codecFor(dataType.getTypeArguments().get(0)).getJavaType().getRawType());
                             break;
                         case SET:
-                            columnValue = LWTResult.getSet(columnDefName, dataType.getTypeArguments().get(0).asJavaClass());
+                            columnValue = LWTResult.getSet(columnDefName, CODEC_REGISTRY.codecFor(dataType.getTypeArguments().get(0)).getJavaType().getRawType());
                             break;
                         case MAP:
                             final List<DataType> typeArguments = dataType.getTypeArguments();
-                            columnValue = LWTResult.getMap(columnDefName, typeArguments.get(0).asJavaClass(), typeArguments.get(1).asJavaClass());
+                            columnValue = LWTResult.getMap(columnDefName, CODEC_REGISTRY.codecFor(typeArguments.get(0)).getJavaType().getRawType(),
+                                    CODEC_REGISTRY.codecFor(typeArguments.get(1)).getJavaType().getRawType());
                             break;
                         default:
-                            columnValue = invoker.invokeOnRowForType(LWTResult, name.asJavaClass(), columnDefName);
+                            columnValue = invoker.invokeOnRowForType(LWTResult, CODEC_REGISTRY.codecFor(dataType).getJavaType().getRawType(), columnDefName);
                     }
                     currentValues.put(columnDefName, columnValue);
                 }
