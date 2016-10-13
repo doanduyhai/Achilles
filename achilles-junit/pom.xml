@@ -19,7 +19,7 @@
     <parent>
         <groupId>info.archinnov</groupId>
         <artifactId>achilles</artifactId>
-        <version>3.2.4-Libon-SNAPSHOT</version>
+        <version>3.2.4-Libon</version>
     </parent>
     <artifactId>achilles-junit</artifactId>
     <name>Achilles JUnit</name>
