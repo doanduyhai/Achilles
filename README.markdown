@@ -26,8 +26,8 @@
 - Runtime **Schema Name Provider** for multi-tenant environments
 - Full compatibility with Java 8 **CompletableFuture**
 
-> **Warning: Achilles versions 3.x are no longer maintained, only bug-fixes are supported, please migrate to
-version 4.x and follow the [Migration From 3.x Guide]**
+> **Warning: Achilles versions 4.x are no longer maintained, only bug-fixes are supported, please migrate to
+version 5.x and follow the [Migration From 4.x Guide]**
 
 ## Installation #
 
@@ -43,16 +43,16 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 		</tr>
 	</thead>
 	<tbody>
-                <tr>
-                        <td>5.1.0</td>
-                	<td>3.1.0</td>
-                	<td>3.7</td>
-            	</tr>   
-                <tr>
-                        <td>5.0.0</td>
-                        <td>3.1.0</td>
-                        <td>3.7</td>
-                </tr>
+        <tr>
+            <td>5.1.1</td>
+        	<td>3.1.1</td>
+        	<td>3.7</td>
+        </tr>   
+        <tr>
+            <td>5.0.0</td>
+            <td>3.1.0</td>
+            <td>3.7</td>
+        </tr>
 		<tr>
 			<td>4.2.3</td>
 			<td>3.1.0</td>
@@ -76,7 +76,7 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
     </tbody>
 </table>    
 
-> Warning: thre will be no new features for branches older than **4.2.x**. Those branches are
+> Warning: there will be no new features for branches older than **5.0.x**. Those branches are
 only supported for bug fixes. New features will **not** be back-ported. Please upgrade to the
 latest version of **Achilles** to benefit from new features
 
