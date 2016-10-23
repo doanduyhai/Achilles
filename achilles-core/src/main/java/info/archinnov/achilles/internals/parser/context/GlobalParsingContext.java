@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.lang.model.SourceVersion;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.squareup.javapoet.ClassName;
@@ -33,6 +35,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.annotations.CompileTimeConfig;
+import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.cassandra_version.*;
 import info.archinnov.achilles.internals.codegen.crud.CrudAPICodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.delete.DeleteDSLCodeGen;
@@ -210,5 +213,13 @@ public class GlobalParsingContext {
 
     public CodecInfo getCodecFor(TypeName typeName) {
         return codecRegistry.get(typeName);
+    }
+
+    public void validateProjectName(AptUtils aptUtils) {
+        if (projectName.isPresent()) {
+            final String projectName = this.projectName.get();
+            aptUtils.validateTrue(SourceVersion.isName(projectName), "The project name '%s' is not a valid name for class name generation. " +
+                    "Please use ([a-zA-Z][a-zA-Z0-9_]+) as pattern for project name", projectName);
+        }
     }
 }

@@ -205,11 +205,16 @@ public class AchillesProcessor extends AbstractProcessor {
                 "Cannot declare more than one @%s in a single compilation unit",
                 CompileTimeConfig.class.getSimpleName());
 
-        return getTypesAnnotatedByAsStream(annotations, roundEnv, CompileTimeConfig.class)
+        GlobalParsingContext context = getTypesAnnotatedByAsStream(annotations, roundEnv, CompileTimeConfig.class)
                 .map(typeElement -> aptUtils.getAnnotationOnClass(typeElement, CompileTimeConfig.class).get())
                 .findFirst()
                 .map(annot -> GlobalParsingContext.fromCompileTimeConfig(annot))
                 .orElse(GlobalParsingContext.defaultContext());
+
+        context.validateProjectName(aptUtils);
+
+        return context;
+
     }
 
     private FunctionsContext parseAndValidateFunctionRegistry(GlobalParsingContext context, Set<? extends TypeElement> annotations,
