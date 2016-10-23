@@ -79,14 +79,19 @@ public class SchemaValidator {
                     staticType, cqlColumn, entityClass, runtimeType);
 
             if (x.fieldInfo.hasIndex()) {
+                final TableMetadata tableMetadata = (TableMetadata) metadata;
+                final String indexName = x.fieldInfo.indexInfo.name;
+                final IndexMetadata indexMetadata = tableMetadata.getIndex(indexName);
+
                 if (x.fieldInfo.indexInfo.impl == IndexImpl.NATIVE) {
-                    final TableMetadata tableMetadata = (TableMetadata) metadata;
-                    validateNativeIndex(entityClass, x, cqlColumn, tableMetadata.getIndex(x.fieldInfo.indexInfo.name));
+                    validateBeanMappingTrue(indexMetadata != null, "Cannot find index name '%s' for column '%s' of entity '%s' in live schema",
+                            indexName, cqlColumn, entityClass);
+                    validateNativeIndex(entityClass, x, cqlColumn, indexMetadata);
                 } else if (x.fieldInfo.indexInfo.impl == IndexImpl.SASI) {
-                    final TableMetadata tableMetadata = (TableMetadata) metadata;
-                    validateSASIIndex(entityClass, x, cqlColumn, tableMetadata.getIndex(x.fieldInfo.indexInfo.name));
+                    validateBeanMappingTrue(indexMetadata != null, "Cannot find index name '%s' for column '%s' of entity '%s' in live schema",
+                            indexName, cqlColumn, entityClass);
+                    validateSASIIndex(entityClass, x, cqlColumn, indexMetadata);
                 } else if (x.fieldInfo.indexInfo.impl == IndexImpl.DSE_SEARCH) {
-                    final TableMetadata tableMetadata = (TableMetadata) metadata;
                     validateDSESearchIndex(entityClass, tableMetadata);
                 }
             }
