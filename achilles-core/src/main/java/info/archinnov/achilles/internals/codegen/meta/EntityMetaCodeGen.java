@@ -508,7 +508,7 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         }
 
         public boolean hasIndex() {
-            return fieldMetaSignatures.stream().filter(x -> x.context.indexInfo.type != IndexType.NONE).count() > 1;
+            return fieldMetaSignatures.stream().filter(x -> x.context.indexInfo.type != IndexType.NONE).count() >= 1;
         }
 
         public boolean isCounterEntity() {
