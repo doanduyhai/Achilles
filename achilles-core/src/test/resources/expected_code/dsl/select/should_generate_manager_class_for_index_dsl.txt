@@ -1,0 +1,1166 @@
+package info.archinnov.achilles.generated;
+
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.Clust_UDT;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.Clust_UDT;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.Udt_UDT;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.Clust_UDT;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.Udt_UDT;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust.Relation;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id.Relation;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust.Relation;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Id;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Id.Relation;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.Udt_UDT;
+import info.archinnov.achilles.generated.meta.entity.TestEntityWithUDTAsClustering_AchillesMeta;
+import info.archinnov.achilles.internals.dsl.query.select.AbstractSelect;
+import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectColumns;
+import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectColumnsTypeMap;
+import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectFrom;
+import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectFromTypeMap;
+import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWhere;
+import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWherePartition;
+import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWherePartitionTypeMap;
+import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWhereTypeMap;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.metamodel.functions.FunctionCall;
+import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.runtime.RuntimeEngine;
+import info.archinnov.achilles.internals.sample_classes.dsl.select.TestEntityWithUDTAsClustering;
+import info.archinnov.achilles.internals.sample_classes.dsl.select.TestUDTWithNoKeyspace;
+import info.archinnov.achilles.type.SchemaNameProvider;
+import info.archinnov.achilles.validation.Validator;
+import java.lang.Class;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.ArrayUtils;
+
+public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
+  protected final TestEntityWithUDTAsClustering_AchillesMeta meta;
+
+  protected final Class<TestEntityWithUDTAsClustering> entityClass = TestEntityWithUDTAsClustering.class;
+
+  public TestEntityWithUDTAsClustering_Select(RuntimeEngine rte, TestEntityWithUDTAsClustering_AchillesMeta meta) {
+    super(rte);
+    this.meta = meta;
+  }
+
+  /**
+   * Generate a SELECT ... <strong>id</strong> ... */
+  public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns id() {
+    select.column("id");
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns(select);
+  }
+
+  /**
+   * Generate a SELECT ... <strong>udtlist</strong> ... */
+  public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns udtList() {
+    select.column("udtlist");
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns(select);
+  }
+
+  /**
+   * Generate a SELECT ... <strong>udtset</strong> ... */
+  public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns udtSet() {
+    select.column("udtset");
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns(select);
+  }
+
+  /**
+   * Generate a SELECT ... <strong>udtmapkey</strong> ... */
+  public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns udtMapKey() {
+    select.column("udtmapkey");
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns(select);
+  }
+
+  /**
+   * Generate a SELECT ... <strong>udtmapvalue</strong> ... */
+  public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns udtMapValue() {
+    select.column("udtmapvalue");
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns(select);
+  }
+
+  /**
+   * Generate a SELECT ... <strong>clust(.?)</strong> ... */
+  public final TestEntityWithUDTAsClustering_Select.Clust_UDT clust() {
+    return new TestEntityWithUDTAsClustering_Select.Clust_UDT();
+  }
+
+  /**
+   * Generate a SELECT ... <strong>udt(.?)</strong> ... */
+  public final TestEntityWithUDTAsClustering_Select.Udt_UDT udt() {
+    return new TestEntityWithUDTAsClustering_Select.Udt_UDT();
+  }
+
+  /**
+   * Use this method to call a system or user-defined function.<br/>All the system functions are accessible from the <strong>{@link info.archinnov.achilles.generated.function.SystemFunctions}</strong> class<br/>All the user-defined functions and aggregates are accessible from the <strong>{@link info.archinnov.achilles.generated.function.FunctionsRegistry}</strong> class<br/>System and user-defined functions accept only appropriate type. To pass in an entity field as function argument, use the generated <strong>manager.COLUMNS</strong> class which exposes all columns with their appropriate type<br/>Example: <pre class="code"><code class="java">
+   *   {@literal @}Table
+   *   public class MyEntity {
+   *
+   *       ...
+   *
+   *       {@literal @}Column("value_column")
+   *       private String value;
+   *
+   *       {@literal @}Column("list_of_string")
+   *       private List<String> strings;
+   *
+   *       ...
+   *
+   *   }
+   *
+   *   {@literal @}FunctionsRegistry
+   *   public interface MyFunctions {
+   *
+   *        String convertListToJson(List<String> strings);
+   *
+   *   }
+   *
+   *
+   *   ...
+   *
+   *
+   *   manager
+   *      .dsl()
+   *      .select()
+   *      // This call will generate SELECT cast(writetime(value_column) as text) AS writetimeOfValueAsString, ...
+   *      .function(SystemFunctions.castAsText(SystemFunctions.writetime(manager.COLUMNS.VALUE)), "writetimeOfValueAsString")
+   *      ...
+   *
+   *   manager
+   *      .dsl()
+   *      .select()
+   *      // This call will generate SELECT convertlisttojson(list_of_string) AS strings_as_json, ...
+   *      .function(FunctionsRegistry.convertListToJson(manager.COLUMNS.STRINGS), "strings_as_json")
+   *      ...
+   *
+   * </code></pre>
+   * <br/>
+   * @param functionCall the function call object
+   * @param alias mandatory alias for this function call for easier retrieval from the ResultSet
+   * @return a built-in function call passed to the QueryBuilder object
+   */
+  public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap function(final FunctionCall functionCall, final String alias) {
+    functionCall.addToSelect(select, alias);
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap(select);
+  }
+
+  /**
+   * Generate ... * FROM ... */
+  public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom allColumns_FromBaseTable() {
+    final Select.Where where = select.all().from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where);
+  }
+
+  /**
+   * Generate ... * FROM ... using the given SchemaNameProvider */
+  public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom allColumns_From(final SchemaNameProvider schemaNameProvider) {
+    final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
+    final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
+    final Select.Where where = select.all().from(currentKeyspace, currentTable).where();
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where);
+  }
+
+  public class TestEntityWithUDTAsClustering_SelectColumns extends AbstractSelectColumns {
+    public TestEntityWithUDTAsClustering_SelectColumns(Select.Selection selection) {
+      super(selection);
+    }
+
+    /**
+     * Generate a SELECT ... <strong>id</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns id() {
+      selection.column("id");
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udtlist</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns udtList() {
+      selection.column("udtlist");
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udtset</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns udtSet() {
+      selection.column("udtset");
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udtmapkey</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns udtMapKey() {
+      selection.column("udtmapkey");
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udtmapvalue</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns udtMapValue() {
+      selection.column("udtmapvalue");
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... <strong>clust(.?)</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.Clust_UDT clust() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.Clust_UDT();
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udt(.?)</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.Udt_UDT udt() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.Udt_UDT();
+    }
+
+    /**
+     * Use this method to call a system or user-defined function.<br/>All the system functions are accessible from the <strong>{@link info.archinnov.achilles.generated.function.SystemFunctions}</strong> class<br/>All the user-defined functions and aggregates are accessible from the <strong>{@link info.archinnov.achilles.generated.function.FunctionsRegistry}</strong> class<br/>System and user-defined functions accept only appropriate type. To pass in an entity field as function argument, use the generated <strong>manager.COLUMNS</strong> class which exposes all columns with their appropriate type<br/>Example: <pre class="code"><code class="java">
+     *   {@literal @}Table
+     *   public class MyEntity {
+     *
+     *       ...
+     *
+     *       {@literal @}Column("value_column")
+     *       private String value;
+     *
+     *       {@literal @}Column("list_of_string")
+     *       private List<String> strings;
+     *
+     *       ...
+     *
+     *   }
+     *
+     *   {@literal @}FunctionsRegistry
+     *   public interface MyFunctions {
+     *
+     *        String convertListToJson(List<String> strings);
+     *
+     *   }
+     *
+     *
+     *   ...
+     *
+     *
+     *   manager
+     *      .dsl()
+     *      .select()
+     *      // This call will generate SELECT cast(writetime(value_column) as text) AS writetimeOfValueAsString, ...
+     *      .function(SystemFunctions.castAsText(SystemFunctions.writetime(manager.COLUMNS.VALUE)), "writetimeOfValueAsString")
+     *      ...
+     *
+     *   manager
+     *      .dsl()
+     *      .select()
+     *      // This call will generate SELECT convertlisttojson(list_of_string) AS strings_as_json, ...
+     *      .function(FunctionsRegistry.convertListToJson(manager.COLUMNS.STRINGS), "strings_as_json")
+     *      ...
+     *
+     * </code></pre>
+     * <br/>
+     * @param functionCall the function call object
+     * @param alias mandatory alias for this function call for easier retrieval from the ResultSet
+     * @return a built-in function call passed to the QueryBuilder object
+     */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap function(final FunctionCall functionCall, final String alias) {
+      functionCall.addToSelect(selection, alias);
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap(select);
+    }
+
+    /**
+     * Generate a ... <strong>FROM xxx</strong> ...  */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom fromBaseTable() {
+      final Select.Where where = selection.from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where);
+    }
+
+    /**
+     * Generate a ... <strong>FROM xxx</strong> ... using the given SchemaNameProvider */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom from(final SchemaNameProvider schemaNameProvider) {
+      final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
+      final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
+      final Select.Where where = selection.from(currentKeyspace, currentTable).where();
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where);
+    }
+
+    public class Clust_UDT {
+      /**
+       * Generate a SELECT ... <strong>clust.id</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns id() {
+        selection.raw("clust.id");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.this;
+      }
+
+      /**
+       * Generate a SELECT ... <strong>clust."VALUE"</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns value() {
+        selection.raw("clust.\"VALUE\"");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.this;
+      }
+
+      /**
+       * Generate a SELECT ... <strong>clust</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns allColumns() {
+        selection.raw("clust");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.this;
+      }
+    }
+
+    public class Udt_UDT {
+      /**
+       * Generate a SELECT ... <strong>udt.id</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns id() {
+        selection.raw("udt.id");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.this;
+      }
+
+      /**
+       * Generate a SELECT ... <strong>udt."VALUE"</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns value() {
+        selection.raw("udt.\"VALUE\"");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.this;
+      }
+
+      /**
+       * Generate a SELECT ... <strong>udt</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns allColumns() {
+        selection.raw("udt");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns.this;
+      }
+    }
+  }
+
+  public class TestEntityWithUDTAsClustering_SelectColumnsTypedMap extends AbstractSelectColumnsTypeMap {
+    public TestEntityWithUDTAsClustering_SelectColumnsTypedMap(Select.Selection selection) {
+      super(selection);
+    }
+
+    /**
+     * Generate a SELECT ... <strong>id</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap id() {
+      selection.column("id");
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udtlist</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap udtList() {
+      selection.column("udtlist");
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udtset</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap udtSet() {
+      selection.column("udtset");
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udtmapkey</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap udtMapKey() {
+      selection.column("udtmapkey");
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udtmapvalue</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap udtMapValue() {
+      selection.column("udtmapvalue");
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... <strong>clust(.?)</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.Clust_UDT clust() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.Clust_UDT();
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udt(.?)</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.Udt_UDT udt() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.Udt_UDT();
+    }
+
+    /**
+     * Use this method to call a system or user-defined function.<br/>All the system functions are accessible from the <strong>{@link info.archinnov.achilles.generated.function.SystemFunctions}</strong> class<br/>All the user-defined functions and aggregates are accessible from the <strong>{@link info.archinnov.achilles.generated.function.FunctionsRegistry}</strong> class<br/>System and user-defined functions accept only appropriate type. To pass in an entity field as function argument, use the generated <strong>manager.COLUMNS</strong> class which exposes all columns with their appropriate type<br/>Example: <pre class="code"><code class="java">
+     *   {@literal @}Table
+     *   public class MyEntity {
+     *
+     *       ...
+     *
+     *       {@literal @}Column("value_column")
+     *       private String value;
+     *
+     *       {@literal @}Column("list_of_string")
+     *       private List<String> strings;
+     *
+     *       ...
+     *
+     *   }
+     *
+     *   {@literal @}FunctionsRegistry
+     *   public interface MyFunctions {
+     *
+     *        String convertListToJson(List<String> strings);
+     *
+     *   }
+     *
+     *
+     *   ...
+     *
+     *
+     *   manager
+     *      .dsl()
+     *      .select()
+     *      // This call will generate SELECT cast(writetime(value_column) as text) AS writetimeOfValueAsString, ...
+     *      .function(SystemFunctions.castAsText(SystemFunctions.writetime(manager.COLUMNS.VALUE)), "writetimeOfValueAsString")
+     *      ...
+     *
+     *   manager
+     *      .dsl()
+     *      .select()
+     *      // This call will generate SELECT convertlisttojson(list_of_string) AS strings_as_json, ...
+     *      .function(FunctionsRegistry.convertListToJson(manager.COLUMNS.STRINGS), "strings_as_json")
+     *      ...
+     *
+     * </code></pre>
+     * <br/>
+     * @param functionCall the function call object
+     * @param alias mandatory alias for this function call for easier retrieval from the ResultSet
+     * @return a built-in function call passed to the QueryBuilder object
+     */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap function(final FunctionCall functionCall, final String alias) {
+      functionCall.addToSelect(selection, alias);
+      return this;
+    }
+
+    /**
+     * Generate a ... <strong>FROM xxx</strong> ...  */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap fromBaseTable() {
+      final Select.Where where = selection.from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap(where);
+    }
+
+    /**
+     * Generate a ... <strong>FROM xxx</strong> ... using the given SchemaNameProvider */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap from(final SchemaNameProvider schemaNameProvider) {
+      final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
+      final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
+      final Select.Where where = selection.from(currentKeyspace, currentTable).where();
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap(where);
+    }
+
+    public class Clust_UDT {
+      /**
+       * Generate a SELECT ... <strong>clust.id</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap id() {
+        selection.raw("clust.id");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.this;
+      }
+
+      /**
+       * Generate a SELECT ... <strong>clust."VALUE"</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap value() {
+        selection.raw("clust.\"VALUE\"");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.this;
+      }
+
+      /**
+       * Generate a SELECT ... <strong>clust</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap allColumns() {
+        selection.raw("clust");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.this;
+      }
+    }
+
+    public class Udt_UDT {
+      /**
+       * Generate a SELECT ... <strong>udt.id</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap id() {
+        selection.raw("udt.id");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.this;
+      }
+
+      /**
+       * Generate a SELECT ... <strong>udt."VALUE"</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap value() {
+        selection.raw("udt.\"VALUE\"");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.this;
+      }
+
+      /**
+       * Generate a SELECT ... <strong>udt</strong> ... */
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap allColumns() {
+        selection.raw("udt");
+        return TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumnsTypedMap.this;
+      }
+    }
+  }
+
+  public class TestEntityWithUDTAsClustering_SelectFrom extends AbstractSelectFrom {
+    TestEntityWithUDTAsClustering_SelectFrom(Select.Where where) {
+      super(where);
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... <strong>WHERE</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Id where() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Id(where);
+    }
+
+    /**
+     * Generate a SELECT statement <strong>without</strong> the <strong>WHERE</strong> clause */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd without_WHERE_Clause() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+    }
+  }
+
+  public class TestEntityWithUDTAsClustering_SelectFromTypedMap extends AbstractSelectFromTypeMap {
+    TestEntityWithUDTAsClustering_SelectFromTypedMap(Select.Where where) {
+      super(where);
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... <strong>WHERE</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id where() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id(where);
+    }
+
+    /**
+     * Generate a SELECT statement <strong>without</strong> the <strong>WHERE</strong> clause */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap without_WHERE_Clause() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+    }
+  }
+
+  public class Clust_UDT {
+    /**
+     * Generate a SELECT ... <strong>clust.id</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns id() {
+      select.raw("clust.id");
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns(select);
+    }
+
+    /**
+     * Generate a SELECT ... <strong>clust."VALUE"</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns value() {
+      select.raw("clust.\"VALUE\"");
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns(select);
+    }
+
+    /**
+     * Generate a SELECT ... <strong>clust</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns allColumns() {
+      select.raw("clust");
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns(select);
+    }
+  }
+
+  public class Udt_UDT {
+    /**
+     * Generate a SELECT ... <strong>udt.id</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns id() {
+      select.raw("udt.id");
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns(select);
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udt."VALUE"</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns value() {
+      select.raw("udt.\"VALUE\"");
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns(select);
+    }
+
+    /**
+     * Generate a SELECT ... <strong>udt</strong> ... */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns allColumns() {
+      select.raw("udt");
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectColumns(select);
+    }
+  }
+
+  public final class TestEntityWithUDTAsClustering_SelectWhere_Id extends AbstractSelectWherePartition {
+    public TestEntityWithUDTAsClustering_SelectWhere_Id(Select.Where where) {
+      super(where);
+    }
+
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Id.Relation id() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Id.Relation();
+    }
+
+    public final class Relation {
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>id = ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust Eq(Long id) {
+        where.and(QueryBuilder.eq("id", QueryBuilder.bindMarker("id")));
+        boundValues.add(id);
+        encodedValues.add(meta.id.encodeFromJava(id));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>id IN ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust IN(Long... id) {
+        Validator.validateTrue(ArrayUtils.isNotEmpty(id), "Varargs for field '%s' should not be null/empty", "id");
+        where.and(QueryBuilder.in("id",QueryBuilder.bindMarker("id")));
+        final List<Object> varargs = Arrays.<Object>asList((Object[])id);
+        final List<Object> encodedVarargs = Arrays.<Long>stream((Long[])id).map(x -> meta.id.encodeFromJava(x)).collect(Collectors.toList());
+        boundValues.add(varargs);
+        encodedValues.add(encodedVarargs);
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust(where);
+      }
+    }
+  }
+
+  public final class TestEntityWithUDTAsClustering_SelectWhere_Clust extends AbstractSelectWhere<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust, TestEntityWithUDTAsClustering> {
+    public TestEntityWithUDTAsClustering_SelectWhere_Clust(Select.Where where) {
+      super(where);
+    }
+
+    @Override
+    protected final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust getThis() {
+      return this;
+    }
+
+    @Override
+    protected final AbstractEntityProperty<TestEntityWithUDTAsClustering> getMetaInternal() {
+      return meta;
+    }
+
+    @Override
+    protected final Class<TestEntityWithUDTAsClustering> getEntityClass() {
+      return entityClass;
+    }
+
+    @Override
+    protected final RuntimeEngine getRte() {
+      return rte;
+    }
+
+    @Override
+    protected final Options getOptions() {
+      return options;
+    }
+
+    @Override
+    protected final List<Object> getBoundValuesInternal() {
+      return boundValues;
+    }
+
+    @Override
+    protected final List<Object> getEncodedValuesInternal() {
+      return encodedValues;
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>LIMIT :limit</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust limit(final Integer limit) {
+      where.limit(QueryBuilder.bindMarker("lim"));
+      boundValues.add(limit);
+      encodedValues.add(limit);
+      return this;
+    }
+
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust.Relation clust() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust.Relation();
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY clust ASC</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust orderByClustAscending() {
+      where.orderBy(QueryBuilder.asc("clust"));
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY clust DESC</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust orderByClustDescending() {
+      where.orderBy(QueryBuilder.desc("clust"));
+      return this;
+    }
+
+    public final class Relation {
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust = ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Eq(TestUDTWithNoKeyspace clust) {
+        where.and(QueryBuilder.eq("clust", QueryBuilder.bindMarker("clust")));
+        boundValues.add(clust);
+        encodedValues.add(meta.clust.encodeFromJava(clust));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust IN ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd IN(TestUDTWithNoKeyspace... clust) {
+        Validator.validateTrue(ArrayUtils.isNotEmpty(clust), "Varargs for field '%s' should not be null/empty", "clust");
+        where.and(QueryBuilder.in("clust",QueryBuilder.bindMarker("clust")));
+        final List<Object> varargs = Arrays.<Object>asList((Object[])clust);
+        final List<Object> encodedVarargs = Arrays.<TestUDTWithNoKeyspace>stream((TestUDTWithNoKeyspace[])clust).map(x -> meta.clust.encodeFromJava(x)).collect(Collectors.toList());
+        boundValues.add(varargs);
+        encodedValues.add(encodedVarargs);
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust > ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Gt(TestUDTWithNoKeyspace clust) {
+        where.and(QueryBuilder.gt("clust", QueryBuilder.bindMarker("clust")));
+        boundValues.add(clust);
+        encodedValues.add(meta.clust.encodeFromJava(clust));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust >= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Gte(TestUDTWithNoKeyspace clust) {
+        where.and(QueryBuilder.gte("clust", QueryBuilder.bindMarker("clust")));
+        boundValues.add(clust);
+        encodedValues.add(meta.clust.encodeFromJava(clust));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Lt(TestUDTWithNoKeyspace clust) {
+        where.and(QueryBuilder.lt("clust", QueryBuilder.bindMarker("clust")));
+        boundValues.add(clust);
+        encodedValues.add(meta.clust.encodeFromJava(clust));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Lte(TestUDTWithNoKeyspace clust) {
+        where.and(QueryBuilder.lte("clust", QueryBuilder.bindMarker("clust")));
+        boundValues.add(clust);
+        encodedValues.add(meta.clust.encodeFromJava(clust));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust > ? AND clust < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Gt_And_Lt(TestUDTWithNoKeyspace clust_Gt, TestUDTWithNoKeyspace clust_Lt) {
+        where.and(QueryBuilder.gt("clust",QueryBuilder.bindMarker("clust_Lt")));
+        where.and(QueryBuilder.lt("clust",QueryBuilder.bindMarker("clust_Lt")));
+        boundValues.add(clust_Gt);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gt));
+        boundValues.add(clust_Lt);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lt));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust > ? AND clust <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Gt_And_Lte(TestUDTWithNoKeyspace clust_Gt, TestUDTWithNoKeyspace clust_Lte) {
+        where.and(QueryBuilder.gt("clust",QueryBuilder.bindMarker("clust_Lte")));
+        where.and(QueryBuilder.lte("clust",QueryBuilder.bindMarker("clust_Lte")));
+        boundValues.add(clust_Gt);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gt));
+        boundValues.add(clust_Lte);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lte));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust >= ? AND clust < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Gte_And_Lt(TestUDTWithNoKeyspace clust_Gte, TestUDTWithNoKeyspace clust_Lt) {
+        where.and(QueryBuilder.gte("clust",QueryBuilder.bindMarker("clust_Lt")));
+        where.and(QueryBuilder.lt("clust",QueryBuilder.bindMarker("clust_Lt")));
+        boundValues.add(clust_Gte);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gte));
+        boundValues.add(clust_Lt);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lt));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust >= ? AND clust <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Gte_And_Lte(TestUDTWithNoKeyspace clust_Gte, TestUDTWithNoKeyspace clust_Lte) {
+        where.and(QueryBuilder.gte("clust",QueryBuilder.bindMarker("clust_Lte")));
+        where.and(QueryBuilder.lte("clust",QueryBuilder.bindMarker("clust_Lte")));
+        boundValues.add(clust_Gte);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gte));
+        boundValues.add(clust_Lte);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lte));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+      }
+    }
+  }
+
+  public final class TestEntityWithUDTAsClustering_SelectEnd extends AbstractSelectWhere<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd, TestEntityWithUDTAsClustering> {
+    public TestEntityWithUDTAsClustering_SelectEnd(Select.Where where) {
+      super(where);
+    }
+
+    @Override
+    protected final Class<TestEntityWithUDTAsClustering> getEntityClass() {
+      return entityClass;
+    }
+
+    @Override
+    protected final AbstractEntityProperty<TestEntityWithUDTAsClustering> getMetaInternal() {
+      return meta;
+    }
+
+    @Override
+    protected final RuntimeEngine getRte() {
+      return rte;
+    }
+
+    @Override
+    protected final Options getOptions() {
+      return options;
+    }
+
+    @Override
+    protected final List<Object> getBoundValuesInternal() {
+      return boundValues;
+    }
+
+    @Override
+    protected final List<Object> getEncodedValuesInternal() {
+      return encodedValues;
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>LIMIT :limit</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd limit(final Integer limit) {
+      where.limit(QueryBuilder.bindMarker("lim"));
+      boundValues.add(limit);
+      encodedValues.add(limit);
+      return this;
+    }
+
+    @Override
+    protected final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd getThis() {
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY clust ASC</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd orderByClustAscending() {
+      where.orderBy(QueryBuilder.asc("clust"));
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY clust DESC</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd orderByClustDescending() {
+      where.orderBy(QueryBuilder.desc("clust"));
+      return this;
+    }
+  }
+
+  public final class TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id extends AbstractSelectWherePartitionTypeMap {
+    public TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id(Select.Where where) {
+      super(where);
+    }
+
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id.Relation id() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id.Relation();
+    }
+
+    public final class Relation {
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>id = ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust Eq(Long id) {
+        where.and(QueryBuilder.eq("id", QueryBuilder.bindMarker("id")));
+        boundValues.add(id);
+        encodedValues.add(meta.id.encodeFromJava(id));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>id IN ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust IN(Long... id) {
+        Validator.validateTrue(ArrayUtils.isNotEmpty(id), "Varargs for field '%s' should not be null/empty", "id");
+        where.and(QueryBuilder.in("id",QueryBuilder.bindMarker("id")));
+        final List<Object> varargs = Arrays.<Object>asList((Object[])id);
+        final List<Object> encodedVarargs = Arrays.<Long>stream((Long[])id).map(x -> meta.id.encodeFromJava(x)).collect(Collectors.toList());
+        boundValues.add(varargs);
+        encodedValues.add(encodedVarargs);
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust(where);
+      }
+    }
+  }
+
+  public final class TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust extends AbstractSelectWhereTypeMap<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust, TestEntityWithUDTAsClustering> {
+    public TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust(Select.Where where) {
+      super(where);
+    }
+
+    @Override
+    protected final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust getThis() {
+      return this;
+    }
+
+    @Override
+    protected final AbstractEntityProperty<TestEntityWithUDTAsClustering> getMetaInternal() {
+      return meta;
+    }
+
+    @Override
+    protected final Class<TestEntityWithUDTAsClustering> getEntityClass() {
+      return entityClass;
+    }
+
+    @Override
+    protected final RuntimeEngine getRte() {
+      return rte;
+    }
+
+    @Override
+    protected final Options getOptions() {
+      return options;
+    }
+
+    @Override
+    protected final List<Object> getBoundValuesInternal() {
+      return boundValues;
+    }
+
+    @Override
+    protected final List<Object> getEncodedValuesInternal() {
+      return encodedValues;
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>LIMIT :limit</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust limit(final Integer limit) {
+      where.limit(QueryBuilder.bindMarker("lim"));
+      boundValues.add(limit);
+      encodedValues.add(limit);
+      return this;
+    }
+
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust.Relation clust() {
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust.Relation();
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY clust ASC</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust orderByClustAscending() {
+      where.orderBy(QueryBuilder.asc("clust"));
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY clust DESC</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust orderByClustDescending() {
+      where.orderBy(QueryBuilder.desc("clust"));
+      return this;
+    }
+
+    public final class Relation {
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust = ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Eq(TestUDTWithNoKeyspace clust) {
+        where.and(QueryBuilder.eq("clust", QueryBuilder.bindMarker("clust")));
+        boundValues.add(clust);
+        encodedValues.add(meta.clust.encodeFromJava(clust));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust IN ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap IN(TestUDTWithNoKeyspace... clust) {
+        Validator.validateTrue(ArrayUtils.isNotEmpty(clust), "Varargs for field '%s' should not be null/empty", "clust");
+        where.and(QueryBuilder.in("clust",QueryBuilder.bindMarker("clust")));
+        final List<Object> varargs = Arrays.<Object>asList((Object[])clust);
+        final List<Object> encodedVarargs = Arrays.<TestUDTWithNoKeyspace>stream((TestUDTWithNoKeyspace[])clust).map(x -> meta.clust.encodeFromJava(x)).collect(Collectors.toList());
+        boundValues.add(varargs);
+        encodedValues.add(encodedVarargs);
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust > ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Gt(TestUDTWithNoKeyspace clust) {
+        where.and(QueryBuilder.gt("clust", QueryBuilder.bindMarker("clust")));
+        boundValues.add(clust);
+        encodedValues.add(meta.clust.encodeFromJava(clust));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust >= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Gte(TestUDTWithNoKeyspace clust) {
+        where.and(QueryBuilder.gte("clust", QueryBuilder.bindMarker("clust")));
+        boundValues.add(clust);
+        encodedValues.add(meta.clust.encodeFromJava(clust));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Lt(TestUDTWithNoKeyspace clust) {
+        where.and(QueryBuilder.lt("clust", QueryBuilder.bindMarker("clust")));
+        boundValues.add(clust);
+        encodedValues.add(meta.clust.encodeFromJava(clust));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Lte(TestUDTWithNoKeyspace clust) {
+        where.and(QueryBuilder.lte("clust", QueryBuilder.bindMarker("clust")));
+        boundValues.add(clust);
+        encodedValues.add(meta.clust.encodeFromJava(clust));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust > ? AND clust < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Gt_And_Lt(TestUDTWithNoKeyspace clust_Gt, TestUDTWithNoKeyspace clust_Lt) {
+        where.and(QueryBuilder.gt("clust",QueryBuilder.bindMarker("clust_Lt")));
+        where.and(QueryBuilder.lt("clust",QueryBuilder.bindMarker("clust_Lt")));
+        boundValues.add(clust_Gt);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gt));
+        boundValues.add(clust_Lt);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lt));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust > ? AND clust <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Gt_And_Lte(TestUDTWithNoKeyspace clust_Gt, TestUDTWithNoKeyspace clust_Lte) {
+        where.and(QueryBuilder.gt("clust",QueryBuilder.bindMarker("clust_Lte")));
+        where.and(QueryBuilder.lte("clust",QueryBuilder.bindMarker("clust_Lte")));
+        boundValues.add(clust_Gt);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gt));
+        boundValues.add(clust_Lte);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lte));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust >= ? AND clust < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Gte_And_Lt(TestUDTWithNoKeyspace clust_Gte, TestUDTWithNoKeyspace clust_Lt) {
+        where.and(QueryBuilder.gte("clust",QueryBuilder.bindMarker("clust_Lt")));
+        where.and(QueryBuilder.lt("clust",QueryBuilder.bindMarker("clust_Lt")));
+        boundValues.add(clust_Gte);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gte));
+        boundValues.add(clust_Lt);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lt));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>clust >= ? AND clust <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Gte_And_Lte(TestUDTWithNoKeyspace clust_Gte, TestUDTWithNoKeyspace clust_Lte) {
+        where.and(QueryBuilder.gte("clust",QueryBuilder.bindMarker("clust_Lte")));
+        where.and(QueryBuilder.lte("clust",QueryBuilder.bindMarker("clust_Lte")));
+        boundValues.add(clust_Gte);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gte));
+        boundValues.add(clust_Lte);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lte));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+      }
+    }
+  }
+
+  public final class TestEntityWithUDTAsClustering_SelectEndTypedMap extends AbstractSelectWhereTypeMap<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap, TestEntityWithUDTAsClustering> {
+    public TestEntityWithUDTAsClustering_SelectEndTypedMap(Select.Where where) {
+      super(where);
+    }
+
+    @Override
+    protected final Class<TestEntityWithUDTAsClustering> getEntityClass() {
+      return entityClass;
+    }
+
+    @Override
+    protected final AbstractEntityProperty<TestEntityWithUDTAsClustering> getMetaInternal() {
+      return meta;
+    }
+
+    @Override
+    protected final RuntimeEngine getRte() {
+      return rte;
+    }
+
+    @Override
+    protected final Options getOptions() {
+      return options;
+    }
+
+    @Override
+    protected final List<Object> getBoundValuesInternal() {
+      return boundValues;
+    }
+
+    @Override
+    protected final List<Object> getEncodedValuesInternal() {
+      return encodedValues;
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>LIMIT :limit</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap limit(final Integer limit) {
+      where.limit(QueryBuilder.bindMarker("lim"));
+      boundValues.add(limit);
+      encodedValues.add(limit);
+      return this;
+    }
+
+    @Override
+    protected final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap getThis() {
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY clust ASC</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap orderByClustAscending() {
+      where.orderBy(QueryBuilder.asc("clust"));
+      return this;
+    }
+
+    /**
+     * Generate a SELECT ... FROM ... WHERE ... <strong>ORDER BY clust DESC</strong> */
+    public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap orderByClustDescending() {
+      where.orderBy(QueryBuilder.desc("clust"));
+      return this;
+    }
+  }
+}

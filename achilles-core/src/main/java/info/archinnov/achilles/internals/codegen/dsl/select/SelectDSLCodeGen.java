@@ -308,8 +308,8 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
         }
 
         udtClassBuilder.addMethod(allColumnsMethodBuilder.build());
-        parentClassBuilder.addMethod(MethodSpec.methodBuilder(udtMetaSignature.fieldName)
-                .addJavadoc("Generate a SELECT ... <strong>$L(.?)</strong> ...", udtMetaSignature.quotedCqlColumn)
+        parentClassBuilder.addMethod(MethodSpec.methodBuilder(fieldSignature.context.fieldName)
+                .addJavadoc("Generate a SELECT ... <strong>$L(.?)</strong> ...", quotedCqlColumn)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("return new $T()", udtClassTypeName)
                 .returns(udtClassTypeName)
@@ -382,7 +382,7 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("     .function(SystemFunctions.castAsText(SystemFunctions.writetime(manager.COLUMNS.VALUE)), \"writetimeOfValueAsString\")\n")
                 .addJavadoc("     ...\n")
                 .addJavadoc("\n")
-                .addJavadoc("  manager \n")
+                .addJavadoc("  manager\n")
                 .addJavadoc("     .dsl()\n")
                 .addJavadoc("     .select()\n")
                 .addJavadoc("     // This call will generate SELECT convertlisttojson(list_of_string) AS strings_as_json, ...\n")
@@ -392,9 +392,9 @@ public abstract class SelectDSLCodeGen extends AbstractDSLCodeGen {
                 .addJavadoc("</code></pre>\n")
                 .addJavadoc("<br/>")
                 .addJavadoc("\n")
-                .addJavadoc("@param functionCall the function call object \n")
-                .addJavadoc("@param alias mandatory alias for this function call for easier retrieval from the ResultSet \n")
-                .addJavadoc("@return a built-in function call passed to the QueryBuilder object \n")
+                .addJavadoc("@param functionCall the function call object\n")
+                .addJavadoc("@param alias mandatory alias for this function call for easier retrieval from the ResultSet\n")
+                .addJavadoc("@return a built-in function call passed to the QueryBuilder object\n")
                 .addParameter(FUNCTION_CALL, "functionCall", Modifier.FINAL)
                 .addParameter(STRING, "alias", Modifier.FINAL)
                 .addStatement("functionCall.addToSelect($L, alias)", fieldName);

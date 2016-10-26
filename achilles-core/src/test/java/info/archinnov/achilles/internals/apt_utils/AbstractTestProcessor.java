@@ -157,6 +157,10 @@ public abstract class AbstractTestProcessor extends AbstractProcessor {
     }
 
     protected String readCodeBlockFromFile(String filename) {
+        return readCodeBlockFromFile(filename, true);
+    }
+
+    protected String readCodeBlockFromFile(String filename, boolean trim) {
         ClassLoader classLoader = getClass().getClassLoader();
         byte[] encoded = new byte[0];
         try {
@@ -165,7 +169,12 @@ public abstract class AbstractTestProcessor extends AbstractProcessor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new String(encoded, StandardCharsets.UTF_8).trim();
+        if(trim){
+            return new String(encoded, StandardCharsets.UTF_8).trim();
+        }
+        else {
+            return new String(encoded, StandardCharsets.UTF_8);
+        }
     }
 
     protected String buildSource(TypeSpec typeSpec) {
