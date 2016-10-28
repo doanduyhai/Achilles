@@ -132,6 +132,7 @@ CREATE TABLE IF NOT EXISTS test.complex_tuple(
 		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.entity_complex_types(
 		id bigint,
+		ascii ascii,
 		codec_on_class text,
 		complex_nesting_map map<text, frozen<map<int, frozen<tuple<text, int, int>>>>>,
 		consistencylevel text,

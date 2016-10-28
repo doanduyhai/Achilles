@@ -162,7 +162,15 @@ public class FieldParser {
         final CodeBlock dataType;
 
         if (containsAnnotation(annotationTree, TimeUUID.class)) {
+            aptUtils.validateTrue(codecInfo.targetType.equals(UUID),
+                    "Incorrect use @TimeUUID annotation on field %s of class %s because its type is not java.util.UUID",
+                    context.fieldName, context.className);
             dataType = CodeBlock.builder().add("$T.timeuuid()", DATATYPE).build();
+        } else if(containsAnnotation(annotationTree, ASCII.class)) {
+            aptUtils.validateTrue(codecInfo.targetType.equals(STRING),
+                    "Incorrect use @ASCII annotation on field %s of class %s because its type is not java.lang.String",
+                    context.fieldName, context.className);
+            dataType = CodeBlock.builder().add("$T.ascii()", DATATYPE).build();
         } else if (containsAnnotation(annotationTree, Counter.class)) {
             dataType = CodeBlock.builder().add("$T.counter()", DATATYPE).build();
         } else {

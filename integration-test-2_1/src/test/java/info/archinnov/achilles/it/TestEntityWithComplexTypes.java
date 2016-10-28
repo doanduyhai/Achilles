@@ -142,6 +142,7 @@ public class TestEntityWithComplexTypes {
         entity.setOptionalProtocolVersion(Optional.of(ProtocolVersion.V3));
         entity.setOptionalEncodingAsOrdinal(Optional.of(ProtocolVersion.V2));
         entity.setListOfOptional(Arrays.asList(Optional.of("1"), Optional.of("2")));
+        entity.setAscii("ascii_value");
 
         //When
         manager
@@ -211,6 +212,7 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.getString("optionalprotocolversion")).isEqualTo("V3");
         assertThat(actual.getInt("optionalencodingasordinal")).isEqualTo(1);
         assertThat(actual.getList("listofoptional", String.class)).containsExactly("1", "2");
+        assertThat(actual.getString("ascii")).isEqualTo("ascii_value");
     }
 
     @Test
@@ -273,7 +275,7 @@ public class TestEntityWithComplexTypes {
         assertThat(actual.getOptionalProtocolVersion()).isEqualTo(Optional.of(ProtocolVersion.V3));
         assertThat(actual.getOptionalEncodingAsOrdinal()).isEqualTo(Optional.of(ProtocolVersion.V2));
         assertThat(actual.getListOfOptional()).isEqualTo(Arrays.asList(Optional.of("1"), Optional.of("2")));
-
+        assertThat(actual.getAscii()).isEqualTo("ascii_value");
     }
 
     @Test

@@ -185,6 +185,10 @@ public class EntityWithComplexTypes {
     @Column
     private List<Optional<String>> listOfOptional;
 
+    @ASCII
+    @Column
+    private String ascii;
+
     public Long getId() {
         return id;
     }
@@ -527,5 +531,13 @@ public class EntityWithComplexTypes {
 
     public void setListOfOptional(List<Optional<String>> listOfOptional) {
         this.listOfOptional = listOfOptional;
+    }
+
+    public String getAscii() {
+        return ascii;
+    }
+
+    public void setAscii(String ascii) {
+        this.ascii = ascii;
     }
 }

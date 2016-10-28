@@ -240,6 +240,22 @@ public class TestEntityForCodecs {
     @Column
     private TestUDTWithNonFrozenCollection udtWithNonFrozenCollection;
 
+    @TimeUUID
+    @Column
+    private UUID timeuuid;
+
+    @TimeUUID
+    @Column
+    private String wrongtimeuuid;
+
+    @ASCII
+    @Column
+    private String ascii;
+
+    @ASCII
+    @Column
+    private Integer wrongascii;
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -755,6 +771,38 @@ public class TestEntityForCodecs {
 
     public void setUdtWithNonFrozenCollection(TestUDTWithNonFrozenCollection udtWithNonFrozenCollection) {
         this.udtWithNonFrozenCollection = udtWithNonFrozenCollection;
+    }
+
+    public UUID getTimeuuid() {
+        return timeuuid;
+    }
+
+    public void setTimeuuid(UUID timeuuid) {
+        this.timeuuid = timeuuid;
+    }
+
+    public String getAscii() {
+        return ascii;
+    }
+
+    public void setAscii(String ascii) {
+        this.ascii = ascii;
+    }
+
+    public String getWrongtimeuuid() {
+        return wrongtimeuuid;
+    }
+
+    public void setWrongtimeuuid(String wrongtimeuuid) {
+        this.wrongtimeuuid = wrongtimeuuid;
+    }
+
+    public Integer getWrongascii() {
+        return wrongascii;
+    }
+
+    public void setWrongascii(Integer wrongascii) {
+        this.wrongascii = wrongascii;
     }
 }
 

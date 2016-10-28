@@ -28,6 +28,7 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
@@ -1874,6 +1875,102 @@ public class FieldParserTest extends AbstractTestProcessor {
                 .processedWith(this)
                 .failsToCompile()
                 .withErrorContaining("The target type java.util.Map<java.lang.Integer, java.lang.String> of field indexedMap from entity info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs is a collection (list/set/map). @SASI is not allowed because collections are not (yet) supported");
+    }
+
+    @Test
+    public void should_parse_timeuuid() throws Exception {
+
+        setExec(aptUtils -> {
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
+
+            /*
+             * @TimeUUID
+             * @Column
+             * private UUID timeuuid;
+             */
+            VariableElement elm = findFieldInType(typeElement, "timeuuid");
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo(UUID.class.getCanonicalName());
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_timeuuid.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
+    public void should_fail_parsing_wrongtimeuuid() throws Exception {
+
+        setExec(aptUtils -> {
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
+
+            /*
+             * @TimeUUID
+             * @Column
+             * private String wrongtimeuuid;
+             */
+            VariableElement elm = findFieldInType(typeElement, "wrongtimeuuid");
+            fieldParser.parse(elm, entityContext);
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForCodecs.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("Incorrect use @TimeUUID annotation on field wrongtimeuuid of class info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs because its type is not java.util.UUID");
+    }
+
+    @Test
+    public void should_parse_ascii() throws Exception {
+        setExec(aptUtils -> {
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
+
+            /*
+             * @ASCII
+             * @Column
+             * private String ascii;
+             */
+            VariableElement elm = findFieldInType(typeElement, "ascii");
+            FieldMetaSignature parsingResult = fieldParser.parse(elm, entityContext);
+
+            assertThat(parsingResult.targetType.toString()).isEqualTo(String.class.getCanonicalName());
+            assertThat(parsingResult.buildPropertyAsField().toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/field_parser/should_parse_ascii.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
+    public void should_fail_parsing_wrongascii() throws Exception {
+        setExec(aptUtils -> {
+            final FieldParser fieldParser = new FieldParser(aptUtils);
+            final String className = TestEntityForCodecs.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final EntityParsingContext entityContext = new EntityParsingContext(typeElement, ClassName.get(TestEntityForCodecs.class), strategy, globalParsingContext);
+
+            /*
+             * @ASCII
+             * @Column
+             * private Integer wrongascii;
+             */
+            VariableElement elm = findFieldInType(typeElement, "wrongascii");
+            fieldParser.parse(elm, entityContext);
+        });
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Sets.newHashSet(loadClass(TestEntityForCodecs.class)))
+                .processedWith(this)
+                .failsToCompile()
+                .withErrorContaining("Incorrect use @ASCII annotation on field wrongascii of class info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs because its type is not java.lang.String");
     }
 
     public static class MyCodec implements Codec<List<String>, String>, Serializable {

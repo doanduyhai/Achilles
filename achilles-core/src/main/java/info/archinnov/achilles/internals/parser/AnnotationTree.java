@@ -108,6 +108,7 @@ public class AnnotationTree {
                                 Computed.class.getCanonicalName().equals(annotationName) ||
                                 Counter.class.getCanonicalName().equals(annotationName) ||
                                 TimeUUID.class.getCanonicalName().equals(annotationName) ||
+                                ASCII.class.getCanonicalName().equals(annotationName) ||
                                 Codec.class.getCanonicalName().equals(annotationName) ||
                                 RuntimeCodec.class.getCanonicalName().equals(annotationName) ||
                                 Index.class.getCanonicalName().equals(annotationName) ||
@@ -184,6 +185,7 @@ public class AnnotationTree {
                                     Computed.class.getCanonicalName().equals(annotationName) ||
                                     Counter.class.getCanonicalName().equals(annotationName) ||
                                     TimeUUID.class.getCanonicalName().equals(annotationName) ||
+                                    ASCII.class.getCanonicalName().equals(annotationName) ||
                                     Codec.class.getCanonicalName().equals(annotationName) ||
                                     RuntimeCodec.class.getCanonicalName().equals(annotationName) ||
                                     Index.class.getCanonicalName().equals(annotationName) ||
@@ -224,8 +226,10 @@ public class AnnotationTree {
         final Computed computed = varElm.getAnnotation(Computed.class);
         final Counter counter = varElm.getAnnotation(Counter.class);
         final TimeUUID timeUUID = varElm.getAnnotation(TimeUUID.class);
+        final ASCII ascii = varElm.getAnnotation(ASCII.class);
 
-        parsingContext.fieldValidator().validateCompatibleCodecAnnotationsOnField(aptUtils, fieldName, className, frozen, json, enumerated, codec, runtimeCodec, computed, counter, timeUUID);
+        parsingContext.fieldValidator().validateCompatibleCodecAnnotationsOnField(aptUtils, fieldName, className, frozen,
+                json, enumerated, codec, runtimeCodec, computed, counter, timeUUID, ascii);
 
         final List<? extends TypeMirror> nestedTypes = currentType.getKind() == TypeKind.DECLARED ?
                 MoreTypes.asDeclared(currentType).getTypeArguments() : Arrays.asList();
@@ -246,6 +250,7 @@ public class AnnotationTree {
                             Computed.class.getCanonicalName().equals(annotationName) ||
                             Counter.class.getCanonicalName().equals(annotationName) ||
                             TimeUUID.class.getCanonicalName().equals(annotationName) ||
+                            ASCII.class.getCanonicalName().equals(annotationName) ||
                             Codec.class.getCanonicalName().equals(annotationName) ||
                             RuntimeCodec.class.getCanonicalName().equals(annotationName) ||
                             Index.class.getCanonicalName().equals(annotationName) ||
@@ -276,6 +281,7 @@ public class AnnotationTree {
                                     areSameByClass(x, Computed.class) ||
                                     areSameByClass(x, Counter.class) ||
                                     areSameByClass(x, TimeUUID.class) ||
+                                    areSameByClass(x, ASCII.class) ||
                                     areSameByClass(x, Codec.class) ||
                                     areSameByClass(x, RuntimeCodec.class) ||
                                     areSameByClass(x, Index.class) ||
@@ -579,6 +585,8 @@ public class AnnotationTree {
             return Counter.class;
         } else if (areSameByClass(annotationMirror, TimeUUID.class)) {
             return TimeUUID.class;
+        } else if (areSameByClass(annotationMirror, ASCII.class)) {
+            return ASCII.class;
         } else if (areSameByClass(annotationMirror, Codec.class)) {
             return Codec.class;
         } else if (areSameByClass(annotationMirror, RuntimeCodec.class)) {
@@ -669,6 +677,8 @@ public class AnnotationTree {
             return Tuple2.of(Counter.class, typedMap);
         } else if (TimeUUID.class.getCanonicalName().equals(annotationName)) {
             return Tuple2.of(TimeUUID.class, typedMap);
+        } else if (ASCII.class.getCanonicalName().equals(annotationName)) {
+            return Tuple2.of(ASCII.class, typedMap);
         } else if (Codec.class.getCanonicalName().equals(annotationName)) {
             final Optional<String> codecClassName = Arrays.asList(annotationBinding.getElementValuePairs())
                     .stream()
