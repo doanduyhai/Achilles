@@ -535,7 +535,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .RawSolrQuery("string:*eed?u* OR numeric:[100 TO *]")
+                .rawSolrQuery("string:*eed?u* OR numeric:[100 TO *]")
                 .getList();
 
         //Then
