@@ -44,35 +44,35 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
         <tr>
-            <td>5.1.1</td>
-        	<td>3.1.1</td>
-        	<td>3.7</td>
+            <td>5.1.2</td>
+       	    <td>3.1.1</td>
+            <td>3.7</td>
         </tr>   
         <tr>
             <td>5.0.0</td>
             <td>3.1.0</td>
             <td>3.7</td>
         </tr>
-		<tr>
-			<td>4.2.3</td>
-			<td>3.1.0</td>
-			<td>3.7</td>
-		</tr>		
-		<tr>
-			<td>4.0.1 (limited to Cassandra 2.2.3 features)</td>
-			<td>3.0.0-alpha5</td>
-			<td>2.2.3</td>
-		</tr>		
-		<tr>
-			<td>3.2.3 (limited to Cassandra 2.1.x features)</td>
-			<td>2.1.6</td>
-			<td>2.1.5</td>
-		</tr>		
-		<tr>
-			<td>3.0.22 (limited to Cassandra 2.0.x features)</td>
-			<td>2.1.6</td>
-			<td>2.0.15</td>
-		</tr>
+	<tr>
+	    <td>4.2.3</td>
+	    <td>3.1.0</td>
+	    <td>3.7</td>
+	</tr>		
+	<tr>
+    	    <td>4.0.1 (limited to Cassandra 2.2.3 features)</td>
+	    <td>3.0.0-alpha5</td>
+	    <td>2.2.3</td>
+	</tr>		
+	<tr>
+	    <td>3.2.3 (limited to Cassandra 2.1.x features)</td>
+	    <td>2.1.6</td>
+	    <td>2.1.5</td>
+	</tr>		
+	<tr>
+	    <td>3.0.22 (limited to Cassandra 2.0.x features)</td>
+	    <td>2.1.6</td>
+	    <td>2.0.15</td>
+	</tr>
     </tbody>
 </table>    
 
