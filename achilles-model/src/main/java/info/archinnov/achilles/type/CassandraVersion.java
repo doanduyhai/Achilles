@@ -343,7 +343,8 @@ public enum CassandraVersion {
      *     <li>Support for DSE_Search</li>
      * </ul>
      */
-    DSE_5_0_2
+    DSE_5_0_2,
+    DSE_5_0_3
     /**
      * New features:
      * <br/>

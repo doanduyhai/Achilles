@@ -82,6 +82,7 @@ public class GlobalParsingContext {
         VERSION_MAPPING.put(DSE_5_0_0, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_0.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_1, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_1.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_2, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_2.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_0_3, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_3.INSTANCE);
 
         COLUMNS_MAPPING.put(EXPLICIT, Tuple2.of(EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER));
         COLUMNS_MAPPING.put(IMPLICIT, Tuple2.of(IMPLICIT_ENTITY_FIELD_FILTER, IMPLICIT_UDT_FIELD_FILTER));
