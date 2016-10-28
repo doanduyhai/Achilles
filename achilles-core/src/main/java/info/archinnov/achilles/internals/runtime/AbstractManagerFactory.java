@@ -49,6 +49,7 @@ import info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractViewProperty;
 import info.archinnov.achilles.internals.metamodel.UDTProperty;
 import info.archinnov.achilles.internals.metamodel.functions.FunctionProperty;
+import info.archinnov.achilles.internals.utils.CodecRegistryHelper;
 
 public abstract class AbstractManagerFactory {
 
@@ -126,11 +127,39 @@ public abstract class AbstractManagerFactory {
                 DataType.timestamp(), DataType.varchar());
 
         final CodecRegistry codecRegistry = configuration.getCodecRegistry();
-        codecRegistry.register(DoubleArrayCodec.instance, FloatArrayCodec.instance,
-                IntArrayCodec.instance, LongArrayCodec.instance,
-                InstantCodec.instance, LocalDateCodec.instance,
-                LocalTimeCodec.instance, new ZonedDateTimeCodec(zonedDateTimeType));
+        final CodecRegistryHelper codecRegistryHelper = new CodecRegistryHelper(codecRegistry);
 
+        if (!codecRegistryHelper.hasCodecFor(DataType.list(DataType.cdouble()), double[].class)) {
+            codecRegistry.register(DoubleArrayCodec.instance);
+        }
+
+        if (!codecRegistryHelper.hasCodecFor(DataType.list(DataType.cfloat()), float[].class)) {
+            codecRegistry.register(FloatArrayCodec.instance);
+        }
+
+        if (!codecRegistryHelper.hasCodecFor(DataType.list(DataType.cint()), int[].class)) {
+            codecRegistry.register(IntArrayCodec.instance);
+        }
+
+        if (!codecRegistryHelper.hasCodecFor(DataType.list(DataType.bigint()), long[].class)) {
+            codecRegistry.register(LongArrayCodec.instance);
+        }
+
+        if (!codecRegistryHelper.hasCodecFor(DataType.timestamp(), java.time.Instant.class)) {
+            codecRegistry.register(InstantCodec.instance);
+        }
+
+        if (!codecRegistryHelper.hasCodecFor(DataType.date(), java.time.LocalDate.class)) {
+            codecRegistry.register(LocalDateCodec.instance);
+        }
+
+        if (!codecRegistryHelper.hasCodecFor(DataType.time(), java.time.LocalTime.class)) {
+            codecRegistry.register(LocalTimeCodec.instance);
+        }
+
+        if (!codecRegistryHelper.hasCodecFor(zonedDateTimeType, java.time.ZonedDateTime.class)) {
+            codecRegistry.register(new ZonedDateTimeCodec(zonedDateTimeType));
+        }
     }
 
     protected void injectDependencies() {

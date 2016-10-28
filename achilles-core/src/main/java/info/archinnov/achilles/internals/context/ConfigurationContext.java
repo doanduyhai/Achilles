@@ -285,7 +285,6 @@ public class ConfigurationContext {
         LOGGER.info("Start injecting dependencies to meta classes");
 
         final Class<?> entityClass = entityProperty.entityClass;
-        final String className = entityClass.getCanonicalName();
 
         if (currentKeyspace.isPresent()) {
             LOGGER.debug("Injecting current global keyspace");
