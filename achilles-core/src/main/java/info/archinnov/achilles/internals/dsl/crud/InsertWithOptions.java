@@ -28,6 +28,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,25 +56,21 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForInsert<InsertWi
     private final AbstractEntityProperty<ENTITY> meta;
     private final RuntimeEngine rte;
     private final ENTITY instance;
-    private final Options options = new Options();
+    private final Options options;
     private final boolean insertStatic;
 
-    public InsertWithOptions(AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte, ENTITY instance, boolean insertStatic) {
+    public InsertWithOptions(AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte, ENTITY instance, boolean insertStatic, Optional<Options> cassandraOptions) {
         this.meta = meta;
         this.rte = rte;
         this.instance = instance;
         this.insertStatic = insertStatic;
+        this.options = cassandraOptions.orElse(new Options());
     }
 
     public CompletableFuture<ExecutionInfo> executeAsyncWithStats() {
 
         meta.triggerInterceptorsForEvent(PRE_INSERT, instance);
 
-        if (insertStatic) {
-            validateColumnsForInsertStatic(instance, meta);
-        } else {
-            validatePrimaryKey(instance, meta);
-        }
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
         final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
@@ -85,7 +82,7 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForInsert<InsertWi
         CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
 
         return cfutureRS
-                .thenApply(options::resultSetAsyncListener)
+                .thenApply(this.options::resultSetAsyncListener)
                 .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
@@ -130,11 +127,6 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForInsert<InsertWi
 
     @Override
     protected InsertWithOptions<ENTITY> getThis() {
-        return this;
-    }
-
-    public InsertWithOptions<ENTITY> withSchemaNameProvider(SchemaNameProvider schemaNameProvider) {
-        options.setSchemaNameProvider(Optional.ofNullable(schemaNameProvider));
         return this;
     }
 

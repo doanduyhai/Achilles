@@ -19,12 +19,16 @@ package info.archinnov.achilles.internals.dsl.query.select;
 
 import com.datastax.driver.core.querybuilder.Select;
 
+import info.archinnov.achilles.internals.options.Options;
+
 
 public abstract class AbstractSelectWherePartitionJSON {
 
     protected final Select.Where where;
+    protected final Options cassandraOptions;
 
-    protected AbstractSelectWherePartitionJSON(Select.Where where) {
+    protected AbstractSelectWherePartitionJSON(Select.Where where, Options cassandraOptions) {
         this.where = where;
+        this.cassandraOptions = cassandraOptions;
     }
 }

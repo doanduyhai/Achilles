@@ -17,9 +17,7 @@
 package info.archinnov.achilles.internals.codegen.dsl;
 
 import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
-import static info.archinnov.achilles.internals.parser.TypeUtils.DSL_PACKAGE;
-import static info.archinnov.achilles.internals.parser.TypeUtils.NOT_EQ;
-import static info.archinnov.achilles.internals.parser.TypeUtils.QUERY_BUILDER;
+import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 
 import javax.lang.model.element.Modifier;
@@ -77,7 +75,7 @@ public interface LWTConditionsCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(fieldSignatureInfo.typeName, fieldName, Modifier.FINAL)
                 .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, fieldName, OPTIONAL)
                 .addStatement("where.onlyIf($T.$L($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, relation, quotedCqlColumn, QUERY_BUILDER, quotedCqlColumn)
                 .addStatement("return $T.this", currentType)
@@ -97,7 +95,7 @@ public interface LWTConditionsCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(fieldSignatureInfo.typeName, fieldName, Modifier.FINAL)
                 .addStatement("boundValues.add($N)", fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, fieldName)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, fieldName, OPTIONAL)
                 .addStatement("where.onlyIf($T.of($S, $T.bindMarker($S)))",
                         NOT_EQ, quotedCqlColumn, QUERY_BUILDER, quotedCqlColumn)
                 .addStatement("return $T.this", currentType)

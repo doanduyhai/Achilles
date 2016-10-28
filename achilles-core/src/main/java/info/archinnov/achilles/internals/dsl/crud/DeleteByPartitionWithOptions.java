@@ -54,14 +54,16 @@ public class DeleteByPartitionWithOptions<ENTITY> extends AbstractOptionsForUpda
     private final RuntimeEngine rte;
     private final Object[] partitionKeys;
     private final Object[] encodedPartitionKeys;
-    private final Options options = new Options();
+    private final Options options;
 
     public DeleteByPartitionWithOptions(AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte,
-                                        Object[] partitionKeys, Object[] encodedPartitionKeys) {
+                                        Object[] partitionKeys, Object[] encodedPartitionKeys,
+                                        Optional<Options> cassandraOptions) {
         this.meta = meta;
         this.rte = rte;
         this.partitionKeys = partitionKeys;
         this.encodedPartitionKeys = encodedPartitionKeys;
+        this.options = cassandraOptions.orElse(new Options());
     }
 
     @Override
@@ -83,18 +85,6 @@ public class DeleteByPartitionWithOptions<ENTITY> extends AbstractOptionsForUpda
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo());
 
-    }
-
-    /**
-     * Determine keyspace and table name using the given SchemaNameProvider
-     * instead of relying on the static keyspace/table names
-     *
-     * @param schemaNameProvider
-     * @return DeleteByPartitionWithOptions
-     */
-    public DeleteByPartitionWithOptions<ENTITY> withSchemaNameProvider(SchemaNameProvider schemaNameProvider) {
-        options.setSchemaNameProvider(Optional.ofNullable(schemaNameProvider));
-        return this;
     }
 
     @Override

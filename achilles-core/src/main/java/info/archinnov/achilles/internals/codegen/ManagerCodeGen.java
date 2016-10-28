@@ -111,7 +111,7 @@ public class ManagerCodeGen {
     private static MethodSpec buildCRUD(EntityMetaSignature signature) {
         TypeName crudClass = ClassName.get(MANAGER_PACKAGE, signature.className + MANAGER_SUFFIX, signature.className + CRUD_SUFFIX);
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("crud")
-                .addJavadoc("Provide CRUD operations: <br/> \n")
+                .addJavadoc("Provide CRUD operations: <br/>\n")
                 .addJavadoc("<ul>\n")
                 .addJavadoc("   <li>FIND BY ID</li>\n");
 

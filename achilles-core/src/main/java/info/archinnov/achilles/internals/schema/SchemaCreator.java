@@ -72,19 +72,19 @@ public class SchemaCreator {
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
-            table.addPartitionKey(x.fieldInfo.quotedCqlColumn, x.buildType());
+            table.addPartitionKey(x.fieldInfo.quotedCqlColumn, x.buildType(Optional.empty()));
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
-            table.addClusteringColumn(x.fieldInfo.quotedCqlColumn, x.buildType());
+            table.addClusteringColumn(x.fieldInfo.quotedCqlColumn, x.buildType(Optional.empty()));
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.staticColumns) {
-            table.addStaticColumn(x.fieldInfo.quotedCqlColumn, x.buildType());
+            table.addStaticColumn(x.fieldInfo.quotedCqlColumn, x.buildType(Optional.empty()));
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.normalColumns) {
-            final DataType dataType = x.buildType();
+            final DataType dataType = x.buildType(Optional.empty());
 
             if (!x.fieldInfo.columnInfo.frozen && (dataType instanceof UserType)) {
                 final String udtLiteral = dataType.toString().replaceAll("frozen<(.+)>", "$1");
@@ -95,7 +95,7 @@ public class SchemaCreator {
         }
 
         for (AbstractProperty<?, ?, ?> x : entityProperty.counterColumns) {
-            table.addColumn(x.fieldInfo.quotedCqlColumn, x.buildType());
+            table.addColumn(x.fieldInfo.quotedCqlColumn, x.buildType(Optional.empty()));
         }
 
         final Create.Options options = table.withOptions();

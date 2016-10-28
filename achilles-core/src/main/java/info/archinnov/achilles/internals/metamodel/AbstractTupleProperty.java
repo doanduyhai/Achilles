@@ -21,6 +21,7 @@ import static java.lang.String.format;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -55,7 +57,7 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
     }
 
     @Override
-    public abstract TupleType buildType();
+    public abstract TupleType buildType(Optional<Options> cassandraOptions);
 
     @Override
     boolean isOptional() {
@@ -73,8 +75,8 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
     }
 
     @Override
-    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue) {
-        final TupleValue tupleValue = encodeField(entity);
+    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<Options> cassandraOptions) {
+        final TupleValue tupleValue = encodeField(entity, cassandraOptions);
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode tuple value %s to udt value %s", tupleValue, udtValue));
         }
@@ -94,7 +96,7 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
         for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
             x.inject(userTypeFactory, tupleTypeFactory);
         }
-        this.tupleType = this.buildType();
+        this.tupleType = this.buildType(Optional.empty());
     }
 
     @Override

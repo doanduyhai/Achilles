@@ -19,10 +19,7 @@ package info.archinnov.achilles.internals.metamodel;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +36,7 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.internals.utils.NamingHelper;
+import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -71,8 +69,8 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
         return false;
     }
 
-    public VALUETO encodeSingleElement(VALUEFROM javaValue) {
-        return valueProperty.encodeFromRaw(javaValue);
+    public VALUETO encodeSingleElement(VALUEFROM javaValue, Optional<Options> cassandraOptions) {
+        return valueProperty.encodeFromRaw(javaValue, cassandraOptions);
     }
 
     @Override
@@ -85,24 +83,24 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public Set<VALUETO> encodeFromJavaInternal(Set<VALUEFROM> set) {
+    public Set<VALUETO> encodeFromJavaInternal(Set<VALUEFROM> set, Optional<Options> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode from Java '%s' set %s to CQL type", fieldName, set));
         }
         return new HashSet<>(set
                 .stream()
-                .map(value -> valueProperty.encodeFromRaw(value))
+                .map(value -> valueProperty.encodeFromRaw(value, cassandraOptions))
                 .collect(toSet()));
     }
 
     @Override
-    public Set<VALUETO> encodeFromRawInternal(Object o) {
+    public Set<VALUETO> encodeFromRawInternal(Object o, Optional<Options> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode raw '%s' set object %s", fieldName, o));
         }
 
         Validator.validateTrue(Set.class.isAssignableFrom(o.getClass()), "The class of object %s to encode should be Set", o);
-        return encodeFromJava((Set<VALUEFROM>) o);
+        return encodeFromJava((Set<VALUEFROM>) o, cassandraOptions);
     }
 
     @Override
@@ -152,12 +150,12 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public DataType buildType() {
+    public DataType buildType(Optional<Options> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Build current '%s' set data type", fieldName));
         }
 
-        final DataType valueType = valueProperty.buildType();
+        final DataType valueType = valueProperty.buildType(cassandraOptions);
         if (frozen) {
             return DataType.frozenSet(valueType);
         } else {
@@ -166,8 +164,8 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue) {
-        final Set<VALUETO> valueTo = encodeField(entity);
+    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<Options> cassandraOptions) {
+        final Set<VALUETO> valueTo = encodeField(entity, cassandraOptions);
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' set %s to UDT value %s", fieldName, valueTo, udtValue));
         }

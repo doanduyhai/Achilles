@@ -36,7 +36,7 @@ public class CrudAPICodeGen2_2 extends CrudAPICodeGen {
                 .addJavadoc("@return $T", INSERT_JSON_WITH_OPTIONS)
                 .addModifiers(Modifier.FINAL, Modifier.PUBLIC)
                 .addParameter(STRING, "json", Modifier.FINAL)
-                .addStatement("return insertJSONInternal(json)")
+                .addStatement("return insertJSONInternal(json, cassandraOptions)")
                 .returns(INSERT_JSON_WITH_OPTIONS)
                 .build());
     }

@@ -49,8 +49,8 @@ public abstract class AbstractIndexSelectWhereTypeMap<T extends AbstractIndexSel
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIndexSelectWhereTypeMap.class);
 
-    protected AbstractIndexSelectWhereTypeMap(Select.Where where) {
-        super(where);
+    protected AbstractIndexSelectWhereTypeMap(Select.Where where, Options cassandraOptions) {
+        super(where, cassandraOptions);
     }
 
     @Override

@@ -112,6 +112,16 @@ public abstract class AbstractDSLCodeGen {
 
     }
 
+    public MethodSpec buildWhereConstructorWithOptions(TypeName whereType) {
+        return MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(whereType, "where")
+                .addParameter(OPTIONS, "cassandraOptions")
+                .addStatement("super(where, cassandraOptions)")
+                .build();
+
+    }
+
     public MethodSpec buildGetThis(TypeName currentType) {
         return MethodSpec
                 .methodBuilder("getThis")
@@ -158,7 +168,7 @@ public abstract class AbstractDSLCodeGen {
                 .methodBuilder("getOptions")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.FINAL, Modifier.PROTECTED)
-                .addStatement("return options")
+                .addStatement("return cassandraOptions")
                 .returns(OPTIONS)
                 .build();
     }
@@ -209,7 +219,7 @@ public abstract class AbstractDSLCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("final $T where = $L.all().from(meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where()",
                         whereTypeName, privateFieldName, "unknown_keyspace_for_")
-                .addStatement("return new $T(where)", newTypeName)
+                .addStatement("return new $T(where, new $T())", newTypeName, OPTIONS)
                 .returns(newTypeName)
                 .build();
     }
@@ -222,7 +232,7 @@ public abstract class AbstractDSLCodeGen {
                 .addStatement("final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass)")
                 .addStatement("final String currentTable = lookupTable(schemaNameProvider, meta.entityClass)")
                 .addStatement("final $T where = $L.all().from(currentKeyspace, currentTable).where()", whereTypeName, privateFieldName)
-                .addStatement("return new $T(where)", newTypeName)
+                .addStatement("return new $T(where, $T.withSchemaNameProvider(schemaNameProvider))", newTypeName, OPTIONS)
                 .returns(newTypeName)
                 .build();
     }
@@ -233,7 +243,7 @@ public abstract class AbstractDSLCodeGen {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("final $T where = $L.from(meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName()), " +
                         "meta.getTableOrViewName()).where()", whereTypeName, privateFieldName, "unknown_keyspace_for_")
-                .addStatement("return new $T(where)", newTypeName)
+                .addStatement("return new $T(where, new $T())", newTypeName, OPTIONS)
                 .returns(newTypeName)
                 .build();
     }
@@ -246,7 +256,7 @@ public abstract class AbstractDSLCodeGen {
                 .addStatement("final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass)")
                 .addStatement("final String currentTable = lookupTable(schemaNameProvider, meta.entityClass)")
                 .addStatement("final $T where = $L.from(currentKeyspace, currentTable).where()", whereTypeName, privateFieldName)
-                .addStatement("return new $T(where)", newTypeName)
+                .addStatement("return new $T(where, $T.withSchemaNameProvider(schemaNameProvider))", newTypeName, OPTIONS)
                 .returns(newTypeName)
                 .build();
     }

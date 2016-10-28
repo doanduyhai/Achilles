@@ -44,18 +44,19 @@ public interface JSONFunctionCallSupport {
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
                         .addParameter(SELECT_DOT_WHERE, "where")
-                        .addStatement("super(where)")
+                        .addParameter(OPTIONS, "cassandraOptions")
+                        .addStatement("super(where, cassandraOptions)")
                         .build())
                 .addMethod(MethodSpec.methodBuilder("where")
                         .addJavadoc("Generate a SELECT ... FROM ... <strong>WHERE</strong> ...")
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                        .addStatement("return new $T(where)", selectWhereJSONTypeName)
+                        .addStatement("return new $T(where, cassandraOptions)", selectWhereJSONTypeName)
                         .returns(selectWhereJSONTypeName)
                         .build())
                 .addMethod(MethodSpec.methodBuilder("without_WHERE_Clause")
                         .addJavadoc("Generate a SELECT statement <strong>without</strong> the <strong>WHERE</strong> clause")
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                        .addStatement("return new $T(where)", selectEndJSONTypeName)
+                        .addStatement("return new $T(where, cassandraOptions)", selectEndJSONTypeName)
                         .returns(selectEndJSONTypeName)
                         .build())
                 .build();
@@ -134,7 +135,7 @@ public interface JSONFunctionCallSupport {
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
-            setFromJSONMethodBuilder.addStatement("return new $T(where)", newTypeName);
+            setFromJSONMethodBuilder.addStatement("return new $T(where, cassandraOptions)", newTypeName);
         } else {
             setFromJSONMethodBuilder.addStatement("return $T.this", newTypeName);
         }
@@ -154,7 +155,7 @@ public interface JSONFunctionCallSupport {
                 .addStatement("boundValues.add($N)", fieldInfo.fieldName)
                 .addStatement("encodedValues.add($N)", fieldInfo.fieldName)
                 .returns(nextSignature.returnClassType)
-                .addStatement("return new $T(where)", nextSignature.returnClassType)
+                .addStatement("return new $T(where, cassandraOptions)", nextSignature.returnClassType)
                 .build();
 
         relationClassBuilder.addMethod(fromJsonMethod);
@@ -187,7 +188,7 @@ public interface JSONFunctionCallSupport {
         if(returnType == ReturnType.THIS) {
             relationClassBuilder.addMethod(builder.addStatement("return $T.this", returnClassType).build());
         } else {
-            relationClassBuilder.addMethod(builder.addStatement("return new $T(where)", returnClassType).build());
+            relationClassBuilder.addMethod(builder.addStatement("return new $T(where, cassandraOptions)", returnClassType).build());
         }
     }
 
@@ -212,7 +213,7 @@ public interface JSONFunctionCallSupport {
         if(returnType == ReturnType.THIS) {
             relationClassBuilder.addMethod(builder.addStatement("return $T.this", returnClassType).build());
         } else {
-            relationClassBuilder.addMethod(builder.addStatement("return new $T(where)", returnClassType).build());
+            relationClassBuilder.addMethod(builder.addStatement("return new $T(where, cassandraOptions)", returnClassType).build());
         }
     }
 
@@ -236,7 +237,7 @@ public interface JSONFunctionCallSupport {
         if(returnType == ReturnType.THIS) {
             relationClassBuilder.addMethod(builder.addStatement("return $T.this", returnClassType).build());
         } else {
-            relationClassBuilder.addMethod(builder.addStatement("return new $T(where)", returnClassType).build());
+            relationClassBuilder.addMethod(builder.addStatement("return new $T(where, cassandraOptions)", returnClassType).build());
         }
     }
 
@@ -258,7 +259,7 @@ public interface JSONFunctionCallSupport {
         if(returnType == ReturnType.THIS) {
             relationClassBuilder.addMethod(builder.addStatement("return $T.this", returnClassType).build());
         } else {
-            relationClassBuilder.addMethod(builder.addStatement("return new $T(where)", returnClassType).build());
+            relationClassBuilder.addMethod(builder.addStatement("return new $T(where, cassandraOptions)", returnClassType).build());
         }
     }
 
@@ -290,7 +291,7 @@ public interface JSONFunctionCallSupport {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addStatement("final $T where = $L.json().all().from(meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where()",
                         whereTypeName, privateFieldName, "unknown_keyspace_for_")
-                .addStatement("return new $T(where)", newTypeName)
+                .addStatement("return new $T(where, new $T())", newTypeName, OPTIONS)
                 .returns(newTypeName)
                 .build();
     }
@@ -303,7 +304,7 @@ public interface JSONFunctionCallSupport {
                 .addStatement("final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass)")
                 .addStatement("final String currentTable = lookupTable(schemaNameProvider, meta.entityClass)")
                 .addStatement("final $T where = $L.json().all().from(currentKeyspace, currentTable).where()", whereTypeName, privateFieldName)
-                .addStatement("return new $T(where)", newTypeName)
+                .addStatement("return new $T(where, $T.withSchemaNameProvider(schemaNameProvider))", newTypeName, OPTIONS)
                 .returns(newTypeName)
                 .build();
     }

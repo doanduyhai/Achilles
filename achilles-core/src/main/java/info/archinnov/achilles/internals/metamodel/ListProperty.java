@@ -22,6 +22,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.injectable.InjectBeanFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.internals.utils.NamingHelper;
+import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -72,8 +74,8 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
         this.valueProperty = valueProperty;
     }
 
-    public VALUETO encodeSingleElement(VALUEFROM javaValue) {
-        return valueProperty.encodeFromRaw(javaValue);
+    public VALUETO encodeSingleElement(VALUEFROM javaValue, Optional<Options> cassandraOptions) {
+        return valueProperty.encodeFromRaw(javaValue, cassandraOptions);
     }
 
     @Override
@@ -92,25 +94,25 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public List<VALUETO> encodeFromJavaInternal(List<VALUEFROM> list) {
+    public List<VALUETO> encodeFromJavaInternal(List<VALUEFROM> list, Optional<Options> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode from Java '%s' list %s to CQL type", fieldName, list));
         }
 
         return new ArrayList<>(list
                 .stream()
-                .map(value -> valueProperty.encodeFromJava(value))
+                .map(value -> valueProperty.encodeFromJava(value, cassandraOptions))
                 .collect(toList()));
     }
 
     @Override
-    public List<VALUETO> encodeFromRawInternal(Object o) {
+    public List<VALUETO> encodeFromRawInternal(Object o, Optional<Options> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode raw '%s' list object %s", fieldName, o));
         }
 
         Validator.validateTrue(List.class.isAssignableFrom(o.getClass()), "The class of object %s to encode should be List", o);
-        return encodeFromJava((List<VALUEFROM>) o);
+        return encodeFromJava((List<VALUEFROM>) o, cassandraOptions);
     }
 
     @Override
@@ -159,12 +161,12 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public DataType buildType() {
+    public DataType buildType(Optional<Options> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Build current '%s' list data type", fieldName));
         }
 
-        final DataType valueType = valueProperty.buildType();
+        final DataType valueType = valueProperty.buildType(cassandraOptions);
         if (frozen) {
             return DataType.frozenList(valueType);
         } else {
@@ -173,9 +175,9 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue) {
+    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<Options> cassandraOptions) {
 
-        final List<VALUETO> valueTo = encodeField(entity);
+        final List<VALUETO> valueTo = encodeField(entity, cassandraOptions);
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' list %s to UDT value %s", fieldName, valueTo, udtValue));
         }

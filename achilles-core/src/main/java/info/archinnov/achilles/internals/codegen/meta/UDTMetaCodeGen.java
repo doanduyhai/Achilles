@@ -35,6 +35,7 @@ import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
+import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 
 public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
@@ -61,6 +62,7 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addMethod(buildGetStaticNamingStrategy(strategy))
                 .addMethod(buildGetUdtName(elm, context))
                 .addMethod(buildGetUdtClass(rawBeanType))
+                .addMethod(buildGetParentEntityClass(context))
                 .addMethod(buildComponentsProperty(rawBeanType, parsingResults))
                 .addMethod(buildCreateUDTFromBeanT(rawBeanType, parsingResults))
                 .addMethod(buildCreateBeanFromUDT(rawBeanType, parsingResults));
@@ -143,6 +145,16 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
 
     }
 
+    private MethodSpec buildGetParentEntityClass(EntityParsingContext entityParsingContext) {
+        return MethodSpec.methodBuilder("getParentEntityClass")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PROTECTED)
+                .returns(TypeUtils.genericType(CLASS, WILDCARD))
+                .addStatement("return $T.class", entityParsingContext.entityType)
+                .build();
+
+    }
+
     private MethodSpec buildComponentsProperty(TypeName rawBeanType, List<FieldMetaSignature> parsingResults) {
         TypeName returnType = genericType(LIST, genericType(ABSTRACT_PROPERTY, rawBeanType, WILDCARD, WILDCARD));
         final StringJoiner allFields = new StringJoiner(", ");
@@ -169,11 +181,13 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
                 .addParameter(rawBeanType, "instance")
+                .addParameter(genericType(OPTIONAL, OPTIONS), "cassandraOptions")
                 .returns(JAVA_DRIVER_UDT_VALUE_TYPE)
-                .addStatement("final $T udtValue = userType.newValue()", JAVA_DRIVER_UDT_VALUE_TYPE);
+                .addStatement("final $T dynamicUserType = this.getUserType($N)", JAVA_DRIVER_USER_TYPE, "cassandraOptions")
+                .addStatement("final $T udtValue = dynamicUserType.newValue()", JAVA_DRIVER_UDT_VALUE_TYPE);
 
         for (FieldMetaSignature x : parsingResults) {
-            builder.addStatement("$L.encodeFieldToUdt(instance, udtValue)", x.context.fieldName);
+            builder.addStatement("$L.encodeFieldToUdt(instance, udtValue, cassandraOptions)", x.context.fieldName);
         }
 
         builder.addStatement("return udtValue");

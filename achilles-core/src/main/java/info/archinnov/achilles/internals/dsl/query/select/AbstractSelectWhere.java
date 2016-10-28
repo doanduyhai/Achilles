@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
@@ -53,9 +54,11 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSelectWhere.class);
 
     protected final Select.Where where;
+    protected final Options cassandraOptions;
 
-    protected AbstractSelectWhere(Select.Where where) {
+    protected AbstractSelectWhere(Select.Where where, Options cassandraOptions) {
         this.where = where;
+        this.cassandraOptions = cassandraOptions;
     }
 
     protected abstract List<Object> getBoundValuesInternal();

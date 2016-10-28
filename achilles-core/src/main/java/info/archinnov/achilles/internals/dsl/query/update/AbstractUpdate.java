@@ -26,7 +26,6 @@ import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 public abstract class AbstractUpdate implements SchemaNameAware {
 
     protected final RuntimeEngine rte;
-    protected final Options options = new Options();
     protected final List<Object> boundValues = new ArrayList<>();
     protected final List<Object> encodedValues = new ArrayList<>();
 

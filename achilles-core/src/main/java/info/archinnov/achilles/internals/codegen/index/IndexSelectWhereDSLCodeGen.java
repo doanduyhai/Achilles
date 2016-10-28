@@ -26,7 +26,6 @@ import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.internals.codegen.dsl.BaseSingleColumnRestriction;
 import info.archinnov.achilles.internals.codegen.dsl.MultiColumnsSliceRestrictionCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
@@ -34,7 +33,6 @@ import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMe
 import info.archinnov.achilles.internals.metamodel.index.IndexImpl;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 
 public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         implements BaseSingleColumnRestriction, MultiColumnsSliceRestrictionCodeGen {
@@ -80,7 +78,7 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         final TypeSpec.Builder indexSelectWhereBuilder = TypeSpec.classBuilder(indexSelectWhereClassName)
                 .superclass(classSignatureParams.abstractWherePartitionType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(SELECT_DOT_WHERE));
+                .addMethod(buildWhereConstructorWithOptions(SELECT_DOT_WHERE));
 
         final String endClassName = signature.endClassName(classSignatureParams.endDslSuffix);
         final TypeName endTypeName = ClassName.get(DSL_PACKAGE, endClassName);
@@ -118,7 +116,7 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         final TypeSpec.Builder builder = TypeSpec.classBuilder(lastSignature.className)
                 .superclass(lastSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(SELECT_DOT_WHERE))
+                .addMethod(buildWhereConstructorWithOptions(SELECT_DOT_WHERE))
                 .addMethod(buildGetEntityClass(signature))
                 .addMethod(buildGetMetaInternal(signature.entityRawClass))
                 .addMethod(buildGetRte())
@@ -211,14 +209,14 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
                         QUERY_BUILDER, paramValue)
                 .addStatement("boundValues.add($N)", paramKey)
                 .addStatement("boundValues.add($N)", paramValue)
-                .addStatement("encodedValues.add(meta.$L.encodeSingleKeyElement($N))", indexFieldInfo.fieldName, paramKey)
-                .addStatement("encodedValues.add(meta.$L.encodeSingleValueElement($N))", indexFieldInfo.fieldName, paramValue)
+                .addStatement("encodedValues.add(meta.$L.encodeSingleKeyElement($N, $T.of(cassandraOptions)))", indexFieldInfo.fieldName, paramKey, OPTIONAL)
+                .addStatement("encodedValues.add(meta.$L.encodeSingleValueElement($N, $T.of(cassandraOptions)))", indexFieldInfo.fieldName, paramValue, OPTIONAL)
                 .returns(returnClassType);
 
         if(returnType == ReturnType.THIS) {
             return builder.addStatement("return $T.this", returnClassType).build();
         } else {
-            return builder.addStatement("return new $T(where)", returnClassType).build();
+            return builder.addStatement("return new $T(where, cassandraOptions)", returnClassType).build();
         }
     }
 
@@ -233,13 +231,13 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
                 .addStatement("where.and($T.containsKey($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, indexFieldInfo.quotedCqlColumn, QUERY_BUILDER, indexFieldInfo.quotedCqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeSingleKeyElement($N))", indexFieldInfo.fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeSingleKeyElement($N, $T.of(cassandraOptions)))", indexFieldInfo.fieldName, param, OPTIONAL)
                 .returns(returnClassType);
 
         if(returnType == ReturnType.THIS) {
             return builder.addStatement("return $T.this", returnClassType).build();
         } else {
-            return builder.addStatement("return new $T(where)", returnClassType).build();
+            return builder.addStatement("return new $T(where, cassandraOptions)", returnClassType).build();
         }
     }
 
@@ -254,13 +252,13 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
                 .addStatement("where.and($T.contains($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, indexFieldInfo.quotedCqlColumn, QUERY_BUILDER, indexFieldInfo.quotedCqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeSingleValueElement($N))", indexFieldInfo.fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeSingleValueElement($N, $T.of(cassandraOptions)))", indexFieldInfo.fieldName, param, OPTIONAL)
                 .returns(returnClassType);
 
         if(returnType == ReturnType.THIS) {
             return builder.addStatement("return $T.this", returnClassType).build();
         } else {
-            return builder.addStatement("return new $T(where)", returnClassType).build();
+            return builder.addStatement("return new $T(where, cassandraOptions)", returnClassType).build();
         }
     }
 
@@ -274,12 +272,12 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
                 .addStatement("where.and($T.contains($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, indexFieldInfo.quotedCqlColumn, QUERY_BUILDER, indexFieldInfo.quotedCqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeSingleElement($N))", indexFieldInfo.fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeSingleElement($N, $T.of(cassandraOptions)))", indexFieldInfo.fieldName, param, OPTIONAL)
                 .returns(returnClassType);
         if(returnType == ReturnType.THIS) {
             return builder.addStatement("return $T.this", returnClassType).build();
         } else {
-            return builder.addStatement("return new $T(where)", returnClassType).build();
+            return builder.addStatement("return new $T(where, cassandraOptions)", returnClassType).build();
         }
     }
 

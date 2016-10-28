@@ -107,16 +107,16 @@ public interface DSESearchSupport {
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(STRING, fieldInfo.fieldName)
-                .beginControlFlow("if(!options.hasSolrQuery())")
+                .beginControlFlow("if(!cassandraOptions.hasSolrQuery())")
                 .addStatement("where.and($T.eq($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, "solr_query", QUERY_BUILDER, "solr_query")
                 .endControlFlow()
-                .addStatement("options.appendToSolrQuery($S + $N + $S)", fieldInfo.quotedCqlColumn + ":",
+                .addStatement("cassandraOptions.appendToSolrQuery($S + $N + $S)", fieldInfo.quotedCqlColumn + ":",
                         fieldInfo.fieldName, "*")
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -129,15 +129,15 @@ public interface DSESearchSupport {
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(STRING, fieldInfo.fieldName)
-                .beginControlFlow("if(!options.hasSolrQuery())")
+                .beginControlFlow("if(!cassandraOptions.hasSolrQuery())")
                 .addStatement("where.and($T.eq($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, "solr_query", QUERY_BUILDER, "solr_query")
                 .endControlFlow()
-                .addStatement("options.appendToSolrQuery($S + $N)", fieldInfo.quotedCqlColumn + ":*", fieldInfo.fieldName)
+                .addStatement("cassandraOptions.appendToSolrQuery($S + $N)", fieldInfo.quotedCqlColumn + ":*", fieldInfo.fieldName)
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -150,15 +150,15 @@ public interface DSESearchSupport {
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(STRING, fieldInfo.fieldName)
-                .beginControlFlow("if(!options.hasSolrQuery())")
+                .beginControlFlow("if(!cassandraOptions.hasSolrQuery())")
                 .addStatement("where.and($T.eq($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, "solr_query", QUERY_BUILDER, "solr_query")
                 .endControlFlow()
-                .addStatement("options.appendToSolrQuery($S + $N + $S)", fieldInfo.quotedCqlColumn + ":*", fieldInfo.fieldName, "*")
+                .addStatement("cassandraOptions.appendToSolrQuery($S + $N + $S)", fieldInfo.quotedCqlColumn + ":*", fieldInfo.fieldName, "*")
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -173,18 +173,20 @@ public interface DSESearchSupport {
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(fieldInfo.typeName, param)
-                .beginControlFlow("if(!options.hasSolrQuery())")
+                .beginControlFlow("if(!cassandraOptions.hasSolrQuery())")
                 .addStatement("where.and($T.eq($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, "solr_query", QUERY_BUILDER, "solr_query")
                 .endControlFlow()
-                .addStatement("options.appendToSolrQuery($T.format($S, $S, meta.$L.encodeFromJava($N)))",
+                .addStatement("cassandraOptions.appendToSolrQuery($T.format($S, $S, meta.$L.encodeFromJava($N, $T.of(cassandraOptions))))",
                         STRING, relationToSolrSyntaxForQuery(relation),
                         fieldInfo.quotedCqlColumn,
-                        fieldInfo.fieldName, param)
+                        fieldInfo.fieldName,
+                        param,
+                        OPTIONAL)
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -204,18 +206,19 @@ public interface DSESearchSupport {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(fieldInfo.typeName, param)
                 .addStatement("$T dateFormat = new $T($T.SOLR_DATE_FORMAT)", SIMPLE_DATE_FORMAT, SIMPLE_DATE_FORMAT, DSE_SEARCH_ANNOT)
-                .beginControlFlow("if(!options.hasSolrQuery())")
+                .beginControlFlow("if(!cassandraOptions.hasSolrQuery())")
                 .addStatement("where.and($T.eq($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, "solr_query", QUERY_BUILDER, "solr_query")
                 .endControlFlow()
-                .addStatement("options.appendToSolrQuery($T.format($S, $S, dateFormat.format(meta.$L.encodeFromJava($N))))",
+                .addStatement("cassandraOptions.appendToSolrQuery($T.format($S, $S, dateFormat.format(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))))",
                         STRING, queryString,
                         fieldInfo.quotedCqlColumn,
-                        fieldInfo.fieldName, param)
+                        fieldInfo.fieldName, param,
+                        OPTIONAL)
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -231,18 +234,19 @@ public interface DSESearchSupport {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(fieldInfo.typeName, param1)
                 .addParameter(fieldInfo.typeName, param2)
-                .beginControlFlow("if(!options.hasSolrQuery())")
+                .beginControlFlow("if(!cassandraOptions.hasSolrQuery())")
                 .addStatement("where.and($T.eq($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, "solr_query", QUERY_BUILDER, "solr_query")
                 .endControlFlow()
-                .addStatement("options.appendToSolrQuery($T.format($S, $S, meta.$L.encodeFromJava($N), meta.$L.encodeFromJava($N)))",
+                .addStatement("cassandraOptions.appendToSolrQuery($T.format($S, $S, meta.$L.encodeFromJava($N, $T.of(cassandraOptions)), meta.$L.encodeFromJava($N, $T.of(cassandraOptions))))",
                         STRING, relationToSolrSyntaxForQuery(relation1, relation2),
                         fieldInfo.quotedCqlColumn,
-                        fieldInfo.fieldName, param1, fieldInfo.fieldName, param2)
+                        fieldInfo.fieldName, param1, OPTIONAL,
+                        fieldInfo.fieldName, param2, OPTIONAL)
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -259,18 +263,19 @@ public interface DSESearchSupport {
                 .addParameter(fieldInfo.typeName, param1)
                 .addParameter(fieldInfo.typeName, param2)
                 .addStatement("$T dateFormat = new $T($T.SOLR_DATE_FORMAT)", SIMPLE_DATE_FORMAT, SIMPLE_DATE_FORMAT, DSE_SEARCH_ANNOT)
-                .beginControlFlow("if(!options.hasSolrQuery())")
+                .beginControlFlow("if(!cassandraOptions.hasSolrQuery())")
                 .addStatement("where.and($T.eq($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, "solr_query", QUERY_BUILDER, "solr_query")
                 .endControlFlow()
-                .addStatement("options.appendToSolrQuery($T.format($S, $S, dateFormat.format(meta.$L.encodeFromJava($N)), dateFormat.format(meta.$L.encodeFromJava($N))))",
+                .addStatement("cassandraOptions.appendToSolrQuery($T.format($S, $S, dateFormat.format(meta.$L.encodeFromJava($N, $T.of(cassandraOptions))), dateFormat.format(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))))",
                         STRING, relationToSolrSyntaxForQuery(relation1, relation2),
                         fieldInfo.quotedCqlColumn,
-                        fieldInfo.fieldName, param1, fieldInfo.fieldName, param2)
+                        fieldInfo.fieldName, param1, OPTIONAL,
+                        fieldInfo.fieldName, param2, OPTIONAL)
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -285,16 +290,16 @@ public interface DSESearchSupport {
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(STRING, param)
-                .beginControlFlow("if(!options.hasSolrQuery())")
+                .beginControlFlow("if(!cassandraOptions.hasSolrQuery())")
                 .addStatement("where.and($T.eq($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, "solr_query", QUERY_BUILDER, "solr_query")
                 .endControlFlow()
-                .addStatement("options.appendToSolrQuery($T.format($S, $S, $N))",
+                .addStatement("cassandraOptions.appendToSolrQuery($T.format($S, $S, $N))",
                         STRING, "%s:%s", fieldInfo.quotedCqlColumn, param)
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -311,14 +316,14 @@ public interface DSESearchSupport {
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(STRING, param)
-                .beginControlFlow("if(!options.hasSolrQuery())")
+                .beginControlFlow("if(!cassandraOptions.hasSolrQuery())")
                 .addStatement("where.and($T.eq($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, "solr_query", QUERY_BUILDER, "solr_query")
                 .endControlFlow()
-                .addStatement("options.rawSolrQuery($N)", param)
+                .addStatement("cassandraOptions.rawSolrQuery($N)", param)
                 .returns(nextType);
 
-        builder.addStatement("return new $T(where)", nextType);
+        builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         return builder.build();
     }
 

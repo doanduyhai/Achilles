@@ -19,12 +19,16 @@ package info.archinnov.achilles.internals.dsl.query.update;
 
 import com.datastax.driver.core.querybuilder.Update;
 
+import info.archinnov.achilles.internals.options.Options;
+
 public abstract class AbstractUpdateWhere {
 
     protected final Update.Where where;
+    protected final Options cassandraOptions;
 
-    protected AbstractUpdateWhere(Update.Where where) {
+    protected AbstractUpdateWhere(Update.Where where, Options cassandraOptions) {
         this.where = where;
+        this.cassandraOptions = cassandraOptions;
     }
 
 }

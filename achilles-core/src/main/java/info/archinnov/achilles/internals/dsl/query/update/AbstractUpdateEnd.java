@@ -51,9 +51,11 @@ public abstract class AbstractUpdateEnd<T extends AbstractUpdateEnd<T, ENTITY>, 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractUpdateEnd.class);
 
     protected final Update.Where where;
+    protected final Options cassandraOptions;
 
-    protected AbstractUpdateEnd(Update.Where where) {
+    protected AbstractUpdateEnd(Update.Where where, Options cassandraOptions) {
         this.where = where;
+        this.cassandraOptions = cassandraOptions;
     }
 
     protected abstract List<Object> getBoundValuesInternal();

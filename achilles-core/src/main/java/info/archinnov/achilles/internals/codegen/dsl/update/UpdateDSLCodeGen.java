@@ -142,7 +142,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass)")
                 .addStatement("final String currentTable = lookupTable(schemaNameProvider, meta.entityClass)")
                 .addStatement("final $T where = $T.update(currentKeyspace, currentTable).where()", UPDATE_DOT_WHERE, QUERY_BUILDER)
-                .addStatement("return new $T(where)", updateFromTypeName)
+                .addStatement("return new $T(where, $T.withSchemaNameProvider(schemaNameProvider))", updateFromTypeName, OPTIONS)
                 .returns(updateFromTypeName)
                 .build();
     }
@@ -154,7 +154,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("final String currentKeyspace = meta.getKeyspace().orElse($S + meta.entityClass.getCanonicalName())",
                         "unknown_keyspace_for_")
                 .addStatement("final $T where = $T.update(currentKeyspace, meta.getTableOrViewName()).where()", UPDATE_DOT_WHERE, QUERY_BUILDER)
-                .addStatement("return new $T(where)", updateFromTypeName)
+                .addStatement("return new $T(where, new $T())", updateFromTypeName, OPTIONS)
                 .returns(updateFromTypeName)
                 .build();
     }
@@ -170,7 +170,8 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
                         .addParameter(UPDATE_DOT_WHERE, "where")
-                        .addStatement("super(where)")
+                        .addParameter(OPTIONS, "cassandraOptions")
+                        .addStatement("super(where, cassandraOptions)")
                         .build());
 
         signature.fieldMetaSignatures
@@ -194,7 +195,8 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
                         .addParameter(UPDATE_DOT_WHERE, "where")
-                        .addStatement("super(where)")
+                        .addParameter(OPTIONS, "cassandraOptions")
+                        .addStatement("super(where, cassandraOptions)")
                         .build());
 
         signature.fieldMetaSignatures
@@ -205,7 +207,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
 
         builder.addMethod(MethodSpec.methodBuilder("where")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addStatement("return new $T(where)", updateWhereTypeName)
+                .addStatement("return new $T(where, cassandraOptions)", updateWhereTypeName)
                 .returns(updateWhereTypeName)
                 .build());
 
@@ -266,11 +268,11 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.of($S, $T.bindMarker($S)))",
                         NON_ESCAPING_ASSIGNMENT, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, param, OPTIONAL)
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", newTypeName);
+            builder.addStatement("return new $T(where, cassandraOptions)", newTypeName);
         } else {
             builder.addStatement("return $T.this", newTypeName);
         }
@@ -310,7 +312,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.appendAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($T.asList($N))", ARRAYS, param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.asList($N)))", fieldName, ARRAYS, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.asList($N), $T.of(cassandraOptions)))", fieldName, ARRAYS, param, OPTIONAL)
                 .returns(newTypeName);
 
 
@@ -322,7 +324,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.appendAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, param, OPTIONAL)
                 .returns(newTypeName);
 
 
@@ -334,7 +336,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.prependAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($T.asList($N))", ARRAYS, param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.asList($N)))", fieldName, ARRAYS, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.asList($N), $T.of(cassandraOptions)))", fieldName, ARRAYS, param, OPTIONAL)
                 .returns(newTypeName);
 
 
@@ -346,7 +348,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.prependAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, param, OPTIONAL)
                 .returns(newTypeName);
 
         final MethodSpec.Builder setAtIndex = MethodSpec.methodBuilder("SetAtIndex")
@@ -357,7 +359,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.setIdx($S, index, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.valueProperty.encodeFromJava($N))", fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.valueProperty.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, param, OPTIONAL)
                 .returns(newTypeName);
 
         final MethodSpec.Builder removeAtIndex = MethodSpec.methodBuilder("RemoveAtIndex")
@@ -378,7 +380,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.discardAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($T.asList($N))", ARRAYS, param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.asList($N)))", fieldName, ARRAYS, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.asList($N), $T.of(cassandraOptions)))", fieldName, ARRAYS, param, OPTIONAL)
                 .returns(newTypeName);
 
         final MethodSpec.Builder removeAllFrom = MethodSpec.methodBuilder("RemoveAllFrom")
@@ -389,7 +391,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.discardAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, param, OPTIONAL)
                 .returns(newTypeName);
 
         final MethodSpec.Builder set = MethodSpec.methodBuilder("Set")
@@ -400,19 +402,19 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.of($S, $T.bindMarker($S)))",
                         NON_ESCAPING_ASSIGNMENT, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, param, OPTIONAL)
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
-            appendTo.addStatement("return new $T(where)", newTypeName);
-            appendAllTo.addStatement("return new $T(where)", newTypeName);
-            prependTo.addStatement("return new $T(where)", newTypeName);
-            prependAllTo.addStatement("return new $T(where)", newTypeName);
-            setAtIndex.addStatement("return new $T(where)", newTypeName);
-            removeAtIndex.addStatement("return new $T(where)", newTypeName);
-            removeFrom.addStatement("return new $T(where)", newTypeName);
-            removeAllFrom.addStatement("return new $T(where)", newTypeName);
-            set.addStatement("return new $T(where)", newTypeName);
+            appendTo.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            appendAllTo.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            prependTo.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            prependAllTo.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            setAtIndex.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            removeAtIndex.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            removeFrom.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            removeAllFrom.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            set.addStatement("return new $T(where, cassandraOptions)", newTypeName);
         } else {
             appendTo.addStatement("return $T.this", newTypeName);
             appendAllTo.addStatement("return $T.this", newTypeName);
@@ -472,7 +474,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.addAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($T.newHashSet($N))", SETS, param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.newHashSet($N)))", fieldName, SETS, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.newHashSet($N), $T.of(cassandraOptions)))", fieldName, SETS, param, OPTIONAL)
                 .returns(newTypeName);
 
         final MethodSpec.Builder addAllTo = MethodSpec.methodBuilder("AddAllTo")
@@ -483,7 +485,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.addAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, param, OPTIONAL)
                 .returns(newTypeName);
 
         final MethodSpec.Builder removeFrom = MethodSpec.methodBuilder("RemoveFrom")
@@ -494,7 +496,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.removeAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($T.newHashSet($N))", SETS, param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.newHashSet($N)))", fieldName, SETS, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($T.newHashSet($N), $T.of(cassandraOptions)))", fieldName, SETS, param, OPTIONAL)
                 .returns(newTypeName);
 
         final MethodSpec.Builder removeAllFrom = MethodSpec.methodBuilder("RemoveAllFrom")
@@ -505,7 +507,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.removeAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, param, OPTIONAL)
                 .returns(newTypeName);
 
         final MethodSpec.Builder set = MethodSpec.methodBuilder("Set")
@@ -516,15 +518,15 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.of($S, $T.bindMarker($S)))",
                         NON_ESCAPING_ASSIGNMENT, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, param, OPTIONAL)
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
-            addTo.addStatement("return new $T(where)", newTypeName);
-            addAllTo.addStatement("return new $T(where)", newTypeName);
-            removeFrom.addStatement("return new $T(where)", newTypeName);
-            removeAllFrom.addStatement("return new $T(where)", newTypeName);
-            set.addStatement("return new $T(where)", newTypeName);
+            addTo.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            addAllTo.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            removeFrom.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            removeAllFrom.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            set.addStatement("return new $T(where, cassandraOptions)", newTypeName);
         } else {
             addTo.addStatement("return $T.this", newTypeName);
             addAllTo.addStatement("return $T.this", newTypeName);
@@ -586,8 +588,8 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, paramKey, QUERY_BUILDER, paramValue)
                 .addStatement("boundValues.add($N)", paramKey)
                 .addStatement("boundValues.add($N)", paramValue)
-                .addStatement("encodedValues.add(meta.$L.keyProperty.encodeFromJava($N))", fieldName, paramKey)
-                .addStatement("encodedValues.add(meta.$L.valueProperty.encodeFromJava($N))", fieldName, paramValue)
+                .addStatement("encodedValues.add(meta.$L.keyProperty.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, paramKey, OPTIONAL)
+                .addStatement("encodedValues.add(meta.$L.valueProperty.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, paramValue, OPTIONAL)
                 .returns(newTypeName);
 
         final MethodSpec.Builder addAllTo = MethodSpec.methodBuilder("AddAllTo")
@@ -598,7 +600,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.addAll($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, param, OPTIONAL)
                 .returns(newTypeName);
 
         final MethodSpec.Builder removeByKey = MethodSpec.methodBuilder("RemoveByKey")
@@ -610,7 +612,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, paramKey, QUERY_BUILDER, paramValue)
                 .addStatement("boundValues.add($N)", paramKey)
                 .addStatement("boundValues.add(null)")
-                .addStatement("encodedValues.add(meta.$L.keyProperty.encodeFromJava($N))", fieldName, paramKey)
+                .addStatement("encodedValues.add(meta.$L.keyProperty.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, paramKey, OPTIONAL)
                 .addStatement("encodedValues.add(null)")
                 .returns(newTypeName);
 
@@ -622,14 +624,14 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.of($S, $T.bindMarker($S)))",
                         NON_ESCAPING_ASSIGNMENT, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", param)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, param)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, param, OPTIONAL)
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
-            putTo.addStatement("return new $T(where)", newTypeName);
-            addAllTo.addStatement("return new $T(where)", newTypeName);
-            removeByKey.addStatement("return new $T(where)", newTypeName);
-            set.addStatement("return new $T(where)", newTypeName);
+            putTo.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            addAllTo.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            removeByKey.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            set.addStatement("return new $T(where, cassandraOptions)", newTypeName);
         } else {
             putTo.addStatement("return $T.this", newTypeName);
             addAllTo.addStatement("return $T.this", newTypeName);
@@ -679,7 +681,7 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.incr($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", paramIncr)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, paramIncr)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, paramIncr, OPTIONAL)
                 .returns(newTypeName);
 
         final MethodSpec.Builder decrOne = MethodSpec.methodBuilder("Decr")
@@ -697,14 +699,14 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addStatement("where.with($T.decr($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, cqlColumn, QUERY_BUILDER, cqlColumn)
                 .addStatement("boundValues.add($N)", paramDecr)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldName, paramDecr)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldName, paramDecr, OPTIONAL)
                 .returns(newTypeName);
 
         if (returnType == ReturnType.NEW) {
-            incrOne.addStatement("return new $T(where)", newTypeName);
-            incr.addStatement("return new $T(where)", newTypeName);
-            decrOne.addStatement("return new $T(where)", newTypeName);
-            decr.addStatement("return new $T(where)", newTypeName);
+            incrOne.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            incr.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            decrOne.addStatement("return new $T(where, cassandraOptions)", newTypeName);
+            decr.addStatement("return new $T(where, cassandraOptions)", newTypeName);
         } else {
             incrOne.addStatement("return $T.this", newTypeName);
             incr.addStatement("return $T.this", newTypeName);

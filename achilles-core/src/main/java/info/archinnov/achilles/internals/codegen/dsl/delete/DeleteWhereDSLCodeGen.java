@@ -111,7 +111,7 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen
         final TypeSpec.Builder builder = TypeSpec.classBuilder(lastSignature.className)
                 .superclass(lastSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(DELETE_DOT_WHERE))
+                .addMethod(buildWhereConstructorWithOptions(DELETE_DOT_WHERE))
                 .addMethod(buildGetEntityClass(signature))
                 .addMethod(buildGetMetaInternal(signature.entityRawClass))
                 .addMethod(buildGetRte())
@@ -140,7 +140,7 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen
             classesSignature.remove(0);
 
             final TypeSpec typeSpec = buildDeleteWhereForPartitionKey(rootClassName, partitionKeyInfo, currentSignature,
-                    nextSignature, hasClusterings);
+                    nextSignature);
 
             final List<TypeSpec> typeSpecs = buildWhereClassesForPartitionKeys(rootClassName, partitionKeys,
                     classesSignature, hasClusterings);
@@ -153,8 +153,7 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen
     public TypeSpec buildDeleteWhereForPartitionKey(String rootClassName,
                                                     FieldSignatureInfo partitionInfo,
                                                     ClassSignatureInfo classSignature,
-                                                    ClassSignatureInfo nextSignature,
-                                                    boolean hasClusterings) {
+                                                    ClassSignatureInfo nextSignature) {
 
         TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, rootClassName
                 + "." + classSignature.className
@@ -170,7 +169,7 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen
         return TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(DELETE_DOT_WHERE))
+                .addMethod(buildWhereConstructorWithOptions(DELETE_DOT_WHERE))
                 .addType(relationClassBuilder.build())
                 .addMethod(buildRelationMethod(partitionInfo.fieldName, relationClassTypeName))
                 .build();
@@ -220,7 +219,7 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen
         final TypeSpec.Builder whereClassBuilder = TypeSpec.classBuilder(classSignature.className)
                 .superclass(classSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(DELETE_DOT_WHERE))
+                .addMethod(buildWhereConstructorWithOptions(DELETE_DOT_WHERE))
                 .addType(relationClassBuilder.build())
                 .addMethod(buildRelationMethod(clusteringColumnInfo.fieldName, relationClassTypeName));
 

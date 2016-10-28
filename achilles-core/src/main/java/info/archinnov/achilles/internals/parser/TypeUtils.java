@@ -280,6 +280,7 @@ public class TypeUtils {
     // CQL types
     public static final ClassName JAVA_DRIVER_TUPLE_VALUE_TYPE = ClassName.get(TupleValue.class);
     public static final ClassName JAVA_DRIVER_UDT_VALUE_TYPE = ClassName.get(UDTValue.class);
+    public static final ClassName JAVA_DRIVER_USER_TYPE = ClassName.get(UserType.class);
     public static final ClassName DATATYPE = ClassName.get(DataType.class);
     public static final ClassName LIST = ClassName.get(List.class);
     public static final ClassName SET = ClassName.get(Set.class);

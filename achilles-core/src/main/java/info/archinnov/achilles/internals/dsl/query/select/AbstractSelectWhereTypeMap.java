@@ -53,9 +53,11 @@ public abstract class AbstractSelectWhereTypeMap<T extends AbstractSelectWhereTy
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSelectWhereTypeMap.class);
 
     protected final Select.Where where;
+    protected final Options cassandraOptions;
 
-    protected AbstractSelectWhereTypeMap(Select.Where where) {
+    protected AbstractSelectWhereTypeMap(Select.Where where, Options cassandraOptions) {
         this.where = where;
+        this.cassandraOptions = cassandraOptions;
     }
 
     protected abstract List<Object> getBoundValuesInternal();

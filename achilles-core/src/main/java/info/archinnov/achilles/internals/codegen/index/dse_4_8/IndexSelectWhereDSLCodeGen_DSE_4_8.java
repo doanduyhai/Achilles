@@ -61,7 +61,7 @@ public class IndexSelectWhereDSLCodeGen_DSE_4_8 extends IndexSelectWhereDSLCodeG
         final TypeSpec.Builder builder = TypeSpec.classBuilder(lastSignature.className)
                 .superclass(lastSignature.superType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildWhereConstructor(SELECT_DOT_WHERE))
+                .addMethod(buildWhereConstructorWithOptions(SELECT_DOT_WHERE))
                 .addMethod(buildGetEntityClass(signature))
                 .addMethod(buildGetMetaInternal(signature.entityRawClass))
                 .addMethod(buildGetRte())

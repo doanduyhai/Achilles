@@ -36,6 +36,8 @@ import info.archinnov.achilles.internals.dsl.crud.DeleteWithOptions;
 import info.archinnov.achilles.internals.dsl.crud.InsertWithOptions;
 import info.archinnov.achilles.internals.dsl.raw.NativeQuery;
 import info.archinnov.achilles.internals.dsl.raw.TypedQuery;
+import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public abstract class AbstractManager<ENTITY> {
@@ -92,7 +94,7 @@ public abstract class AbstractManager<ENTITY> {
         return rte.getCluster();
     }
 
-    protected InsertWithOptions<ENTITY> insertInternal(ENTITY instance, boolean insertStatic) {
+    protected InsertWithOptions<ENTITY> insertInternal(ENTITY instance, boolean insertStatic, Optional<Options> cassandraOptions) {
 
         validateNotNull(instance, "Entity to be inserted should not be null");
 
@@ -101,15 +103,15 @@ public abstract class AbstractManager<ENTITY> {
         }
 
         if (insertStatic) {
-            validateColumnsForInsertStatic(instance, meta_internal);
+            validateColumnsForInsertStatic(instance, meta_internal, cassandraOptions);
         } else {
-            validatePrimaryKey(instance, meta_internal);
+            validatePrimaryKey(instance, meta_internal, cassandraOptions);
         }
 
-        return new InsertWithOptions<>(meta_internal, rte, instance, insertStatic);
+        return new InsertWithOptions<>(meta_internal, rte, instance, insertStatic, cassandraOptions);
     }
 
-    protected InsertJSONWithOptions insertJSONInternal(String json) {
+    protected InsertJSONWithOptions insertJSONInternal(String json, Optional<Options> cassandraOptions) {
 
         validateNotBlank(json, "The JSON string to be used for INSERT JSON should not be blank");
 
@@ -117,19 +119,19 @@ public abstract class AbstractManager<ENTITY> {
             LOGGER.trace(format("Create insert json CRUD for with JSON %s", json));
         }
 
-        return new InsertJSONWithOptions(meta_internal, rte, json);
+        return new InsertJSONWithOptions(meta_internal, rte, json, cassandraOptions);
     }
 
-    protected DeleteWithOptions<ENTITY> deleteInternal(ENTITY instance) {
+    protected DeleteWithOptions<ENTITY> deleteInternal(ENTITY instance, Optional<Options> cassandraOptions) {
         validateNotNull(instance, "Entity to be deleted should not be null");
 
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Create delete CRUD for entity %s", instance));
         }
 
-        validatePrimaryKey(instance, meta_internal);
-        final Tuple2<Object[], Object[]> tuple = BeanValueExtractor.extractPrimaryKeyValues(instance, meta_internal);
-        return new DeleteWithOptions<>(entityClass, meta_internal, rte, tuple._1(), tuple._2(), Optional.of(instance));
+        validatePrimaryKey(instance, meta_internal, cassandraOptions);
+        final Tuple2<Object[], Object[]> tuple = BeanValueExtractor.extractPrimaryKeyValues(instance, meta_internal, cassandraOptions);
+        return new DeleteWithOptions<>(entityClass, meta_internal, rte, tuple._1(), tuple._2(), Optional.of(instance), cassandraOptions);
     }
 
     protected TypedQuery<ENTITY> typedQueryForSelectInternal(BoundStatement boundStatement) {

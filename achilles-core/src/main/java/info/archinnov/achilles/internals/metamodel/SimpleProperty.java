@@ -21,6 +21,7 @@ import static java.lang.String.format;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -39,6 +40,7 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.internals.types.RuntimeCodecWrapper;
+import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -81,7 +83,7 @@ public class SimpleProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProperty
     }
 
     @Override
-    public VALUETO encodeFromJavaInternal(VALUEFROM javaValue) {
+    public VALUETO encodeFromJavaInternal(VALUEFROM javaValue, Optional<Options> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode from Java '%s'  %s to CQL type", fieldName, javaValue));
         }
@@ -90,13 +92,13 @@ public class SimpleProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProperty
     }
 
     @Override
-    public VALUETO encodeFromRawInternal(Object o) {
+    public VALUETO encodeFromRawInternal(Object o, Optional<Options> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode raw '%s' object %s", fieldName, o));
         }
 
         Validator.validateTrue(valueFromTypeToken.getRawType().isAssignableFrom(o.getClass()), "The class of object %s to encode should be %s", o, valueFromTypeToken);
-        return encodeFromJava((VALUEFROM) o);
+        return encodeFromJava((VALUEFROM) o, cassandraOptions);
     }
 
     @Override
@@ -120,7 +122,7 @@ public class SimpleProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProperty
     }
 
     @Override
-    public DataType buildType() {
+    public DataType buildType(Optional<Options> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Build current '%s' data type", fieldName));
         }
@@ -130,8 +132,8 @@ public class SimpleProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProperty
     }
 
     @Override
-    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue) {
-        final VALUETO valueTo = encodeField(entity);
+    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<Options> cassandraOptions) {
+        final VALUETO valueTo = encodeField(entity, cassandraOptions);
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' %s to UDT value %s", fieldName, valueTo, udtValue));
         }

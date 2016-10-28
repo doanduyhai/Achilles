@@ -18,10 +18,13 @@ package info.archinnov.achilles.internals.runtime;
 
 import static java.lang.String.format;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.type.tuples.Tuple2;
 import info.archinnov.achilles.validation.Validator;
 
@@ -30,7 +33,7 @@ public class BeanInternalValidator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BeanInternalValidator.class);
 
-    public static <T> void validatePrimaryKey(T instance, AbstractEntityProperty<T> entityProperty) {
+    public static <T> void validatePrimaryKey(T instance, AbstractEntityProperty<T> entityProperty, Optional<Options> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Validate primary key for instance %s of type %s",
                     instance, entityProperty.entityClass.getCanonicalName()));
@@ -39,7 +42,7 @@ public class BeanInternalValidator {
         entityProperty
                 .partitionKeys
                 .stream()
-                .map(x -> Tuple2.of(x.fieldName, x.encodeField(instance)))
+                .map(x -> Tuple2.of(x.fieldName, x.encodeField(instance, cassandraOptions)))
                 .filter(x -> x._2() == null)
                 .forEach(tuple ->
                                 Validator.validateNotNull(tuple._2(),
@@ -51,7 +54,7 @@ public class BeanInternalValidator {
         entityProperty
                 .clusteringColumns
                 .stream()
-                .map(x -> Tuple2.of(x.fieldName, x.encodeField(instance)))
+                .map(x -> Tuple2.of(x.fieldName, x.encodeField(instance, cassandraOptions)))
                 .filter(x -> x._2() == null)
                 .forEach(tuple ->
                         Validator.validateNotNull(tuple._2(),
@@ -61,7 +64,7 @@ public class BeanInternalValidator {
 
     }
 
-    public static <T> void validateColumnsForInsertStatic(T instance, AbstractEntityProperty<T> entityProperty) {
+    public static <T> void validateColumnsForInsertStatic(T instance, AbstractEntityProperty<T> entityProperty, Optional<Options> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Validate partition columns and other columns for INSERT STATIC of instance %s of type %s",
                     instance, entityProperty.entityClass.getCanonicalName()));
@@ -70,7 +73,7 @@ public class BeanInternalValidator {
         entityProperty
                 .partitionKeys
                 .stream()
-                .map(x -> Tuple2.of(x.fieldName, x.encodeField(instance)))
+                .map(x -> Tuple2.of(x.fieldName, x.encodeField(instance, cassandraOptions)))
                 .filter(x -> x._2() == null)
                 .forEach(tuple ->
                         Validator.validateNotNull(tuple._2(),
@@ -81,7 +84,7 @@ public class BeanInternalValidator {
         final long nonNullStaticColumnsCount = entityProperty
                 .staticColumns
                 .stream()
-                .map(x -> x.encodeField(instance))
+                .map(x -> x.encodeField(instance, cassandraOptions))
                 .filter(x -> x != null)
                 .count();
 

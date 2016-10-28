@@ -24,10 +24,7 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.META_SUFFIX;
 import java.util.Comparator;
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
@@ -47,6 +44,9 @@ public abstract class CrudAPICodeGen {
 
         final TypeSpec.Builder crudClass = TypeSpec.classBuilder(signature.className + CRUD_SUFFIX)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addField(FieldSpec.builder(genericType(OPTIONAL, OPTIONS), "cassandraOptions", Modifier.PRIVATE)
+                        .initializer(CodeBlock.builder().addStatement("$T.empty()", OPTIONAL).build()).build())
+                .addMethod(buildWithSchemaNameProvider(signature))
                 .addMethod(buildFind(signature));
 
         // API for table
@@ -71,6 +71,18 @@ public abstract class CrudAPICodeGen {
         return crudClass.build();
     }
 
+    private static MethodSpec buildWithSchemaNameProvider(EntityMetaSignature signature) {
+        TypeName crudClass = ClassName.get(MANAGER_PACKAGE, signature.className + MANAGER_SUFFIX + "." + signature.className + CRUD_SUFFIX);
+        return MethodSpec.methodBuilder("withSchemaNameProvider")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(SCHEMA_NAME_PROVIDER, "schemaNameProvider", Modifier.FINAL)
+                .addStatement("$T.validateNotNull($N,$S)", VALIDATOR, "schemaNameProvider", "The provided schemaNameProvider should not be null")
+                .addStatement("this.cassandraOptions = $T.of($T.withSchemaNameProvider($N))", OPTIONAL, OPTIONS, "schemaNameProvider")
+                .addStatement("return this")
+                .returns(crudClass)
+                .build();
+    }
+
     private static MethodSpec buildFind(EntityMetaSignature signature) {
         ParameterizedTypeName returnType = genericType(FIND_WITH_OPTIONS, signature.entityRawClass);
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("findById")
@@ -90,7 +102,7 @@ public abstract class CrudAPICodeGen {
                                 .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
                                         "Partition key '%s' should not be null", tuple._1())
                                 .addStatement("keys.add($L)", tuple._1())
-                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
+                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N, cassandraOptions))",
                                         signature.className + META_SUFFIX, tuple._1(), tuple._1())
                 );
 
@@ -105,7 +117,7 @@ public abstract class CrudAPICodeGen {
                                 .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
                                         "Partition key '%s' should not be null", tuple._1())
                                 .addStatement("keys.add($L)", tuple._1())
-                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
+                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N, cassandraOptions))",
                                         signature.className + META_SUFFIX, tuple._1(), tuple._1())
                 );
 
@@ -114,8 +126,7 @@ public abstract class CrudAPICodeGen {
 
         builder.addStatement("final Object[] primaryKeyValues = keys.toArray()")
                 .addStatement("final Object[] encodedPrimaryKeyValues = encodedKeys.toArray()")
-                .addStatement("return new $T($L, $L, $L, $L, $L)", returnType,
-                        "entityClass", "meta", "rte", "primaryKeyValues", "encodedPrimaryKeyValues")
+                .addStatement("return new $T(entityClass, meta, rte, primaryKeyValues, encodedPrimaryKeyValues, cassandraOptions)", returnType)
                 .returns(returnType);
 
         return builder.build();
@@ -128,7 +139,7 @@ public abstract class CrudAPICodeGen {
                 .addJavadoc("@return $T<$T>", INSERT_WITH_OPTIONS, signature.entityRawClass)
                 .addModifiers(Modifier.FINAL, Modifier.PUBLIC)
                 .addParameter(signature.entityRawClass, "instance", Modifier.FINAL)
-                .addStatement("return insertInternal(instance, false)") // insertStatic = false
+                .addStatement("return insertInternal(instance, false, cassandraOptions)") // insertStatic = false
                 .returns(genericType(INSERT_WITH_OPTIONS, signature.entityRawClass))
                 .build();
     }
@@ -141,7 +152,7 @@ public abstract class CrudAPICodeGen {
                 .addJavadoc("@return $T<$T>", INSERT_WITH_OPTIONS, signature.entityRawClass)
                 .addModifiers(Modifier.FINAL, Modifier.PUBLIC)
                 .addParameter(signature.entityRawClass, "instance", Modifier.FINAL)
-                .addStatement("return insertInternal(instance, true)") // insertStatic = true
+                .addStatement("return insertInternal(instance, true, cassandraOptions)") // insertStatic = true
                 .returns(genericType(INSERT_WITH_OPTIONS, signature.entityRawClass))
                 .build();
     }
@@ -171,7 +182,7 @@ public abstract class CrudAPICodeGen {
                                 .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
                                         "Partition key '%s' should not be null", tuple._1())
                                 .addStatement("keys.add($L)", tuple._1())
-                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
+                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N, cassandraOptions))",
                                         signature.className + META_SUFFIX, tuple._1(), tuple._1())
                 );
 
@@ -186,15 +197,14 @@ public abstract class CrudAPICodeGen {
                                 .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
                                         "Partition key '%s' should not be null", tuple._1())
                                 .addStatement("keys.add($L)", tuple._1())
-                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
+                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N, cassandraOptions))",
                                         signature.className + META_SUFFIX, tuple._1(), tuple._1()));
 
         builder.addJavadoc("@return DeleteWithOptions<$T>", signature.entityRawClass);
 
         builder.addStatement("final Object[] partitionKeysValues = keys.toArray()")
                 .addStatement("final Object[] encodedPartitionKeyValues = encodedKeys.toArray()")
-                .addStatement("return new $T($L, $L, $L, $L, $L, $T.empty())", returnType,
-                        "entityClass", "meta", "rte", "partitionKeysValues", "encodedPartitionKeyValues", OPTIONAL)
+                .addStatement("return new $T(entityClass, meta, rte, partitionKeysValues, encodedPartitionKeyValues, $T.empty(), cassandraOptions)", returnType, OPTIONAL)
                 .returns(returnType);
 
 
@@ -209,7 +219,7 @@ public abstract class CrudAPICodeGen {
                 .addJavadoc("@return DeleteWithOptions<$T>", signature.entityRawClass)
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(signature.entityRawClass, "instance", Modifier.FINAL)
-                .addStatement("return deleteInternal($N)", "instance")
+                .addStatement("return deleteInternal($N, cassandraOptions)", "instance")
                 .returns(genericType(DELETE_WITH_OPTIONS, signature.entityRawClass))
                 .build();
     }
@@ -234,7 +244,7 @@ public abstract class CrudAPICodeGen {
                                 .addStatement("$T.validateNotNull($L, $S, $S)", VALIDATOR, tuple._1(),
                                         "Partition key '%s' should not be null", tuple._1())
                                 .addStatement("keys.add($L)", tuple._1())
-                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N))",
+                                .addStatement("encodedKeys.add($L.$L.encodeFromJava($N, cassandraOptions))",
                                         signature.className + META_SUFFIX, tuple._1(), tuple._1()));
 
 
@@ -242,8 +252,7 @@ public abstract class CrudAPICodeGen {
 
         builder.addStatement("final Object[] partitionKeys = keys.toArray()")
                 .addStatement("final Object[] encodedPartitionKeys = encodedKeys.toArray()")
-                .addStatement("return new $T($L, $L, $L, $L)", returnType,
-                        "meta", "rte", "partitionKeys", "encodedPartitionKeys")
+                .addStatement("return new $T(meta, rte, partitionKeys, encodedPartitionKeys, cassandraOptions)", returnType)
                 .returns(returnType);
 
         return builder.build();

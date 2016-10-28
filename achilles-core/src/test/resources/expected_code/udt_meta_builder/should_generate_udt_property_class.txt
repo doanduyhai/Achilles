@@ -60,16 +60,22 @@ public final class TestUDT_AchillesMeta extends info.archinnov.achilles.internal
   }
 
   @java.lang.Override
+  protected java.lang.Class<?> getParentEntityClass() {
+    return info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT.class;
+  }
+
+  @java.lang.Override
   protected java.util.List<info.archinnov.achilles.internals.metamodel.AbstractProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, ?, ?>> getComponentsProperty() {
     return java.util.Arrays.asList(name, list, map);
   }
 
   @java.lang.Override
-  protected com.datastax.driver.core.UDTValue createUDTFromBean(info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance) {
-    final com.datastax.driver.core.UDTValue udtValue = userType.newValue();
-    name.encodeFieldToUdt(instance, udtValue);
-    list.encodeFieldToUdt(instance, udtValue);
-    map.encodeFieldToUdt(instance, udtValue);
+  protected com.datastax.driver.core.UDTValue createUDTFromBean(info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance, java.util.Optional<info.archinnov.achilles.internals.options.Options> cassandraOptions) {
+    final com.datastax.driver.core.UserType dynamicUserType = this.getUserType(cassandraOptions);
+    final com.datastax.driver.core.UDTValue udtValue = dynamicUserType.newValue();
+    name.encodeFieldToUdt(instance, udtValue, cassandraOptions);
+    list.encodeFieldToUdt(instance, udtValue, cassandraOptions);
+    map.encodeFieldToUdt(instance, udtValue, cassandraOptions);
     return udtValue;
   }
 

@@ -19,6 +19,7 @@ package info.archinnov.achilles.internals.dsl.crud;
 import static info.archinnov.achilles.internals.cache.CacheKey.Operation.FIND;
 import static java.lang.String.format;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,7 @@ import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.internals.dsl.AsyncAware;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForSelect;
+import info.archinnov.achilles.internals.runtime.BeanValueExtractor;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;
@@ -55,15 +57,16 @@ public class FindWithOptions<ENTITY> extends AbstractOptionsForSelect<FindWithOp
     private final RuntimeEngine rte;
     private final Object[] primaryKeyValues;
     private final Object[] encodedPrimaryKeyValues;
-    private final Options options = new Options();
+    private final Options options;
 
     public FindWithOptions(Class<ENTITY> entityClass, AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte,
-                           Object[] primaryKeyValues, Object[] encodedPrimaryKeyValues) {
+                           Object[] primaryKeyValues, Object[] encodedPrimaryKeyValues, Optional<Options> cassandraOptions) {
         this.entityClass = entityClass;
         this.meta = meta;
         this.rte = rte;
         this.primaryKeyValues = primaryKeyValues;
         this.encodedPrimaryKeyValues = encodedPrimaryKeyValues;
+        this.options = cassandraOptions.orElse(new Options());
     }
 
     public ENTITY get() {
@@ -108,11 +111,6 @@ public class FindWithOptions<ENTITY> extends AbstractOptionsForSelect<FindWithOp
                     meta.triggerInterceptorsForEvent(Event.POST_LOAD, tuple2._1());
                     return tuple2;
                 });
-    }
-
-    public FindWithOptions<ENTITY> withSchemaNameProvider(SchemaNameProvider schemaNameProvider) {
-        options.setSchemaNameProvider(Optional.ofNullable(schemaNameProvider));
-        return this;
     }
 
     @Override

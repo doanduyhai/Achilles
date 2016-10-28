@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
@@ -51,8 +52,8 @@ public abstract class AbstractIndexSelectWhere<T extends AbstractIndexSelectWher
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIndexSelectWhere.class);
 
-    protected AbstractIndexSelectWhere(Select.Where where) {
-        super(where);
+    protected AbstractIndexSelectWhere(Select.Where where, Options cassandraOptions) {
+        super(where, cassandraOptions);
     }
 
     @Override

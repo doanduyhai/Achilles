@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internals.codegen.index;
 
+import static info.archinnov.achilles.internals.parser.TypeUtils.OPTIONAL;
 import static info.archinnov.achilles.internals.parser.TypeUtils.QUERY_BUILDER;
 import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
 
@@ -38,11 +39,11 @@ public interface SASISupport {
                 .addStatement("where.and($T.like($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
                 .addStatement("boundValues.add($N + $S)", fieldInfo.fieldName, "%")
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N + $S))", fieldInfo.fieldName, fieldInfo.fieldName, "%")
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N + $S, $T.of(cassandraOptions)))", fieldInfo.fieldName, fieldInfo.fieldName, "%", OPTIONAL)
                 .returns(nextType);
 
         if (returnType == AbstractDSLCodeGen.ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -58,11 +59,11 @@ public interface SASISupport {
                 .addStatement("where.and($T.like($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
                 .addStatement("boundValues.add($S + $N)", "%", fieldInfo.fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($S + $N))", fieldInfo.fieldName, "%", fieldInfo.fieldName)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($S + $N, $T.of(cassandraOptions)))", fieldInfo.fieldName, "%", fieldInfo.fieldName, OPTIONAL)
                 .returns(nextType);
 
         if (returnType == AbstractDSLCodeGen.ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -78,11 +79,11 @@ public interface SASISupport {
                 .addStatement("where.and($T.like($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
                 .addStatement("boundValues.add($S + $N + $S)", "%", fieldInfo.fieldName, "%")
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($S + $N + $S))", fieldInfo.fieldName, "%", fieldInfo.fieldName, "%")
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($S + $N + $S, $T.of(cassandraOptions)))", fieldInfo.fieldName, "%", fieldInfo.fieldName, "%", OPTIONAL)
                 .returns(nextType);
 
         if (returnType == AbstractDSLCodeGen.ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -98,11 +99,11 @@ public interface SASISupport {
                 .addStatement("where.and($T.like($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
                 .addStatement("boundValues.add($N)", fieldInfo.fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, fieldInfo.fieldName)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldInfo.fieldName, fieldInfo.fieldName, OPTIONAL)
                 .returns(nextType);
 
         if (returnType == AbstractDSLCodeGen.ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }

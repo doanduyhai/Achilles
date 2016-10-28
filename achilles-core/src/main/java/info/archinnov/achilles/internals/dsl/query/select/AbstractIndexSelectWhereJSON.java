@@ -50,8 +50,8 @@ public abstract class AbstractIndexSelectWhereJSON<T extends AbstractIndexSelect
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIndexSelectWhereJSON.class);
 
-    protected AbstractIndexSelectWhereJSON(Select.Where where) {
-        super(where);
+    protected AbstractIndexSelectWhereJSON(Select.Where where, Options cassandraOptions) {
+        super(where, cassandraOptions);
     }
 
     @Override

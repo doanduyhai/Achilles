@@ -30,7 +30,6 @@ public abstract class AbstractDelete implements SchemaNameAware {
 
     protected final Delete.Selection delete;
     protected final RuntimeEngine rte;
-    protected final Options options = new Options();
     protected final List<Object> boundValues = new ArrayList<>();
     protected final List<Object> encodedValues = new ArrayList<>();
 

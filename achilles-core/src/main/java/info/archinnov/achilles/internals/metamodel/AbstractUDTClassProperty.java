@@ -39,6 +39,9 @@ import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
+import info.archinnov.achilles.internals.types.OverridingOptional;
+import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -57,6 +60,7 @@ public abstract class AbstractUDTClassProperty<A>
     public final Class<A> udtClass;
     public final String udtName;
     public final List<AbstractProperty<A, ?, ?>> componentsProperty;
+    public final Class<?> parentEntityClass;
     protected BeanFactory udtFactory;
     protected UserTypeFactory userTypeFactory;
     protected UserType userType;
@@ -69,6 +73,7 @@ public abstract class AbstractUDTClassProperty<A>
         this.udtName = getUdtName();
         this.udtClass = getUdtClass();
         this.componentsProperty = getComponentsProperty();
+        this.parentEntityClass = getParentEntityClass();
     }
 
     protected abstract Optional<String> getStaticKeyspace();
@@ -83,24 +88,36 @@ public abstract class AbstractUDTClassProperty<A>
 
     protected abstract List<AbstractProperty<A, ?, ?>> getComponentsProperty();
 
+    protected abstract Class<?> getParentEntityClass();
 
-    protected abstract UDTValue createUDTFromBean(A instance);
+    protected abstract UDTValue createUDTFromBean(A instance, Optional<Options> cassandraOptions);
 
     protected abstract A createBeanFromUDT(UDTValue udtValue);
 
-    public UserType buildType() {
+    protected UserType getUserType(Optional<Options> cassandraOptions) {
+        if (cassandraOptions.isPresent()) {
+            return buildType(cassandraOptions);
+        } else {
+            return userType;
+        }
+    }
+
+    public UserType buildType(Optional<Options> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Building UserType instance for the current UDT class meta %s", this.toString()));
         }
 
-        Optional<String> keyspaceName = Optional.ofNullable(staticKeyspace.orElse(keyspace));
+        Optional<String> keyspaceName = OverridingOptional
+                .from(cassandraOptions.flatMap(Options::getSchemaNameProvider).map(x -> x.keyspaceFor(parentEntityClass)))
+                .andThen(staticKeyspace.orElse(keyspace))
+                .getOptional();
 
         Validator.validateTrue(keyspaceName.isPresent(),
                 "The keyspace name for the UDT type '%s' should be either provided by the '%s' annotation or at runtime",
                 udtClass.getCanonicalName(), UDT.class.getSimpleName());
         List<UserType.Field> fields = getComponentsProperty()
                 .stream()
-                .map(property -> userTypeFactory.fieldFor(property.fieldInfo.cqlColumn, property.buildType()))
+                .map(property -> userTypeFactory.fieldFor(property.fieldInfo.cqlColumn, property.buildType(cassandraOptions)))
                 .collect(Collectors.toList());
         return userTypeFactory.typeFor(keyspaceName.get(), udtName, fields);
     }
@@ -118,7 +135,7 @@ public abstract class AbstractUDTClassProperty<A>
         }
 
         for (AbstractProperty<A, ?, ?> x : componentsProperty) {
-            type.addColumn(x.fieldInfo.quotedCqlColumn, x.buildType());
+            type.addColumn(x.fieldInfo.quotedCqlColumn, x.buildType(Optional.empty()));
         }
 
         return type.getQueryString().replaceFirst("\t+", "") + ";";
@@ -138,7 +155,7 @@ public abstract class AbstractUDTClassProperty<A>
         for (AbstractProperty<A, ?, ?> x : componentsProperty) {
             x.inject(userTypeFactory, tupleTypeFactory);
         }
-        userType = this.buildType();
+        userType = this.buildType(Optional.empty());
     }
 
     @Override

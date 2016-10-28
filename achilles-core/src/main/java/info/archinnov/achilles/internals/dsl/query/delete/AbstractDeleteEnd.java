@@ -48,9 +48,11 @@ public abstract class AbstractDeleteEnd<T extends AbstractDeleteEnd<T, ENTITY>, 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDeleteEnd.class);
 
     protected final Delete.Where where;
+    protected final Options cassandraOptions;
 
-    protected AbstractDeleteEnd(Delete.Where where) {
+    protected AbstractDeleteEnd(Delete.Where where, Options cassandraOptions) {
         this.where = where;
+        this.cassandraOptions = cassandraOptions;
     }
 
     protected abstract List<Object> getBoundValuesInternal();

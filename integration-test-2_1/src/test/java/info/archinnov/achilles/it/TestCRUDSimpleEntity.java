@@ -297,7 +297,7 @@ public class TestCRUDSimpleEntity {
         };
 
         //When
-        manager.crud().insert(entity).withSchemaNameProvider(provider).execute();
+        manager.crud().withSchemaNameProvider(provider).insert(entity).execute();
 
         //Then
         final Row row = session.execute("SELECT * FROM " + tableName + " WHERE id = " + id).one();
@@ -389,7 +389,7 @@ public class TestCRUDSimpleEntity {
         };
 
         //When
-        final SimpleEntity actual = manager.crud().findById(id, date).withSchemaNameProvider(provider).get();
+        final SimpleEntity actual = manager.crud().withSchemaNameProvider(provider).findById(id, date).get();
 
         //Then
         assertThat(actual).isNotNull();
@@ -502,7 +502,7 @@ public class TestCRUDSimpleEntity {
         };
 
         //When
-        manager.crud().deleteById(id, date).withSchemaNameProvider(provider).execute();
+        manager.crud().withSchemaNameProvider(provider).deleteById(id, date).execute();
 
         //Then
         final Row row = session.execute("SELECT * FROM " + tableName + " WHERE id = " + id).one();

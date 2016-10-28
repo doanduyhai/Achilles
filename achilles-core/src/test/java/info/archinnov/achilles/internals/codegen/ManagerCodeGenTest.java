@@ -75,8 +75,8 @@ public class ManagerCodeGenTest extends AbstractTestProcessor {
                 Assertions.assertThat(false).as("IOException when generating class : %s", e.getMessage()).isTrue();
             }
 
-            assertThat(builder.toString().trim().replaceAll("\n", ""))
-                    .isEqualTo(readCodeLineFromFile("expected_code/manager/should_generate_manager_class_for_index_dsl.txt"));
+            assertThat(builder.toString().trim())
+                    .isEqualTo(readCodeBlockFromFile("expected_code/manager/should_generate_manager_class_for_index_dsl.txt"));
         });
         launchTest();
     }

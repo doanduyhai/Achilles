@@ -138,7 +138,7 @@ public class TestEntityWithNestedUdtIT {
         final TypedMap found = manager.dsl()
                 .select()
                 .complexUDT().value()
-                .complexUDT().udt().value()
+                .complexUDT().nestedUDT().value()
                 .udt().value()
                 .fromBaseTable()
                 .where()

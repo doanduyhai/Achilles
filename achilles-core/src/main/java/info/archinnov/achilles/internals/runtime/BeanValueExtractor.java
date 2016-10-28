@@ -55,7 +55,7 @@ public class BeanValueExtractor {
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
                     final BiConsumer<Object, SettableData> lambda = x1::encodeToSettable;
-                    return BoundValueInfo.of(lambda, x.getFieldValue(instance), x.encodeField(instance));
+                    return BoundValueInfo.of(lambda, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
                 })
                 .collect(toList());
 
@@ -65,7 +65,7 @@ public class BeanValueExtractor {
                 .stream()
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
-                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance));
+                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
                 })
                 .collect(toList()));
 
@@ -73,7 +73,7 @@ public class BeanValueExtractor {
                 .stream()
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
-                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance));
+                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
                 })
                 .collect(toList()));
 
@@ -81,7 +81,7 @@ public class BeanValueExtractor {
                 .stream()
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
-                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance));
+                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
                 })
                 .collect(toList()));
 
@@ -89,7 +89,7 @@ public class BeanValueExtractor {
                 .stream()
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
-                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance));
+                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
                 })
                 .collect(toList()));
 
@@ -108,21 +108,21 @@ public class BeanValueExtractor {
         return new BoundValuesWrapper(entityProperty, boundValues);
     }
 
-    public static <T> Tuple2<Object[], Object[]> extractPrimaryKeyValues(T instance, AbstractEntityProperty<T> entityProperty) {
+    public static <T> Tuple2<Object[], Object[]> extractPrimaryKeyValues(T instance, AbstractEntityProperty<T> entityProperty, Optional<Options> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Extract primary key values from entity %s of type %",
                     instance, entityProperty.entityClass.getCanonicalName()));
         }
 
         final Stream<Tuple2<Object, Object>> partitionKeys = entityProperty.partitionKeys
-                .stream().map(x -> Tuple2.of(x.getFieldValue(instance), x.encodeField(instance)));
+                .stream().map(x -> Tuple2.of(x.getFieldValue(instance), x.encodeField(instance, cassandraOptions)));
         final Stream<Tuple2<Object, Object>> partitionKeysCopy = entityProperty.partitionKeys
-                .stream().map(x -> Tuple2.of(x.getFieldValue(instance), x.encodeField(instance)));
+                .stream().map(x -> Tuple2.of(x.getFieldValue(instance), x.encodeField(instance, cassandraOptions)));
 
         final Stream<Tuple2<Object, Object>> clusteringColumns = entityProperty.clusteringColumns
-                .stream().map(x -> Tuple2.of(x.getFieldValue(instance), x.encodeField(instance)));
+                .stream().map(x -> Tuple2.of(x.getFieldValue(instance), x.encodeField(instance, cassandraOptions)));
         final Stream<Tuple2<Object, Object>> clusteringColumnsCopy = entityProperty.clusteringColumns
-                .stream().map(x -> Tuple2.of(x.getFieldValue(instance), x.encodeField(instance)));
+                .stream().map(x -> Tuple2.of(x.getFieldValue(instance), x.encodeField(instance, cassandraOptions)));
 
         final Object[] boundValues = addAll(partitionKeys.map(x -> x._1()).toArray(), clusteringColumns.map(x -> x._1()).toArray());
         final Object[] encodedValues = addAll(partitionKeysCopy.map(x -> x._2()).toArray(), clusteringColumnsCopy.map(x -> x._2()).toArray());
@@ -146,7 +146,7 @@ public class BeanValueExtractor {
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
                     final BiConsumer<Object, SettableData> lambda = x1::encodeToSettable;
-                    return BoundValueInfo.of(lambda, x.getFieldValue(instance), x.encodeField(instance));
+                    return BoundValueInfo.of(lambda, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
                 })
                 .collect(toList());
 
@@ -156,7 +156,7 @@ public class BeanValueExtractor {
                 .stream()
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
-                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance));
+                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
                 })
                 .collect(toList()));
 

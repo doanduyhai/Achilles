@@ -21,6 +21,7 @@ import static java.lang.String.format;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import com.datastax.driver.core.TupleValue;
 import com.google.common.reflect.TypeToken;
 
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.type.tuples.Tuple6;
 import info.archinnov.achilles.validation.Validator;
 
@@ -58,28 +60,28 @@ public class Tuple6Property<ENTITY, A, B, C, D, E, F> extends AbstractTuplePrope
     }
 
     @Override
-    TupleValue encodeFromJavaInternal(Tuple6<A, B, C, D, E, F> tuple6) {
+    TupleValue encodeFromJavaInternal(Tuple6<A, B, C, D, E, F> tuple6, Optional<Options> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode from Java '%s' tuple6 %s to CQL type", fieldName, tuple6));
         }
 
         return tupleType.newValue(
-                aProperty.encodeFromRaw(tuple6._1()),
-                bProperty.encodeFromRaw(tuple6._2()),
-                cProperty.encodeFromRaw(tuple6._3()),
-                dProperty.encodeFromRaw(tuple6._4()),
-                eProperty.encodeFromRaw(tuple6._5()),
-                fProperty.encodeFromRaw(tuple6._6()));
+                aProperty.encodeFromRaw(tuple6._1(), cassandraOptions),
+                bProperty.encodeFromRaw(tuple6._2(), cassandraOptions),
+                cProperty.encodeFromRaw(tuple6._3(), cassandraOptions),
+                dProperty.encodeFromRaw(tuple6._4(), cassandraOptions),
+                eProperty.encodeFromRaw(tuple6._5(), cassandraOptions),
+                fProperty.encodeFromRaw(tuple6._6(), cassandraOptions));
     }
 
     @Override
-    TupleValue encodeFromRawInternal(Object o) {
+    TupleValue encodeFromRawInternal(Object o, Optional<Options> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode raw '%s' tuple6 object %s", fieldName, o));
         }
 
         Validator.validateTrue(Tuple6.class.isAssignableFrom(o.getClass()), "The class of object %s to encode should be Tuple6", o);
-        return encodeFromJava((Tuple6<A, B, C, D, E, F>) o);
+        return encodeFromJava((Tuple6<A, B, C, D, E, F>) o, cassandraOptions);
     }
 
     @Override
@@ -109,18 +111,18 @@ public class Tuple6Property<ENTITY, A, B, C, D, E, F> extends AbstractTuplePrope
     }
 
     @Override
-    public TupleType buildType() {
+    public TupleType buildType(Optional<Options> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Build current '%s' tuple6 data type", fieldName));
         }
 
         return tupleTypeFactory.typeFor(
-                aProperty.buildType(),
-                bProperty.buildType(),
-                cProperty.buildType(),
-                dProperty.buildType(),
-                eProperty.buildType(),
-                fProperty.buildType());
+                aProperty.buildType(cassandraOptions),
+                bProperty.buildType(cassandraOptions),
+                cProperty.buildType(cassandraOptions),
+                dProperty.buildType(cassandraOptions),
+                eProperty.buildType(cassandraOptions),
+                fProperty.buildType(cassandraOptions));
     }
 
     @Override

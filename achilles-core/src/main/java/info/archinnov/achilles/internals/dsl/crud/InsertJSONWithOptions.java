@@ -58,14 +58,15 @@ public class InsertJSONWithOptions extends AbstractOptionsForInsert<InsertJSONWi
     private final AbstractEntityProperty<?> meta;
     private final RuntimeEngine rte;
     private final String json;
+    private final Options cassandraOptions;
     private final Object[] encodedBoundValues;
     private final List<Object> encodedBoundValuesAsList;
-    private final Options options = new Options();
 
-    public InsertJSONWithOptions(AbstractEntityProperty<?> meta, RuntimeEngine rte, String json) {
+    public InsertJSONWithOptions(AbstractEntityProperty<?> meta, RuntimeEngine rte, String json, Optional<Options> cassandraOptions) {
         this.meta = meta;
         this.rte = rte;
         this.json = json;
+        this.cassandraOptions = cassandraOptions.orElse(new Options());
         this.encodedBoundValues = new Object[]{json};
         this.encodedBoundValuesAsList = Arrays.asList(json);
     }
@@ -82,7 +83,7 @@ public class InsertJSONWithOptions extends AbstractOptionsForInsert<InsertJSONWi
         CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
 
         return cfutureRS
-                .thenApply(options::resultSetAsyncListener)
+                .thenApply(getOptions()::resultSetAsyncListener)
                 .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
@@ -91,7 +92,7 @@ public class InsertJSONWithOptions extends AbstractOptionsForInsert<InsertJSONWi
 
     @Override
     protected Options getOptions() {
-        return options;
+        return cassandraOptions;
     }
 
     @Override
@@ -113,16 +114,10 @@ public class InsertJSONWithOptions extends AbstractOptionsForInsert<InsertJSONWi
     @Override
     public List<Object> getEncodedBoundValues() {
         return encodedBoundValuesAsList;
-
     }
 
     @Override
     protected InsertJSONWithOptions getThis() {
-        return this;
-    }
-
-    public InsertJSONWithOptions withSchemaNameProvider(SchemaNameProvider schemaNameProvider) {
-        options.setSchemaNameProvider(Optional.ofNullable(schemaNameProvider));
         return this;
     }
 
@@ -135,15 +130,15 @@ public class InsertJSONWithOptions extends AbstractOptionsForInsert<InsertJSONWi
         final BoundStatement bs = ps.bind(json);
 
         StatementWrapper statementWrapper = new BoundStatementWrapper(OperationType.INSERT, meta, bs, encodedBoundValues);
-        statementWrapper.applyOptions(options);
+        statementWrapper.applyOptions(getOptions());
         return statementWrapper;
     }
 
     private PreparedStatement getInternalPreparedStatement() {
         if (ifNotExists.isPresent() && ifNotExists.get() == true) {
-            return INSERT_IF_NOT_EXISTS_JSON.getPreparedStatement(rte, meta, options);
+            return INSERT_IF_NOT_EXISTS_JSON.getPreparedStatement(rte, meta, getOptions());
         } else {
-            return INSERT_JSON.getPreparedStatement(rte, meta, options);
+            return INSERT_JSON.getPreparedStatement(rte, meta, getOptions());
         }
     }
 

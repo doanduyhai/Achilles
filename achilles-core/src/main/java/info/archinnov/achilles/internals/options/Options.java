@@ -33,6 +33,7 @@ import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.statements.OperationType;
 import info.archinnov.achilles.internals.types.LimitedResultSetWrapper;
 import info.archinnov.achilles.type.SchemaNameProvider;
+import info.archinnov.achilles.validation.Validator;
 
 public class Options {
 
@@ -57,6 +58,12 @@ public class Options {
 
     public Options() {}
 
+    public static Options withSchemaNameProvider(SchemaNameProvider schemaNameProvider) {
+        final Options options = new Options();
+        Validator.validateNotNull(schemaNameProvider, "The provided schemaNameProvider should not be null");
+        options.setSchemaNameProvider(Optional.of(schemaNameProvider));
+        return options;
+    }
 
     public void appendToSolrQuery(String solrQuery) {
         if (!dseSearchSolrQuery.isPresent()) {

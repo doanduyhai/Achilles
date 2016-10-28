@@ -87,7 +87,7 @@ public class ScriptExecutor {
         final List<SimpleStatement> statements = buildStatements(loadScriptAsLines(scriptTemplateLocation, values));
         for (SimpleStatement statement : statements) {
             if (isDMLStatement(statement)) {
-                DML_LOGGER.debug("\tSCRIPT : {}", statement.getQueryString());
+                DML_LOGGER.debug("\tSCRIPT : {}\n", statement.getQueryString());
             } else {
                 DDL_LOGGER.debug("\tSCRIPT : {}\n", statement.getQueryString());
             }

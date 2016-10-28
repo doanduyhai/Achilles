@@ -42,11 +42,11 @@ public interface BaseSingleColumnRestriction {
                 .addStatement("where.and($T.$L($S, $T.bindMarker($S)))",
                         QUERY_BUILDER, relation, fieldInfo.quotedCqlColumn, QUERY_BUILDER, fieldInfo.quotedCqlColumn)
                 .addStatement("boundValues.add($N)", fieldInfo.fieldName)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, fieldInfo.fieldName)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldInfo.fieldName, fieldInfo.fieldName, OPTIONAL)
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -71,12 +71,12 @@ public interface BaseSingleColumnRestriction {
 
         if (paramTypeName.isPrimitive()) {
             builder.addStatement("final $T varargs = $T.<Object>asList(($T[])$L)", LIST_OBJECT, ARRAYS, paramTypeName, param)
-                    .addStatement("final $T encodedVarargs = $T.stream(($T[])$L).mapToObj(x -> meta.$L.encodeFromJava(x)).collect($T.toList())",
-                            LIST_OBJECT, ARRAYS, paramTypeName, param, param, COLLECTORS);
+                    .addStatement("final $T encodedVarargs = $T.stream(($T[])$L).mapToObj(x -> meta.$L.encodeFromJava(x, $T.of(cassandraOptions))).collect($T.toList())",
+                            LIST_OBJECT, ARRAYS, paramTypeName, param, param, OPTIONAL, COLLECTORS);
         } else {
             builder.addStatement("final $T varargs = $T.<Object>asList((Object[])$L)", LIST_OBJECT, ARRAYS, param)
-                    .addStatement("final $T encodedVarargs = $T.<$T>stream(($T[])$L).map(x -> meta.$L.encodeFromJava(x)).collect($T.toList())",
-                            LIST_OBJECT, ARRAYS, paramTypeName, paramTypeName, param, param, COLLECTORS);
+                    .addStatement("final $T encodedVarargs = $T.<$T>stream(($T[])$L).map(x -> meta.$L.encodeFromJava(x, $T.of(cassandraOptions))).collect($T.toList())",
+                            LIST_OBJECT, ARRAYS, paramTypeName, paramTypeName, param, param, OPTIONAL, COLLECTORS);
         }
 
         builder.addStatement("boundValues.add(varargs)")
@@ -84,7 +84,7 @@ public interface BaseSingleColumnRestriction {
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }

@@ -116,13 +116,13 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
                 .addStatement("where.and($T.$L($S,$T.bindMarker($S)))",
                         QUERY_BUILDER, relation2, fieldInfo.quotedCqlColumn, QUERY_BUILDER, column2)
                 .addStatement("boundValues.add($L)", param1)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, param1)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldInfo.fieldName, param1, OPTIONAL)
                 .addStatement("boundValues.add($L)", param2)
-                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N))", fieldInfo.fieldName, param2)
+                .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldInfo.fieldName, param2, OPTIONAL)
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -155,13 +155,13 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
         for(FieldSignatureInfo x: fieldInfos) {
             builder.addParameter(x.typeName, x.fieldName, Modifier.FINAL)
                     .addStatement("boundValues.add($L)", x.fieldName)
-                    .addStatement("encodedValues.add(meta.$L.encodeFromJava($L))", x.fieldName, x.fieldName);
+                    .addStatement("encodedValues.add(meta.$L.encodeFromJava($L, $T.of(cassandraOptions)))", x.fieldName, x.fieldName, OPTIONAL);
         }
 
         builder.returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -201,20 +201,20 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
             final String relation1Param = x.fieldName + "_" + upperCaseFirst(relation1);
             builder.addParameter(x.typeName, relation1Param, Modifier.FINAL)
                     .addStatement("boundValues.add($L)", relation1Param)
-                    .addStatement("encodedValues.add(meta.$L.encodeFromJava($L))", x.fieldName, relation1Param);
+                    .addStatement("encodedValues.add(meta.$L.encodeFromJava($L, $T.of(cassandraOptions)))", x.fieldName, relation1Param, OPTIONAL);
         }
 
         for(FieldSignatureInfo x: fieldInfos) {
             final String relation2Param = x.fieldName + "_" + upperCaseFirst(relation2);
             builder.addParameter(x.typeName, relation2Param, Modifier.FINAL)
                     .addStatement("boundValues.add($L)", relation2Param)
-                    .addStatement("encodedValues.add(meta.$L.encodeFromJava($L))", x.fieldName, relation2Param);
+                    .addStatement("encodedValues.add(meta.$L.encodeFromJava($L, $T.of(cassandraOptions)))", x.fieldName, relation2Param, OPTIONAL);
         }
 
         builder.returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }
@@ -266,21 +266,21 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
             final String relation1Param = x.fieldName + "_" + upperCaseFirst(relation1);
             builder.addParameter(x.typeName, relation1Param, Modifier.FINAL)
                     .addStatement("boundValues.add($L)", relation1Param)
-                    .addStatement("encodedValues.add(meta.$L.encodeFromJava($L))", x.fieldName, relation1Param);
+                    .addStatement("encodedValues.add(meta.$L.encodeFromJava($L, $T.of(cassandraOptions)))", x.fieldName, relation1Param, OPTIONAL);
         }
 
         for(FieldSignatureInfo x: fieldInfos2) {
             final String relation2Param = x.fieldName + "_" + upperCaseFirst(relation2);
             builder.addParameter(x.typeName, relation2Param, Modifier.FINAL)
                     .addStatement("boundValues.add($L)", relation2Param)
-                    .addStatement("encodedValues.add(meta.$L.encodeFromJava($L))", x.fieldName, relation2Param);
+                    .addStatement("encodedValues.add(meta.$L.encodeFromJava($L, $T.of(cassandraOptions)))", x.fieldName, relation2Param, OPTIONAL);
         }
 
 
         builder.returns(nextType);
 
         if (returnType == ReturnType.NEW) {
-            builder.addStatement("return new $T(where)", nextType);
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
         } else {
             builder.addStatement("return $T.this", nextType);
         }

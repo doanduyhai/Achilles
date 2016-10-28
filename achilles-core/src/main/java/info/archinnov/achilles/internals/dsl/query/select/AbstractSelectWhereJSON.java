@@ -56,9 +56,11 @@ public abstract class AbstractSelectWhereJSON<T extends AbstractSelectWhereJSON<
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSelectWhereJSON.class);
 
     protected final Select.Where where;
+    protected final Options cassandraOptions;
 
-    protected AbstractSelectWhereJSON(Select.Where where) {
+    protected AbstractSelectWhereJSON(Select.Where where, Options cassandraOptions) {
         this.where = where;
+        this.cassandraOptions = cassandraOptions;
     }
 
     protected abstract List<Object> getBoundValuesInternal();

@@ -1,1 +1,220 @@
-package info.archinnov.achilles.generated;import com.datastax.driver.core.BoundStatement;import com.datastax.driver.core.PreparedStatement;import com.datastax.driver.core.RegularStatement;import info.archinnov.achilles.generated.dsl.TestEntityWithSASI_Delete;import info.archinnov.achilles.generated.dsl.TestEntityWithSASI_Select;import info.archinnov.achilles.generated.dsl.TestEntityWithSASI_SelectIndex;import info.archinnov.achilles.generated.dsl.TestEntityWithSASI_Update;import info.archinnov.achilles.generated.meta.entity.TestEntityWithSASI_AchillesMeta;import info.archinnov.achilles.internals.dsl.crud.DeleteWithOptions;import info.archinnov.achilles.internals.dsl.crud.FindWithOptions;import info.archinnov.achilles.internals.dsl.crud.InsertJSONWithOptions;import info.archinnov.achilles.internals.dsl.crud.InsertWithOptions;import info.archinnov.achilles.internals.dsl.raw.NativeQuery;import info.archinnov.achilles.internals.dsl.raw.TypedQuery;import info.archinnov.achilles.internals.runtime.AbstractManager;import info.archinnov.achilles.internals.runtime.RuntimeEngine;import info.archinnov.achilles.internals.sample_classes.manager.TestEntityWithSASI;import info.archinnov.achilles.validation.Validator;import java.lang.Class;import java.lang.Long;import java.lang.Object;import java.lang.String;import java.util.ArrayList;import java.util.List;import java.util.Optional;public final class TestEntityWithSASI_Manager extends AbstractManager<TestEntityWithSASI> {  public final TestEntityWithSASI_AchillesMeta meta;  public TestEntityWithSASI_Manager(final Class<TestEntityWithSASI> entityClass, final TestEntityWithSASI_AchillesMeta meta, final RuntimeEngine rte) {    super(entityClass, meta, rte);    this.meta = meta;  }  /**   * Provide CRUD operations: <br/>    * <ul>   *    <li>FIND BY ID</li>   *    <li>INSERT</li>   *    <li>INSERT STATIC</li>   *    <li>INSERT IF NOT EXISTS</li>   *    <li>DELETE BY ID</li>   *    <li>DELETE BY ID IF NOT EXISTS</li>   *    <li>DELETE BY PARTITION</li>   * </ul>   */  public final info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_CRUD crud() {    return new info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_CRUD();  }  /**   * Provide DSL methods: <br/>   * <ul>   *    <li>SELECT</li>   *    <li>ITERATION ON SELECT</li>   *    <li>UPDATE</li>   *    <li>DELETE</li>   * </ul>   */  public final info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_DSL dsl() {    return new info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_DSL();  }  /**   * Provide Raw query methods: <br/>   * <ul>   *    <li>Typed Queries (for SELECT only)</li>   *    <li>Native Queries (for any kind of statement)</li>   * </ul>   */  public final info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_RAW_QUERY raw() {    return new info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_RAW_QUERY();  }  /**   * Provide INDEX query methods: <br/>   * <ul>   *    <li>SELECT</li>   *    <li>ITERATION ON SELECT</li>   * </ul>   */  public final info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_INDEX indexed() {    return new info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_INDEX();  }  public final class TestEntityWithSASI_INDEX {    /**     * Generate a <strong>SELECT</strong> statement@return TestEntityWithSASI_SelectIndex */    public final TestEntityWithSASI_SelectIndex select() {      return new TestEntityWithSASI_SelectIndex(rte, meta);    }  }  public final class TestEntityWithSASI_CRUD {    /**     * Find an entity by its complete primary key@param id partition key 'id'@return FindWithOptions<TestEntityWithSASI> */    public FindWithOptions<TestEntityWithSASI> findById(final Long id) {      List<Object> keys = new ArrayList<>();      List<Object> encodedKeys = new ArrayList<>();      Validator.validateNotNull(id, "Partition key '%s' should not be null", "id");      keys.add(id);      encodedKeys.add(TestEntityWithSASI_AchillesMeta.id.encodeFromJava(id));      final Object[] primaryKeyValues = keys.toArray();      final Object[] encodedPrimaryKeyValues = encodedKeys.toArray();      return new FindWithOptions<TestEntityWithSASI>(entityClass, meta, rte, primaryKeyValues, encodedPrimaryKeyValues);    }    /**     * Delete an entity instance by extracting its primary keyRemark: <strong>Achilles will throw an exception if any column being part of the primary key is NULL</strong>@param an instance of TestEntityWithSASI to be delete@return DeleteWithOptions<TestEntityWithSASI> */    public DeleteWithOptions<TestEntityWithSASI> delete(final TestEntityWithSASI instance) {      return deleteInternal(instance);    }    /**     * Delete an entity using its complete primary key@param id partition key 'id'@return DeleteWithOptions<TestEntityWithSASI> */    public DeleteWithOptions<TestEntityWithSASI> deleteById(final Long id) {      List<Object> keys = new ArrayList<>();      List<Object> encodedKeys = new ArrayList<>();      Validator.validateNotNull(id, "Partition key '%s' should not be null", "id");      keys.add(id);      encodedKeys.add(TestEntityWithSASI_AchillesMeta.id.encodeFromJava(id));      final Object[] partitionKeysValues = keys.toArray();      final Object[] encodedPartitionKeyValues = encodedKeys.toArray();      return new DeleteWithOptions<TestEntityWithSASI>(entityClass, meta, rte, partitionKeysValues, encodedPartitionKeyValues, Optional.empty());    }    /**     * Insert this entity     *     * @param instance an instance of TestEntityWithSASI     * @return InsertWithOptions<TestEntityWithSASI> */    public final InsertWithOptions<TestEntityWithSASI> insert(final TestEntityWithSASI instance) {      return insertInternal(instance, false);    }    /**     * Insert using a JSON payload     *     * @json the JSON string representing an instance of TestEntityWithSASI     * @return InsertJSONWithOptions */    public final InsertJSONWithOptions insertJSON(final String json) {      return insertJSONInternal(json);    }  }  public final class TestEntityWithSASI_DSL {    /**     * Generate a <strong>SELECT</strong> statement@return TestEntityWithSASI_Select */    public final TestEntityWithSASI_Select select() {      return new TestEntityWithSASI_Select(rte, meta);    }    /**     * Generate a <strong>DELETE</strong> statement@return TestEntityWithSASI_Delete */    public final TestEntityWithSASI_Delete delete() {      return new TestEntityWithSASI_Delete(rte, meta);    }    /**     * Generate an <strong>UPDATE</strong> statement@return TestEntityWithSASI_Update */    public final TestEntityWithSASI_Update update() {      return new TestEntityWithSASI_Update(rte, meta);    }  }  public final class TestEntityWithSASI_RAW_QUERY {    /**     * Execute the bound statement and map the result back into an instance of TestEntityWithSASI <br/>     * Remark: the bound statement should be a <strong>SELECT</strong> statement@param boundStatement a bound statement@return TypedQuery<TestEntityWithSASI> */    public final TypedQuery<TestEntityWithSASI> typedQueryForSelect(BoundStatement boundStatement) {      return typedQueryForSelectInternal(boundStatement);    }    /**     * Execute the prepared statement and map the result back into an instance of TestEntityWithSASI <br/>     * Remark: the prepared statement should be a <strong>SELECT</strong> statement@param preparedStatement a prepared statement@return TypedQuery<TestEntityWithSASI> */    public final TypedQuery<TestEntityWithSASI> typedQueryForSelect(PreparedStatement preparedStatement, Object... encodedBoundValues) {      return typedQueryForSelectInternal(preparedStatement, encodedBoundValues);    }    /**     * Execute the regular statement and map the result back into an instance of TestEntityWithSASI <br/>     * Remark: the regular statement should be a <strong>SELECT</strong> statement@param regularStatement a regular statement@return TypedQuery<TestEntityWithSASI> */    public final TypedQuery<TestEntityWithSASI> typedQueryForSelect(RegularStatement regularStatement, Object... encodedBoundValues) {      return typedQueryForSelectInternal(regularStatement, encodedBoundValues);    }    /**     * Execute the native bound statement@param boundStatement a bound statement@return NativeQuery */    public final NativeQuery nativeQuery(BoundStatement boundStatement) {      return nativeQueryInternal(boundStatement);    }    /**     * Execute the native prepared statement@param preparedStatement a prepared statement@return NativeQuery */    public final NativeQuery nativeQuery(PreparedStatement preparedStatement, Object... encodedBoundValues) {      return nativeQueryInternal(preparedStatement, encodedBoundValues);    }    /**     * Execute the native regular statement@param regularStatement a regular statement@return NativeQuery */    public final NativeQuery nativeQuery(RegularStatement regularStatement, Object... encodedBoundValues) {      return nativeQueryInternal(regularStatement, encodedBoundValues);    }  }}
+package info.archinnov.achilles.generated;
+
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
+import info.archinnov.achilles.generated.dsl.TestEntityWithSASI_Delete;
+import info.archinnov.achilles.generated.dsl.TestEntityWithSASI_Select;
+import info.archinnov.achilles.generated.dsl.TestEntityWithSASI_SelectIndex;
+import info.archinnov.achilles.generated.dsl.TestEntityWithSASI_Update;
+import info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_CRUD;
+import info.archinnov.achilles.generated.meta.entity.TestEntityWithSASI_AchillesMeta;
+import info.archinnov.achilles.internals.dsl.crud.DeleteWithOptions;
+import info.archinnov.achilles.internals.dsl.crud.FindWithOptions;
+import info.archinnov.achilles.internals.dsl.crud.InsertJSONWithOptions;
+import info.archinnov.achilles.internals.dsl.crud.InsertWithOptions;
+import info.archinnov.achilles.internals.dsl.raw.NativeQuery;
+import info.archinnov.achilles.internals.dsl.raw.TypedQuery;
+import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.runtime.AbstractManager;
+import info.archinnov.achilles.internals.runtime.RuntimeEngine;
+import info.archinnov.achilles.internals.sample_classes.manager.TestEntityWithSASI;
+import info.archinnov.achilles.type.SchemaNameProvider;
+import info.archinnov.achilles.validation.Validator;
+import java.lang.Class;
+import java.lang.Long;
+import java.lang.Object;
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public final class TestEntityWithSASI_Manager extends AbstractManager<TestEntityWithSASI> {
+  public final TestEntityWithSASI_AchillesMeta meta;
+
+  public TestEntityWithSASI_Manager(final Class<TestEntityWithSASI> entityClass, final TestEntityWithSASI_AchillesMeta meta, final RuntimeEngine rte) {
+    super(entityClass, meta, rte);
+    this.meta = meta;
+  }
+
+  /**
+   * Provide CRUD operations: <br/>
+   * <ul>
+   *    <li>FIND BY ID</li>
+   *    <li>INSERT</li>
+   *    <li>INSERT STATIC</li>
+   *    <li>INSERT IF NOT EXISTS</li>
+   *    <li>DELETE BY ID</li>
+   *    <li>DELETE BY ID IF NOT EXISTS</li>
+   *    <li>DELETE BY PARTITION</li>
+   * </ul>
+   */
+  public final info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_CRUD crud() {
+    return new info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_CRUD();
+  }
+
+  /**
+   * Provide DSL methods: <br/>
+   * <ul>
+   *    <li>SELECT</li>
+   *    <li>ITERATION ON SELECT</li>
+   *    <li>UPDATE</li>
+   *    <li>DELETE</li>
+   * </ul>
+   */
+  public final info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_DSL dsl() {
+    return new info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_DSL();
+  }
+
+  /**
+   * Provide Raw query methods: <br/>
+   * <ul>
+   *    <li>Typed Queries (for SELECT only)</li>
+   *    <li>Native Queries (for any kind of statement)</li>
+   * </ul>
+   */
+  public final info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_RAW_QUERY raw() {
+    return new info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_RAW_QUERY();
+  }
+
+  /**
+   * Provide INDEX query methods: <br/>
+   * <ul>
+   *    <li>SELECT</li>
+   *    <li>ITERATION ON SELECT</li>
+   * </ul>
+   */
+  public final info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_INDEX indexed() {
+    return new info.archinnov.achilles.generated.manager.TestEntityWithSASI_Manager.TestEntityWithSASI_INDEX();
+  }
+
+  public final class TestEntityWithSASI_INDEX {
+    /**
+     * Generate a <strong>SELECT</strong> statement@return TestEntityWithSASI_SelectIndex */
+    public final TestEntityWithSASI_SelectIndex select() {
+      return new TestEntityWithSASI_SelectIndex(rte, meta);
+    }
+  }
+
+  public final class TestEntityWithSASI_CRUD {
+    private Optional<Options> cassandraOptions = Optional.empty();
+    ;
+
+    public TestEntityWithSASI_Manager.TestEntityWithSASI_CRUD withSchemaNameProvider(final SchemaNameProvider schemaNameProvider) {
+      Validator.validateNotNull(schemaNameProvider,"The provided schemaNameProvider should not be null");
+      this.cassandraOptions = Optional.of(Options.withSchemaNameProvider(schemaNameProvider));
+      return this;
+    }
+
+    /**
+     * Find an entity by its complete primary key@param id partition key 'id'@return FindWithOptions<TestEntityWithSASI> */
+    public FindWithOptions<TestEntityWithSASI> findById(final Long id) {
+      List<Object> keys = new ArrayList<>();
+      List<Object> encodedKeys = new ArrayList<>();
+      Validator.validateNotNull(id, "Partition key '%s' should not be null", "id");
+      keys.add(id);
+      encodedKeys.add(TestEntityWithSASI_AchillesMeta.id.encodeFromJava(id, cassandraOptions));
+      final Object[] primaryKeyValues = keys.toArray();
+      final Object[] encodedPrimaryKeyValues = encodedKeys.toArray();
+      return new FindWithOptions<TestEntityWithSASI>(entityClass, meta, rte, primaryKeyValues, encodedPrimaryKeyValues, cassandraOptions);
+    }
+
+    /**
+     * Delete an entity instance by extracting its primary keyRemark: <strong>Achilles will throw an exception if any column being part of the primary key is NULL</strong>@param an instance of TestEntityWithSASI to be delete@return DeleteWithOptions<TestEntityWithSASI> */
+    public DeleteWithOptions<TestEntityWithSASI> delete(final TestEntityWithSASI instance) {
+      return deleteInternal(instance, cassandraOptions);
+    }
+
+    /**
+     * Delete an entity using its complete primary key@param id partition key 'id'@return DeleteWithOptions<TestEntityWithSASI> */
+    public DeleteWithOptions<TestEntityWithSASI> deleteById(final Long id) {
+      List<Object> keys = new ArrayList<>();
+      List<Object> encodedKeys = new ArrayList<>();
+      Validator.validateNotNull(id, "Partition key '%s' should not be null", "id");
+      keys.add(id);
+      encodedKeys.add(TestEntityWithSASI_AchillesMeta.id.encodeFromJava(id, cassandraOptions));
+      final Object[] partitionKeysValues = keys.toArray();
+      final Object[] encodedPartitionKeyValues = encodedKeys.toArray();
+      return new DeleteWithOptions<TestEntityWithSASI>(entityClass, meta, rte, partitionKeysValues, encodedPartitionKeyValues, Optional.empty(), cassandraOptions);
+    }
+
+    /**
+     * Insert this entity
+     *
+     * @param instance an instance of TestEntityWithSASI
+     * @return InsertWithOptions<TestEntityWithSASI> */
+    public final InsertWithOptions<TestEntityWithSASI> insert(final TestEntityWithSASI instance) {
+      return insertInternal(instance, false, cassandraOptions);
+    }
+
+    /**
+     * Insert using a JSON payload
+     *
+     * @json the JSON string representing an instance of TestEntityWithSASI
+     * @return InsertJSONWithOptions */
+    public final InsertJSONWithOptions insertJSON(final String json) {
+      return insertJSONInternal(json, cassandraOptions);
+    }
+  }
+
+  public final class TestEntityWithSASI_DSL {
+    /**
+     * Generate a <strong>SELECT</strong> statement@return TestEntityWithSASI_Select */
+    public final TestEntityWithSASI_Select select() {
+      return new TestEntityWithSASI_Select(rte, meta);
+    }
+
+    /**
+     * Generate a <strong>DELETE</strong> statement@return TestEntityWithSASI_Delete */
+    public final TestEntityWithSASI_Delete delete() {
+      return new TestEntityWithSASI_Delete(rte, meta);
+    }
+
+    /**
+     * Generate an <strong>UPDATE</strong> statement@return TestEntityWithSASI_Update */
+    public final TestEntityWithSASI_Update update() {
+      return new TestEntityWithSASI_Update(rte, meta);
+    }
+  }
+
+  public final class TestEntityWithSASI_RAW_QUERY {
+    /**
+     * Execute the bound statement and map the result back into an instance of TestEntityWithSASI <br/>
+     * Remark: the bound statement should be a <strong>SELECT</strong> statement@param boundStatement a bound statement@return TypedQuery<TestEntityWithSASI> */
+    public final TypedQuery<TestEntityWithSASI> typedQueryForSelect(BoundStatement boundStatement) {
+      return typedQueryForSelectInternal(boundStatement);
+    }
+
+    /**
+     * Execute the prepared statement and map the result back into an instance of TestEntityWithSASI <br/>
+     * Remark: the prepared statement should be a <strong>SELECT</strong> statement@param preparedStatement a prepared statement@return TypedQuery<TestEntityWithSASI> */
+    public final TypedQuery<TestEntityWithSASI> typedQueryForSelect(PreparedStatement preparedStatement, Object... encodedBoundValues) {
+      return typedQueryForSelectInternal(preparedStatement, encodedBoundValues);
+    }
+
+    /**
+     * Execute the regular statement and map the result back into an instance of TestEntityWithSASI <br/>
+     * Remark: the regular statement should be a <strong>SELECT</strong> statement@param regularStatement a regular statement@return TypedQuery<TestEntityWithSASI> */
+    public final TypedQuery<TestEntityWithSASI> typedQueryForSelect(RegularStatement regularStatement, Object... encodedBoundValues) {
+      return typedQueryForSelectInternal(regularStatement, encodedBoundValues);
+    }
+
+    /**
+     * Execute the native bound statement@param boundStatement a bound statement@return NativeQuery */
+    public final NativeQuery nativeQuery(BoundStatement boundStatement) {
+      return nativeQueryInternal(boundStatement);
+    }
+
+    /**
+     * Execute the native prepared statement@param preparedStatement a prepared statement@return NativeQuery */
+    public final NativeQuery nativeQuery(PreparedStatement preparedStatement, Object... encodedBoundValues) {
+      return nativeQueryInternal(preparedStatement, encodedBoundValues);
+    }
+
+    /**
+     * Execute the native regular statement@param regularStatement a regular statement@return NativeQuery */
+    public final NativeQuery nativeQuery(RegularStatement regularStatement, Object... encodedBoundValues) {
+      return nativeQueryInternal(regularStatement, encodedBoundValues);
+    }
+  }
+}

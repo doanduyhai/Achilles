@@ -49,6 +49,7 @@ import java.lang.String;
 import java.lang.SuppressWarnings;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -166,7 +167,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
    * Generate ... * FROM ... */
   public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom allColumns_FromBaseTable() {
     final Select.Where where = select.all().from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
-    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where);
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, new Options());
   }
 
   /**
@@ -175,7 +176,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
     final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
     final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
     final Select.Where where = select.all().from(currentKeyspace, currentTable).where();
-    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where);
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, Options.withSchemaNameProvider(schemaNameProvider));
   }
 
   public class TestEntityWithUDTAsClustering_SelectColumns extends AbstractSelectColumns {
@@ -287,7 +288,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
      * Generate a ... <strong>FROM xxx</strong> ...  */
     public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom fromBaseTable() {
       final Select.Where where = selection.from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where);
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, new Options());
     }
 
     /**
@@ -296,7 +297,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
       final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
       final Select.Where where = selection.from(currentKeyspace, currentTable).where();
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where);
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, Options.withSchemaNameProvider(schemaNameProvider));
     }
 
     public class Clust_UDT {
@@ -455,7 +456,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
      * Generate a ... <strong>FROM xxx</strong> ...  */
     public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap fromBaseTable() {
       final Select.Where where = selection.from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap(where);
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap(where, new Options());
     }
 
     /**
@@ -464,7 +465,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
       final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
       final Select.Where where = selection.from(currentKeyspace, currentTable).where();
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap(where);
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap(where, Options.withSchemaNameProvider(schemaNameProvider));
     }
 
     public class Clust_UDT {
@@ -515,38 +516,38 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
   }
 
   public class TestEntityWithUDTAsClustering_SelectFrom extends AbstractSelectFrom {
-    TestEntityWithUDTAsClustering_SelectFrom(Select.Where where) {
-      super(where);
+    TestEntityWithUDTAsClustering_SelectFrom(Select.Where where, Options cassandraOptions) {
+      super(where, cassandraOptions);
     }
 
     /**
      * Generate a SELECT ... FROM ... <strong>WHERE</strong> ... */
     public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Id where() {
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Id(where);
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Id(where, cassandraOptions);
     }
 
     /**
      * Generate a SELECT statement <strong>without</strong> the <strong>WHERE</strong> clause */
     public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd without_WHERE_Clause() {
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where, cassandraOptions);
     }
   }
 
   public class TestEntityWithUDTAsClustering_SelectFromTypedMap extends AbstractSelectFromTypeMap {
-    TestEntityWithUDTAsClustering_SelectFromTypedMap(Select.Where where) {
-      super(where);
+    TestEntityWithUDTAsClustering_SelectFromTypedMap(Select.Where where, Options cassandraOptions) {
+      super(where, cassandraOptions);
     }
 
     /**
      * Generate a SELECT ... FROM ... <strong>WHERE</strong> ... */
     public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id where() {
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id(where);
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id(where, cassandraOptions);
     }
 
     /**
      * Generate a SELECT statement <strong>without</strong> the <strong>WHERE</strong> clause */
     public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap without_WHERE_Clause() {
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where, cassandraOptions);
     }
   }
 
@@ -597,8 +598,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
   }
 
   public final class TestEntityWithUDTAsClustering_SelectWhere_Id extends AbstractSelectWherePartition {
-    public TestEntityWithUDTAsClustering_SelectWhere_Id(Select.Where where) {
-      super(where);
+    public TestEntityWithUDTAsClustering_SelectWhere_Id(Select.Where where, Options cassandraOptions) {
+      super(where, cassandraOptions);
     }
 
     public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Id.Relation id() {
@@ -612,8 +613,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust Eq(Long id) {
         where.and(QueryBuilder.eq("id", QueryBuilder.bindMarker("id")));
         boundValues.add(id);
-        encodedValues.add(meta.id.encodeFromJava(id));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust(where);
+        encodedValues.add(meta.id.encodeFromJava(id, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust(where, cassandraOptions);
       }
 
       /**
@@ -623,17 +624,17 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         Validator.validateTrue(ArrayUtils.isNotEmpty(id), "Varargs for field '%s' should not be null/empty", "id");
         where.and(QueryBuilder.in("id",QueryBuilder.bindMarker("id")));
         final List<Object> varargs = Arrays.<Object>asList((Object[])id);
-        final List<Object> encodedVarargs = Arrays.<Long>stream((Long[])id).map(x -> meta.id.encodeFromJava(x)).collect(Collectors.toList());
+        final List<Object> encodedVarargs = Arrays.<Long>stream((Long[])id).map(x -> meta.id.encodeFromJava(x, Optional.of(cassandraOptions))).collect(Collectors.toList());
         boundValues.add(varargs);
         encodedValues.add(encodedVarargs);
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust(where);
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust(where, cassandraOptions);
       }
     }
   }
 
   public final class TestEntityWithUDTAsClustering_SelectWhere_Clust extends AbstractSelectWhere<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust, TestEntityWithUDTAsClustering> {
-    public TestEntityWithUDTAsClustering_SelectWhere_Clust(Select.Where where) {
-      super(where);
+    public TestEntityWithUDTAsClustering_SelectWhere_Clust(Select.Where where, Options cassandraOptions) {
+      super(where, cassandraOptions);
     }
 
     @Override
@@ -658,7 +659,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
 
     @Override
     protected final Options getOptions() {
-      return options;
+      return cassandraOptions;
     }
 
     @Override
@@ -705,8 +706,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Eq(TestUDTWithNoKeyspace clust) {
         where.and(QueryBuilder.eq("clust", QueryBuilder.bindMarker("clust")));
         boundValues.add(clust);
-        encodedValues.add(meta.clust.encodeFromJava(clust));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where, cassandraOptions);
       }
 
       /**
@@ -716,10 +717,10 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         Validator.validateTrue(ArrayUtils.isNotEmpty(clust), "Varargs for field '%s' should not be null/empty", "clust");
         where.and(QueryBuilder.in("clust",QueryBuilder.bindMarker("clust")));
         final List<Object> varargs = Arrays.<Object>asList((Object[])clust);
-        final List<Object> encodedVarargs = Arrays.<TestUDTWithNoKeyspace>stream((TestUDTWithNoKeyspace[])clust).map(x -> meta.clust.encodeFromJava(x)).collect(Collectors.toList());
+        final List<Object> encodedVarargs = Arrays.<TestUDTWithNoKeyspace>stream((TestUDTWithNoKeyspace[])clust).map(x -> meta.clust.encodeFromJava(x, Optional.of(cassandraOptions))).collect(Collectors.toList());
         boundValues.add(varargs);
         encodedValues.add(encodedVarargs);
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where, cassandraOptions);
       }
 
       /**
@@ -728,8 +729,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Gt(TestUDTWithNoKeyspace clust) {
         where.and(QueryBuilder.gt("clust", QueryBuilder.bindMarker("clust")));
         boundValues.add(clust);
-        encodedValues.add(meta.clust.encodeFromJava(clust));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where, cassandraOptions);
       }
 
       /**
@@ -738,8 +739,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Gte(TestUDTWithNoKeyspace clust) {
         where.and(QueryBuilder.gte("clust", QueryBuilder.bindMarker("clust")));
         boundValues.add(clust);
-        encodedValues.add(meta.clust.encodeFromJava(clust));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where, cassandraOptions);
       }
 
       /**
@@ -748,8 +749,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Lt(TestUDTWithNoKeyspace clust) {
         where.and(QueryBuilder.lt("clust", QueryBuilder.bindMarker("clust")));
         boundValues.add(clust);
-        encodedValues.add(meta.clust.encodeFromJava(clust));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where, cassandraOptions);
       }
 
       /**
@@ -758,8 +759,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd Lte(TestUDTWithNoKeyspace clust) {
         where.and(QueryBuilder.lte("clust", QueryBuilder.bindMarker("clust")));
         boundValues.add(clust);
-        encodedValues.add(meta.clust.encodeFromJava(clust));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where, cassandraOptions);
       }
 
       /**
@@ -769,10 +770,10 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         where.and(QueryBuilder.gt("clust",QueryBuilder.bindMarker("clust_Lt")));
         where.and(QueryBuilder.lt("clust",QueryBuilder.bindMarker("clust_Lt")));
         boundValues.add(clust_Gt);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Gt));
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gt, Optional.of(cassandraOptions)));
         boundValues.add(clust_Lt);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Lt));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lt, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where, cassandraOptions);
       }
 
       /**
@@ -782,10 +783,10 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         where.and(QueryBuilder.gt("clust",QueryBuilder.bindMarker("clust_Lte")));
         where.and(QueryBuilder.lte("clust",QueryBuilder.bindMarker("clust_Lte")));
         boundValues.add(clust_Gt);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Gt));
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gt, Optional.of(cassandraOptions)));
         boundValues.add(clust_Lte);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Lte));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lte, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where, cassandraOptions);
       }
 
       /**
@@ -795,10 +796,10 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         where.and(QueryBuilder.gte("clust",QueryBuilder.bindMarker("clust_Lt")));
         where.and(QueryBuilder.lt("clust",QueryBuilder.bindMarker("clust_Lt")));
         boundValues.add(clust_Gte);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Gte));
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gte, Optional.of(cassandraOptions)));
         boundValues.add(clust_Lt);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Lt));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lt, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where, cassandraOptions);
       }
 
       /**
@@ -808,17 +809,17 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         where.and(QueryBuilder.gte("clust",QueryBuilder.bindMarker("clust_Lte")));
         where.and(QueryBuilder.lte("clust",QueryBuilder.bindMarker("clust_Lte")));
         boundValues.add(clust_Gte);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Gte));
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gte, Optional.of(cassandraOptions)));
         boundValues.add(clust_Lte);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Lte));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lte, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd(where, cassandraOptions);
       }
     }
   }
 
   public final class TestEntityWithUDTAsClustering_SelectEnd extends AbstractSelectWhere<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd, TestEntityWithUDTAsClustering> {
-    public TestEntityWithUDTAsClustering_SelectEnd(Select.Where where) {
-      super(where);
+    public TestEntityWithUDTAsClustering_SelectEnd(Select.Where where, Options cassandraOptions) {
+      super(where, cassandraOptions);
     }
 
     @Override
@@ -838,7 +839,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
 
     @Override
     protected final Options getOptions() {
-      return options;
+      return cassandraOptions;
     }
 
     @Override
@@ -881,8 +882,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
   }
 
   public final class TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id extends AbstractSelectWherePartitionTypeMap {
-    public TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id(Select.Where where) {
-      super(where);
+    public TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id(Select.Where where, Options cassandraOptions) {
+      super(where, cassandraOptions);
     }
 
     public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id.Relation id() {
@@ -896,8 +897,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust Eq(Long id) {
         where.and(QueryBuilder.eq("id", QueryBuilder.bindMarker("id")));
         boundValues.add(id);
-        encodedValues.add(meta.id.encodeFromJava(id));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust(where);
+        encodedValues.add(meta.id.encodeFromJava(id, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust(where, cassandraOptions);
       }
 
       /**
@@ -907,17 +908,17 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         Validator.validateTrue(ArrayUtils.isNotEmpty(id), "Varargs for field '%s' should not be null/empty", "id");
         where.and(QueryBuilder.in("id",QueryBuilder.bindMarker("id")));
         final List<Object> varargs = Arrays.<Object>asList((Object[])id);
-        final List<Object> encodedVarargs = Arrays.<Long>stream((Long[])id).map(x -> meta.id.encodeFromJava(x)).collect(Collectors.toList());
+        final List<Object> encodedVarargs = Arrays.<Long>stream((Long[])id).map(x -> meta.id.encodeFromJava(x, Optional.of(cassandraOptions))).collect(Collectors.toList());
         boundValues.add(varargs);
         encodedValues.add(encodedVarargs);
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust(where);
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust(where, cassandraOptions);
       }
     }
   }
 
   public final class TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust extends AbstractSelectWhereTypeMap<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust, TestEntityWithUDTAsClustering> {
-    public TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust(Select.Where where) {
-      super(where);
+    public TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust(Select.Where where, Options cassandraOptions) {
+      super(where, cassandraOptions);
     }
 
     @Override
@@ -942,7 +943,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
 
     @Override
     protected final Options getOptions() {
-      return options;
+      return cassandraOptions;
     }
 
     @Override
@@ -989,8 +990,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Eq(TestUDTWithNoKeyspace clust) {
         where.and(QueryBuilder.eq("clust", QueryBuilder.bindMarker("clust")));
         boundValues.add(clust);
-        encodedValues.add(meta.clust.encodeFromJava(clust));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where, cassandraOptions);
       }
 
       /**
@@ -1000,10 +1001,10 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         Validator.validateTrue(ArrayUtils.isNotEmpty(clust), "Varargs for field '%s' should not be null/empty", "clust");
         where.and(QueryBuilder.in("clust",QueryBuilder.bindMarker("clust")));
         final List<Object> varargs = Arrays.<Object>asList((Object[])clust);
-        final List<Object> encodedVarargs = Arrays.<TestUDTWithNoKeyspace>stream((TestUDTWithNoKeyspace[])clust).map(x -> meta.clust.encodeFromJava(x)).collect(Collectors.toList());
+        final List<Object> encodedVarargs = Arrays.<TestUDTWithNoKeyspace>stream((TestUDTWithNoKeyspace[])clust).map(x -> meta.clust.encodeFromJava(x, Optional.of(cassandraOptions))).collect(Collectors.toList());
         boundValues.add(varargs);
         encodedValues.add(encodedVarargs);
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where, cassandraOptions);
       }
 
       /**
@@ -1012,8 +1013,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Gt(TestUDTWithNoKeyspace clust) {
         where.and(QueryBuilder.gt("clust", QueryBuilder.bindMarker("clust")));
         boundValues.add(clust);
-        encodedValues.add(meta.clust.encodeFromJava(clust));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where, cassandraOptions);
       }
 
       /**
@@ -1022,8 +1023,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Gte(TestUDTWithNoKeyspace clust) {
         where.and(QueryBuilder.gte("clust", QueryBuilder.bindMarker("clust")));
         boundValues.add(clust);
-        encodedValues.add(meta.clust.encodeFromJava(clust));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where, cassandraOptions);
       }
 
       /**
@@ -1032,8 +1033,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Lt(TestUDTWithNoKeyspace clust) {
         where.and(QueryBuilder.lt("clust", QueryBuilder.bindMarker("clust")));
         boundValues.add(clust);
-        encodedValues.add(meta.clust.encodeFromJava(clust));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where, cassandraOptions);
       }
 
       /**
@@ -1042,8 +1043,8 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap Lte(TestUDTWithNoKeyspace clust) {
         where.and(QueryBuilder.lte("clust", QueryBuilder.bindMarker("clust")));
         boundValues.add(clust);
-        encodedValues.add(meta.clust.encodeFromJava(clust));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where, cassandraOptions);
       }
 
       /**
@@ -1053,10 +1054,10 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         where.and(QueryBuilder.gt("clust",QueryBuilder.bindMarker("clust_Lt")));
         where.and(QueryBuilder.lt("clust",QueryBuilder.bindMarker("clust_Lt")));
         boundValues.add(clust_Gt);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Gt));
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gt, Optional.of(cassandraOptions)));
         boundValues.add(clust_Lt);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Lt));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lt, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where, cassandraOptions);
       }
 
       /**
@@ -1066,10 +1067,10 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         where.and(QueryBuilder.gt("clust",QueryBuilder.bindMarker("clust_Lte")));
         where.and(QueryBuilder.lte("clust",QueryBuilder.bindMarker("clust_Lte")));
         boundValues.add(clust_Gt);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Gt));
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gt, Optional.of(cassandraOptions)));
         boundValues.add(clust_Lte);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Lte));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lte, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where, cassandraOptions);
       }
 
       /**
@@ -1079,10 +1080,10 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         where.and(QueryBuilder.gte("clust",QueryBuilder.bindMarker("clust_Lt")));
         where.and(QueryBuilder.lt("clust",QueryBuilder.bindMarker("clust_Lt")));
         boundValues.add(clust_Gte);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Gte));
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gte, Optional.of(cassandraOptions)));
         boundValues.add(clust_Lt);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Lt));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lt, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where, cassandraOptions);
       }
 
       /**
@@ -1092,17 +1093,17 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         where.and(QueryBuilder.gte("clust",QueryBuilder.bindMarker("clust_Lte")));
         where.and(QueryBuilder.lte("clust",QueryBuilder.bindMarker("clust_Lte")));
         boundValues.add(clust_Gte);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Gte));
+        encodedValues.add(meta.clust.encodeFromJava(clust_Gte, Optional.of(cassandraOptions)));
         boundValues.add(clust_Lte);
-        encodedValues.add(meta.clust.encodeFromJava(clust_Lte));
-        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where);
+        encodedValues.add(meta.clust.encodeFromJava(clust_Lte, Optional.of(cassandraOptions)));
+        return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap(where, cassandraOptions);
       }
     }
   }
 
   public final class TestEntityWithUDTAsClustering_SelectEndTypedMap extends AbstractSelectWhereTypeMap<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap, TestEntityWithUDTAsClustering> {
-    public TestEntityWithUDTAsClustering_SelectEndTypedMap(Select.Where where) {
-      super(where);
+    public TestEntityWithUDTAsClustering_SelectEndTypedMap(Select.Where where, Options cassandraOptions) {
+      super(where, cassandraOptions);
     }
 
     @Override
@@ -1122,7 +1123,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
 
     @Override
     protected final Options getOptions() {
-      return options;
+      return cassandraOptions;
     }
 
     @Override

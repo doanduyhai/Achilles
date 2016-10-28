@@ -30,7 +30,6 @@ public abstract class AbstractSelect implements SchemaNameAware {
 
     protected final Select.Selection select;
     protected final RuntimeEngine rte;
-    protected final Options options = new Options();
     protected final List<Object> boundValues = new ArrayList<>();
     protected final List<Object> encodedValues = new ArrayList<>();
 

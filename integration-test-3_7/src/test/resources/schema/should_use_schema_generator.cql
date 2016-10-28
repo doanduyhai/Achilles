@@ -6,6 +6,9 @@ CREATE TYPE IF NOT EXISTS test.layer2(
 		layer3 frozen<test.layer3>);
 CREATE TYPE IF NOT EXISTS test.layer3(
 		layer text);
+CREATE TYPE IF NOT EXISTS test.no_keyspace_udt(
+		id bigint,
+		value text);
 CREATE TYPE IF NOT EXISTS test.non_frozen_udt(
 		val text,
 		li frozen<list<text>>,
@@ -220,6 +223,12 @@ CREATE TABLE IF NOT EXISTS test.table_with_nested_udt(
 		complexudt frozen<test.having_nested_type>,
 		udt frozen<test.no_ks>,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.entity_with_no_ks_udt(
+		id bigint,
+		clust frozen<test.no_keyspace_udt>,
+		udt frozen<test.no_keyspace_udt>,
+		PRIMARY KEY(id, clust))
+	WITH CLUSTERING ORDER BY(clust ASC);
 CREATE TABLE IF NOT EXISTS non_existing.test_table(
 		id bigint,
 		value text,
@@ -279,6 +288,16 @@ CREATE TABLE IF NOT EXISTS test.entity_static_counter(
 		count counter,
 		PRIMARY KEY(id, uuid))
 	WITH CLUSTERING ORDER BY(uuid ASC);
+CREATE TABLE IF NOT EXISTS test.table_with_with_dynamic_keyspace(
+		id bigint,
+		clust frozen<test.no_ks>,
+		udt frozen<test.no_ks>,
+		udtlist list<frozen<test.no_ks>>,
+		udtmapkey map<frozen<test.no_ks>, text>,
+		udtmapvalue map<int, frozen<test.no_ks>>,
+		udtset set<frozen<test.no_ks>>,
+		PRIMARY KEY(id, clust))
+	WITH CLUSTERING ORDER BY(clust ASC);
 CREATE TABLE IF NOT EXISTS test.multi_clustering_entity(
 		id bigint,
 		c1 int,
