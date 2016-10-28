@@ -48,6 +48,7 @@ import info.archinnov.achilles.annotations.SASI.Normalization;
 import info.archinnov.achilles.bootstrap.AbstractManagerFactoryBuilder;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
+import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.codec.*;
 import info.archinnov.achilles.internals.codegen.function.InternalSystemFunctionRegistry;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
@@ -254,6 +255,7 @@ public class TypeUtils {
     public static final ClassName FIND_WITH_OPTIONS = ClassName.get(FindWithOptions.class);
     public static final ClassName DELETE_WITH_OPTIONS = ClassName.get(DeleteWithOptions.class);
     public static final ClassName DELETE_BY_PARTITION_WITH_OPTIONS = ClassName.get(DeleteByPartitionWithOptions.class);
+    public static final ClassName INTERNAL_CASSANDRA_VERSION = ClassName.get(InternalCassandraVersion.class);
 
     // UDF & UDA
     public static final ClassName ABSTRACT_CQL_COMPATIBLE_TYPE = ClassName.get(AbstractCQLCompatibleType.class);

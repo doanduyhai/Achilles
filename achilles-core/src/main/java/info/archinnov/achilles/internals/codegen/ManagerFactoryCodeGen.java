@@ -45,7 +45,8 @@ public class ManagerFactoryCodeGen {
         final TypeSpec.Builder builder = TypeSpec.classBuilder(parsingContext.managerFactoryClassName())
                 .superclass(ABSTRACT_MANAGER_FACTORY)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addMethod(buildConstructor(signatures, functionsContext));
+                .addMethod(buildConstructor(signatures, functionsContext))
+                .addMethod(buildGetCassandraVersion(parsingContext));
 
         for(EntityMetaSignature x: signatures) {
             TypeName managerType = ClassName.get(MANAGER_PACKAGE, x.className + MANAGER_SUFFIX);
@@ -105,6 +106,18 @@ public class ManagerFactoryCodeGen {
 
         return FieldSpec.builder(FUNCTION_PROPERTY, fieldName, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
                 .initializer(functionProperty)
+                .build();
+    }
+
+    private static MethodSpec buildGetCassandraVersion(GlobalParsingContext parsingContext) {
+
+        ClassName cassandraVersionClass = ClassName.get(parsingContext.cassandraVersion.getClass());
+        return MethodSpec
+                .methodBuilder("getCassandraVersion")
+                .addModifiers(Modifier.PROTECTED, Modifier.FINAL)
+                .addAnnotation(Override.class)
+                .returns(INTERNAL_CASSANDRA_VERSION)
+                .addStatement("return $T.INSTANCE", cassandraVersionClass)
                 .build();
     }
 

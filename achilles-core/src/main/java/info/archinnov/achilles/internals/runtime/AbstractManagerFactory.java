@@ -41,6 +41,7 @@ import com.datastax.driver.extras.codecs.jdk8.LocalDateCodec;
 import com.datastax.driver.extras.codecs.jdk8.LocalTimeCodec;
 import com.datastax.driver.extras.codecs.jdk8.ZonedDateTimeCodec;
 
+import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
@@ -69,6 +70,7 @@ public abstract class AbstractManagerFactory {
         this.rte = new RuntimeEngine(configContext);
     }
 
+    protected abstract InternalCassandraVersion getCassandraVersion();
     protected abstract List<AbstractUDTClassProperty<?>> getUdtClassProperties();
 
     /**
@@ -240,7 +242,7 @@ public abstract class AbstractManagerFactory {
         entityProperties
                 .stream()
                 .filter(x -> manageEntities.contains(x.entityClass))
-                .forEach(x -> x.prepareStaticStatements(configContext.getSession(), rte.cache));
+                .forEach(x -> x.prepareStaticStatements(getCassandraVersion(), configContext.getSession(), rte.cache));
     }
 
 

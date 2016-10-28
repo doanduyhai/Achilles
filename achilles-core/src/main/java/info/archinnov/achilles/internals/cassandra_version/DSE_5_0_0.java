@@ -32,7 +32,7 @@ public class DSE_5_0_0 extends V3_0 {
     protected DSE_5_0_0() {
     }
 
-    private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA, MATERIALIZED_VIEW, DSE_SEARCH);
+    private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA, JSON, MATERIALIZED_VIEW, DSE_SEARCH);
 
     @Override
     public String version() {

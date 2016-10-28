@@ -34,6 +34,8 @@ import com.datastax.driver.core.querybuilder.Select;
 
 import info.archinnov.achilles.internals.cache.CacheKey;
 import info.archinnov.achilles.internals.cache.StatementsCache;
+import info.archinnov.achilles.internals.cassandra_version.CassandraFeature;
+import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.ComputedProperty;
@@ -221,7 +223,7 @@ public class PreparedStatementGenerator {
     }
 
 
-    public static void generateStaticInsertQueries(Session session, StatementsCache cache,  AbstractEntityProperty<?> entityProperty) {
+    public static void generateStaticInsertQueries(InternalCassandraVersion cassandraVersion, Session session, StatementsCache cache, AbstractEntityProperty<?> entityProperty) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate INSERT queries for entity of type %s", entityProperty.entityClass.getCanonicalName()));
@@ -230,14 +232,16 @@ public class PreparedStatementGenerator {
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT),
                 () -> session.prepare(generateInsert(entityProperty, Optional.empty())));
 
-        cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_JSON),
-                () -> session.prepare(generateInsertJSON(entityProperty, Optional.empty())));
-
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_IF_NOT_EXISTS),
                 () -> session.prepare(generateInsertIfNotExists(entityProperty, Optional.empty())));
 
-        cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_IF_NOT_EXISTS_JSON),
-                () -> session.prepare(generateInsertIfNotExistsJson(entityProperty, Optional.empty())));
+        if (cassandraVersion.supportsFeature(CassandraFeature.JSON)) {
+            cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_JSON),
+                    () -> session.prepare(generateInsertJSON(entityProperty, Optional.empty())));
+
+            cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_IF_NOT_EXISTS_JSON),
+                    () -> session.prepare(generateInsertIfNotExistsJson(entityProperty, Optional.empty())));
+        }
 
         if (entityProperty.hasStaticColumn()) {
             cache.putStaticCache(new CacheKey(entityProperty.entityClass, INSERT_STATIC),

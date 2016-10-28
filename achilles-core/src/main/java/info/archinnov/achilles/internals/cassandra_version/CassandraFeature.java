@@ -20,6 +20,7 @@ public enum CassandraFeature {
 
     UDT,
     UDF_UDA,
+    JSON,
     MATERIALIZED_VIEW,
     SASI_INDEX,
     DSE_SEARCH

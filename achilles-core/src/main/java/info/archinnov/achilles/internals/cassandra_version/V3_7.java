@@ -16,10 +16,7 @@
 
 package info.archinnov.achilles.internals.cassandra_version;
 
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.MATERIALIZED_VIEW;
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.SASI_INDEX;
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDF_UDA;
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDT;
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.*;
 
 import java.util.Set;
 
@@ -30,7 +27,7 @@ import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 
 public class V3_7 extends V3_6 {
 
-    private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA, MATERIALIZED_VIEW, SASI_INDEX);
+    private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA, JSON, MATERIALIZED_VIEW, SASI_INDEX);
 
     public static V3_7 INSTANCE = new V3_7();
 

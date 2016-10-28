@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internals.cassandra_version;
 
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.JSON;
 import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDF_UDA;
 import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDT;
 
@@ -35,7 +36,7 @@ import info.archinnov.achilles.internals.codegen.index.IndexSelectWhereDSLCodeGe
 
 public class V2_2 extends V2_1 {
 
-    private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA);
+    private final Set<CassandraFeature> SUPPORTED_FEATURES = ImmutableSet.of(UDT, UDF_UDA, JSON);
 
     public static V2_2 INSTANCE = new V2_2();
 

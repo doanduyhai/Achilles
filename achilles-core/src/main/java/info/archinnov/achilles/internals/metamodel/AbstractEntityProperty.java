@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.BiMap;
 
 import info.archinnov.achilles.internals.cache.StatementsCache;
+import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
@@ -275,13 +276,13 @@ public abstract class AbstractEntityProperty<T> implements
         return tableName;
     }
 
-    public void prepareStaticStatements(Session session, StatementsCache cache) {
+    public void prepareStaticStatements(InternalCassandraVersion cassandraVersion, Session session, StatementsCache cache) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Preparing static statements for entity of type %s",
                     entityClass.getCanonicalName()));
         }
         if (!counterTable) {
-            generateStaticInsertQueries(session, cache, this);
+            generateStaticInsertQueries(cassandraVersion, session, cache, this);
         }
 
         generateStaticDeleteQueries(session, cache, this);

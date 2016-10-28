@@ -32,6 +32,7 @@ import com.datastax.driver.core.MaterializedViewMetadata;
 import com.datastax.driver.core.Session;
 
 import info.archinnov.achilles.internals.cache.StatementsCache;
+import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.schema.SchemaContext;
@@ -109,7 +110,7 @@ public abstract class AbstractViewProperty<T> extends AbstractEntityProperty<T> 
     }
 
     @Override
-    public void prepareStaticStatements(Session session, StatementsCache cache) {
+    public void prepareStaticStatements(InternalCassandraVersion cassandraVersion, Session session, StatementsCache cache) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Preparing static statements for entity of type %s",
                     entityClass.getCanonicalName()));
