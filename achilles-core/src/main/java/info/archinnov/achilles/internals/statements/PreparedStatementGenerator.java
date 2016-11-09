@@ -110,34 +110,6 @@ public class PreparedStatementGenerator {
             LOGGER.debug(format("Generate DELETE queries for entity of type %s", entityProperty.entityClass.getCanonicalName()));
         }
 
-        final Delete.Selection delete = QueryBuilder.delete();
-        final Optional<String> keyspace = entityProperty.getKeyspace();
-        final Delete from;
-        if (keyspace.isPresent()) {
-            from = delete.from(keyspace.get(), entityProperty.getTableOrViewName());
-        } else {
-            from = delete.from(entityProperty.getTableOrViewName());
-        }
-
-        final Delete.Where deleteByKeys = from.where();
-        final Delete.Where deleteByKeysIfExists = from.ifExists().where();
-        final Delete.Where deleteByPartition = from.where();
-
-        for (AbstractProperty<?, ?, ?> x : entityProperty.partitionKeys) {
-            final String quotedCqlColumn = x.fieldInfo.quotedCqlColumn;
-            final String cqlColumn = x.fieldInfo.cqlColumn;
-            deleteByKeys.and(eq(quotedCqlColumn, bindMarker(cqlColumn)));
-            deleteByKeysIfExists.and(eq(quotedCqlColumn, bindMarker(cqlColumn)));
-            deleteByPartition.and(eq(quotedCqlColumn, bindMarker(cqlColumn)));
-        }
-
-        for (AbstractProperty<?, ?, ?> x : entityProperty.clusteringColumns) {
-            final String quotedCqlColumn = x.fieldInfo.quotedCqlColumn;
-            final String cqlColumn = x.fieldInfo.cqlColumn;
-            deleteByKeys.and(eq(quotedCqlColumn, bindMarker(cqlColumn)));
-            deleteByKeysIfExists.and(eq(quotedCqlColumn, bindMarker(cqlColumn)));
-        }
-
         cache.putStaticCache(new CacheKey(entityProperty.entityClass, DELETE),
                 () -> session.prepare(generateDeleteByKeys(entityProperty, Optional.empty())));
 
