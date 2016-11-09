@@ -42,8 +42,7 @@ import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SelectDSLCodeGenTest extends AbstractTestProcessor{
-
+public class SelectDSLCodeGenTest extends AbstractTestProcessor {
 
     @Test
     public void should_generate_select_dsl_class_for_udt_as_clustering() throws Exception {

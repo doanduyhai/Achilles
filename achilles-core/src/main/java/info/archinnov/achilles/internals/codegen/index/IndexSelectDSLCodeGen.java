@@ -17,6 +17,7 @@
 package info.archinnov.achilles.internals.codegen.index;
 
 import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType.NEW;
+import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType.THIS;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import javax.lang.model.element.Modifier;
@@ -55,7 +56,7 @@ public abstract class IndexSelectDSLCodeGen extends SelectDSLCodeGen {
                 .addMethod(buildSelectConstructor(signature))
                 .addField(buildExactEntityMetaField(signature))
                 .addField(buildEntityClassField(signature))
-                .addType(buildSelectColumns(signature, signatureForSelectColumns))
+                .addType(buildIndexedSelectColumns(signature, signatureForSelectColumns))
                 .addType(buildSelectColumnsTypedMap(signature, signatureForSelectColumnsTypedMap))
                 .addType(buildSelectFrom(signature))
                 .addType(buildSelectFromTypedMap(signature));
@@ -69,7 +70,7 @@ public abstract class IndexSelectDSLCodeGen extends SelectDSLCodeGen {
                 .stream()
                 .filter(x -> x.isUDT())
                 .forEach(x -> buildSelectUDTClassAndMethods(selectClassBuilder, selectColumnsTypeName,
-                        signature.selectClassName(), "", x, "select", NEW));
+                        signature.indexSelectClassName(), "", x, "select", NEW));
 
         signature.fieldMetaSignatures
                 .stream()
@@ -86,6 +87,45 @@ public abstract class IndexSelectDSLCodeGen extends SelectDSLCodeGen {
         context.indexSelectWhereDSLCodeGen().buildWhereClasses(context, signature).forEach(selectClassBuilder::addType);
 
         return selectClassBuilder.build();
+    }
+
+    public TypeSpec buildIndexedSelectColumns(EntityMetaSignature signature, SelectColumnsSignature classesSignature) {
+
+        TypeName selectColumnsTypeName = ClassName.get(DSL_PACKAGE, classesSignature.selectColumnsReturnType);
+        TypeName selectColumnsTypedMapTypeName = ClassName.get(DSL_PACKAGE, classesSignature.selectColumnsTypedMapReturnType);
+
+        TypeName selectFromTypeName = ClassName.get(DSL_PACKAGE, classesSignature.selectFromReturnType);
+
+        final TypeSpec.Builder selectColumnsBuilder = TypeSpec.classBuilder(classesSignature.selectColumnsClassName)
+            .superclass(ABSTRACT_SELECT_COLUMNS)
+            .addModifiers(Modifier.PUBLIC)
+            .addMethod(MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(SELECT_DOT_SELECTION, "selection")
+                .addStatement("super(selection)")
+                .build());
+
+        signature.fieldMetaSignatures
+            .stream()
+            .filter(x -> x.context.columnType != ColumnType.COMPUTED && !x.isUDT())
+            .forEach(x -> selectColumnsBuilder.addMethod(buildSelectColumnMethod(selectColumnsTypeName, x, "selection", THIS)));
+
+        signature.fieldMetaSignatures
+            .stream()
+            .filter(x -> x.isUDT())
+            .forEach(x -> buildSelectUDTClassAndMethods(selectColumnsBuilder, selectColumnsTypeName, signature.indexSelectColumnsReturnType(), "", x, "selection", THIS));
+
+        signature.fieldMetaSignatures
+            .stream()
+            .filter(x -> x.context.columnType == ColumnType.COMPUTED)
+            .forEach(x -> selectColumnsBuilder.addMethod(buildSelectComputedColumnMethod(selectColumnsTypeName, x, "selection", THIS)));
+
+        selectColumnsBuilder.addMethod(buildSelectFunctionCallMethod(selectColumnsTypedMapTypeName, "selection", NEW));
+
+        selectColumnsBuilder.addMethod(buildFrom(selectFromTypeName, SELECT_DOT_WHERE, "selection"));
+        selectColumnsBuilder.addMethod(buildFromWithSchemaProvider(selectFromTypeName, SELECT_DOT_WHERE, "selection"));
+
+        return selectColumnsBuilder.build();
     }
 
     public TypeSpec buildSelectFrom(EntityMetaSignature signature) {
