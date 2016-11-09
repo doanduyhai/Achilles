@@ -93,7 +93,7 @@ public abstract class FieldValidator {
                 if (annotation != null) {
                     final String annot1 = "@" + annotation.getClass().getSimpleName();
                     final String annot2 = "@" + left.getClass().getSimpleName();
-                    aptUtils.printError("Cannot have both %s and % annotation on the same field '%s' in class '%s'",
+                    aptUtils.printError("Cannot have both %s and %s annotation on the same field '%s' in class '%s'",
                             fieldName, rawEntityClass, annot1, annot2);
                 }
             }
