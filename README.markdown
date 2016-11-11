@@ -44,7 +44,7 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
         <tr>
-            <td>5.1.3 (all Cassandra versions up to 3.7)</td>
+            <td>5.1.4 (all Cassandra versions up to 3.7)</td>
        	    <td>3.1.1</td>
             <td>3.7</td>
         </tr>   
@@ -185,3 +185,4 @@ Unless required by applicable law or agreed to in writing, software distributed 
 [Documentation]: https://github.com/doanduyhai/Achilles/tree/master/documentation/versions
 [Datastax Java Driver]: https://github.com/datastax/java-driver
 [mailing list]: https://groups.google.com/forum/?hl=fr#!forum/cassandra-achilles
+
