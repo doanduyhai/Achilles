@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
+import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumnType;
 import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
 import static info.archinnov.achilles.internals.schema.SchemaValidator.validateDefaultTTL;
 import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.*;
@@ -38,10 +39,12 @@ import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.injectable.*;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.internals.runtime.BeanValueExtractor;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.schema.SchemaCreator;
+import info.archinnov.achilles.internals.schema.SchemaValidator;
 import info.archinnov.achilles.internals.statements.BoundValuesWrapper;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.types.OverridingOptional;
@@ -336,6 +339,10 @@ public abstract class AbstractEntityProperty<T> implements
 
         validateNotNull(tableMetadata,"The table %s defined on entity %s does not exist in Cassandra",
                 tableName, entityClass.getCanonicalName());
+
+        validateColumnType(ColumnType.PARTITION, tableMetadata, partitionKeys, entityClass);
+        validateColumnType(ColumnType.CLUSTERING, tableMetadata, clusteringColumns, entityClass);
+        validateColumnType(ColumnType.STATIC, tableMetadata, staticColumns, entityClass);
 
         validateDefaultTTL(tableMetadata, staticTTL, entityClass);
         validateColumns(tableMetadata, partitionKeys, entityClass);

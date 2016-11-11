@@ -22,11 +22,17 @@ import static info.archinnov.achilles.internals.metamodel.index.IndexType.*;
 import static info.archinnov.achilles.validation.Validator.validateBeanMappingFalse;
 import static info.archinnov.achilles.validation.Validator.validateBeanMappingTrue;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.collections.CollectionUtils.isEqualCollection;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +61,47 @@ public class SchemaValidator {
             validateBeanMappingTrue(staticTTL.get().equals(defaultTimeToLive),
                     "Default TTL '%s' declared on entity '%s' does not match detected default TTL '%s' in live schema",
                     staticTTL.get(), entityClass.getCanonicalName(), defaultTimeToLive);
+        }
+    }
+
+    public static <T> void validateColumnType(ColumnType columnType, AbstractTableMetadata metadata,
+                                              List<AbstractProperty<T, ?, ?>> properties, Class<T> entityClass) {
+        final List<String> mappedColumnNames = properties.stream().map(x -> x.fieldInfo.cqlColumn).collect(toList());
+        final String className = entityClass.getCanonicalName();
+        switch (columnType) {
+            case PARTITION:
+                final List<String> partitionKeyColumnNames = metadata.getPartitionKey().stream()
+                        .map(ColumnMetadata::getName)
+                        .collect(toList());
+                validateBeanMappingTrue(isEqualCollection(mappedColumnNames, partitionKeyColumnNames),
+                    "The mapped partition key(s) %s for entity %s do not correspond to live schema partition key(s) %s",
+                    mappedColumnNames.stream().collect(Collectors.joining(", ", "[", "]")),
+                    className,
+                    partitionKeyColumnNames.stream().collect(Collectors.joining(", ", "[", "]")));
+                return;
+            case CLUSTERING:
+                final List<String> clusteringColColumnNames = metadata.getClusteringColumns().stream()
+                        .map(ColumnMetadata::getName)
+                        .collect(toList());
+                validateBeanMappingTrue(isEqualCollection(mappedColumnNames, clusteringColColumnNames),
+                    "The mapped clustering column(s) %s for entity %s do not correspond to live schema clustering column(s) %s",
+                    mappedColumnNames.stream().collect(Collectors.joining(", ", "[", "]")),
+                    className,
+                    clusteringColColumnNames.stream().collect(Collectors.joining(", ", "[", "]")));
+                return;
+            case STATIC:
+                final List<String> staticColColumnNames = metadata.getColumns().stream()
+                        .filter(ColumnMetadata::isStatic)
+                        .map(ColumnMetadata::getName)
+                        .collect(toList());
+                validateBeanMappingTrue(isEqualCollection(mappedColumnNames, staticColColumnNames),
+                    "The mapped static column(s) %s for entity %s do not correspond to live schema static column(s) %s",
+                    mappedColumnNames.stream().collect(Collectors.joining(", ", "[", "]")),
+                    className,
+                    staticColColumnNames.stream().collect(Collectors.joining(", ", "[", "]")));
+                return;
+            default:
+                return;
         }
     }
 

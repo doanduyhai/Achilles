@@ -219,6 +219,23 @@ CREATE  INDEX IF NOT EXISTS indexonmapvalue_index ON test.entity_with_indices_fo
 
 
 CREATE  INDEX IF NOT EXISTS simpleindex_index ON test.entity_with_indices_for_json ( simpleindex );
+CREATE TABLE IF NOT EXISTS missing_schema.missing_clustering(
+		id bigint,
+		clust uuid,
+		value text,
+		PRIMARY KEY(id, clust))
+	WITH CLUSTERING ORDER BY(clust ASC);
+CREATE TABLE IF NOT EXISTS missing_schema.missing_partition(
+		id bigint,
+		value text,
+		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS missing_schema.missing_static(
+		id bigint,
+		clust uuid,
+		staticcol text static,
+		value text,
+		PRIMARY KEY(id, clust))
+	WITH CLUSTERING ORDER BY(clust ASC);
 CREATE TABLE IF NOT EXISTS test.table_with_nested_udt(
 		id bigint,
 		complexudt frozen<test.having_nested_type>,

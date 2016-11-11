@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
+import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumnType;
 import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
 import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticSelectQuery;
 import static info.archinnov.achilles.validation.Validator.validateNotNull;
@@ -35,6 +36,7 @@ import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.injectable.*;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.schema.SchemaCreator;
 import info.archinnov.achilles.internals.types.OverridingOptional;
@@ -103,6 +105,9 @@ public abstract class AbstractViewProperty<T> extends AbstractEntityProperty<T> 
 
         validateNotNull(viewMetadata,"The view {} defined on entity {} does not exist in Cassandra",
                 tableName, entityClass.getCanonicalName());
+
+        validateColumnType(ColumnType.PARTITION, viewMetadata, partitionKeys, entityClass);
+        validateColumnType(ColumnType.CLUSTERING, viewMetadata, clusteringColumns, entityClass);
 
         validateColumns(viewMetadata, partitionKeys, entityClass);
         validateColumns(viewMetadata, clusteringColumns, entityClass);
