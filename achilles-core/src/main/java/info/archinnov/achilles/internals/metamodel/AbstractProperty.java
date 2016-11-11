@@ -28,7 +28,7 @@ import com.google.common.reflect.TypeToken;
 
 import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.utils.NamingHelper;
 
 public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
@@ -52,21 +52,21 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
         this.fieldName = fieldInfo.fieldName;
     }
 
-    public VALUETO encodeFromJava(VALUEFROM javaValue, Optional<Options> cassandraOptions) {
+    public VALUETO encodeFromJava(VALUEFROM javaValue, Optional<CassandraOptions> cassandraOptions) {
         if (javaValue == null) return null;
         return encodeFromJavaInternal(javaValue, cassandraOptions);
     }
 
     public abstract void encodeToSettable(VALUETO valueto, SettableData<?> settableData);
 
-    abstract VALUETO encodeFromJavaInternal(VALUEFROM javaValue, Optional<Options> cassandraOptions);
+    abstract VALUETO encodeFromJavaInternal(VALUEFROM javaValue, Optional<CassandraOptions> cassandraOptions);
 
-    public VALUETO encodeFromRaw(Object o, Optional<Options> cassandraOptions) {
+    public VALUETO encodeFromRaw(Object o, Optional<CassandraOptions> cassandraOptions) {
         if (o == null) return null;
         return encodeFromRawInternal(o, cassandraOptions);
     }
 
-    abstract VALUETO encodeFromRawInternal(Object o, Optional<Options> cassandraOptions);
+    abstract VALUETO encodeFromRawInternal(Object o, Optional<CassandraOptions> cassandraOptions);
 
     public VALUEFROM decodeFromGettable(GettableData gettableData) {
         if (gettableData.isNull(NamingHelper.maybeQuote(getColumnForSelect())) && !isOptional()) return null;
@@ -82,11 +82,11 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
 
     abstract VALUEFROM decodeFromRawInternal(Object o);
 
-    public abstract DataType buildType(Optional<Options> cassandraOptions);
+    public abstract DataType buildType(Optional<CassandraOptions> cassandraOptions);
 
     abstract boolean isOptional();
 
-    public VALUETO encodeField(ENTITY entity, Optional<Options> cassandraOptions) {
+    public VALUETO encodeField(ENTITY entity, Optional<CassandraOptions> cassandraOptions) {
         return encodeFromJava(getJavaValue(entity), cassandraOptions);
     }
 
@@ -94,7 +94,7 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
         return fieldInfo.getter.get(entity);
     }
 
-    public abstract void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<Options> cassandraOptions);
+    public abstract void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<CassandraOptions> cassandraOptions);
 
     public abstract boolean containsUDTProperty();
 

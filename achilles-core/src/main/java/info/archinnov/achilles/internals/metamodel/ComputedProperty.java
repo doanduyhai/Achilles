@@ -38,8 +38,8 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.types.RuntimeCodecWrapper;
-import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -75,12 +75,12 @@ public class ComputedProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProper
     }
 
     @Override
-    VALUETO encodeFromJavaInternal(VALUEFROM javaValue, Optional<Options> cassandraOptions) {
+    VALUETO encodeFromJavaInternal(VALUEFROM javaValue, Optional<CassandraOptions> cassandraOptions) {
         throw new UnsupportedOperationException(format("Cannot set computed value to field '%s'", fieldInfo.fieldName));
     }
 
     @Override
-    VALUETO encodeFromRawInternal(Object o, Optional<Options> cassandraOptions) {
+    VALUETO encodeFromRawInternal(Object o, Optional<CassandraOptions> cassandraOptions) {
         throw new UnsupportedOperationException(format("Cannot set computed value to field '%s'", fieldInfo.fieldName));
     }
 
@@ -103,7 +103,7 @@ public class ComputedProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProper
     }
 
     @Override
-    public DataType buildType(Optional<Options> cassandraOptions) {
+    public DataType buildType(Optional<CassandraOptions> cassandraOptions) {
         throw new UnsupportedOperationException(format("No type for computed field '%s'", fieldInfo.fieldName));
     }
 
@@ -113,7 +113,7 @@ public class ComputedProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProper
     }
 
     @Override
-    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<Options> cassandraOptions) {
+    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<CassandraOptions> cassandraOptions) {
         throw new UnsupportedOperationException(format("No UDT encoding for computed field '%s'", fieldInfo.fieldName));
     }
 

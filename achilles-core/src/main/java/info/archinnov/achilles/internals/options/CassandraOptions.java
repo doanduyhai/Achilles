@@ -35,9 +35,9 @@ import info.archinnov.achilles.internals.types.LimitedResultSetWrapper;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.validation.Validator;
 
-public class Options {
+public class CassandraOptions {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Options.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CassandraOptions.class);
 
     private Optional<ConsistencyLevel> cl = Optional.empty();
     private Optional<ConsistencyLevel> serialCL = Optional.empty();
@@ -56,13 +56,13 @@ public class Options {
     private Optional<StringJoiner> dseSearchSolrQuery = Optional.empty();
     private Optional<String> dseSearchRawSolrQuery = Optional.empty();
 
-    public Options() {}
+    public CassandraOptions() {}
 
-    public static Options withSchemaNameProvider(SchemaNameProvider schemaNameProvider) {
-        final Options options = new Options();
+    public static CassandraOptions withSchemaNameProvider(SchemaNameProvider schemaNameProvider) {
+        final CassandraOptions cassandraOptions = new CassandraOptions();
         Validator.validateNotNull(schemaNameProvider, "The provided schemaNameProvider should not be null");
-        options.setSchemaNameProvider(Optional.of(schemaNameProvider));
-        return options;
+        cassandraOptions.setSchemaNameProvider(Optional.of(schemaNameProvider));
+        return cassandraOptions;
     }
 
     public void appendToSolrQuery(String solrQuery) {

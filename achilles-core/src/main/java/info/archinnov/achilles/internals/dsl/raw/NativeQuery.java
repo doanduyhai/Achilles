@@ -32,7 +32,7 @@ import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.ResultSet;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.LWTHelper;
 import info.archinnov.achilles.internals.dsl.RawAndTypeMapDefaultImpl;
 import info.archinnov.achilles.internals.dsl.action.MutationAction;
@@ -52,7 +52,7 @@ public class NativeQuery implements MutationAction, RawAndTypeMapDefaultImpl {
     private final RuntimeEngine rte;
     private final BoundStatement boundStatement;
     private final Object[] encodedBoundValues;
-    private final Options options = new Options();
+    private final CassandraOptions options = new CassandraOptions();
     private Optional<List<LWTResultListener>> lwtResultListeners = Optional.empty();
 
     public NativeQuery(AbstractEntityProperty<?> meta, RuntimeEngine rte, BoundStatement boundStatement, Object[] encodedBoundValues) {
@@ -314,7 +314,7 @@ public class NativeQuery implements MutationAction, RawAndTypeMapDefaultImpl {
     }
 
     @Override
-    public Options options() {
+    public CassandraOptions options() {
         return options;
     }
 }

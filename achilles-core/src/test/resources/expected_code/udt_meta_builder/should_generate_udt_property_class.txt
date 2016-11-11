@@ -70,7 +70,7 @@ public final class TestUDT_AchillesMeta extends info.archinnov.achilles.internal
   }
 
   @java.lang.Override
-  protected com.datastax.driver.core.UDTValue createUDTFromBean(info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance, java.util.Optional<info.archinnov.achilles.internals.options.Options> cassandraOptions) {
+  protected com.datastax.driver.core.UDTValue createUDTFromBean(info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance, java.util.Optional<info.archinnov.achilles.internals.options.CassandraOptions> cassandraOptions) {
     final com.datastax.driver.core.UserType dynamicUserType = this.getUserType(cassandraOptions);
     final com.datastax.driver.core.UDTValue udtValue = dynamicUserType.newValue();
     name.encodeFieldToUdt(instance, udtValue, cassandraOptions);

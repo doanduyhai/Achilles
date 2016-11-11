@@ -37,7 +37,7 @@ import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -57,7 +57,7 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
     }
 
     @Override
-    public abstract TupleType buildType(Optional<Options> cassandraOptions);
+    public abstract TupleType buildType(Optional<CassandraOptions> cassandraOptions);
 
     @Override
     boolean isOptional() {
@@ -75,7 +75,7 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
     }
 
     @Override
-    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<Options> cassandraOptions) {
+    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<CassandraOptions> cassandraOptions) {
         final TupleValue tupleValue = encodeField(entity, cassandraOptions);
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode tuple value %s to udt value %s", tupleValue, udtValue));

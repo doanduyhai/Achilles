@@ -17,13 +17,6 @@
 package info.archinnov.achilles.internals.dsl.query.select;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,28 +24,19 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Select;
 
-import info.archinnov.achilles.internals.dsl.StatementProvider;
-import info.archinnov.achilles.internals.dsl.TypedMapAware;
-import info.archinnov.achilles.internals.dsl.action.SelectAction;
-import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForSelect;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
-import info.archinnov.achilles.internals.types.EntityIteratorWrapper;
-import info.archinnov.achilles.internals.types.TypedMapIteratorWrapper;
-import info.archinnov.achilles.type.TypedMap;
-import info.archinnov.achilles.type.interceptor.Event;
-import info.archinnov.achilles.type.tuples.Tuple2;
 
 public abstract class AbstractIndexSelectWhere<T extends AbstractIndexSelectWhere<T, ENTITY>, ENTITY>
         extends AbstractSelectWhere<T, ENTITY> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIndexSelectWhere.class);
 
-    protected AbstractIndexSelectWhere(Select.Where where, Options cassandraOptions) {
+    protected AbstractIndexSelectWhere(Select.Where where, CassandraOptions cassandraOptions) {
         super(where, cassandraOptions);
     }
 
@@ -64,17 +48,17 @@ public abstract class AbstractIndexSelectWhere<T extends AbstractIndexSelectWher
 
         final RuntimeEngine rte = getRte();
         final AbstractEntityProperty<ENTITY> meta = getMetaInternal();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         final String queryString;
 
-        if (options.hasRawSolrQuery()) {
-            getBoundValuesInternal().add(0, options.generateRawSolrQuery());
-            getEncodedValuesInternal().add(0, options.generateRawSolrQuery());
+        if (cassandraOptions.hasRawSolrQuery()) {
+            getBoundValuesInternal().add(0, cassandraOptions.generateRawSolrQuery());
+            getEncodedValuesInternal().add(0, cassandraOptions.generateRawSolrQuery());
             queryString = where.getQueryString();
-        } else if (options.hasSolrQuery()) {
-            getBoundValuesInternal().add(0, options.generateSolrQuery());
-            getEncodedValuesInternal().add(0, options.generateSolrQuery());
+        } else if (cassandraOptions.hasSolrQuery()) {
+            getBoundValuesInternal().add(0, cassandraOptions.generateSolrQuery());
+            getEncodedValuesInternal().add(0, cassandraOptions.generateSolrQuery());
             queryString = where.getQueryString();
         } else {
             queryString = where.getQueryString().trim().replaceFirst(";$", " ALLOW FILTERING;");
@@ -87,7 +71,7 @@ public abstract class AbstractIndexSelectWhere<T extends AbstractIndexSelectWher
                 getBoundValuesInternal().toArray(),
                 getEncodedValuesInternal().toArray());
 
-        statementWrapper.applyOptions(options);
+        statementWrapper.applyOptions(cassandraOptions);
         return statementWrapper;
     }
 }

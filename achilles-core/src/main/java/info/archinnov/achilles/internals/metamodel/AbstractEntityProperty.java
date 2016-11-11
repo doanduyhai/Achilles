@@ -40,16 +40,14 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.BeanValueExtractor;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.schema.SchemaCreator;
-import info.archinnov.achilles.internals.schema.SchemaValidator;
 import info.archinnov.achilles.internals.statements.BoundValuesWrapper;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
-import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
@@ -57,7 +55,6 @@ import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.interceptor.Event;
 import info.archinnov.achilles.type.interceptor.Interceptor;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
-import info.archinnov.achilles.type.tuples.Tuple3;
 import info.archinnov.achilles.validation.Validator;
 
 
@@ -245,12 +242,12 @@ public abstract class AbstractEntityProperty<T> implements
         return null;
     }
 
-    public BoundValuesWrapper extractAllValuesFromEntity(T instance, Options options) {
-        return BeanValueExtractor.extractAllValues(instance, this, options);
+    public BoundValuesWrapper extractAllValuesFromEntity(T instance, CassandraOptions cassandraOptions) {
+        return BeanValueExtractor.extractAllValues(instance, this, cassandraOptions);
     }
 
-    public BoundValuesWrapper extractPartitionKeysAndStaticColumnsFromEntity(T instance, Options options) {
-        return BeanValueExtractor.extractPartitionKeysAndStaticValues(instance, this, options);
+    public BoundValuesWrapper extractPartitionKeysAndStaticColumnsFromEntity(T instance, CassandraOptions cassandraOptions) {
+        return BeanValueExtractor.extractPartitionKeysAndStaticValues(instance, this, cassandraOptions);
     }
 
     public Optional<String> getKeyspace() {

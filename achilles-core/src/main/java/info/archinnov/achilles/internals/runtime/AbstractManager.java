@@ -36,8 +36,7 @@ import info.archinnov.achilles.internals.dsl.crud.DeleteWithOptions;
 import info.archinnov.achilles.internals.dsl.crud.InsertWithOptions;
 import info.archinnov.achilles.internals.dsl.raw.NativeQuery;
 import info.archinnov.achilles.internals.dsl.raw.TypedQuery;
-import info.archinnov.achilles.internals.options.Options;
-import info.archinnov.achilles.type.SchemaNameProvider;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public abstract class AbstractManager<ENTITY> {
@@ -94,7 +93,7 @@ public abstract class AbstractManager<ENTITY> {
         return rte.getCluster();
     }
 
-    protected InsertWithOptions<ENTITY> insertInternal(ENTITY instance, boolean insertStatic, Optional<Options> cassandraOptions) {
+    protected InsertWithOptions<ENTITY> insertInternal(ENTITY instance, boolean insertStatic, Optional<CassandraOptions> cassandraOptions) {
 
         validateNotNull(instance, "Entity to be inserted should not be null");
 
@@ -111,7 +110,7 @@ public abstract class AbstractManager<ENTITY> {
         return new InsertWithOptions<>(meta_internal, rte, instance, insertStatic, cassandraOptions);
     }
 
-    protected InsertJSONWithOptions insertJSONInternal(String json, Optional<Options> cassandraOptions) {
+    protected InsertJSONWithOptions insertJSONInternal(String json, Optional<CassandraOptions> cassandraOptions) {
 
         validateNotBlank(json, "The JSON string to be used for INSERT JSON should not be blank");
 
@@ -122,7 +121,7 @@ public abstract class AbstractManager<ENTITY> {
         return new InsertJSONWithOptions(meta_internal, rte, json, cassandraOptions);
     }
 
-    protected DeleteWithOptions<ENTITY> deleteInternal(ENTITY instance, Optional<Options> cassandraOptions) {
+    protected DeleteWithOptions<ENTITY> deleteInternal(ENTITY instance, Optional<CassandraOptions> cassandraOptions) {
         validateNotNull(instance, "Entity to be deleted should not be null");
 
         if (LOGGER.isTraceEnabled()) {

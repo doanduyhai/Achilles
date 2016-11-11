@@ -21,7 +21,6 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
@@ -32,7 +31,7 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Select;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
 import info.archinnov.achilles.internals.dsl.action.SelectAction;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForSelect;
@@ -54,9 +53,9 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSelectWhere.class);
 
     protected final Select.Where where;
-    protected final Options cassandraOptions;
+    protected final CassandraOptions cassandraOptions;
 
-    protected AbstractSelectWhere(Select.Where where, Options cassandraOptions) {
+    protected AbstractSelectWhere(Select.Where where, CassandraOptions cassandraOptions) {
         this.where = where;
         this.cassandraOptions = cassandraOptions;
     }
@@ -76,7 +75,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
 
         final RuntimeEngine rte = getRte();
         final AbstractEntityProperty<ENTITY> meta = getMetaInternal();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
@@ -86,7 +85,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
         }
 
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
-        return new EntityIteratorWrapper<>(futureRS, meta, statementWrapper, options);
+        return new EntityIteratorWrapper<>(futureRS, meta, statementWrapper, cassandraOptions);
     }
 
     @Override
@@ -99,7 +98,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
 
         final RuntimeEngine rte = getRte();
         final AbstractEntityProperty<ENTITY> meta = getMetaInternal();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
@@ -111,13 +110,13 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
         return futureRS
-                .thenApply(options::resultSetAsyncListener)
+                .thenApply(cassandraOptions::resultSetAsyncListener)
                 .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(rs -> Tuple2.of(IntStream.range(0, rs.getAvailableWithoutFetching())
                             .mapToObj(index -> {
                                 final Row row = rs.one();
-                                options.rowAsyncListener(row);
+                                cassandraOptions.rowAsyncListener(row);
                                 return meta.createEntityFrom(row);
                             })
                             .collect(toList()),
@@ -136,7 +135,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
     @Override
     public CompletableFuture<Tuple2<List<TypedMap>, ExecutionInfo>> getTypedMapsAsyncWithStats() {
         final RuntimeEngine rte = getRte();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
@@ -147,7 +146,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
         return futureRS
-            .thenApply(options::resultSetAsyncListener)
+            .thenApply(cassandraOptions::resultSetAsyncListener)
                     .thenApply(statementWrapper::logReturnResults)
                     .thenApply(statementWrapper::logTrace)
                     .thenApply(x -> Tuple2.of(mapResultSetToTypedMaps(x), x.getExecutionInfo()));
@@ -157,7 +156,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
 
     public CompletableFuture<Tuple2<TypedMap, ExecutionInfo>> getTypedMapAsyncWithStats() {
         final RuntimeEngine rte = getRte();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
@@ -169,7 +168,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
         CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
 
         return cfutureRS
-                .thenApply(options::resultSetAsyncListener)
+                .thenApply(cassandraOptions::resultSetAsyncListener)
                 .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> Tuple2.of(mapRowToTypedMap(x.one()), x.getExecutionInfo()));
@@ -178,7 +177,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
     @Override
     public Iterator<TypedMap> typedMapIterator() {
         final RuntimeEngine rte = getRte();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
         if (LOGGER.isTraceEnabled()) {
@@ -188,7 +187,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
 
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
-        return new TypedMapIteratorWrapper(futureRS, statementWrapper, options);
+        return new TypedMapIteratorWrapper(futureRS, statementWrapper, cassandraOptions);
     }
 
     @Override
@@ -226,7 +225,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
 
         final RuntimeEngine rte = getRte();
         final AbstractEntityProperty<ENTITY> meta = getMetaInternal();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         final PreparedStatement ps = rte.prepareDynamicQuery(where);
 
@@ -235,7 +234,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
                 getBoundValuesInternal().toArray(),
                 getEncodedValuesInternal().toArray());
 
-        statementWrapper.applyOptions(options);
+        statementWrapper.applyOptions(cassandraOptions);
         return statementWrapper;
     }
 }

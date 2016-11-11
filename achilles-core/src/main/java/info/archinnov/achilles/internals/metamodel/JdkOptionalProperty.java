@@ -33,7 +33,7 @@ import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -67,7 +67,7 @@ public class JdkOptionalProperty<ENTITY, FROM, TO> extends AbstractProperty<ENTI
     }
 
     @Override
-    TO encodeFromJavaInternal(Optional<FROM> javaValue, Optional<Options> cassandraOptions) {
+    TO encodeFromJavaInternal(Optional<FROM> javaValue, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode raw '%s' optional object %s", fieldName, javaValue));
         }
@@ -80,7 +80,7 @@ public class JdkOptionalProperty<ENTITY, FROM, TO> extends AbstractProperty<ENTI
     }
 
     @Override
-    TO encodeFromRawInternal(Object o, Optional<Options> cassandraOptions) {
+    TO encodeFromRawInternal(Object o, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode raw '%s' optional object %s", fieldName, o));
         }
@@ -117,12 +117,12 @@ public class JdkOptionalProperty<ENTITY, FROM, TO> extends AbstractProperty<ENTI
     }
 
     @Override
-    public DataType buildType(Optional<Options> cassandraOptions) {
+    public DataType buildType(Optional<CassandraOptions> cassandraOptions) {
         return aProperty.buildType(cassandraOptions);
     }
 
     @Override
-    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<Options> cassandraOptions) {
+    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<CassandraOptions> cassandraOptions) {
         final TO encoded = aProperty.encodeField(entity, cassandraOptions);
         if (encoded != null) {
             aProperty.encodeFieldToUdt(entity, udtValue, cassandraOptions);

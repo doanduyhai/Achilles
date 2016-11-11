@@ -27,7 +27,7 @@ import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.ResultSet;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
@@ -45,7 +45,7 @@ public interface RawAndTypeMapDefaultImpl extends TypedMapAware, StatementTypeAw
 
     Object[] encodedBoundValues();
 
-    Options options();
+    CassandraOptions options();
 
     @Override
     default CompletableFuture<Tuple2<List<TypedMap>, ExecutionInfo>> getTypedMapsAsyncWithStats() {

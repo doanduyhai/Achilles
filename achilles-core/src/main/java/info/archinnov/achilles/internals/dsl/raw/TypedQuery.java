@@ -36,7 +36,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.RawAndTypeMapDefaultImpl;
 import info.archinnov.achilles.internals.dsl.action.SelectAction;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
@@ -57,7 +57,7 @@ public class TypedQuery<ENTITY> implements SelectAction<ENTITY>, RawAndTypeMapDe
     private final AbstractEntityProperty<ENTITY> meta;
     private final BoundStatement boundStatement;
     private final Object[] encodedBoundValues;
-    private final Options options = new Options();
+    private final CassandraOptions options = new CassandraOptions();
 
 
     public TypedQuery(RuntimeEngine rte, AbstractEntityProperty<ENTITY> meta, BoundStatement boundStatement, Object[] encodedBoundValues) {
@@ -229,7 +229,7 @@ public class TypedQuery<ENTITY> implements SelectAction<ENTITY>, RawAndTypeMapDe
     }
 
     @Override
-    public Options options() {
+    public CassandraOptions options() {
         return options;
     }
 }

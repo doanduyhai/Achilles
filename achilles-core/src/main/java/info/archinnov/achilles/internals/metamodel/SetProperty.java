@@ -35,8 +35,8 @@ import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.utils.NamingHelper;
-import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -69,7 +69,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
         return false;
     }
 
-    public VALUETO encodeSingleElement(VALUEFROM javaValue, Optional<Options> cassandraOptions) {
+    public VALUETO encodeSingleElement(VALUEFROM javaValue, Optional<CassandraOptions> cassandraOptions) {
         return valueProperty.encodeFromRaw(javaValue, cassandraOptions);
     }
 
@@ -83,7 +83,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public Set<VALUETO> encodeFromJavaInternal(Set<VALUEFROM> set, Optional<Options> cassandraOptions) {
+    public Set<VALUETO> encodeFromJavaInternal(Set<VALUEFROM> set, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode from Java '%s' set %s to CQL type", fieldName, set));
         }
@@ -94,7 +94,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public Set<VALUETO> encodeFromRawInternal(Object o, Optional<Options> cassandraOptions) {
+    public Set<VALUETO> encodeFromRawInternal(Object o, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode raw '%s' set object %s", fieldName, o));
         }
@@ -150,7 +150,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public DataType buildType(Optional<Options> cassandraOptions) {
+    public DataType buildType(Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Build current '%s' set data type", fieldName));
         }
@@ -164,7 +164,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<Options> cassandraOptions) {
+    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<CassandraOptions> cassandraOptions) {
         final Set<VALUETO> valueTo = encodeField(entity, cassandraOptions);
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' set %s to UDT value %s", fieldName, valueTo, udtValue));

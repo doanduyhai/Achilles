@@ -37,11 +37,10 @@ import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.injectable.*;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.types.OverridingOptional;
-import info.archinnov.achilles.internals.options.Options;
-import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -90,11 +89,11 @@ public abstract class AbstractUDTClassProperty<A>
 
     protected abstract Class<?> getParentEntityClass();
 
-    protected abstract UDTValue createUDTFromBean(A instance, Optional<Options> cassandraOptions);
+    protected abstract UDTValue createUDTFromBean(A instance, Optional<CassandraOptions> cassandraOptions);
 
     protected abstract A createBeanFromUDT(UDTValue udtValue);
 
-    protected UserType getUserType(Optional<Options> cassandraOptions) {
+    protected UserType getUserType(Optional<CassandraOptions> cassandraOptions) {
         if (cassandraOptions.isPresent()) {
             return buildType(cassandraOptions);
         } else {
@@ -102,13 +101,13 @@ public abstract class AbstractUDTClassProperty<A>
         }
     }
 
-    public UserType buildType(Optional<Options> cassandraOptions) {
+    public UserType buildType(Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Building UserType instance for the current UDT class meta %s", this.toString()));
         }
 
         Optional<String> keyspaceName = OverridingOptional
-                .from(cassandraOptions.flatMap(Options::getSchemaNameProvider).map(x -> x.keyspaceFor(parentEntityClass)))
+                .from(cassandraOptions.flatMap(CassandraOptions::getSchemaNameProvider).map(x -> x.keyspaceFor(parentEntityClass)))
                 .andThen(staticKeyspace.orElse(keyspace))
                 .getOptional();
 

@@ -31,7 +31,7 @@ import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWherePar
 import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWherePartitionTypeMap;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.functions.FunctionCall;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.sample_classes.dsl.index.TestEntityWithIndexAndUDT;
 import info.archinnov.achilles.type.SchemaNameProvider;
@@ -136,7 +136,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
    * Generate ... * FROM ... */
   public final TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFrom allColumns_FromBaseTable() {
     final Select.Where where = select.all().from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
-    return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFrom(where, new Options());
+    return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFrom(where, new CassandraOptions());
   }
 
   /**
@@ -145,7 +145,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
     final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
     final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
     final Select.Where where = select.all().from(currentKeyspace, currentTable).where();
-    return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFrom(where, Options.withSchemaNameProvider(schemaNameProvider));
+    return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFrom(where, CassandraOptions.withSchemaNameProvider(schemaNameProvider));
   }
 
   public class TestEntityWithIndexAndUDT_IndexSelectColumns extends AbstractSelectColumns {
@@ -230,7 +230,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
      * Generate a ... <strong>FROM xxx</strong> ...  */
     public final TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFrom fromBaseTable() {
       final Select.Where where = selection.from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
-      return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFrom(where, new Options());
+      return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFrom(where, new CassandraOptions());
     }
 
     /**
@@ -239,7 +239,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
       final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
       final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
       final Select.Where where = selection.from(currentKeyspace, currentTable).where();
-      return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFrom(where, Options.withSchemaNameProvider(schemaNameProvider));
+      return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFrom(where, CassandraOptions.withSchemaNameProvider(schemaNameProvider));
     }
 
     public class Udt_UDT {
@@ -355,7 +355,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
      * Generate a ... <strong>FROM xxx</strong> ...  */
     public final TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFromTypedMap fromBaseTable() {
       final Select.Where where = selection.from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
-      return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFromTypedMap(where, new Options());
+      return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFromTypedMap(where, new CassandraOptions());
     }
 
     /**
@@ -364,7 +364,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
       final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
       final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
       final Select.Where where = selection.from(currentKeyspace, currentTable).where();
-      return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFromTypedMap(where, Options.withSchemaNameProvider(schemaNameProvider));
+      return new TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectFromTypedMap(where, CassandraOptions.withSchemaNameProvider(schemaNameProvider));
     }
 
     public class Udt_UDT {
@@ -399,7 +399,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
   }
 
   public class TestEntityWithIndexAndUDT_IndexSelectFrom extends AbstractSelectFrom {
-    TestEntityWithIndexAndUDT_IndexSelectFrom(Select.Where where, Options cassandraOptions) {
+    TestEntityWithIndexAndUDT_IndexSelectFrom(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -417,7 +417,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
   }
 
   public class TestEntityWithIndexAndUDT_IndexSelectFromTypedMap extends AbstractSelectFromTypeMap {
-    TestEntityWithIndexAndUDT_IndexSelectFromTypedMap(Select.Where where, Options cassandraOptions) {
+    TestEntityWithIndexAndUDT_IndexSelectFromTypedMap(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -465,7 +465,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
   }
 
   public final class TestEntityWithIndexAndUDT_IndexSelectWhere extends AbstractSelectWherePartition {
-    public TestEntityWithIndexAndUDT_IndexSelectWhere(Select.Where where, Options cassandraOptions) {
+    public TestEntityWithIndexAndUDT_IndexSelectWhere(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -487,7 +487,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
   }
 
   public final class TestEntityWithIndexAndUDT_IndexSelectEnd extends AbstractIndexSelectWhere<TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectEnd, TestEntityWithIndexAndUDT> {
-    public TestEntityWithIndexAndUDT_IndexSelectEnd(Select.Where where, Options cassandraOptions) {
+    public TestEntityWithIndexAndUDT_IndexSelectEnd(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -507,7 +507,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
     }
 
     @Override
-    protected final Options getOptions() {
+    protected final CassandraOptions getOptions() {
       return cassandraOptions;
     }
 
@@ -582,7 +582,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
   }
 
   public final class TestEntityWithIndexAndUDT_IndexSelectWhereTypedMap extends AbstractSelectWherePartitionTypeMap {
-    public TestEntityWithIndexAndUDT_IndexSelectWhereTypedMap(Select.Where where, Options cassandraOptions) {
+    public TestEntityWithIndexAndUDT_IndexSelectWhereTypedMap(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -604,7 +604,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
   }
 
   public final class TestEntityWithIndexAndUDT_IndexSelectEndTypedMap extends AbstractIndexSelectWhereTypeMap<TestEntityWithIndexAndUDT_SelectIndex.TestEntityWithIndexAndUDT_IndexSelectEndTypedMap, TestEntityWithIndexAndUDT> {
-    public TestEntityWithIndexAndUDT_IndexSelectEndTypedMap(Select.Where where, Options cassandraOptions) {
+    public TestEntityWithIndexAndUDT_IndexSelectEndTypedMap(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -624,7 +624,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
     }
 
     @Override
-    protected final Options getOptions() {
+    protected final CassandraOptions getOptions() {
       return cassandraOptions;
     }
 

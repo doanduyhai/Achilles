@@ -33,7 +33,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Update;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.LWTHelper;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
 import info.archinnov.achilles.internals.dsl.action.MutationAction;
@@ -51,9 +51,9 @@ public abstract class AbstractUpdateEnd<T extends AbstractUpdateEnd<T, ENTITY>, 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractUpdateEnd.class);
 
     protected final Update.Where where;
-    protected final Options cassandraOptions;
+    protected final CassandraOptions cassandraOptions;
 
-    protected AbstractUpdateEnd(Update.Where where, Options cassandraOptions) {
+    protected AbstractUpdateEnd(Update.Where where, CassandraOptions cassandraOptions) {
         this.where = where;
         this.cassandraOptions = cassandraOptions;
     }
@@ -96,7 +96,7 @@ public abstract class AbstractUpdateEnd<T extends AbstractUpdateEnd<T, ENTITY>, 
     public CompletableFuture<ExecutionInfo> executeAsyncWithStats() {
 
         final RuntimeEngine rte = getRte();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
         final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
@@ -108,7 +108,7 @@ public abstract class AbstractUpdateEnd<T extends AbstractUpdateEnd<T, ENTITY>, 
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
         return futureRS
-                .thenApply(options::resultSetAsyncListener)
+                .thenApply(cassandraOptions::resultSetAsyncListener)
                 .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> LWTHelper.triggerLWTListeners(lwtResultListeners, x, queryString))
@@ -143,7 +143,7 @@ public abstract class AbstractUpdateEnd<T extends AbstractUpdateEnd<T, ENTITY>, 
 
         final RuntimeEngine rte = getRte();
         final AbstractEntityProperty<ENTITY> meta = getMetaInternal();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
         final PreparedStatement ps = rte.prepareDynamicQuery(where);
 
         final StatementWrapper statementWrapper = new BoundStatementWrapper(OperationType.UPDATE,
@@ -151,7 +151,7 @@ public abstract class AbstractUpdateEnd<T extends AbstractUpdateEnd<T, ENTITY>, 
                 getBoundValuesInternal().toArray(),
                 getEncodedValuesInternal().toArray());
 
-        statementWrapper.applyOptions(options);
+        statementWrapper.applyOptions(cassandraOptions);
         return statementWrapper;
     }
 }

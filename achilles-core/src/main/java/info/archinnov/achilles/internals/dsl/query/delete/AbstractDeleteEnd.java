@@ -33,7 +33,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.querybuilder.Delete;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
 import info.archinnov.achilles.internals.dsl.action.MutationAction;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForUpdateOrDelete;
@@ -48,9 +48,9 @@ public abstract class AbstractDeleteEnd<T extends AbstractDeleteEnd<T, ENTITY>, 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDeleteEnd.class);
 
     protected final Delete.Where where;
-    protected final Options cassandraOptions;
+    protected final CassandraOptions cassandraOptions;
 
-    protected AbstractDeleteEnd(Delete.Where where, Options cassandraOptions) {
+    protected AbstractDeleteEnd(Delete.Where where, CassandraOptions cassandraOptions) {
         this.where = where;
         this.cassandraOptions = cassandraOptions;
     }
@@ -81,7 +81,7 @@ public abstract class AbstractDeleteEnd<T extends AbstractDeleteEnd<T, ENTITY>, 
     public CompletableFuture<ExecutionInfo> executeAsyncWithStats() {
 
         final RuntimeEngine rte = getRte();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
         final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
@@ -93,7 +93,7 @@ public abstract class AbstractDeleteEnd<T extends AbstractDeleteEnd<T, ENTITY>, 
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
         return futureRS
-                .thenApply(options::resultSetAsyncListener)
+                .thenApply(cassandraOptions::resultSetAsyncListener)
                 .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
@@ -128,7 +128,7 @@ public abstract class AbstractDeleteEnd<T extends AbstractDeleteEnd<T, ENTITY>, 
 
         final RuntimeEngine rte = getRte();
         final AbstractEntityProperty<ENTITY> meta = getMetaInternal();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         PreparedStatement ps = rte.prepareDynamicQuery(where);
 
@@ -137,7 +137,7 @@ public abstract class AbstractDeleteEnd<T extends AbstractDeleteEnd<T, ENTITY>, 
                 getBoundValuesInternal().toArray(),
                 getEncodedValuesInternal().toArray());
 
-        statementWrapper.applyOptions(options);
+        statementWrapper.applyOptions(cassandraOptions);
         return statementWrapper;
     }
 }

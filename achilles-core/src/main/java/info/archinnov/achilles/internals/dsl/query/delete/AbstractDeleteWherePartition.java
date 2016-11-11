@@ -19,15 +19,15 @@ package info.archinnov.achilles.internals.dsl.query.delete;
 
 import com.datastax.driver.core.querybuilder.Delete;
 
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 
 
 public abstract class AbstractDeleteWherePartition {
 
     protected final Delete.Where where;
-    protected final Options cassandraOptions;
+    protected final CassandraOptions cassandraOptions;
 
-    protected AbstractDeleteWherePartition(Delete.Where where, Options cassandraOptions) {
+    protected AbstractDeleteWherePartition(Delete.Where where, CassandraOptions cassandraOptions) {
         this.where = where;
         this.cassandraOptions = cassandraOptions;
     }

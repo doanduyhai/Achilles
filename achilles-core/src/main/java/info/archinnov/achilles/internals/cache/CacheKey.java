@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.type.SchemaNameProvider;
 
@@ -68,13 +68,13 @@ public class CacheKey {
 
         FIND {
             @Override
-            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Prepare SELECT statement for entity of type %s",
                             meta.entityClass.getCanonicalName()));
                 }
 
-                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final Optional<SchemaNameProvider> provider = cassandraOptions.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, FIND));
                 return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateSelectQuery(meta, provider))
                         .orElse(psFromCache);
@@ -83,12 +83,12 @@ public class CacheKey {
         },
         INSERT {
             @Override
-            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Prepare INSERT statement for entity of type %s",
                             meta.entityClass.getCanonicalName()));
                 }
-                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final Optional<SchemaNameProvider> provider = cassandraOptions.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, INSERT));
                 return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsert(meta, provider))
                         .orElse(psFromCache);
@@ -96,12 +96,12 @@ public class CacheKey {
         },
         INSERT_JSON {
             @Override
-            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Prepare INSERT JSON statement for entity of type %s",
                             meta.entityClass.getCanonicalName()));
                 }
-                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final Optional<SchemaNameProvider> provider = cassandraOptions.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, INSERT_JSON));
                 return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsertJSON(meta, provider))
                         .orElse(psFromCache);
@@ -109,12 +109,12 @@ public class CacheKey {
         },
         INSERT_STATIC {
             @Override
-            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Prepare INSERT STATIC statement for entity of type %s",
                             meta.entityClass.getCanonicalName()));
                 }
-                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final Optional<SchemaNameProvider> provider = cassandraOptions.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, INSERT_STATIC));
                 return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsertStatic(meta, provider))
                         .orElse(psFromCache);
@@ -122,12 +122,12 @@ public class CacheKey {
         },
         INSERT_IF_NOT_EXISTS {
             @Override
-            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Prepare INSERT IF NOT EXISTS statement for entity of type %s",
                             meta.entityClass.getCanonicalName()));
                 }
-                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final Optional<SchemaNameProvider> provider = cassandraOptions.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, INSERT_IF_NOT_EXISTS));
                 return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsertIfNotExists(meta, provider))
                         .orElse(psFromCache);
@@ -135,12 +135,12 @@ public class CacheKey {
         },
         INSERT_IF_NOT_EXISTS_JSON {
             @Override
-            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Prepare INSERT JSON ... IF NOT EXISTS statement for entity of type %s",
                             meta.entityClass.getCanonicalName()));
                 }
-                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final Optional<SchemaNameProvider> provider = cassandraOptions.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, INSERT_IF_NOT_EXISTS_JSON));
                 return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsertIfNotExistsJson(meta, provider))
                         .orElse(psFromCache);
@@ -148,12 +148,12 @@ public class CacheKey {
         },
         INSERT_STATIC_IF_NOT_EXISTS {
             @Override
-            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Prepare INSERT STATIC IF NOT EXISTS statement for entity of type %s",
                             meta.entityClass.getCanonicalName()));
                 }
-                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final Optional<SchemaNameProvider> provider = cassandraOptions.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, INSERT_STATIC_IF_NOT_EXISTS));
                 return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateInsertStaticIfNotExists(meta, provider))
                         .orElse(psFromCache);
@@ -161,12 +161,12 @@ public class CacheKey {
         },
         DELETE {
             @Override
-            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Prepare DELETE statement for entity of type %s",
                             meta.entityClass.getCanonicalName()));
                 }
-                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final Optional<SchemaNameProvider> provider = cassandraOptions.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, DELETE));
                 return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateDeleteByKeys(meta, provider))
                         .orElse(psFromCache);
@@ -174,12 +174,12 @@ public class CacheKey {
         },
         DELETE_IF_EXISTS {
             @Override
-            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Prepare DELETE IF EXISTS statement for entity of type %s",
                             meta.entityClass.getCanonicalName()));
                 }
-                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final Optional<SchemaNameProvider> provider = cassandraOptions.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, DELETE_IF_EXISTS));
                 return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateDeleteByKeysIfExists(meta, provider))
                         .orElse(psFromCache);
@@ -187,12 +187,12 @@ public class CacheKey {
         },
         DELETE_BY_PARTITION {
             @Override
-            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Prepare DELETE BY PARTITION statement for entity of type %s",
                             meta.entityClass.getCanonicalName()));
                 }
-                final Optional<SchemaNameProvider> provider = options.getSchemaNameProvider();
+                final Optional<SchemaNameProvider> provider = cassandraOptions.getSchemaNameProvider();
                 final PreparedStatement psFromCache = rte.getStaticCache(new CacheKey(meta.entityClass, DELETE_BY_PARTITION));
                 return rte.maybePrepareIfDifferentSchemaNameFromCache(meta, psFromCache, provider, () -> generateDeleteByPartition(meta, provider))
                         .orElse(psFromCache);
@@ -200,7 +200,7 @@ public class CacheKey {
         },
         UPDATE {
             @Override
-            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options) {
+            public PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions) {
                 //TODO
                 return null;
             }
@@ -208,6 +208,6 @@ public class CacheKey {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(Operation.class);
 
-        public abstract PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, Options options);
+        public abstract PreparedStatement getPreparedStatement(RuntimeEngine rte, AbstractEntityProperty<?> meta, CassandraOptions cassandraOptions);
     }
 }

@@ -26,23 +26,22 @@ import com.datastax.driver.core.Row;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import info.archinnov.achilles.internals.dsl.AsyncAware;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
-import info.archinnov.achilles.type.TypedMap;
 
 public class JSONIteratorWrapper implements Iterator<String>, AsyncAware {
 
     private final Iterator<Row> delegate;
     private final StatementWrapper statementWrapper;
-    private final Options options;
+    private final CassandraOptions options;
     private ExecutionInfo executionInfo;
 
-    public JSONIteratorWrapper(CompletableFuture<ResultSet> futureRS, StatementWrapper statementWrapper, Options options) {
+    public JSONIteratorWrapper(CompletableFuture<ResultSet> futureRS, StatementWrapper statementWrapper, CassandraOptions cassandraOptions) {
         this.statementWrapper = statementWrapper;
-        this.options = options;
+        this.options = cassandraOptions;
         try {
             this.delegate = Uninterruptibles.getUninterruptibly(futureRS
-                    .thenApply(options::resultSetAsyncListener)
+                    .thenApply(cassandraOptions::resultSetAsyncListener)
                     .thenApply(statementWrapper::logTrace)
                     .thenApply(rs -> {
                         JSONIteratorWrapper.this.executionInfo = rs.getExecutionInfo();

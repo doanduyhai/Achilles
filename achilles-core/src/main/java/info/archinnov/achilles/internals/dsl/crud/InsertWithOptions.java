@@ -18,8 +18,6 @@ package info.archinnov.achilles.internals.dsl.crud;
 
 import static info.archinnov.achilles.internals.cache.CacheKey.Operation.*;
 import static info.archinnov.achilles.internals.dsl.LWTHelper.triggerLWTListeners;
-import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validateColumnsForInsertStatic;
-import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validatePrimaryKey;
 import static info.archinnov.achilles.type.interceptor.Event.POST_INSERT;
 import static info.archinnov.achilles.type.interceptor.Event.PRE_INSERT;
 import static java.lang.String.format;
@@ -28,7 +26,6 @@ import static java.util.stream.Collectors.toList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,14 +36,13 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
 import info.archinnov.achilles.internals.dsl.action.MutationAction;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForInsert;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundValuesWrapper;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
-import info.archinnov.achilles.type.SchemaNameProvider;
 
 public class InsertWithOptions<ENTITY> extends AbstractOptionsForInsert<InsertWithOptions<ENTITY>>
         implements MutationAction, StatementProvider {
@@ -56,15 +52,15 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForInsert<InsertWi
     private final AbstractEntityProperty<ENTITY> meta;
     private final RuntimeEngine rte;
     private final ENTITY instance;
-    private final Options options;
+    private final CassandraOptions options;
     private final boolean insertStatic;
 
-    public InsertWithOptions(AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte, ENTITY instance, boolean insertStatic, Optional<Options> cassandraOptions) {
+    public InsertWithOptions(AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte, ENTITY instance, boolean insertStatic, Optional<CassandraOptions> cassandraOptions) {
         this.meta = meta;
         this.rte = rte;
         this.instance = instance;
         this.insertStatic = insertStatic;
-        this.options = cassandraOptions.orElse(new Options());
+        this.options = cassandraOptions.orElse(new CassandraOptions());
     }
 
     public CompletableFuture<ExecutionInfo> executeAsyncWithStats() {
@@ -94,7 +90,7 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForInsert<InsertWi
     }
 
     @Override
-    protected Options getOptions() {
+    protected CassandraOptions getOptions() {
         return options;
     }
 

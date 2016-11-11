@@ -33,7 +33,7 @@ import com.datastax.driver.core.SettableData;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.statements.BoundValueInfo;
 import info.archinnov.achilles.internals.statements.BoundValuesWrapper;
 import info.archinnov.achilles.internals.types.OverridingOptional;
@@ -43,7 +43,7 @@ public class BeanValueExtractor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BeanValueExtractor.class);
 
-    public static <T> BoundValuesWrapper extractAllValues(T instance, AbstractEntityProperty<T> entityProperty, Options options) {
+    public static <T> BoundValuesWrapper extractAllValues(T instance, AbstractEntityProperty<T> entityProperty, CassandraOptions cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Extract values from entity %s of type %s",
                     instance, entityProperty.entityClass.getCanonicalName()));
@@ -55,7 +55,7 @@ public class BeanValueExtractor {
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
                     final BiConsumer<Object, SettableData> lambda = x1::encodeToSettable;
-                    return BoundValueInfo.of(lambda, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
+                    return BoundValueInfo.of(lambda, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(cassandraOptions)));
                 })
                 .collect(toList());
 
@@ -65,7 +65,7 @@ public class BeanValueExtractor {
                 .stream()
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
-                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
+                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(cassandraOptions)));
                 })
                 .collect(toList()));
 
@@ -73,7 +73,7 @@ public class BeanValueExtractor {
                 .stream()
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
-                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
+                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(cassandraOptions)));
                 })
                 .collect(toList()));
 
@@ -81,7 +81,7 @@ public class BeanValueExtractor {
                 .stream()
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
-                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
+                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(cassandraOptions)));
                 })
                 .collect(toList()));
 
@@ -89,12 +89,12 @@ public class BeanValueExtractor {
                 .stream()
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
-                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
+                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(cassandraOptions)));
                 })
                 .collect(toList()));
 
         final Optional<Integer> ttl = OverridingOptional
-                .from(options.getTimeToLive())
+                .from(cassandraOptions.getTimeToLive())
                 .andThen(entityProperty.staticTTL)
                 .getOptional();
 
@@ -108,7 +108,7 @@ public class BeanValueExtractor {
         return new BoundValuesWrapper(entityProperty, boundValues);
     }
 
-    public static <T> Tuple2<Object[], Object[]> extractPrimaryKeyValues(T instance, AbstractEntityProperty<T> entityProperty, Optional<Options> cassandraOptions) {
+    public static <T> Tuple2<Object[], Object[]> extractPrimaryKeyValues(T instance, AbstractEntityProperty<T> entityProperty, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Extract primary key values from entity %s of type %",
                     instance, entityProperty.entityClass.getCanonicalName()));
@@ -134,7 +134,7 @@ public class BeanValueExtractor {
         return Tuple2.of(boundValues, encodedValues);
     }
 
-    public static <T> BoundValuesWrapper extractPartitionKeysAndStaticValues(T instance, AbstractEntityProperty<T> entityProperty, Options options) {
+    public static <T> BoundValuesWrapper extractPartitionKeysAndStaticValues(T instance, AbstractEntityProperty<T> entityProperty, CassandraOptions cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Extract partition key values and static columns from entity %s of type %",
                     instance, entityProperty.entityClass.getCanonicalName()));
@@ -146,7 +146,7 @@ public class BeanValueExtractor {
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
                     final BiConsumer<Object, SettableData> lambda = x1::encodeToSettable;
-                    return BoundValueInfo.of(lambda, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
+                    return BoundValueInfo.of(lambda, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(cassandraOptions)));
                 })
                 .collect(toList());
 
@@ -156,12 +156,12 @@ public class BeanValueExtractor {
                 .stream()
                 .map(x -> {
                     final AbstractProperty x1 = (AbstractProperty) x;
-                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(options)));
+                    return BoundValueInfo.of(x1::encodeToSettable, x.getFieldValue(instance), x.encodeField(instance, Optional.ofNullable(cassandraOptions)));
                 })
                 .collect(toList()));
 
         final Optional<Integer> ttl = OverridingOptional
-                .from(options.getTimeToLive())
+                .from(cassandraOptions.getTimeToLive())
                 .andThen(entityProperty.staticTTL)
                 .getOptional();
 

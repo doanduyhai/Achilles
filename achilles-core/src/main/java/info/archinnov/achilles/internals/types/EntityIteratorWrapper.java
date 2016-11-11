@@ -26,7 +26,7 @@ import com.datastax.driver.core.Row;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.AsyncAware;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
 import info.archinnov.achilles.type.interceptor.Event;
@@ -36,17 +36,17 @@ public class EntityIteratorWrapper<ENTITY> implements Iterator<ENTITY>, AsyncAwa
     private final Iterator<Row> delegate;
     private final AbstractEntityProperty<ENTITY> meta;
     private final StatementWrapper statementWrapper;
-    private final Options options;
+    private final CassandraOptions options;
     private ExecutionInfo executionInfo;
 
     public EntityIteratorWrapper(CompletableFuture<ResultSet> futureRS, AbstractEntityProperty<ENTITY> meta,
-                                 StatementWrapper statementWrapper, Options options) {
+                                 StatementWrapper statementWrapper, CassandraOptions cassandraOptions) {
         this.meta = meta;
         this.statementWrapper = statementWrapper;
-        this.options = options;
+        this.options = cassandraOptions;
         try {
             this.delegate = Uninterruptibles.getUninterruptibly(futureRS
-                    .thenApply(options::resultSetAsyncListener)
+                    .thenApply(cassandraOptions::resultSetAsyncListener)
                     .thenApply(statementWrapper::logTrace)
                     .thenApply(rs -> {
                         EntityIteratorWrapper.this.executionInfo = rs.getExecutionInfo();

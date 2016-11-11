@@ -38,9 +38,9 @@ import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
 import info.archinnov.achilles.internals.utils.NamingHelper;
-import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -79,11 +79,11 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
         this.valueProperty = valueProperty;
     }
 
-    public KEYTO encodeSingleKeyElement(KEYFROM javaValue, Optional<Options> cassandraOptions) {
+    public KEYTO encodeSingleKeyElement(KEYFROM javaValue, Optional<CassandraOptions> cassandraOptions) {
         return keyProperty.encodeFromRaw(javaValue, cassandraOptions);
     }
 
-    public VALUETO encodeSingleValueElement(VALUEFROM javaValue, Optional<Options> cassandraOptions) {
+    public VALUETO encodeSingleValueElement(VALUEFROM javaValue, Optional<CassandraOptions> cassandraOptions) {
         return valueProperty.encodeFromRaw(javaValue, cassandraOptions);
     }
 
@@ -102,7 +102,7 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public Map<KEYTO, VALUETO> encodeFromJavaInternal(Map<KEYFROM, VALUEFROM> map, Optional<Options> cassandraOptions) {
+    public Map<KEYTO, VALUETO> encodeFromJavaInternal(Map<KEYFROM, VALUEFROM> map, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode from Java '%s' map %s to CQL type", fieldName, map));
         }
@@ -114,7 +114,7 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public Map<KEYTO, VALUETO> encodeFromRawInternal(Object o, Optional<Options> cassandraOptions) {
+    public Map<KEYTO, VALUETO> encodeFromRawInternal(Object o, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode raw '%s' map object %s", fieldName, o));
         }
@@ -173,7 +173,7 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public DataType buildType(Optional<Options> cassandraOptions) {
+    public DataType buildType(Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Build current '%s' map data type", fieldName));
         }
@@ -187,7 +187,7 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
     }
 
     @Override
-    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<Options> cassandraOptions) {
+    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<CassandraOptions> cassandraOptions) {
         final Map<KEYTO, VALUETO> valueTo = encodeField(entity, cassandraOptions);
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' map %s to UDT value %s", fieldName, valueTo, udtValue));

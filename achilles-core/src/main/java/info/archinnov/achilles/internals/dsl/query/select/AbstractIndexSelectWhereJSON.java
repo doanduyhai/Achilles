@@ -18,39 +18,25 @@ package info.archinnov.achilles.internals.dsl.query.select;
 
 import static java.lang.String.format;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.querybuilder.Select;
 
-import info.archinnov.achilles.internals.dsl.StatementProvider;
-import info.archinnov.achilles.internals.dsl.action.SelectJSONAction;
-import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForSelect;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
-import info.archinnov.achilles.internals.types.JSONIteratorWrapper;
-import info.archinnov.achilles.type.tuples.Tuple2;
 
 public abstract class AbstractIndexSelectWhereJSON<T extends AbstractIndexSelectWhereJSON<T, ENTITY>, ENTITY>
         extends AbstractSelectWhereJSON<T, ENTITY> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIndexSelectWhereJSON.class);
 
-    protected AbstractIndexSelectWhereJSON(Select.Where where, Options cassandraOptions) {
+    protected AbstractIndexSelectWhereJSON(Select.Where where, CassandraOptions cassandraOptions) {
         super(where, cassandraOptions);
     }
 
@@ -62,16 +48,16 @@ public abstract class AbstractIndexSelectWhereJSON<T extends AbstractIndexSelect
 
         final RuntimeEngine rte = getRte();
         final AbstractEntityProperty<ENTITY> meta = getMetaInternal();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         final String queryString;
-        if (options.hasRawSolrQuery()) {
-            getBoundValuesInternal().add(0, options.generateRawSolrQuery());
-            getEncodedValuesInternal().add(0, options.generateRawSolrQuery());
+        if (cassandraOptions.hasRawSolrQuery()) {
+            getBoundValuesInternal().add(0, cassandraOptions.generateRawSolrQuery());
+            getEncodedValuesInternal().add(0, cassandraOptions.generateRawSolrQuery());
             queryString = where.getQueryString();
-        } else if (options.hasSolrQuery()) {
-            getBoundValuesInternal().add(0, options.generateSolrQuery());
-            getEncodedValuesInternal().add(0, options.generateSolrQuery());
+        } else if (cassandraOptions.hasSolrQuery()) {
+            getBoundValuesInternal().add(0, cassandraOptions.generateSolrQuery());
+            getEncodedValuesInternal().add(0, cassandraOptions.generateSolrQuery());
             queryString = where.getQueryString();
         } else {
             queryString = where.getQueryString().trim().replaceFirst(";$", " ALLOW FILTERING;");
@@ -84,7 +70,7 @@ public abstract class AbstractIndexSelectWhereJSON<T extends AbstractIndexSelect
                 getBoundValuesInternal().toArray(),
                 getEncodedValuesInternal().toArray());
 
-        statementWrapper.applyOptions(options);
+        statementWrapper.applyOptions(cassandraOptions);
         return statementWrapper;
     }
 }

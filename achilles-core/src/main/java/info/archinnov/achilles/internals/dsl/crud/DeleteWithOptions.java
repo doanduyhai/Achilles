@@ -19,7 +19,6 @@ package info.archinnov.achilles.internals.dsl.crud;
 import static info.archinnov.achilles.internals.cache.CacheKey.Operation.DELETE;
 import static info.archinnov.achilles.internals.cache.CacheKey.Operation.DELETE_IF_EXISTS;
 import static info.archinnov.achilles.internals.dsl.LWTHelper.triggerLWTListeners;
-import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validatePrimaryKey;
 import static info.archinnov.achilles.type.interceptor.Event.POST_DELETE;
 import static info.archinnov.achilles.type.interceptor.Event.PRE_DELETE;
 import static java.lang.String.format;
@@ -39,17 +38,14 @@ import com.datastax.driver.core.ResultSet;
 
 import info.archinnov.achilles.internals.cache.CacheKey;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
 import info.archinnov.achilles.internals.dsl.action.MutationAction;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForUpdateOrDelete;
-import info.archinnov.achilles.internals.runtime.BeanValueExtractor;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
-import info.archinnov.achilles.type.SchemaNameProvider;
-import info.archinnov.achilles.type.tuples.Tuple2;
 
 public class DeleteWithOptions<ENTITY> extends AbstractOptionsForUpdateOrDelete<DeleteWithOptions<ENTITY>>
         implements MutationAction, StatementProvider {
@@ -62,7 +58,7 @@ public class DeleteWithOptions<ENTITY> extends AbstractOptionsForUpdateOrDelete<
     private Object[] primaryKeyValues;
     private Object[] encodedPrimaryKeyValues;
     private final Optional<ENTITY> instance;
-    private final Options options;
+    private final CassandraOptions options;
     private Optional<Boolean> ifExists = Optional.empty();
 
     public DeleteWithOptions(Class<ENTITY> entityClass,
@@ -71,14 +67,14 @@ public class DeleteWithOptions<ENTITY> extends AbstractOptionsForUpdateOrDelete<
                              Object[] primaryKeyValues,
                              Object[] encodedPrimaryKeyValues,
                              Optional<ENTITY> instance,
-                             Optional<Options> cassandraOptions) {
+                             Optional<CassandraOptions> cassandraOptions) {
         this.entityClass = entityClass;
         this.meta = meta;
         this.rte = rte;
         this.primaryKeyValues = primaryKeyValues;
         this.encodedPrimaryKeyValues = encodedPrimaryKeyValues;
         this.instance = instance;
-        this.options = cassandraOptions.orElse(new Options());
+        this.options = cassandraOptions.orElse(new CassandraOptions());
     }
 
     public CompletableFuture<ExecutionInfo> executeAsyncWithStats() {
@@ -110,7 +106,7 @@ public class DeleteWithOptions<ENTITY> extends AbstractOptionsForUpdateOrDelete<
     }
 
     @Override
-    protected Options getOptions() {
+    protected CassandraOptions getOptions() {
         return options;
     }
 

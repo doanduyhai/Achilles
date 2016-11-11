@@ -15,7 +15,7 @@ import info.archinnov.achilles.internals.dsl.crud.InsertJSONWithOptions;
 import info.archinnov.achilles.internals.dsl.crud.InsertWithOptions;
 import info.archinnov.achilles.internals.dsl.raw.NativeQuery;
 import info.archinnov.achilles.internals.dsl.raw.TypedQuery;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.AbstractManager;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.sample_classes.manager.TestEntityWithSASI;
@@ -97,12 +97,12 @@ public final class TestEntityWithSASI_Manager extends AbstractManager<TestEntity
   }
 
   public final class TestEntityWithSASI_CRUD {
-    private Optional<Options> cassandraOptions = Optional.empty();
+    private Optional<CassandraOptions> cassandraOptions = Optional.empty();
     ;
 
     public TestEntityWithSASI_Manager.TestEntityWithSASI_CRUD withSchemaNameProvider(final SchemaNameProvider schemaNameProvider) {
       Validator.validateNotNull(schemaNameProvider,"The provided schemaNameProvider should not be null");
-      this.cassandraOptions = Optional.of(Options.withSchemaNameProvider(schemaNameProvider));
+      this.cassandraOptions = Optional.of(CassandraOptions.withSchemaNameProvider(schemaNameProvider));
       return this;
     }
 

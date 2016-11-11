@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,7 @@ import info.archinnov.achilles.internals.injectable.InjectBeanFactory;
 import info.archinnov.achilles.internals.injectable.InjectKeyspace;
 import info.archinnov.achilles.internals.injectable.InjectUserAndTupleTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
 
 import info.archinnov.achilles.type.codec.Codec;
@@ -79,7 +78,7 @@ public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A
     }
 
     @Override
-    UDTValue encodeFromJavaInternal(A javaValue, Optional<Options> cassandraOptions) {
+    UDTValue encodeFromJavaInternal(A javaValue, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode from Java '%s' %s to CQL UDT type", fieldName, javaValue));
         }
@@ -87,7 +86,7 @@ public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A
     }
 
     @Override
-    UDTValue encodeFromRawInternal(Object o, Optional<Options> cassandraOptions) {
+    UDTValue encodeFromRawInternal(Object o, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode raw '%s' object %s", fieldName, o));
         }
@@ -116,7 +115,7 @@ public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A
     }
 
     @Override
-    public UserType buildType(Optional<Options> cassandraOptions) {
+    public UserType buildType(Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Build current '%s' UDT data type", fieldName));
         }
@@ -125,7 +124,7 @@ public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A
     }
 
     @Override
-    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<Options> cassandraOptions) {
+    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<CassandraOptions> cassandraOptions) {
         final UDTValue valueTo = encodeField(entity, cassandraOptions);
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' %s to UDT value %s", fieldName, valueTo, udtValue));

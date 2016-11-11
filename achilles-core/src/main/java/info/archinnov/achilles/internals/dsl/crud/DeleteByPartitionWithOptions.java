@@ -35,7 +35,7 @@ import com.datastax.driver.core.ResultSet;
 
 import info.archinnov.achilles.internals.cache.CacheKey;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
 import info.archinnov.achilles.internals.dsl.action.MutationAction;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForUpdateOrDelete;
@@ -43,7 +43,6 @@ import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
-import info.archinnov.achilles.type.SchemaNameProvider;
 
 public class DeleteByPartitionWithOptions<ENTITY> extends AbstractOptionsForUpdateOrDelete<DeleteByPartitionWithOptions<ENTITY>>
         implements MutationAction, StatementProvider {
@@ -54,16 +53,16 @@ public class DeleteByPartitionWithOptions<ENTITY> extends AbstractOptionsForUpda
     private final RuntimeEngine rte;
     private final Object[] partitionKeys;
     private final Object[] encodedPartitionKeys;
-    private final Options options;
+    private final CassandraOptions options;
 
     public DeleteByPartitionWithOptions(AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte,
                                         Object[] partitionKeys, Object[] encodedPartitionKeys,
-                                        Optional<Options> cassandraOptions) {
+                                        Optional<CassandraOptions> cassandraOptions) {
         this.meta = meta;
         this.rte = rte;
         this.partitionKeys = partitionKeys;
         this.encodedPartitionKeys = encodedPartitionKeys;
-        this.options = cassandraOptions.orElse(new Options());
+        this.options = cassandraOptions.orElse(new CassandraOptions());
     }
 
     @Override
@@ -88,7 +87,7 @@ public class DeleteByPartitionWithOptions<ENTITY> extends AbstractOptionsForUpda
     }
 
     @Override
-    protected Options getOptions() {
+    protected CassandraOptions getOptions() {
         return options;
     }
 

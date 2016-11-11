@@ -30,13 +30,13 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.policies.RetryPolicy;
 
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 
 public abstract class AbstractOptionsForSelect<T extends AbstractOptionsForSelect<T>> {
 
     protected abstract T getThis();
 
-    protected abstract Options getOptions();
+    protected abstract CassandraOptions getOptions();
 
     /**
      * Set the given consistency level on the generated statement

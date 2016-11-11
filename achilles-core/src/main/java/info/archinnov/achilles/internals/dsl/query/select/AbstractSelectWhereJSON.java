@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.dsl.query.select;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 import java.util.Iterator;
 import java.util.List;
@@ -32,21 +31,15 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Select;
 
 import info.archinnov.achilles.internals.dsl.StatementProvider;
-import info.archinnov.achilles.internals.dsl.TypedMapAware;
-import info.archinnov.achilles.internals.dsl.action.SelectAction;
 import info.archinnov.achilles.internals.dsl.action.SelectJSONAction;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForSelect;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
-import info.archinnov.achilles.internals.types.EntityIteratorWrapper;
 import info.archinnov.achilles.internals.types.JSONIteratorWrapper;
-import info.archinnov.achilles.internals.types.TypedMapIteratorWrapper;
-import info.archinnov.achilles.type.TypedMap;
-import info.archinnov.achilles.type.interceptor.Event;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public abstract class AbstractSelectWhereJSON<T extends AbstractSelectWhereJSON<T, ENTITY>, ENTITY>
@@ -56,9 +49,9 @@ public abstract class AbstractSelectWhereJSON<T extends AbstractSelectWhereJSON<
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSelectWhereJSON.class);
 
     protected final Select.Where where;
-    protected final Options cassandraOptions;
+    protected final CassandraOptions cassandraOptions;
 
-    protected AbstractSelectWhereJSON(Select.Where where, Options cassandraOptions) {
+    protected AbstractSelectWhereJSON(Select.Where where, CassandraOptions cassandraOptions) {
         this.where = where;
         this.cassandraOptions = cassandraOptions;
     }
@@ -81,7 +74,7 @@ public abstract class AbstractSelectWhereJSON<T extends AbstractSelectWhereJSON<
     @Override
     public CompletableFuture<Tuple2<List<String>, ExecutionInfo>> getListJSONAsyncWithStats() {
         final RuntimeEngine rte = getRte();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
@@ -92,7 +85,7 @@ public abstract class AbstractSelectWhereJSON<T extends AbstractSelectWhereJSON<
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
         return futureRS
-                .thenApply(options::resultSetAsyncListener)
+                .thenApply(cassandraOptions::resultSetAsyncListener)
                 .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(resultSet -> Tuple2.of(IntStream
@@ -104,7 +97,7 @@ public abstract class AbstractSelectWhereJSON<T extends AbstractSelectWhereJSON<
     @Override
     public Iterator<String> iterator() {
         final RuntimeEngine rte = getRte();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
         if (LOGGER.isTraceEnabled()) {
@@ -114,7 +107,7 @@ public abstract class AbstractSelectWhereJSON<T extends AbstractSelectWhereJSON<
 
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
-        return new JSONIteratorWrapper(futureRS, statementWrapper, options);
+        return new JSONIteratorWrapper(futureRS, statementWrapper, cassandraOptions);
     }
 
     @Override
@@ -153,7 +146,7 @@ public abstract class AbstractSelectWhereJSON<T extends AbstractSelectWhereJSON<
 
         final RuntimeEngine rte = getRte();
         final AbstractEntityProperty<ENTITY> meta = getMetaInternal();
-        final Options options = getOptions();
+        final CassandraOptions cassandraOptions = getOptions();
 
         final PreparedStatement ps = rte.prepareDynamicQuery(where);
 
@@ -162,7 +155,7 @@ public abstract class AbstractSelectWhereJSON<T extends AbstractSelectWhereJSON<
                 getBoundValuesInternal().toArray(),
                 getEncodedValuesInternal().toArray());
 
-        statementWrapper.applyOptions(options);
+        statementWrapper.applyOptions(cassandraOptions);
         return statementWrapper;
     }
 }

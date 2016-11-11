@@ -34,7 +34,7 @@ import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWherePar
 import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectWhereTypeMap;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.functions.FunctionCall;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.sample_classes.dsl.select.TestEntityWithUDTAsClustering;
 import info.archinnov.achilles.internals.sample_classes.dsl.select.TestUDTWithNoKeyspace;
@@ -167,7 +167,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
    * Generate ... * FROM ... */
   public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom allColumns_FromBaseTable() {
     final Select.Where where = select.all().from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
-    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, new Options());
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, new CassandraOptions());
   }
 
   /**
@@ -176,7 +176,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
     final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
     final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
     final Select.Where where = select.all().from(currentKeyspace, currentTable).where();
-    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, Options.withSchemaNameProvider(schemaNameProvider));
+    return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, CassandraOptions.withSchemaNameProvider(schemaNameProvider));
   }
 
   public class TestEntityWithUDTAsClustering_SelectColumns extends AbstractSelectColumns {
@@ -288,7 +288,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
      * Generate a ... <strong>FROM xxx</strong> ...  */
     public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom fromBaseTable() {
       final Select.Where where = selection.from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, new Options());
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, new CassandraOptions());
     }
 
     /**
@@ -297,7 +297,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
       final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
       final Select.Where where = selection.from(currentKeyspace, currentTable).where();
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, Options.withSchemaNameProvider(schemaNameProvider));
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFrom(where, CassandraOptions.withSchemaNameProvider(schemaNameProvider));
     }
 
     public class Clust_UDT {
@@ -456,7 +456,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
      * Generate a ... <strong>FROM xxx</strong> ...  */
     public final TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap fromBaseTable() {
       final Select.Where where = selection.from(meta.getKeyspace().orElse("unknown_keyspace_for_" + meta.entityClass.getCanonicalName()), meta.getTableOrViewName()).where();
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap(where, new Options());
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap(where, new CassandraOptions());
     }
 
     /**
@@ -465,7 +465,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       final String currentKeyspace = lookupKeyspace(schemaNameProvider, meta.entityClass);
       final String currentTable = lookupTable(schemaNameProvider, meta.entityClass);
       final Select.Where where = selection.from(currentKeyspace, currentTable).where();
-      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap(where, Options.withSchemaNameProvider(schemaNameProvider));
+      return new TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectFromTypedMap(where, CassandraOptions.withSchemaNameProvider(schemaNameProvider));
     }
 
     public class Clust_UDT {
@@ -516,7 +516,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
   }
 
   public class TestEntityWithUDTAsClustering_SelectFrom extends AbstractSelectFrom {
-    TestEntityWithUDTAsClustering_SelectFrom(Select.Where where, Options cassandraOptions) {
+    TestEntityWithUDTAsClustering_SelectFrom(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -534,7 +534,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
   }
 
   public class TestEntityWithUDTAsClustering_SelectFromTypedMap extends AbstractSelectFromTypeMap {
-    TestEntityWithUDTAsClustering_SelectFromTypedMap(Select.Where where, Options cassandraOptions) {
+    TestEntityWithUDTAsClustering_SelectFromTypedMap(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -598,7 +598,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
   }
 
   public final class TestEntityWithUDTAsClustering_SelectWhere_Id extends AbstractSelectWherePartition {
-    public TestEntityWithUDTAsClustering_SelectWhere_Id(Select.Where where, Options cassandraOptions) {
+    public TestEntityWithUDTAsClustering_SelectWhere_Id(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -633,7 +633,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
   }
 
   public final class TestEntityWithUDTAsClustering_SelectWhere_Clust extends AbstractSelectWhere<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhere_Clust, TestEntityWithUDTAsClustering> {
-    public TestEntityWithUDTAsClustering_SelectWhere_Clust(Select.Where where, Options cassandraOptions) {
+    public TestEntityWithUDTAsClustering_SelectWhere_Clust(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -658,7 +658,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
     }
 
     @Override
-    protected final Options getOptions() {
+    protected final CassandraOptions getOptions() {
       return cassandraOptions;
     }
 
@@ -818,7 +818,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
   }
 
   public final class TestEntityWithUDTAsClustering_SelectEnd extends AbstractSelectWhere<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEnd, TestEntityWithUDTAsClustering> {
-    public TestEntityWithUDTAsClustering_SelectEnd(Select.Where where, Options cassandraOptions) {
+    public TestEntityWithUDTAsClustering_SelectEnd(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -838,7 +838,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
     }
 
     @Override
-    protected final Options getOptions() {
+    protected final CassandraOptions getOptions() {
       return cassandraOptions;
     }
 
@@ -882,7 +882,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
   }
 
   public final class TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id extends AbstractSelectWherePartitionTypeMap {
-    public TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id(Select.Where where, Options cassandraOptions) {
+    public TestEntityWithUDTAsClustering_SelectWhereTypedMap_Id(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -917,7 +917,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
   }
 
   public final class TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust extends AbstractSelectWhereTypeMap<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust, TestEntityWithUDTAsClustering> {
-    public TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust(Select.Where where, Options cassandraOptions) {
+    public TestEntityWithUDTAsClustering_SelectWhereTypedMap_Clust(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -942,7 +942,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
     }
 
     @Override
-    protected final Options getOptions() {
+    protected final CassandraOptions getOptions() {
       return cassandraOptions;
     }
 
@@ -1102,7 +1102,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
   }
 
   public final class TestEntityWithUDTAsClustering_SelectEndTypedMap extends AbstractSelectWhereTypeMap<TestEntityWithUDTAsClustering_Select.TestEntityWithUDTAsClustering_SelectEndTypedMap, TestEntityWithUDTAsClustering> {
-    public TestEntityWithUDTAsClustering_SelectEndTypedMap(Select.Where where, Options cassandraOptions) {
+    public TestEntityWithUDTAsClustering_SelectEndTypedMap(Select.Where where, CassandraOptions cassandraOptions) {
       super(where, cassandraOptions);
     }
 
@@ -1122,7 +1122,7 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
     }
 
     @Override
-    protected final Options getOptions() {
+    protected final CassandraOptions getOptions() {
       return cassandraOptions;
     }
 

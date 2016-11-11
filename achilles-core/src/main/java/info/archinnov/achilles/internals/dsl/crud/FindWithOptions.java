@@ -19,7 +19,6 @@ package info.archinnov.achilles.internals.dsl.crud;
 import static info.archinnov.achilles.internals.cache.CacheKey.Operation.FIND;
 import static java.lang.String.format;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -34,16 +33,14 @@ import com.google.common.util.concurrent.Uninterruptibles;
 
 import info.archinnov.achilles.internals.cache.CacheKey;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.AsyncAware;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForSelect;
-import info.archinnov.achilles.internals.runtime.BeanValueExtractor;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
-import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.interceptor.Event;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
@@ -57,16 +54,16 @@ public class FindWithOptions<ENTITY> extends AbstractOptionsForSelect<FindWithOp
     private final RuntimeEngine rte;
     private final Object[] primaryKeyValues;
     private final Object[] encodedPrimaryKeyValues;
-    private final Options options;
+    private final CassandraOptions options;
 
     public FindWithOptions(Class<ENTITY> entityClass, AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte,
-                           Object[] primaryKeyValues, Object[] encodedPrimaryKeyValues, Optional<Options> cassandraOptions) {
+                           Object[] primaryKeyValues, Object[] encodedPrimaryKeyValues, Optional<CassandraOptions> cassandraOptions) {
         this.entityClass = entityClass;
         this.meta = meta;
         this.rte = rte;
         this.primaryKeyValues = primaryKeyValues;
         this.encodedPrimaryKeyValues = encodedPrimaryKeyValues;
-        this.options = cassandraOptions.orElse(new Options());
+        this.options = cassandraOptions.orElse(new CassandraOptions());
     }
 
     public ENTITY get() {
@@ -114,7 +111,7 @@ public class FindWithOptions<ENTITY> extends AbstractOptionsForSelect<FindWithOp
     }
 
     @Override
-    protected Options getOptions() {
+    protected CassandraOptions getOptions() {
         return options;
     }
 

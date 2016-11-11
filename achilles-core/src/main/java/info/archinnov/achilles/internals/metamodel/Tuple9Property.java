@@ -33,7 +33,7 @@ import com.datastax.driver.core.TupleValue;
 import com.google.common.reflect.TypeToken;
 
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.type.tuples.Tuple9;
 import info.archinnov.achilles.validation.Validator;
 
@@ -67,7 +67,7 @@ public class Tuple9Property<ENTITY, A, B, C, D, E, F, G, H, I> extends AbstractT
     }
 
     @Override
-    TupleValue encodeFromJavaInternal(Tuple9<A, B, C, D, E, F, G, H, I> tuple9, Optional<Options> cassandraOptions) {
+    TupleValue encodeFromJavaInternal(Tuple9<A, B, C, D, E, F, G, H, I> tuple9, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode from Java '%s' tuple9 %s to CQL type", fieldName, tuple9));
         }
@@ -85,7 +85,7 @@ public class Tuple9Property<ENTITY, A, B, C, D, E, F, G, H, I> extends AbstractT
     }
 
     @Override
-    TupleValue encodeFromRawInternal(Object o, Optional<Options> cassandraOptions) {
+    TupleValue encodeFromRawInternal(Object o, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode raw '%s' tuple9 object %s", fieldName, o));
         }
@@ -124,7 +124,7 @@ public class Tuple9Property<ENTITY, A, B, C, D, E, F, G, H, I> extends AbstractT
     }
 
     @Override
-    public TupleType buildType(Optional<Options> cassandraOptions) {
+    public TupleType buildType(Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Build current '%s' tuple9 data type", fieldName));
         }

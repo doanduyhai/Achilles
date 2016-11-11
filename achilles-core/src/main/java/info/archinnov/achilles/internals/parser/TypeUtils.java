@@ -41,7 +41,6 @@ import com.google.common.reflect.TypeToken;
 import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.annotations.DSE_Search;
-import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.annotations.SASI.Analyzer;
 import info.archinnov.achilles.annotations.SASI.IndexMode;
 import info.archinnov.achilles.annotations.SASI.Normalization;
@@ -60,7 +59,7 @@ import info.archinnov.achilles.internals.metamodel.functions.FunctionCall;
 import info.archinnov.achilles.internals.metamodel.functions.FunctionProperty;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.query.delete.*;
 import info.archinnov.achilles.internals.dsl.query.select.*;
 import info.archinnov.achilles.internals.dsl.query.update.*;
@@ -236,7 +235,7 @@ public class TypeUtils {
     public static final ClassName NATIVE_QUERY = ClassName.get(NativeQuery.class);
 
     // Achilles
-    public static final ClassName OPTIONS = ClassName.get(Options.class);
+    public static final ClassName OPTIONS = ClassName.get(CassandraOptions.class);
     public static final ClassName VALIDATOR = ClassName.get(Validator.class);
     public static final ClassName CONFIG_MAP = ClassName.get(ConfigMap.class);
     public static final ClassName SCHEMA_NAME_PROVIDER = ClassName.get(SchemaNameProvider.class);

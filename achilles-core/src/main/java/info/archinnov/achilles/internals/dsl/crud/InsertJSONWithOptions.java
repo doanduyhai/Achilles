@@ -18,12 +18,7 @@ package info.archinnov.achilles.internals.dsl.crud;
 
 import static info.archinnov.achilles.internals.cache.CacheKey.Operation.*;
 import static info.archinnov.achilles.internals.dsl.LWTHelper.triggerLWTListeners;
-import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validateColumnsForInsertStatic;
-import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validatePrimaryKey;
-import static info.archinnov.achilles.type.interceptor.Event.POST_INSERT;
-import static info.archinnov.achilles.type.interceptor.Event.PRE_INSERT;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,13 +37,11 @@ import info.archinnov.achilles.internals.dsl.StatementProvider;
 import info.archinnov.achilles.internals.dsl.action.MutationAction;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForInsert;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
-import info.archinnov.achilles.internals.statements.BoundValuesWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
-import info.archinnov.achilles.type.SchemaNameProvider;
 
 public class InsertJSONWithOptions extends AbstractOptionsForInsert<InsertJSONWithOptions>
         implements MutationAction, StatementProvider {
@@ -58,15 +51,15 @@ public class InsertJSONWithOptions extends AbstractOptionsForInsert<InsertJSONWi
     private final AbstractEntityProperty<?> meta;
     private final RuntimeEngine rte;
     private final String json;
-    private final Options cassandraOptions;
+    private final CassandraOptions cassandraOptions;
     private final Object[] encodedBoundValues;
     private final List<Object> encodedBoundValuesAsList;
 
-    public InsertJSONWithOptions(AbstractEntityProperty<?> meta, RuntimeEngine rte, String json, Optional<Options> cassandraOptions) {
+    public InsertJSONWithOptions(AbstractEntityProperty<?> meta, RuntimeEngine rte, String json, Optional<CassandraOptions> cassandraOptions) {
         this.meta = meta;
         this.rte = rte;
         this.json = json;
-        this.cassandraOptions = cassandraOptions.orElse(new Options());
+        this.cassandraOptions = cassandraOptions.orElse(new CassandraOptions());
         this.encodedBoundValues = new Object[]{json};
         this.encodedBoundValuesAsList = Arrays.asList(json);
     }
@@ -91,7 +84,7 @@ public class InsertJSONWithOptions extends AbstractOptionsForInsert<InsertJSONWi
     }
 
     @Override
-    protected Options getOptions() {
+    protected CassandraOptions getOptions() {
         return cassandraOptions;
     }
 

@@ -29,7 +29,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.types.ResultSetWrapper;
 
 public class BoundStatementWrapper implements StatementWrapper {
@@ -76,8 +76,8 @@ public class BoundStatementWrapper implements StatementWrapper {
     }
 
     @Override
-    public void applyOptions(Options options) {
-        options.applyOptions(operationType, meta, bs);
+    public void applyOptions(CassandraOptions cassandraOptions) {
+        cassandraOptions.applyOptions(operationType, meta, bs);
     }
 
     @Override

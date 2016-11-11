@@ -22,7 +22,6 @@ import java.util.List;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
-import info.archinnov.achilles.internals.options.Options;
 import info.archinnov.achilles.internals.dsl.SchemaNameAware;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 

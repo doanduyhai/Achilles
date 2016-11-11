@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.exceptions.TraceRetrievalException;
 
-import info.archinnov.achilles.internals.options.Options;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.types.ResultSetWrapper;
 import info.archinnov.achilles.logger.AchillesLoggers;
 
@@ -45,7 +45,7 @@ public interface StatementWrapper {
 
     BoundStatement getBoundStatement();
 
-    void applyOptions(Options options);
+    void applyOptions(CassandraOptions cassandraOptions);
 
     void logDML();
 
