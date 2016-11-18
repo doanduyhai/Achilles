@@ -61,7 +61,7 @@ public class Tuple4Property<ENTITY, A, B, C, D> extends AbstractTupleProperty<EN
             LOGGER.trace(format("Encode from Java '%s' tuple4 %s to CQL type", fieldName, tuple4));
         }
 
-        return tupleType.newValue(
+        return getRuntimeTupleType(cassandraOptions).newValue(
                 aProperty.encodeFromRaw(tuple4._1(), cassandraOptions),
                 bProperty.encodeFromRaw(tuple4._2(), cassandraOptions),
                 cProperty.encodeFromRaw(tuple4._3(), cassandraOptions),
