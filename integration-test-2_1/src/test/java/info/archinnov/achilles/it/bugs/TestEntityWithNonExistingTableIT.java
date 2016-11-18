@@ -31,7 +31,6 @@ import com.datastax.driver.core.Cluster;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
-import info.archinnov.achilles.internals.entities.EntityWithNonExistingKeyspace;
 import info.archinnov.achilles.internals.entities.EntityWithNonExistingTable;
 
 @RunWith(MockitoJUnitRunner.class)
