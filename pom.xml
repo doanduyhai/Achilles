@@ -132,7 +132,7 @@
         <maven.scm.plugin.version>1.8.1</maven.scm.plugin.version>
         <maven.bundle.plugin.version>2.5.0</maven.bundle.plugin.version>
         <maven.gpg.plugin.version>1.1</maven.gpg.plugin.version>
-        <felix.version>2.4.0</felix.version>
+        <felix.version>3.2.0</felix.version>
 
         <clean.data.files>true</clean.data.files>
         <joda-time.version>2.9.1</joda-time.version>
@@ -682,5 +682,28 @@
             </snapshots>
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>maven central</id>
+            <name>Maven Plugin Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Maven Plugin Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
 </project>
