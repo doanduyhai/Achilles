@@ -30,14 +30,16 @@ import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.utils.NamingHelper;
+import info.archinnov.achilles.type.SchemaNameProvider;
 
 public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
         implements InjectUserAndTupleTypeFactory, InjectBeanFactory,
-        InjectJacksonMapper, InjectRuntimeCodecs, InjectKeyspace {
+        InjectJacksonMapper, InjectRuntimeCodecs, InjectKeyspace, InjectSchemaStrategy {
     public final FieldInfo<ENTITY, VALUEFROM> fieldInfo;
     public final String fieldName;
     public TypeToken<VALUEFROM> valueFromTypeToken;
     public TypeToken<VALUETO> valueToTypeToken;
+    protected Optional<SchemaNameProvider> schemaNameProvider = Optional.empty();
     private DataType dataType;
 
     AbstractProperty(TypeToken<VALUEFROM> valueFromTypeToken, TypeToken<VALUETO> valueToTypeToken, FieldInfo<ENTITY, VALUEFROM> fieldInfo) {
@@ -122,6 +124,11 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
             dataType = buildType(Optional.empty());
         }
         return dataType;
+    }
+
+    @Override
+    public void inject(SchemaNameProvider schemaNameProvider) {
+        this.schemaNameProvider = Optional.ofNullable(schemaNameProvider);
     }
 
     @Override

@@ -43,6 +43,7 @@ import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
 
+import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -171,5 +172,11 @@ public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A
     @Override
     public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
         udtClassProperty.injectRuntimeCodecs(runtimeCodecs);
+    }
+
+    @Override
+    public void inject(SchemaNameProvider schemaNameProvider) {
+        super.inject(schemaNameProvider);
+        this.udtClassProperty.inject(schemaNameProvider);
     }
 }

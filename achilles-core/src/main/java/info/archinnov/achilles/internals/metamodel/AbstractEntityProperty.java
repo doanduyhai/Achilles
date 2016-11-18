@@ -95,7 +95,7 @@ public abstract class AbstractEntityProperty<T> implements
     protected ConsistencyLevel writeConsistencyLevel;
     protected ConsistencyLevel serialConsistencyLevel;
     protected InsertStrategy insertStrategy;
-    protected Optional<SchemaNameProvider> schemaStrategy = Optional.empty();
+    public Optional<SchemaNameProvider> schemaStrategy = Optional.empty();
 
 
     public AbstractEntityProperty() {
@@ -426,6 +426,9 @@ public abstract class AbstractEntityProperty<T> implements
                     schemaNameProvider, entityClass.getCanonicalName()));
         }
         this.schemaStrategy = Optional.ofNullable(schemaNameProvider);
+        for (AbstractProperty<T, ?, ?> x : allColumns) {
+            x.inject(schemaNameProvider);
+        }
     }
 
     @Override

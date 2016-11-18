@@ -231,7 +231,7 @@ public class ArgumentExtractor {
 
     public static Optional<SchemaNameProvider> initSchemaNameProvider(ConfigMap configMap) {
         LOGGER.trace("Extract or init schema name provider");
-        return configMap.getTypedOr(SCHEMA_NAME_PROVIDER, Optional.empty());
+        return Optional.ofNullable(configMap.getTyped(SCHEMA_NAME_PROVIDER));
     }
 
     public static ExecutorService initExecutorService(ConfigMap configMap) {

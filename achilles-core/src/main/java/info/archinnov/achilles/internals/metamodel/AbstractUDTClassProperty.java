@@ -41,6 +41,7 @@ import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.types.OverridingOptional;
+import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -49,7 +50,7 @@ import info.archinnov.achilles.validation.Validator;
 public abstract class AbstractUDTClassProperty<A>
         implements InjectUserAndTupleTypeFactory,
         InjectBeanFactory, InjectKeyspace,
-        InjectJacksonMapper, InjectRuntimeCodecs {
+        InjectJacksonMapper, InjectRuntimeCodecs, InjectSchemaStrategy {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractUDTClassProperty.class);
 
@@ -63,6 +64,7 @@ public abstract class AbstractUDTClassProperty<A>
     protected BeanFactory udtFactory;
     protected UserTypeFactory userTypeFactory;
     protected UserType userType;
+    protected Optional<SchemaNameProvider> schemaNameProvider = Optional.empty();
     String keyspace;
 
     public AbstractUDTClassProperty() {
@@ -108,6 +110,7 @@ public abstract class AbstractUDTClassProperty<A>
 
         Optional<String> keyspaceName = OverridingOptional
                 .from(cassandraOptions.flatMap(CassandraOptions::getSchemaNameProvider).map(x -> x.keyspaceFor(parentEntityClass)))
+                .andThen(this.schemaNameProvider.map(x -> x.keyspaceFor(parentEntityClass)))
                 .andThen(staticKeyspace.orElse(keyspace))
                 .getOptional();
 
@@ -154,7 +157,7 @@ public abstract class AbstractUDTClassProperty<A>
         for (AbstractProperty<A, ?, ?> x : componentsProperty) {
             x.inject(userTypeFactory, tupleTypeFactory);
         }
-        userType = this.buildType(Optional.empty());
+        userType = this.buildType(schemaNameProvider.map(CassandraOptions::withSchemaNameProvider));
     }
 
     @Override
@@ -177,6 +180,11 @@ public abstract class AbstractUDTClassProperty<A>
         for (AbstractProperty<A, ?, ?> x : componentsProperty) {
             x.injectKeyspace(keyspace);
         }
+    }
+
+    @Override
+    public void inject(SchemaNameProvider schemaNameProvider) {
+        this.schemaNameProvider = Optional.ofNullable(schemaNameProvider);
     }
 
     @Override

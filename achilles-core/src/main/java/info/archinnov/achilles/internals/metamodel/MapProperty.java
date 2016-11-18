@@ -41,6 +41,7 @@ import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
 import info.archinnov.achilles.internals.utils.NamingHelper;
+import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -233,5 +234,12 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
     public void injectKeyspace(String keyspace) {
         keyProperty.injectKeyspace(keyspace);
         valueProperty.injectKeyspace(keyspace);
+    }
+
+    @Override
+    public void inject(SchemaNameProvider schemaNameProvider) {
+        super.inject(schemaNameProvider);
+        this.keyProperty.inject(schemaNameProvider);
+        this.valueProperty.inject(schemaNameProvider);
     }
 }

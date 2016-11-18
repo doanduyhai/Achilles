@@ -38,6 +38,7 @@ import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.internals.options.CassandraOptions;
+import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.factory.BeanFactory;
@@ -96,7 +97,7 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
         for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
             x.inject(userTypeFactory, tupleTypeFactory);
         }
-        this.tupleType = this.buildType(Optional.empty());
+        this.tupleType = this.buildType(schemaNameProvider.map(CassandraOptions::withSchemaNameProvider));
     }
 
     @Override
@@ -137,4 +138,16 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
                 .flatMap(property -> property.getUDTClassProperties().stream())
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void inject(SchemaNameProvider schemaNameProvider) {
+        super.inject(schemaNameProvider);
+        for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
+            x.inject(schemaNameProvider);
+        }
+    }
+
+     protected TupleType getRuntimeTupleType(Optional<CassandraOptions> options) {
+         return options.isPresent() ? buildType(options) : tupleType;
+     }
 }

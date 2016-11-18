@@ -15,6 +15,9 @@ CREATE TYPE IF NOT EXISTS test.non_frozen_udt(
 		se frozen<set<text>>,
 		ma frozen<map<int, text>>,
 		address frozen<it_3_6.adress_udt>);
+CREATE TYPE IF NOT EXISTS test.udt_no_ks(
+		id bigint,
+		value text);
 CREATE TYPE IF NOT EXISTS test.my_type(
 		name text,
 		list list<text>,
@@ -316,6 +319,14 @@ CREATE TABLE IF NOT EXISTS test.table_with_with_dynamic_keyspace(
 		udtset set<frozen<test.no_ks>>,
 		PRIMARY KEY(id, clust))
 	WITH CLUSTERING ORDER BY(clust ASC);
+CREATE TABLE IF NOT EXISTS test.entity_with_udts(
+		id bigint,
+		listudt list<frozen<test.udt_no_ks>>,
+		mapudt map<frozen<test.udt_no_ks>, frozen<test.udt_no_ks>>,
+		optionaludt test.udt_no_ks,
+		setudt set<frozen<test.udt_no_ks>>,
+		tupleudt frozen<tuple<int, udt_no_ks>>,
+		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.multi_clustering_entity(
 		id bigint,
 		c1 int,
