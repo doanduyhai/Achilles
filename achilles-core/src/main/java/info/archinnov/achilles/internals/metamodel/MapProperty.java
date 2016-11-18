@@ -80,9 +80,56 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
         this.valueProperty = valueProperty;
     }
 
+    /**
+     * Encode the single key element of the map to a CQL-compatible value using Achilles codec system
+     * @param javaValue
+     * @return
+     */
+    public KEYTO encodeSingleKeyElement(KEYFROM javaValue) {
+        return encodeSingleKeyElement(javaValue, Optional.empty());
+    }
+
+    /**
+     * Encode the single key element of the map to a CQL-compatible value using Achilles codec system and a CassandraOptions
+     * containing a runtime SchemaNameProvider. Use the
+     * <br/>
+     * <br/>
+     * <pre class="code"><code class="java">
+     *     CassandraOptions.withSchemaNameProvider(SchemaNameProvider provider)
+     * </code></pre>
+     * <br/>
+     * static method to build such a CassandraOptions instance
+     * @param javaValue
+     * @param cassandraOptions
+     * @return
+     */
     public KEYTO encodeSingleKeyElement(KEYFROM javaValue, Optional<CassandraOptions> cassandraOptions) {
         return keyProperty.encodeFromRaw(javaValue, cassandraOptions);
     }
+
+    /**
+     * Encode the single value element of the map to a CQL-compatible value using Achilles codec system
+     * @param javaValue
+     * @return
+     */
+    public VALUETO encodeSingleValueElement(VALUEFROM javaValue) {
+        return encodeSingleValueElement(javaValue, Optional.empty());
+    }
+
+    /**
+     * Encode the single value element of the map to a CQL-compatible value using Achilles codec system and a CassandraOptions
+     * containing a runtime SchemaNameProvider. Use the
+     * <br/>
+     * <br/>
+     * <pre class="code"><code class="java">
+     *     CassandraOptions.withSchemaNameProvider(SchemaNameProvider provider)
+     * </code></pre>
+     * <br/>
+     * static method to build such a CassandraOptions instance
+     * @param javaValue
+     * @param cassandraOptions
+     * @return
+     */
 
     public VALUETO encodeSingleValueElement(VALUEFROM javaValue, Optional<CassandraOptions> cassandraOptions) {
         return valueProperty.encodeFromRaw(javaValue, cassandraOptions);

@@ -75,6 +75,29 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
         this.valueProperty = valueProperty;
     }
 
+    /**
+     * Encode the single element of the list to a CQL-compatible value using Achilles codec system
+     * @param javaValue
+     * @return
+     */
+    public VALUETO encodeSingleElement(VALUEFROM javaValue) {
+        return encodeSingleElement(javaValue, Optional.empty());
+    }
+
+    /**
+     * Encode the single element of the list to a CQL-compatible value using Achilles codec system and a CassandraOptions
+     * containing a runtime SchemaNameProvider. Use the
+     * <br/>
+     * <br/>
+     * <pre class="code"><code class="java">
+     *     CassandraOptions.withSchemaNameProvider(SchemaNameProvider provider)
+     * </code></pre>
+     * <br/>
+     * static method to build such a CassandraOptions instance
+     * @param javaValue
+     * @param cassandraOptions
+     * @return
+     */
     public VALUETO encodeSingleElement(VALUEFROM javaValue, Optional<CassandraOptions> cassandraOptions) {
         return valueProperty.encodeFromRaw(javaValue, cassandraOptions);
     }

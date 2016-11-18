@@ -54,15 +54,67 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
         this.fieldName = fieldInfo.fieldName;
     }
 
+
+    /**
+     * Encode given java value to CQL-compatible value using Achilles codec system
+     * @param javaValue
+     * @return
+     */
+    public VALUETO encodeFromJava(VALUEFROM javaValue) {
+        return encodeFromJava(javaValue, Optional.empty());
+    }
+
+    /**
+     * Encode given java value to CQL-compatible value using Achilles codec system and a CassandraOptions
+     * containing a runtime SchemaNameProvider. Use the
+     * <br/>
+     * <br/>
+     * <pre class="code"><code class="java">
+     *     CassandraOptions.withSchemaNameProvider(SchemaNameProvider provider)
+     * </code></pre>
+     * <br/>
+     * static method to build such a CassandraOptions instance
+     * @param javaValue
+     * @param cassandraOptions
+     * @return
+     */
     public VALUETO encodeFromJava(VALUEFROM javaValue, Optional<CassandraOptions> cassandraOptions) {
         if (javaValue == null) return null;
         return encodeFromJavaInternal(javaValue, cassandraOptions);
     }
 
+    /**
+     * Encode the given Java value to CQL-compatible value using Achilles codec system into the given SettableData (Row, UDTValue ...)
+     * @param valueto
+     * @param settableData
+     */
     public abstract void encodeToSettable(VALUETO valueto, SettableData<?> settableData);
 
     abstract VALUETO encodeFromJavaInternal(VALUEFROM javaValue, Optional<CassandraOptions> cassandraOptions);
 
+    /**
+     * Encode the given raw Java object to CQL-compatible value using Achilles codec system
+     * @param o
+     * @return
+     */
+    public VALUETO encodeFromRaw(Object o) {
+        return encodeFromRaw(o, Optional.empty());
+    }
+
+    /**
+     * Encode given java raw object to CQL-compatible value using Achilles codec system and a CassandraOptions
+     * containing a runtime SchemaNameProvider. Use the
+     * <br/>
+     * <br/>
+     * <pre class="code"><code class="java">
+     *     CassandraOptions.withSchemaNameProvider(SchemaNameProvider provider)
+     * </code></pre>
+     * <br/>
+     * static method to build such a CassandraOptions instance
+     * @param o
+     * @param cassandraOptions
+     * @return
+     */
     public VALUETO encodeFromRaw(Object o, Optional<CassandraOptions> cassandraOptions) {
         if (o == null) return null;
         return encodeFromRawInternal(o, cassandraOptions);
@@ -70,6 +122,11 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
 
     abstract VALUETO encodeFromRawInternal(Object o, Optional<CassandraOptions> cassandraOptions);
 
+    /**
+     * Decode the given GettableData (Row, UDTValue, ...) to Java value value using Achilles codec system
+     * @param gettableData
+     * @return
+     */
     public VALUEFROM decodeFromGettable(GettableData gettableData) {
         if (gettableData.isNull(NamingHelper.maybeQuote(getColumnForSelect())) && !isOptional()) return null;
         return decodeFromGettableInternal(gettableData);
@@ -77,6 +134,11 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
 
     abstract VALUEFROM decodeFromGettableInternal(GettableData gettableData);
 
+    /**
+     * Decode the given raw object to Java value value using Achilles codec system
+     * @param o
+     * @return
+     */
     public VALUEFROM decodeFromRaw(Object o) {
         if (o == null && !isOptional()) return null;
         return decodeFromRawInternal(o);
@@ -84,29 +146,110 @@ public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
 
     abstract VALUEFROM decodeFromRawInternal(Object o);
 
+    /**
+     * Build the Java driver DataType of this column given a CassandraOptions
+     * containing a runtime SchemaNameProvider. Use the
+     * <br/>
+     * <br/>
+     * <pre class="code"><code class="java">
+     *     CassandraOptions.withSchemaNameProvider(SchemaNameProvider provider)
+     * </code></pre>
+     * <br/>
+     * static method to build such a CassandraOptions instance
+     * @param cassandraOptions
+     * @return
+     */
     public abstract DataType buildType(Optional<CassandraOptions> cassandraOptions);
 
     abstract boolean isOptional();
 
+    /**
+     * Encode the field of the given entity into CQL-compatible value using Achilles codec system
+     * @param entity
+     * @return
+     */
+    public VALUETO encodeField(ENTITY entity) {
+        return encodeField(entity, Optional.empty());
+    }
+
+    /**
+     * Encode the field of the given entity into CQL-compatible value using Achilles codec system and a CassandraOptions
+     * containing a runtime SchemaNameProvider. Use the
+     * <br/>
+     * <br/>
+     * <pre class="code"><code class="java">
+     *     CassandraOptions.withSchemaNameProvider(SchemaNameProvider provider)
+     * </code></pre>
+     * <br/>
+     * static method to build such a CassandraOptions instance
+     * @param entity
+     * @return
+     */
     public VALUETO encodeField(ENTITY entity, Optional<CassandraOptions> cassandraOptions) {
         return encodeFromJava(getJavaValue(entity), cassandraOptions);
     }
 
+    /**
+     * Get the raw value associated with this field from the given entity (non encoded)
+     * @param entity
+     * @return
+     */
     public VALUEFROM getJavaValue(ENTITY entity) {
         return fieldInfo.getter.get(entity);
     }
 
+    /**
+     * <ol>
+     *     <li>First extract all the values from the given entity</li>
+     *     <li>Then encode each of the extracted value into CQL-compatible value using Achilles codec system</li>
+     *     <li>Finally set the encoded value to the given UDTValue instance</li>
+     * </ol>
+     * @param entity
+     * @param udtValue
+     */
+    public void encodeFieldToUdt(ENTITY entity, UDTValue udtValue) {
+        encodeFieldToUdt(entity, udtValue, Optional.empty());
+    }
+
+    /**
+     * <ol>
+     *     <li>First extract all the values from the given entity</li>
+     *     <li>Then encode each of the extracted value into CQL-compatible value using Achilles codec system and a CassandraOptions
+     * containing a runtime SchemaNameProvider. Use the
+     * <br/>
+     * <pre class="code"><code class="java">
+     *     CassandraOptions.withSchemaNameProvider(SchemaNameProvider provider)
+     * </code></pre>
+     * static method to build such a CassandraOptions instance</li>
+     *     <li>Finally set the encoded value to the given UDTValue instance</li>
+     * </ol>
+     * @param entity
+     * @param udtValue
+     */
     public abstract void encodeFieldToUdt(ENTITY entity, UDTValue udtValue, Optional<CassandraOptions> cassandraOptions);
 
     public abstract boolean containsUDTProperty();
 
     public abstract List<AbstractUDTClassProperty<?>> getUDTClassProperties();
 
+    /**
+     * <ol>
+     *     <li>First extract the column value from the given GettableData (Row, UDTValue, ...)</li>
+     *     <li>Then call the setter on the given entity to set the value</li>
+     * </ol>
+     * @param gettableData
+     * @param entity
+     */
     public void decodeField(GettableData gettableData, ENTITY entity) {
         final VALUEFROM valuefrom = decodeFromGettable(gettableData);
         fieldInfo.setter.set(entity, valuefrom);
     }
 
+    /**
+     * Call the getter on the given entity to get the value
+     * @param entity
+     * @return
+     */
     public VALUEFROM getFieldValue(ENTITY entity) {
         return fieldInfo.getter.get(entity);
     }
