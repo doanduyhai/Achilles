@@ -357,11 +357,7 @@ public abstract class AbstractEntityProperty<T> implements
         }
         this.keyspace = Optional.of(keyspace);
 
-        allColumns
-                .stream()
-                .filter(x -> x instanceof UDTProperty)
-                .map(x -> (UDTProperty)x)
-                .forEach(x -> x.injectKeyspace(keyspace));
+        allColumns.stream().forEach(x -> x.injectKeyspace(keyspace));
     }
 
     @Override
