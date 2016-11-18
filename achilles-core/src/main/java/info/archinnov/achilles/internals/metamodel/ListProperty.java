@@ -205,7 +205,7 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' list %s to UDT value %s", fieldName, valueTo, udtValue));
         }
-        udtValue.setList(fieldInfo.quotedCqlColumn, valueTo);
+        udtValue.set(fieldInfo.quotedCqlColumn, valueTo, valueToTypeToken);
     }
 
     @Override

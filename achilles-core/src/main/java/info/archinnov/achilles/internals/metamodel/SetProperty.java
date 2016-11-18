@@ -193,7 +193,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' set %s to UDT value %s", fieldName, valueTo, udtValue));
         }
-        udtValue.setSet(fieldInfo.quotedCqlColumn, valueTo);
+        udtValue.set(fieldInfo.quotedCqlColumn, valueTo, valueToTypeToken);
     }
 
     @Override

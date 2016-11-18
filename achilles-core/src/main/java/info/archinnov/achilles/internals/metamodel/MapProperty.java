@@ -240,7 +240,7 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode '%s' map %s to UDT value %s", fieldName, valueTo, udtValue));
         }
-        udtValue.setMap(fieldInfo.quotedCqlColumn, valueTo);
+        udtValue.set(fieldInfo.quotedCqlColumn, valueTo, valueToTypeToken);
     }
 
     @Override

@@ -22,6 +22,9 @@ CREATE TYPE IF NOT EXISTS test.my_type(
 		name text,
 		list list<text>,
 		map map<text, text>);
+CREATE TYPE IF NOT EXISTS test.udt_collections_primitive(
+		listint list<int>,
+		setdouble set<double>);
 CREATE TYPE IF NOT EXISTS test.having_nested_type(
 		value text,
 		udtlist list<frozen<test.no_ks>>,
@@ -309,6 +312,10 @@ CREATE TABLE IF NOT EXISTS test.entity_static_counter(
 		count counter,
 		PRIMARY KEY(id, uuid))
 	WITH CLUSTERING ORDER BY(uuid ASC);
+CREATE TABLE IF NOT EXISTS test.entity_with_udt_collections_primitives(
+		id bigint,
+		udt frozen<test.udt_collections_primitive>,
+		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.table_with_with_dynamic_keyspace(
 		id bigint,
 		clust frozen<test.no_ks>,
