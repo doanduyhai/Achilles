@@ -110,7 +110,7 @@ public class BeanValueExtractor {
 
     public static <T> Tuple2<Object[], Object[]> extractPrimaryKeyValues(T instance, AbstractEntityProperty<T> entityProperty, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format("Extract primary key values from entity %s of type %",
+            LOGGER.debug(format("Extract primary key values from entity %s of type %s",
                     instance, entityProperty.entityClass.getCanonicalName()));
         }
 
