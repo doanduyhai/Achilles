@@ -113,8 +113,7 @@ public class ListProperty<ENTITY, VALUEFROM, VALUETO> extends
             LOGGER.trace(format("Encode list '%s' value %s to settable object %s",
                     fieldName, valueTos, settableData));
         }
-
-        settableData.setList(fieldInfo.quotedCqlColumn, valueTos);
+        settableData.setList(fieldInfo.quotedCqlColumn, valueTos, valueProperty.valueToTypeToken);
     }
 
     @Override

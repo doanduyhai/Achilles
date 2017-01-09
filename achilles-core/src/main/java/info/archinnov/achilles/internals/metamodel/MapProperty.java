@@ -146,7 +146,7 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
             LOGGER.trace(format("Encode '%s' map value %s to settable object %s",
                     fieldName, mapTo, settableData));
         }
-        settableData.setMap(fieldInfo.quotedCqlColumn, mapTo);
+        settableData.setMap(fieldInfo.quotedCqlColumn, mapTo, keyProperty.valueToTypeToken, valueProperty.valueToTypeToken);
     }
 
     @Override

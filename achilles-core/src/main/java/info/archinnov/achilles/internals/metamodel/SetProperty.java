@@ -103,7 +103,7 @@ public class SetProperty<ENTITY, VALUEFROM, VALUETO> extends
             LOGGER.trace(format("Encode '%s' set value %s to settable object %s",
                     fieldName, valueTos, settableData));
         }
-        settableData.setSet(fieldInfo.quotedCqlColumn, valueTos);
+        settableData.setSet(fieldInfo.quotedCqlColumn, valueTos, valueProperty.valueToTypeToken);
     }
 
     @Override

@@ -242,6 +242,13 @@ CREATE TABLE IF NOT EXISTS missing_schema.missing_static(
 		value text,
 		PRIMARY KEY(id, clust))
 	WITH CLUSTERING ORDER BY(clust ASC);
+CREATE TABLE IF NOT EXISTS test.entity_with_native_collections(
+		id bigint,
+		doublelist list<double>,
+		longlist list<bigint>,
+		mapintlong map<int, bigint>,
+		tuple2 frozen<tuple<list<int>, list<double>>>,
+		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.table_with_nested_udt(
 		id bigint,
 		complexudt frozen<test.having_nested_type>,
