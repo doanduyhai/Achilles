@@ -82,6 +82,40 @@ public class TestInterceptorsSimpleEntity {
         }
     };
 
+    public static Interceptor<SimpleEntity> preUpdate = new Interceptor<SimpleEntity>() {
+        @Override
+        public boolean acceptEntity(Class<?> entityClass) {
+            return entityClass.equals(SimpleEntity.class);
+        }
+
+        @Override
+        public void onEvent(SimpleEntity entity, Event event) {
+            entity.setValue("preUpdate_" + entity.getValue());
+        }
+
+        @Override
+        public List<Event> interceptOnEvents() {
+            return asList(Event.PRE_UPDATE);
+        }
+    };
+
+    public static Interceptor<SimpleEntity> postUpdate = new Interceptor<SimpleEntity>() {
+        @Override
+        public boolean acceptEntity(Class<?> entityClass) {
+            return entityClass.equals(SimpleEntity.class);
+        }
+
+        @Override
+        public void onEvent(SimpleEntity entity, Event event) {
+            entity.setValue("postUpdate_" + entity.getValue());
+        }
+
+        @Override
+        public List<Event> interceptOnEvents() {
+            return asList(Event.POST_UPDATE);
+        }
+    };
+
     public static Interceptor<SimpleEntity> preDelete = new Interceptor<SimpleEntity>() {
         @Override
         public boolean acceptEntity(Class<?> entityClass) {
@@ -146,7 +180,7 @@ public class TestInterceptorsSimpleEntity {
                     .doForceSchemaCreation(true)
                     .withStatementsCache(statementsCache)
                     .withDefaultKeyspaceName(DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME)
-                    .withEventInterceptors(asList(preInsert, postInsert, preDelete, postDelete, postLoad))
+                    .withEventInterceptors(asList(preInsert, postInsert, preUpdate, postUpdate, preDelete, postDelete, postLoad))
                     .build());
 
     private Session session = resource.getNativeSession();
@@ -174,6 +208,32 @@ public class TestInterceptorsSimpleEntity {
 
         final Row row = rows.get(0);
         assertThat(row.getString("value")).isEqualTo("preInsert_value");
+    }
+
+    @Test
+    public void should_trigger_for_update() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final Date date = buildDateKey();
+
+        scriptExecutor.executeScriptTemplate("SimpleEntity/insert_single_row.cql", ImmutableMap.of("id", id, "table", "simple"));
+
+        final SimpleEntity entity = new SimpleEntity(id, date, "value");
+
+        //When
+        manager
+                .crud()
+                .update(entity)
+                .execute();
+
+        //Then
+        assertThat(entity.getValue()).isEqualTo("postUpdate_preUpdate_value");
+
+        final List<Row> rows = session.execute("SELECT * FROM simple WHERE id = " + id).all();
+        assertThat(rows).hasSize(1);
+
+        final Row row = rows.get(0);
+        assertThat(row.getString("value")).isEqualTo("preUpdate_value");
     }
 
     @Test

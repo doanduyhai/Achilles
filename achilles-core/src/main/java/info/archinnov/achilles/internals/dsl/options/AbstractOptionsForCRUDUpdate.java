@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,27 +30,30 @@ import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 
-public abstract class AbstractOptionsForInsert<T extends AbstractOptionsForInsert<T>>
+public abstract class AbstractOptionsForCRUDUpdate<T extends AbstractOptionsForCRUDUpdate<T>>
         extends AbstractOptionsForSelect<T> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOptionsForInsert.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOptionsForCRUDUpdate.class);
 
-    protected Optional<InsertStrategy> insertStrategy = Optional.empty();
-    protected Optional<Boolean> ifNotExists = Optional.empty();
+    /**
+     * Force the insert strategy to be NOT NULL FIELDS for CRUD update() method
+     */
+    protected InsertStrategy insertStrategy = InsertStrategy.NOT_NULL_FIELDS;
+    protected Optional<Boolean> ifExists = Optional.empty();
     protected Optional<List<LWTResultListener>> lwtResultListeners = Optional.empty();
 
     /**
-     * Generate a ... <strong>IF NOT EXISTS</strong> if true
+     * Generate a ... <strong>IF EXISTS</strong> if true
      */
-    public T ifNotExists(boolean ifNotExists) {
-        this.ifNotExists = Optional.of(ifNotExists);
+    public T ifExists(boolean ifExists) {
+        this.ifExists = Optional.of(ifExists);
         return getThis();
     }
 
     /**
-     * Generate a ... <strong>IF NOT EXISTS</strong>
+     * Generate a ... <strong>IF EXISTS</strong>
      */
-    public T ifNotExists() {
-        this.ifNotExists = Optional.of(true);
+    public T ifExists() {
+        this.ifExists = Optional.of(true);
         return getThis();
     }
 
@@ -118,28 +121,9 @@ public abstract class AbstractOptionsForInsert<T extends AbstractOptionsForInser
         return getThis();
     }
 
-    /**
-     * Bind values to prepared statement and avoid null if
-     * InsertStrategy.NOT_NULL_FIELDS is chosen
-     */
-    public T withInsertStrategy(InsertStrategy insertStrategy) {
-        this.insertStrategy = Optional.of(insertStrategy);
-        return getThis();
-    }
-
-    /**
-     * Determine the insert strategy for the given
-     * entity using static configuration and runtime option
-     *
-     * @param property entity property
-     * @return overriden InsertStrategy
-     */
     public InsertStrategy getOverridenStrategy(AbstractEntityProperty<?> property) {
 
-        final InsertStrategy insertStrategy = OverridingOptional
-                .from(this.insertStrategy)
-                .defaultValue(property.insertStrategy())
-                .get();
+        final InsertStrategy insertStrategy = this.insertStrategy;
 
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Get runtime insert strategy for entity %s : %s",

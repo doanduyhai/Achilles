@@ -56,8 +56,10 @@ public abstract class CrudAPICodeGen {
 
             if (!signature.isCounterEntity()) {
                 crudClass.addMethod(buildInsert(signature));
+                crudClass.addMethod(buildUpdate(signature));
                 if (signature.hasStatic()) {
                     crudClass.addMethod(buildInsertStatic(signature));
+                    crudClass.addMethod(buildUpdateStatic(signature));
                 }
             }
 
@@ -144,6 +146,19 @@ public abstract class CrudAPICodeGen {
                 .build();
     }
 
+    private static MethodSpec buildUpdate(EntityMetaSignature signature) {
+        return MethodSpec.methodBuilder("update")
+                .addJavadoc("Update the cassandra table with <strong>NOT NULL</strong> fields extracted from this entity\n\n")
+                .addJavadoc("@param instance an instance of $T\n", signature.entityRawClass)
+                .addJavadoc("@return $T<$T>", INSERT_WITH_OPTIONS, signature.entityRawClass)
+                .addModifiers(Modifier.FINAL, Modifier.PUBLIC)
+                .addParameter(signature.entityRawClass, "instance", Modifier.FINAL)
+                .addStatement("return updateInternal(instance, false, cassandraOptions)") // insertStatic = false
+                .returns(genericType(UPDATE_WITH_OPTIONS, signature.entityRawClass))
+                .build();
+    }
+
+
     private static MethodSpec buildInsertStatic(EntityMetaSignature signature) {
         return MethodSpec.methodBuilder("insertStatic")
                 .addJavadoc("Insert only partition key(s) and static column(s).\n\n")
@@ -154,6 +169,19 @@ public abstract class CrudAPICodeGen {
                 .addParameter(signature.entityRawClass, "instance", Modifier.FINAL)
                 .addStatement("return insertInternal(instance, true, cassandraOptions)") // insertStatic = true
                 .returns(genericType(INSERT_WITH_OPTIONS, signature.entityRawClass))
+                .build();
+    }
+
+    private static MethodSpec buildUpdateStatic(EntityMetaSignature signature) {
+        return MethodSpec.methodBuilder("updateStatic")
+                .addJavadoc("Update only static columns of the cassandra table with <strong>NOT NULL</strong> fields extracted from this entity\n\n")
+                .addJavadoc("<strong>All non-static column(s) values will be ignored and not updated</strong>\n\n")
+                .addJavadoc("@param instance an instance of $T\n", signature.entityRawClass)
+                .addJavadoc("@return $T<$T>", INSERT_WITH_OPTIONS, signature.entityRawClass)
+                .addModifiers(Modifier.FINAL, Modifier.PUBLIC)
+                .addParameter(signature.entityRawClass, "instance", Modifier.FINAL)
+                .addStatement("return updateInternal(instance, true, cassandraOptions)") // insertStatic = true
+                .returns(genericType(UPDATE_WITH_OPTIONS, signature.entityRawClass))
                 .build();
     }
 

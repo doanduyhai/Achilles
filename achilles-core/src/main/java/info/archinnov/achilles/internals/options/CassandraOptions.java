@@ -236,6 +236,10 @@ public class CassandraOptions {
         this.tracing = tracing;
     }
 
+    public boolean hasTTL() {
+        return timeToLive.isPresent();
+    }
+
     public Optional<Integer> getTimeToLive() {
         return timeToLive;
     }

@@ -16,7 +16,7 @@
 
 package info.archinnov.achilles.internals.runtime;
 
-import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validateColumnsForInsertStatic;
+import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validateColumnsForInsertOrUpdateStatic;
 import static info.archinnov.achilles.internals.runtime.BeanInternalValidator.validatePrimaryKey;
 import static info.archinnov.achilles.internals.statement.StatementHelper.isSelectStatement;
 import static info.archinnov.achilles.validation.Validator.*;
@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.*;
 
 import info.archinnov.achilles.internals.dsl.crud.InsertJSONWithOptions;
+import info.archinnov.achilles.internals.dsl.crud.UpdateWithOptions;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.dsl.crud.DeleteWithOptions;
 import info.archinnov.achilles.internals.dsl.crud.InsertWithOptions;
@@ -102,12 +103,29 @@ public abstract class AbstractManager<ENTITY> {
         }
 
         if (insertStatic) {
-            validateColumnsForInsertStatic(instance, meta_internal, cassandraOptions);
+            validateColumnsForInsertOrUpdateStatic(instance, meta_internal, cassandraOptions);
         } else {
             validatePrimaryKey(instance, meta_internal, cassandraOptions);
         }
 
         return new InsertWithOptions<>(meta_internal, rte, instance, insertStatic, cassandraOptions);
+    }
+
+    protected UpdateWithOptions<ENTITY> updateInternal(ENTITY instance, boolean updateStatic, Optional<CassandraOptions> cassandraOptions) {
+
+        validateNotNull(instance, "Entity to be updated to Cassandra should not be null");
+
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(format("Create update CRUD for entity %s", instance));
+        }
+
+        if (updateStatic) {
+            validateColumnsForInsertOrUpdateStatic(instance, meta_internal, cassandraOptions);
+        } else {
+            validatePrimaryKey(instance, meta_internal, cassandraOptions);
+        }
+
+        return new UpdateWithOptions<>(meta_internal, rte, instance, updateStatic, cassandraOptions);
     }
 
     protected InsertJSONWithOptions insertJSONInternal(String json, Optional<CassandraOptions> cassandraOptions) {

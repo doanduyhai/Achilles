@@ -64,4 +64,21 @@ public class BoundValuesWrapper {
                     boundValuesInfo.stream().map(x -> x.encodedValue).toArray());
         }
     }
+
+    public StatementWrapper bindForUpdate(PreparedStatement ps) {
+
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(format("Bind values %s to query %s for UPDATE %s",
+                    boundValuesInfo, ps.getQueryString()));
+        }
+
+        BoundStatement bs = ps.bind();
+        boundValuesInfo.stream()
+                .filter(x -> x.encodedValue != null)
+                .forEach(x -> x.setter.accept(x.encodedValue, bs));
+        return new BoundStatementWrapper(OperationType.UPDATE, meta, bs,
+                boundValuesInfo.stream().map(x -> x.boundValue).toArray(),
+                boundValuesInfo.stream().map(x -> x.encodedValue).toArray());
+
+    }
 }

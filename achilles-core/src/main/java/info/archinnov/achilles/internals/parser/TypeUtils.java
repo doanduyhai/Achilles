@@ -250,6 +250,7 @@ public class TypeUtils {
     public static final ClassName ABSTRACT_VIEW_PROPERTY = ClassName.get(AbstractViewProperty.class);
     public static final ClassName RUNTIME_ENGINE = ClassName.get(RuntimeEngine.class);
     public static final ClassName INSERT_WITH_OPTIONS = ClassName.get(InsertWithOptions.class);
+    public static final ClassName UPDATE_WITH_OPTIONS = ClassName.get(UpdateWithOptions.class);
     public static final ClassName INSERT_JSON_WITH_OPTIONS = ClassName.get(InsertJSONWithOptions.class);
     public static final ClassName FIND_WITH_OPTIONS = ClassName.get(FindWithOptions.class);
     public static final ClassName DELETE_WITH_OPTIONS = ClassName.get(DeleteWithOptions.class);

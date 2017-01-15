@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 
 package info.archinnov.achilles.internals.dsl.crud;
 
-import static info.archinnov.achilles.internals.cache.CacheKey.Operation.*;
 import static info.archinnov.achilles.internals.dsl.LWTHelper.triggerLWTListeners;
-import static info.archinnov.achilles.type.interceptor.Event.POST_INSERT;
-import static info.archinnov.achilles.type.interceptor.Event.PRE_INSERT;
+import static info.archinnov.achilles.type.interceptor.Event.*;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
@@ -35,37 +33,38 @@ import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 
-import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
 import info.archinnov.achilles.internals.dsl.action.MutationAction;
-import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForCRUDInsert;
+import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForCRUDUpdate;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundValuesWrapper;
+import info.archinnov.achilles.internals.statements.PreparedStatementGenerator;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
 
-public class InsertWithOptions<ENTITY> extends AbstractOptionsForCRUDInsert<InsertWithOptions<ENTITY>>
+public class UpdateWithOptions<ENTITY> extends AbstractOptionsForCRUDUpdate<UpdateWithOptions<ENTITY>>
         implements MutationAction, StatementProvider {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InsertWithOptions.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateWithOptions.class);
 
     private final AbstractEntityProperty<ENTITY> meta;
     private final RuntimeEngine rte;
     private final ENTITY instance;
     private final CassandraOptions options;
-    private final boolean insertStatic;
+    private final boolean updateStatic;
 
-    public InsertWithOptions(AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte, ENTITY instance, boolean insertStatic, Optional<CassandraOptions> cassandraOptions) {
+    public UpdateWithOptions(AbstractEntityProperty<ENTITY> meta, RuntimeEngine rte, ENTITY instance, boolean updateStatic, Optional<CassandraOptions> cassandraOptions) {
         this.meta = meta;
         this.rte = rte;
         this.instance = instance;
-        this.insertStatic = insertStatic;
+        this.updateStatic = updateStatic;
         this.options = cassandraOptions.orElse(new CassandraOptions());
     }
 
     public CompletableFuture<ExecutionInfo> executeAsyncWithStats() {
 
-        meta.triggerInterceptorsForEvent(PRE_INSERT, instance);
+        meta.triggerInterceptorsForEvent(PRE_UPDATE, instance);
 
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
@@ -84,7 +83,7 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForCRUDInsert<Inse
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo())
                 .thenApply(x -> {
-                    meta.triggerInterceptorsForEvent(POST_INSERT, instance);
+                    meta.triggerInterceptorsForEvent(POST_UPDATE, instance);
                     return x;
                 });
     }
@@ -107,7 +106,7 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForCRUDInsert<Inse
 
     @Override
     public List<Object> getBoundValues() {
-        BoundValuesWrapper wrapper = insertStatic == true
+        BoundValuesWrapper wrapper = updateStatic == true
                 ? meta.extractPartitionKeysAndStaticColumnsFromEntity(instance, options)
                 : meta.extractAllValuesFromEntity(instance, options);
         return wrapper.boundValuesInfo.stream().map(x -> x.boundValue).collect(toList());
@@ -115,14 +114,14 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForCRUDInsert<Inse
 
     @Override
     public List<Object> getEncodedBoundValues() {
-        BoundValuesWrapper wrapper = insertStatic == true
+        BoundValuesWrapper wrapper = updateStatic == true
                 ? meta.extractPartitionKeysAndStaticColumnsFromEntity(instance, options)
                 : meta.extractAllValuesFromEntity(instance, options);
         return wrapper.boundValuesInfo.stream().map(x -> x.encodedValue).collect(toList());
     }
 
     @Override
-    protected InsertWithOptions<ENTITY> getThis() {
+    protected UpdateWithOptions<ENTITY> getThis() {
         return this;
     }
 
@@ -132,25 +131,18 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForCRUDInsert<Inse
         }
 
         final PreparedStatement ps = getInternalPreparedStatement();
-        BoundValuesWrapper wrapper = insertStatic == true
+        BoundValuesWrapper wrapper = updateStatic == true
                 ? meta.extractPartitionKeysAndStaticColumnsFromEntity(instance, options)
                 : meta.extractAllValuesFromEntity(instance, options);
 
-        StatementWrapper statementWrapper = wrapper.bindWithInsertStrategy(ps, getOverridenStrategy(meta));
+        StatementWrapper statementWrapper = wrapper.bindForUpdate(ps);
         statementWrapper.applyOptions(options);
         return statementWrapper;
     }
 
     private PreparedStatement getInternalPreparedStatement() {
-        if (ifNotExists.isPresent() && ifNotExists.get() == true) {
-            return insertStatic == true
-                    ? INSERT_STATIC_IF_NOT_EXISTS.getPreparedStatement(rte, meta, options)
-                    : INSERT_IF_NOT_EXISTS.getPreparedStatement(rte, meta, options);
-        } else {
-            return insertStatic == true
-                    ? INSERT_STATIC.getPreparedStatement(rte, meta, options)
-                    : INSERT.getPreparedStatement(rte, meta, options);
-        }
+        return rte.prepareDynamicQuery(PreparedStatementGenerator.generateUpdate(instance, meta, options, updateStatic,
+                (ifExists.isPresent() && ifExists.get() == true)));
     }
 
 

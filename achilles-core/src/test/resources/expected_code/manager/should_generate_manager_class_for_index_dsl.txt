@@ -13,6 +13,7 @@ import info.archinnov.achilles.internals.dsl.crud.DeleteWithOptions;
 import info.archinnov.achilles.internals.dsl.crud.FindWithOptions;
 import info.archinnov.achilles.internals.dsl.crud.InsertJSONWithOptions;
 import info.archinnov.achilles.internals.dsl.crud.InsertWithOptions;
+import info.archinnov.achilles.internals.dsl.crud.UpdateWithOptions;
 import info.archinnov.achilles.internals.dsl.raw.NativeQuery;
 import info.archinnov.achilles.internals.dsl.raw.TypedQuery;
 import info.archinnov.achilles.internals.options.CassandraOptions;
@@ -145,6 +146,15 @@ public final class TestEntityWithSASI_Manager extends AbstractManager<TestEntity
      * @return InsertWithOptions<TestEntityWithSASI> */
     public final InsertWithOptions<TestEntityWithSASI> insert(final TestEntityWithSASI instance) {
       return insertInternal(instance, false, cassandraOptions);
+    }
+
+    /**
+     * Update the cassandra table with <strong>NOT NULL</strong> fields extracted from this entity
+     *
+     * @param instance an instance of TestEntityWithSASI
+     * @return InsertWithOptions<TestEntityWithSASI> */
+    public final UpdateWithOptions<TestEntityWithSASI> update(final TestEntityWithSASI instance) {
+      return updateInternal(instance, false, cassandraOptions);
     }
 
     /**

@@ -64,7 +64,7 @@ public class BeanInternalValidator {
 
     }
 
-    public static <T> void validateColumnsForInsertStatic(T instance, AbstractEntityProperty<T> entityProperty, Optional<CassandraOptions> cassandraOptions) {
+    public static <T> void validateColumnsForInsertOrUpdateStatic(T instance, AbstractEntityProperty<T> entityProperty, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Validate partition columns and other columns for INSERT STATIC of instance %s of type %s",
                     instance, entityProperty.entityClass.getCanonicalName()));

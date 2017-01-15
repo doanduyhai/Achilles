@@ -27,10 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.*;
 
 import info.archinnov.achilles.internals.cache.CacheKey;
 import info.archinnov.achilles.internals.cache.StatementsCache;
@@ -39,7 +36,10 @@ import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVers
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.ComputedProperty;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
+import info.archinnov.achilles.internals.options.CassandraOptions;
+import info.archinnov.achilles.internals.runtime.BeanValueExtractor;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.validation.Validator;
 
@@ -238,6 +238,48 @@ public class PreparedStatementGenerator {
         return insert.using(ttl(bindMarker("ttl")));
     }
 
+    public static <T> RegularStatement generateUpdate(T instance, AbstractEntityProperty<T> entityProperty, CassandraOptions options,
+                                                      boolean staticValuesOnly, boolean ifExists) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(format("Generate UPDATE query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
+        }
+
+        final Update update = getUpdateWithTableName(entityProperty, options.getSchemaNameProvider());
+
+        if (options.hasDefaultTimestamp()) {
+            update.using(QueryBuilder.timestamp(bindMarker("timestamp")));
+        }
+        update.using(QueryBuilder.ttl(bindMarker("ttl")));
+
+        Update.Assignments assignments = update.with();
+
+        entityProperty
+                .allColumns
+                .stream()
+                .filter(x -> x.fieldInfo.columnType != ColumnType.PARTITION)
+                .filter(x -> x.fieldInfo.columnType != ColumnType.CLUSTERING)
+                .filter(x -> staticValuesOnly ? x.fieldInfo.columnType == ColumnType.STATIC : true)
+                .filter(x -> x.getJavaValue(instance) != null)
+                .forEach(x -> assignments.and(QueryBuilder.set(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn))));
+
+        final Update.Where where = update.where();
+        entityProperty
+                .partitionKeys
+                .forEach(x -> where.and(QueryBuilder.eq(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn))));
+
+        if (!staticValuesOnly) {
+            entityProperty
+                    .clusteringColumns
+                    .forEach(x -> where.and(QueryBuilder.eq(x.fieldInfo.quotedCqlColumn, bindMarker(x.fieldInfo.quotedCqlColumn))));
+        }
+
+        if (ifExists) {
+            where.ifExists();
+        }
+
+        return where;
+    }
+
     public static RegularStatement generateInsertJSON(AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Generate INSERT JSON query for entity of type %s", entityProperty.entityClass.getCanonicalName()));
@@ -336,6 +378,26 @@ public class PreparedStatementGenerator {
             }
         }
         return insert;
+    }
+
+    private static Update getUpdateWithTableName(AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider) {
+        final Optional<String> keyspace = entityProperty.getKeyspace();
+        final Update update;
+        if (schemaNameProvider.isPresent()) {
+            final SchemaNameProvider provider = schemaNameProvider.get();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(format("Get UPDATE query for entity of type %s with schema provider",
+                        entityProperty.entityClass.getCanonicalName(), provider));
+            }
+            update = QueryBuilder.update(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));
+        } else {
+            if (keyspace.isPresent()) {
+                update = QueryBuilder.update(keyspace.get(), entityProperty.getTableOrViewName());
+            } else {
+                update = QueryBuilder.update(entityProperty.getTableOrViewName());
+            }
+        }
+        return update;
     }
 
     private static Delete lookupSchemaFromProvider(AbstractEntityProperty<?> entityProperty, Optional<SchemaNameProvider> schemaNameProvider, Delete.Selection delete, Optional<String> keyspace) {

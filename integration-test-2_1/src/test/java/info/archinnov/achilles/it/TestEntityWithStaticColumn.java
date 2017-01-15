@@ -86,7 +86,52 @@ public class TestEntityWithStaticColumn {
     }
 
     @Test
+    public void should_update() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final UUID uuid = UUIDs.timeBased();
+        scriptExecutor.executeScriptTemplate("EntityWithStaticColumn/insert_single_row.cql", ImmutableMap.of("id", id, "uuid", uuid));
+        final EntityWithStaticColumn entity = new EntityWithStaticColumn(id, uuid, "new_static", "new_val");
+
+        //When
+        manager
+                .crud()
+                .update(entity)
+                .execute();
+
+        //Then
+        final Row actual = session.execute("SELECT * FROM entitywithstaticcolumn WHERE id = " + id + " AND uuid = " + uuid).one();
+
+        assertThat(actual).isNotNull();
+        assertThat(actual.getString("static_col")).isEqualTo("new_static");
+        assertThat(actual.getString("value")).isEqualTo("new_val");
+    }
+
+    @Test
     public void should_insert_static() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final UUID uuid = UUIDs.timeBased();
+
+        scriptExecutor.executeScriptTemplate("EntityWithStaticColumn/insert_single_row.cql", ImmutableMap.of("id", id, "uuid", uuid));
+        final EntityWithStaticColumn entity = new EntityWithStaticColumn(id, null, "new_static", "new_val");
+
+        //When
+        manager
+                .crud()
+                .updateStatic(entity)
+                .execute();
+
+        //Then
+        final Row actual = session.execute("SELECT * FROM entitywithstaticcolumn WHERE id = " + id).one();
+
+        assertThat(actual).isNotNull();
+        assertThat(actual.getString("static_col")).isEqualTo("new_static");
+        assertThat(actual.getString("value")).isEqualTo("val");
+    }
+
+    @Test
+    public void should_update_static() throws Exception {
         //Given
         final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
 
