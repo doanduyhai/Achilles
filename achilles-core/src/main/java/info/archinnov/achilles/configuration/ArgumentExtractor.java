@@ -174,7 +174,7 @@ public class ArgumentExtractor {
         return Optional.<Session>ofNullable(configurationMap.getTyped(NATIVE_SESSION))
                 .orElse(initKeyspaceName(configurationMap)
                                 .map(cluster::connect)
-                                .orElse(cluster.connect())
+                                .orElseGet(cluster::connect)
                 );
     }
 

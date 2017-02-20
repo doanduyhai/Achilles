@@ -124,7 +124,7 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
         final CodeBlock keyspaceCodeBlock = Optional
                 .ofNullable(isBlank(udt.keyspace()) ? null : udt.keyspace())
                 .map(x -> CodeBlock.builder().addStatement("return $T.of($S)", OPTIONAL, x).build())
-                .orElse(CodeBlock.builder().addStatement("return $T.empty()", OPTIONAL).build());
+                .orElseGet(() -> CodeBlock.builder().addStatement("return $T.empty()", OPTIONAL).build());
 
         return MethodSpec.methodBuilder("getStaticKeyspace")
                 .addAnnotation(Override.class)
