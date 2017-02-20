@@ -213,7 +213,7 @@ public class SchemaCreator {
         }
 
 
-        final String keyspace = entityProperty.getKeyspace().orElse(session.getLoggedKeyspace());
+        final String keyspace = entityProperty.getKeyspace().orElseGet(session::getLoggedKeyspace);
         final SchemaContext schemaContext = new SchemaContext(keyspace, true, true);
         final List<String> schemas;
         if (entityProperty.isTable()) {
@@ -243,7 +243,7 @@ public class SchemaCreator {
                 .flatMap(x -> x.getUDTClassProperties().stream())
                 .forEach(x -> generateUDTAtRuntime(session, x));
 
-        final String udtKeyspace = udtClassProperty.staticKeyspace.orElse(session.getLoggedKeyspace());
+        final String udtKeyspace = udtClassProperty.staticKeyspace.orElseGet(session::getLoggedKeyspace);
         final SchemaContext schemaContext = new SchemaContext(udtKeyspace, true, true);
         final String udtSchema = udtClassProperty.generateSchema(schemaContext);
 

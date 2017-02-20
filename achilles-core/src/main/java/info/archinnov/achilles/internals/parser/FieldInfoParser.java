@@ -62,7 +62,7 @@ public class FieldInfoParser {
         final String fieldName = elm.getSimpleName().toString();
         final String cqlColumn = ofNullable(elm.getAnnotation(Column.class))
                 .map(x -> x.value().isEmpty() ? null : x.value())
-                .orElse(context.namingStrategy.apply(fieldName));
+                .orElseGet(() -> context.namingStrategy.apply(fieldName));
 
         final ExecutableElement getter = aptUtils.findGetter(classElm, elm, deriveGetterName(elm));
         final ExecutableElement setter = aptUtils.findSetter(classElm, elm, deriveSetterName(elm));

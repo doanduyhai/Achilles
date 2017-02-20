@@ -209,7 +209,7 @@ public class AchillesProcessor extends AbstractProcessor {
                 .map(typeElement -> aptUtils.getAnnotationOnClass(typeElement, CompileTimeConfig.class).get())
                 .findFirst()
                 .map(annot -> GlobalParsingContext.fromCompileTimeConfig(annot))
-                .orElse(GlobalParsingContext.defaultContext());
+                .orElseGet(GlobalParsingContext::defaultContext);
 
         context.validateProjectName(aptUtils);
 

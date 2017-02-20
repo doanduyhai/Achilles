@@ -84,7 +84,7 @@ public abstract class AbstractManagerFactory {
         final Optional<String> tableName = entityProperties
                 .stream()
                 .filter(x -> x.entityClass.equals(entityClass))
-                .map(x -> x.getKeyspace().map(ks -> ks + "." + x.getTableOrViewName()).orElse(x.getTableOrViewName()))
+                .map(x -> x.getKeyspace().map(ks -> ks + "." + x.getTableOrViewName()).orElseGet(x::getTableOrViewName))
                 .findFirst();
 
         if (LOGGER.isTraceEnabled()) {

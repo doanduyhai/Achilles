@@ -56,7 +56,7 @@ public class RuntimeEngine {
         this.configContext = configContext;
         this.session = configContext.getSession();
         this.cache = configContext.getStatementsCache();
-        this.currentKeyspace = configContext.getCurrentKeyspace().orElse(session.getLoggedKeyspace());
+        this.currentKeyspace = configContext.getCurrentKeyspace().orElseGet(session::getLoggedKeyspace);
         this.executor = configContext.getExecutorService();
     }
 
