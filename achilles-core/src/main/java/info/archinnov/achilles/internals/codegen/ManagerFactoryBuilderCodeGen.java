@@ -71,7 +71,7 @@ public class ManagerFactoryBuilderCodeGen {
                         .addJavadoc("@param cluster native @{link $T} object", CLUSTER)
                         .addJavadoc("@param configurationMap Achilles configuration map")
                         .addJavadoc("@return $T", context.managerFactoryTypeName())
-                        .addModifiers(Modifier.PUBLIC)
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                         .addParameter(CLUSTER, "cluster")
                         .addParameter(genericType(MAP, CONFIGURATION_PARAMETERS, TypeName.OBJECT), "configurationMap")
                         .addStatement("return new $T($N, buildConfigContext($N, $T.fromMap($N)))", context.managerFactoryTypeName(),
