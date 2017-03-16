@@ -55,6 +55,7 @@ public class ConfigurationContext {
 
     private boolean forceSchemaGeneration;
     private boolean ignoreMissingUDTFields;
+    private boolean schemaValidationEnabled = true;
 
     private List<Class<?>> manageEntities;
 
@@ -109,6 +110,14 @@ public class ConfigurationContext {
 
     public void setIgnoreMissingUDTFields(boolean ignoreMissingUDTFields) {
         this.ignoreMissingUDTFields = ignoreMissingUDTFields;
+    }
+
+    public boolean isSchemaValidationEnabled() {
+        return schemaValidationEnabled;
+    }
+
+    public void setSchemaValidationEnabled(boolean schemaValidationEnabled) {
+        this.schemaValidationEnabled = schemaValidationEnabled;
     }
 
     public List<Class<?>> getManageEntities() {

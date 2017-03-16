@@ -273,6 +273,7 @@ public enum ConfigurationParameters {
     GLOBAL_INSERT_STRATEGY("achilles.global.insert.strategy"),
     GLOBAL_NAMING_STRATEGY("achilles.global.naming.strategy"),
     SCHEMA_NAME_PROVIDER("achilles.schema.name.provider"),
+    SCHEMA_VALIDATION_ENABLED("achilles.schema.validation.enabled"),
 
     EXECUTOR_SERVICE("achilles.executor.service"),
     STATEMENTS_CACHE("achilles.statements.cache"),

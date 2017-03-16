@@ -96,7 +96,13 @@ public class ArgumentExtractor {
         configContext.setProvidedSession(initProvidedSession(configurationMap));
         configContext.setStatementsCache(initStatementCache(configurationMap));
         configContext.setRuntimeCodecs(initRuntimeCodecs(configurationMap));
+        configContext.setSchemaValidationEnabled(initSchemaValidationEnabled(configurationMap));
         return configContext;
+    }
+
+    static boolean initSchemaValidationEnabled(ConfigMap configurationMap) {
+        LOGGER.trace("Extract 'schema validation enabled' from configuration map");
+        return configurationMap.getTypedOr(SCHEMA_VALIDATION_ENABLED, true);
     }
 
     static boolean initForceSchemaCreation(ConfigMap configurationMap) {
