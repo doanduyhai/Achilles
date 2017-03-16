@@ -54,11 +54,7 @@ public class ConfigurationContext {
     public static final ConsistencyLevel DEFAULT_SERIAL_CONSISTENCY_LEVEL = ConsistencyLevel.LOCAL_SERIAL;
 
     private boolean forceSchemaGeneration;
-<<<<<<< HEAD
-    private boolean ignoreMissingUDTFields;
-    private boolean schemaValidationEnabled = true;
-=======
->>>>>>> parent of 392a742... add IgnoreMissingUDTFields option
+    private boolean validateSchema = true;
 
     private List<Class<?>> manageEntities;
 
@@ -107,25 +103,14 @@ public class ConfigurationContext {
         this.forceSchemaGeneration = forceSchemaGeneration;
     }
 
-<<<<<<< HEAD
-    public boolean isIgnoreMissingUDTFields() {
-        return ignoreMissingUDTFields;
+    public boolean isValidateSchema() {
+        return validateSchema;
     }
 
-    public void setIgnoreMissingUDTFields(boolean ignoreMissingUDTFields) {
-        this.ignoreMissingUDTFields = ignoreMissingUDTFields;
+    public void setValidateSchema(boolean validateSchema) {
+        this.validateSchema = validateSchema;
     }
 
-    public boolean isSchemaValidationEnabled() {
-        return schemaValidationEnabled;
-    }
-
-    public void setSchemaValidationEnabled(boolean schemaValidationEnabled) {
-        this.schemaValidationEnabled = schemaValidationEnabled;
-    }
-
-=======
->>>>>>> parent of 392a742... add IgnoreMissingUDTFields option
     public List<Class<?>> getManageEntities() {
         return manageEntities;
     }

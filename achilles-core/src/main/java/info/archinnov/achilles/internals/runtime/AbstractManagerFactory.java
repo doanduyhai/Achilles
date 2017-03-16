@@ -118,7 +118,7 @@ public abstract class AbstractManagerFactory {
         addNativeCodecs();
         injectDependencies();
         createSchema();
-        if (configContext.isSchemaValidationEnabled()) {
+        if (configContext.isValidateSchema()) {
             validateSchema();
         }
         prepareStaticStatements();
