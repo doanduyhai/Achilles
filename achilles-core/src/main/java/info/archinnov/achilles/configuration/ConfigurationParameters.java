@@ -257,13 +257,14 @@ public enum ConfigurationParameters {
     EVENT_INTERCEPTORS("achilles.event.interceptors"),
 
     FORCE_SCHEMA_GENERATION("achilles.ddl.force.schema.generation"),
-    IGNORE_MISSING_UDT_FIELDS("achilles.ddl.ignore.missing.udt.fields"),
 
     MANAGED_ENTITIES("achilles.managed.entities"),
 
     BEAN_VALIDATION_ENABLE("achilles.bean.validation.enable"),
     POST_LOAD_BEAN_VALIDATION_ENABLE("achilles.post.load.bean.validation.enable"),
     BEAN_VALIDATION_VALIDATOR("achilles.bean.validation.validator"),
+
+    IGNORE_MISSING_UDT_FIELDS("achilles.ignore.missing.udt.fields"),
 
     PREPARED_STATEMENTS_CACHE_SIZE("achilles.prepared.statements.cache.size"),
 
