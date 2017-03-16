@@ -16,26 +16,13 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumnType;
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
-import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticSelectQuery;
-import static info.archinnov.achilles.validation.Validator.validateNotNull;
-import static java.lang.String.format;
-
-import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.MaterializedViewMetadata;
 import com.datastax.driver.core.Session;
-
 import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
-import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.schema.SchemaCreator;
@@ -43,8 +30,20 @@ import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
 import info.archinnov.achilles.type.interceptor.Event;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
-import info.archinnov.achilles.type.tuples.Tuple3;
 import info.archinnov.achilles.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.StringJoiner;
+
+import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumnType;
+import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
+import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticSelectQuery;
+import static info.archinnov.achilles.validation.Validator.validateNotNull;
+import static java.lang.String.format;
 
 public abstract class AbstractViewProperty<T> extends AbstractEntityProperty<T> {
 
@@ -109,9 +108,9 @@ public abstract class AbstractViewProperty<T> extends AbstractEntityProperty<T> 
         validateColumnType(ColumnType.PARTITION, viewMetadata, partitionKeys, entityClass);
         validateColumnType(ColumnType.CLUSTERING, viewMetadata, clusteringColumns, entityClass);
 
-        validateColumns(viewMetadata, partitionKeys, entityClass);
-        validateColumns(viewMetadata, clusteringColumns, entityClass);
-        validateColumns(viewMetadata, normalColumns, entityClass);
+        validateColumns(configContext, viewMetadata, partitionKeys, entityClass);
+        validateColumns(configContext, viewMetadata, clusteringColumns, entityClass);
+        validateColumns(configContext, viewMetadata, normalColumns, entityClass);
     }
 
     @Override

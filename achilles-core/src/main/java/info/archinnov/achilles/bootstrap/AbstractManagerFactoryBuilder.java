@@ -16,20 +16,10 @@
 
 package info.archinnov.achilles.bootstrap;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadFactory;
-
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.internals.cache.StatementsCache;
@@ -43,6 +33,42 @@ import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.interceptor.Interceptor;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.validation.Validator;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
+
+import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_SERIAL_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_SERIAL_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_MAX_THREAD;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_MIN_THREAD;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EXECUTOR_SERVICE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_SCHEMA_GENERATION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.IGNORE_MISSING_UDT_FIELDS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.MANAGED_ENTITIES;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.POST_LOAD_BEAN_VALIDATION_ENABLE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RUNTIME_CODECS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.SCHEMA_NAME_PROVIDER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.STATEMENTS_CACHE;
 
 public abstract class AbstractManagerFactoryBuilder<T extends AbstractManagerFactoryBuilder<T>> {
 
@@ -173,6 +199,18 @@ public abstract class AbstractManagerFactoryBuilder<T extends AbstractManagerFac
      */
     public T doForceSchemaCreation(boolean forceSchemaCreation) {
         configMap.put(FORCE_SCHEMA_GENERATION, forceSchemaCreation);
+        return getThis();
+    }
+
+    /**
+     * Whether Achilles should ignore any missing fields in a UDT class that are present in the live schema. This will cause
+     * all WRITE operations to result in null as the field value if it's not present in the java class.
+     *
+     * @return ManagerFactoryBuilder
+     * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#ddl" target="_blank">Table generation</a>
+     */
+    public T ignoreMissingUDTFields(boolean ignoreMissingUDTFields) {
+        configMap.put(IGNORE_MISSING_UDT_FIELDS, ignoreMissingUDTFields);
         return getThis();
     }
 

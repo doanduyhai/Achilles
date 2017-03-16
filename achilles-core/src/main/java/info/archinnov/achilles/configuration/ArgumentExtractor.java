@@ -16,23 +16,11 @@
 
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static javax.validation.Validation.buildDefaultValidatorFactory;
-
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.Supplier;
-import javax.validation.ValidationException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-
 import info.archinnov.achilles.async.DefaultExecutorThreadFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internals.cache.StatementsCache;
@@ -48,6 +36,53 @@ import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.interceptor.Interceptor;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.strategy.NamingStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.validation.ValidationException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
+import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_SERIAL_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_SERIAL_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_MAX_THREAD;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_MIN_THREAD;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EXECUTOR_SERVICE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_SCHEMA_GENERATION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.IGNORE_MISSING_UDT_FIELDS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.MANAGED_ENTITIES;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.POST_LOAD_BEAN_VALIDATION_ENABLE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RUNTIME_CODECS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.SCHEMA_NAME_PROVIDER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.STATEMENTS_CACHE;
+import static javax.validation.Validation.buildDefaultValidatorFactory;
 
 /**
  * Extract bootstrap argument and create a configuration context
@@ -73,6 +108,7 @@ public class ArgumentExtractor {
         ConfigurationContext configContext = new ConfigurationContext();
         configContext.setCurrentKeyspace(initKeyspaceName(configurationMap));
         configContext.setForceSchemaGeneration(initForceSchemaCreation(configurationMap));
+        configContext.setIgnoreMissingUDTFields(initIgnoreMissingUDTFields(configurationMap));
         configContext.setManageEntities(initManagedEntities(configurationMap));
         configContext.setJacksonMapperFactory(initObjectMapperFactory(configurationMap));
         configContext.setDefaultReadConsistencyLevel(initDefaultReadConsistencyLevel(configurationMap));
@@ -103,6 +139,10 @@ public class ArgumentExtractor {
         return configurationMap.getTypedOr(FORCE_SCHEMA_GENERATION, false);
     }
 
+    static boolean initIgnoreMissingUDTFields(ConfigMap configurationMap) {
+        LOGGER.trace("Extract 'ignore missing UDT fields' from configuration map");
+        return configurationMap.getTypedOr(IGNORE_MISSING_UDT_FIELDS, false);
+    }
 
     static public List<Class<?>> initManagedEntities(ConfigMap configMap) {
         LOGGER.trace("Extract managed entity classes from configuration map");
