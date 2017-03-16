@@ -16,41 +16,36 @@
 
 package info.archinnov.achilles.internals.schema;
 
-import com.datastax.driver.core.AbstractTableMetadata;
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.IndexMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.UserType;
+import static info.archinnov.achilles.annotations.SASI.Analyzer.NON_TOKENIZING_ANALYZER;
+import static info.archinnov.achilles.annotations.SASI.Analyzer.STANDARD_ANALYZER;
+import static info.archinnov.achilles.internals.metamodel.index.IndexType.*;
+import static info.archinnov.achilles.validation.Validator.validateBeanMappingFalse;
+import static info.archinnov.achilles.validation.Validator.validateBeanMappingTrue;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.collections.CollectionUtils.isEqualCollection;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.datastax.driver.core.*;
+
 import info.archinnov.achilles.annotations.SASI;
-import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.index.IndexImpl;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.parser.context.DSESearchInfoContext;
 import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static info.archinnov.achilles.annotations.SASI.Analyzer.NON_TOKENIZING_ANALYZER;
-import static info.archinnov.achilles.annotations.SASI.Analyzer.STANDARD_ANALYZER;
-import static info.archinnov.achilles.internals.metamodel.index.IndexType.COLLECTION;
-import static info.archinnov.achilles.internals.metamodel.index.IndexType.CUSTOM;
-import static info.archinnov.achilles.internals.metamodel.index.IndexType.FULL;
-import static info.archinnov.achilles.internals.metamodel.index.IndexType.MAP_ENTRY;
-import static info.archinnov.achilles.internals.metamodel.index.IndexType.MAP_KEY;
-import static info.archinnov.achilles.internals.metamodel.index.IndexType.NORMAL;
-import static info.archinnov.achilles.validation.Validator.validateBeanMappingFalse;
-import static info.archinnov.achilles.validation.Validator.validateBeanMappingTrue;
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.collections.CollectionUtils.isEqualCollection;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class SchemaValidator {
 
@@ -110,7 +105,7 @@ public class SchemaValidator {
         }
     }
 
-    public static <T> void validateColumns(ConfigurationContext configContext, AbstractTableMetadata metadata, List<AbstractProperty<T, ?, ?>> properties,
+    public static <T> void validateColumns(AbstractTableMetadata metadata, List<AbstractProperty<T, ?, ?>> properties,
                                            Class<T> entityClass) {
 
         for (AbstractProperty<T, ?, ?> x : properties) {
@@ -126,19 +121,9 @@ public class SchemaValidator {
 
             final DataType runtimeType = columnMeta.getType();
             final DataType staticType = x.buildType(Optional.empty());
-
-            if (x.fieldInfo.columnInfo.frozen && (staticType instanceof UserType) && configContext.isIgnoreMissingUDTFields()) {
-                validateBeanMappingTrue(runtimeType instanceof UserType
-                                && ((UserType) runtimeType).getFieldNames().containsAll(((UserType) staticType).getFieldNames())
-                                && runtimeType.getName().equals(staticType.getName())
-                                && ((UserType) runtimeType).getTypeName().equals(((UserType) staticType).getTypeName()),
-                        "Data type '%s' for column '%s' of entity '%s' does not match type in live schema '%s'",
-                        staticType, cqlColumn, entityClass, runtimeType);
-            } else {
-                validateBeanMappingTrue(runtimeType.equals(staticType),
-                        "Data type '%s' for column '%s' of entity '%s' does not match type in live schema '%s'",
-                        staticType, cqlColumn, entityClass, runtimeType);
-            }
+            validateBeanMappingTrue(runtimeType.equals(staticType),
+                    "Data type '%s' for column '%s' of entity '%s' does not match type in live schema '%s'",
+                    staticType, cqlColumn, entityClass, runtimeType);
 
             if (x.fieldInfo.hasIndex()) {
                 final TableMetadata tableMetadata = (TableMetadata) metadata;

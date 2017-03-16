@@ -257,7 +257,6 @@ public enum ConfigurationParameters {
     EVENT_INTERCEPTORS("achilles.event.interceptors"),
 
     FORCE_SCHEMA_GENERATION("achilles.ddl.force.schema.generation"),
-    IGNORE_MISSING_UDT_FIELDS("achilles.ddl.ignore.missing.udt.fields"),
 
     MANAGED_ENTITIES("achilles.managed.entities"),
 

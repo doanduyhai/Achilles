@@ -16,26 +16,29 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
+import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumnType;
+import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
+import static info.archinnov.achilles.internals.schema.SchemaValidator.validateDefaultTTL;
+import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.*;
+import static info.archinnov.achilles.validation.Validator.validateNotNull;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
+
+import java.util.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.datastax.driver.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.BiMap;
+
 import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
-import info.archinnov.achilles.internals.injectable.InjectBeanFactory;
-import info.archinnov.achilles.internals.injectable.InjectConsistency;
-import info.archinnov.achilles.internals.injectable.InjectInsertStrategy;
-import info.archinnov.achilles.internals.injectable.InjectJacksonMapper;
-import info.archinnov.achilles.internals.injectable.InjectKeyspace;
-import info.archinnov.achilles.internals.injectable.InjectRuntimeCodecs;
-import info.archinnov.achilles.internals.injectable.InjectSchemaStrategy;
-import info.archinnov.achilles.internals.injectable.InjectUserAndTupleTypeFactory;
+import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.BeanValueExtractor;
@@ -53,24 +56,6 @@ import info.archinnov.achilles.type.interceptor.Event;
 import info.archinnov.achilles.type.interceptor.Interceptor;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.validation.Validator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.StringJoiner;
-
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumnType;
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateDefaultTTL;
-import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticDeleteQueries;
-import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticInsertQueries;
-import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticSelectQuery;
-import static info.archinnov.achilles.validation.Validator.validateNotNull;
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 
 public abstract class AbstractEntityProperty<T> implements
@@ -357,11 +342,11 @@ public abstract class AbstractEntityProperty<T> implements
         validateColumnType(ColumnType.STATIC, tableMetadata, staticColumns, entityClass);
 
         validateDefaultTTL(tableMetadata, staticTTL, entityClass);
-        validateColumns(configContext, tableMetadata, partitionKeys, entityClass);
-        validateColumns(configContext, tableMetadata, clusteringColumns, entityClass);
-        validateColumns(configContext, tableMetadata, staticColumns, entityClass);
-        validateColumns(configContext, tableMetadata, normalColumns, entityClass);
-        validateColumns(configContext, tableMetadata, counterColumns, entityClass);
+        validateColumns(tableMetadata, partitionKeys, entityClass);
+        validateColumns(tableMetadata, clusteringColumns, entityClass);
+        validateColumns(tableMetadata, staticColumns, entityClass);
+        validateColumns(tableMetadata, normalColumns, entityClass);
+        validateColumns(tableMetadata, counterColumns, entityClass);
     }
 
     @Override
