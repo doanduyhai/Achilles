@@ -54,6 +54,7 @@ public class ConfigurationContext {
     public static final ConsistencyLevel DEFAULT_SERIAL_CONSISTENCY_LEVEL = ConsistencyLevel.LOCAL_SERIAL;
 
     private boolean forceSchemaGeneration;
+    private boolean validateSchema = true;
 
     private List<Class<?>> manageEntities;
 
@@ -100,6 +101,14 @@ public class ConfigurationContext {
 
     public void setForceSchemaGeneration(boolean forceSchemaGeneration) {
         this.forceSchemaGeneration = forceSchemaGeneration;
+    }
+
+    public boolean isValidateSchema() {
+        return validateSchema;
+    }
+
+    public void setValidateSchema(boolean validateSchema) {
+        this.validateSchema = validateSchema;
     }
 
     public List<Class<?>> getManageEntities() {

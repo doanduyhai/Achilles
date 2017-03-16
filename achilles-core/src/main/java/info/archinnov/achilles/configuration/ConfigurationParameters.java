@@ -258,6 +258,8 @@ public enum ConfigurationParameters {
 
     FORCE_SCHEMA_GENERATION("achilles.ddl.force.schema.generation"),
 
+    VALIDATE_SCHEMA("achilles.validate.schema"),
+
     MANAGED_ENTITIES("achilles.managed.entities"),
 
     BEAN_VALIDATION_ENABLE("achilles.bean.validation.enable"),
