@@ -16,22 +16,12 @@
 
 package info.archinnov.achilles.internals.schema;
 
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
-
-import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
-import com.datastax.driver.core.schemabuilder.UDTType;
-
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty;
@@ -41,6 +31,16 @@ import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.logger.AchillesLoggers;
 import info.archinnov.achilles.type.tuples.Tuple2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.StringJoiner;
+
+import static java.lang.String.format;
 
 public class SchemaCreator {
     public static final Logger ACHILLES_DML_LOGGER = LoggerFactory.getLogger(AchillesLoggers.ACHILLES_DDL_SCRIPT);
