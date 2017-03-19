@@ -109,7 +109,6 @@ public abstract class AbstractUpdateEnd<T extends AbstractUpdateEnd<T, ENTITY>, 
 
         return futureRS
                 .thenApply(cassandraOptions::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> LWTHelper.triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo());

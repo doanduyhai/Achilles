@@ -97,7 +97,7 @@ public class FindWithOptions<ENTITY> extends AbstractOptionsForSelect<FindWithOp
 
         return futureRS
                 .thenApply(options::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
+                .thenApply(x -> statementWrapper.logReturnResults(x, options.computeMaxDisplayedResults(rte.configContext)))
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(rs -> {
                     final Row row = rs.one();

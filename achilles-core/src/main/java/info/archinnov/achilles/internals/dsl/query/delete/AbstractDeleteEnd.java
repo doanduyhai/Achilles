@@ -81,7 +81,7 @@ public abstract class AbstractDeleteEnd<T extends AbstractDeleteEnd<T, ENTITY>, 
     public CompletableFuture<ExecutionInfo> executeAsyncWithStats() {
 
         final RuntimeEngine rte = getRte();
-        final CassandraOptions cassandraOptions = getOptions();
+        final CassandraOptions options = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
         final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
@@ -93,8 +93,7 @@ public abstract class AbstractDeleteEnd<T extends AbstractDeleteEnd<T, ENTITY>, 
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
         return futureRS
-                .thenApply(cassandraOptions::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
+                .thenApply(options::resultSetAsyncListener)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo());

@@ -545,4 +545,16 @@ public abstract class AbstractManagerFactoryBuilder<T extends AbstractManagerFac
         configMap.<Map<CodecSignature<?, ?>, Codec<?, ?>>>getTyped(RUNTIME_CODECS).putAll(runtimeCodecs);
         return getThis();
     }
+
+    /**
+     * Specify how many returned rows to be displayed if ACHILLES_DML_STATEMENT logger or entity logger is debug-enabled.
+     * <br/>
+     * There is a <strong>hard-coded</strong> limit of 100 rows so if you provide a greater value it will be capped to 100 and floor to 0 (e.g. disable returned results display)
+     * @param maxDMLResultsDisplayed max returned rows to be displayed
+     * @return ManagerFactoryBuilder
+     */
+    public T withMaxDMLResultsDisplayed(int maxDMLResultsDisplayed) {
+        configMap.put(DML_RESULTS_DISPLAY_SIZE, maxDMLResultsDisplayed);
+        return getThis();
+    }
 }

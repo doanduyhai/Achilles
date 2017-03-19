@@ -71,7 +71,7 @@ public abstract class AbstractSelectWhereTypeMap<T extends AbstractSelectWhereTy
     @Override
     public CompletableFuture<Tuple2<List<TypedMap>, ExecutionInfo>> getTypedMapsAsyncWithStats() {
         final RuntimeEngine rte = getRte();
-        final CassandraOptions cassandraOptions = getOptions();
+        final CassandraOptions options = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
@@ -82,8 +82,8 @@ public abstract class AbstractSelectWhereTypeMap<T extends AbstractSelectWhereTy
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
         return futureRS
-            .thenApply(cassandraOptions::resultSetAsyncListener)
-                    .thenApply(statementWrapper::logReturnResults)
+            .thenApply(options::resultSetAsyncListener)
+                    .thenApply(x -> statementWrapper.logReturnResults(x, options.computeMaxDisplayedResults(rte.configContext)))
                     .thenApply(statementWrapper::logTrace)
                     .thenApply(x -> Tuple2.of(mapResultSetToTypedMaps(x), x.getExecutionInfo()));
     }
@@ -92,7 +92,7 @@ public abstract class AbstractSelectWhereTypeMap<T extends AbstractSelectWhereTy
 
     public CompletableFuture<Tuple2<TypedMap, ExecutionInfo>> getTypedMapAsyncWithStats() {
         final RuntimeEngine rte = getRte();
-        final CassandraOptions cassandraOptions = getOptions();
+        final CassandraOptions options = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
@@ -104,8 +104,8 @@ public abstract class AbstractSelectWhereTypeMap<T extends AbstractSelectWhereTy
         CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
 
         return cfutureRS
-                .thenApply(cassandraOptions::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
+                .thenApply(options::resultSetAsyncListener)
+                .thenApply(x -> statementWrapper.logReturnResults(x, options.computeMaxDisplayedResults(rte.configContext)))
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> Tuple2.of(mapRowToTypedMap(x.one()), x.getExecutionInfo()));
     }

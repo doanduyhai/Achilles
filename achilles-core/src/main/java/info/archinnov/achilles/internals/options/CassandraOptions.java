@@ -29,13 +29,17 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.policies.RetryPolicy;
 
+import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.statements.OperationType;
 import info.archinnov.achilles.internals.types.LimitedResultSetWrapper;
+import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.validation.Validator;
 
 public class CassandraOptions {
+
+    public static Integer MAX_RESULTS_DISPLAY_SIZE = 100;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraOptions.class);
 
@@ -55,6 +59,7 @@ public class CassandraOptions {
     private Optional<Integer> readTimeout = Optional.empty();
     private Optional<StringJoiner> dseSearchSolrQuery = Optional.empty();
     private Optional<String> dseSearchRawSolrQuery = Optional.empty();
+    private Optional<Integer> DMLResultsDisplaySize = Optional.empty();
 
     public CassandraOptions() {}
 
@@ -63,6 +68,10 @@ public class CassandraOptions {
         Validator.validateNotNull(schemaNameProvider, "The provided schemaNameProvider should not be null");
         cassandraOptions.setSchemaNameProvider(Optional.of(schemaNameProvider));
         return cassandraOptions;
+    }
+
+    public int computeMaxDisplayedResults(ConfigurationContext configContext) {
+        return DMLResultsDisplaySize.orElse(configContext.getDMLResultsDisplaySize());
     }
 
     public void appendToSolrQuery(String solrQuery) {
@@ -264,6 +273,10 @@ public class CassandraOptions {
         this.readTimeout = Optional.ofNullable(readTimeout);
     }
 
+    public void setDMLResultsDisplaySize(Optional<Integer> DMLResultsDisplaySize) {
+        this.DMLResultsDisplaySize = DMLResultsDisplaySize;
+    }
+
     public Statement applyOptions(OperationType operationType, AbstractEntityProperty<?> meta, Statement statement) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(String.format("Applying options %s to the current statement %s",
@@ -308,6 +321,7 @@ public class CassandraOptions {
         sb.append(", tracing=").append(tracing);
         sb.append(", schemaNameProvider=").append(schemaNameProvider);
         sb.append(", readTimeoutInMillis=").append(readTimeout);
+        sb.append(", DMLResultsDisplaySize=").append(DMLResultsDisplaySize);
         sb.append('}');
         return sb.toString();
     }

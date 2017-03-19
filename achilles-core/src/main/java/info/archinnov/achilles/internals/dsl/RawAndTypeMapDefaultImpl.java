@@ -60,7 +60,7 @@ public interface RawAndTypeMapDefaultImpl extends TypedMapAware, StatementTypeAw
 
         return futureRS
                 .thenApply(options()::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
+                .thenApply(x -> statementWrapper.logReturnResults(x, options().computeMaxDisplayedResults(runtimeEngine().configContext)))
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> Tuple2.of(mapResultSetToTypedMaps(x), x.getExecutionInfo()));
     }
@@ -79,7 +79,7 @@ public interface RawAndTypeMapDefaultImpl extends TypedMapAware, StatementTypeAw
 
         return cfutureRS
                 .thenApply(options()::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
+                .thenApply(x -> statementWrapper.logReturnResults(x, options().computeMaxDisplayedResults(runtimeEngine().configContext)))
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> Tuple2.of(mapRowToTypedMap(x.one()), x.getExecutionInfo()));
     }

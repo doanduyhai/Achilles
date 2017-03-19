@@ -39,7 +39,6 @@ public interface StatementWrapper {
 
     EventComparator EVENT_TRACE_COMPARATOR = new EventComparator();
     Logger DML_LOGGER = LoggerFactory.getLogger(AchillesLoggers.ACHILLES_DML_STATEMENT);
-    int RESULTS_LOG_DISPLAY_LIMIT = 10;
 
     Object[] getBoundValues();
 
@@ -49,7 +48,7 @@ public interface StatementWrapper {
 
     void logDML();
 
-    ResultSet logReturnResults(ResultSet resultSet);
+    ResultSet logReturnResults(ResultSet resultSet, int maxDisplayedRows);
 
     Row logReturnedRow(Row row);
 
@@ -71,15 +70,17 @@ public interface StatementWrapper {
         }
     }
 
-    default void logReturnedResultsInternal(Logger actualLogger, UUID queryId, ResultSetWrapper resultSet) {
-        final int availableWithoutFetching = resultSet.getAvailableWithoutFetching();
-        StringBuilder results = new StringBuilder(format("Query ID %s results : \n", queryId));
-        actualLogger.debug(resultSet.toString());
-        for (int i = 0; i < Integer.min(availableWithoutFetching, RESULTS_LOG_DISPLAY_LIMIT); i++) {
-            final Row row = resultSet.peek();
-            appendRowDataToBuilder(row, row.getColumnDefinitions().asList(), results);
+    default void logReturnedResultsInternal(Logger actualLogger, UUID queryId, ResultSetWrapper resultSet, int maxDisplayedRows) {
+        if (maxDisplayedRows > 0) {
+            final int availableWithoutFetching = resultSet.getAvailableWithoutFetching();
+            StringBuilder results = new StringBuilder(format("Query ID %s results : \n", queryId));
+            actualLogger.debug(resultSet.toString());
+            for (int i = 0; i < Integer.min(availableWithoutFetching, maxDisplayedRows); i++) {
+                final Row row = resultSet.peek();
+                appendRowDataToBuilder(row, row.getColumnDefinitions().asList(), results);
+            }
+            actualLogger.debug(results.toString());
         }
-        actualLogger.debug(results.toString());
     }
 
     default void logReturnedRowInternal(Logger actualLogger, UUID queryId, Row row) {

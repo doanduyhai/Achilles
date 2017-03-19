@@ -67,10 +67,10 @@ public class NativeStatementWrapper implements StatementWrapper {
     }
 
     @Override
-    public ResultSet logReturnResults(ResultSet originalResultSet) {
+    public ResultSet logReturnResults(ResultSet originalResultSet, int maxDisplayedRows) {
         if (DML_LOGGER.isDebugEnabled()) {
             final ResultSetWrapper wrapper = new ResultSetWrapper(originalResultSet);
-            logReturnedResultsInternal(DML_LOGGER, queryId, wrapper);
+            logReturnedResultsInternal(DML_LOGGER, queryId, wrapper, maxDisplayedRows);
             return wrapper;
         } else {
             return originalResultSet;

@@ -271,4 +271,17 @@ public abstract class AbstractOptionsForSelect<T extends AbstractOptionsForSelec
         return getThis();
     }
 
+    /**
+     * When DEBUG log is enabled, restrict the Results Display to maximum <strong>DMLResultsDisplaySize</strong> rows.
+     * <br/>
+     * <br/>
+     * <strong>WARNING: there is a hard-limit of maximum 100 rows. If you provide a value greater than 100 the number of displayed returned rows will still be capped to 100.
+     * If you provide a negative number, it will default to 0
+     * </strong>
+     * @param DMLResultsDisplaySize the maximum number of returned rows to be displayed
+     */
+    public T withDMLResultsDisplaySize(int DMLResultsDisplaySize) {
+        getOptions().setDMLResultsDisplaySize(Optional.of(Integer.max(0,Integer.min(DMLResultsDisplaySize, CassandraOptions.MAX_RESULTS_DISPLAY_SIZE))));
+        return getThis();
+    }
 }

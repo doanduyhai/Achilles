@@ -19,10 +19,7 @@ package info.archinnov.achilles.it;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.RandomUtils;
@@ -39,6 +36,7 @@ import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.manager.SimpleEntity_Manager;
 import info.archinnov.achilles.internals.entities.SimpleEntity;
+import info.archinnov.achilles.it.utils.CassandraLogAsserter;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
@@ -125,7 +123,6 @@ public class TestNativeQueries {
         assertThat(actual.<String>getTyped("value")).contains("0 AM");
     }
 
-
     @Test
     public void should_iterate_regular_typed_query() throws Exception {
         //Given
@@ -178,5 +175,44 @@ public class TestNativeQueries {
         final Row actual = session.execute("SELECT * FROM simple WHERE id = " + id).one();
         assertThat(actual).isNotNull();
         assertThat(actual.getString("value")).isEqualTo("val");
+    }
+
+    @Test
+    public void should_limit_displayed_returned_results() throws Exception {
+        //Given
+        final Map<String, Object> values = new HashMap<>();
+        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        values.put("id", id);
+        values.put("date1", "'2015-10-01 00:00:00+0000'");
+        values.put("date2", "'2015-10-02 00:00:00+0000'");
+        values.put("date3", "'2015-10-03 00:00:00+0000'");
+        values.put("date4", "'2015-10-04 00:00:00+0000'");
+        values.put("date5", "'2015-10-05 00:00:00+0000'");
+        values.put("date6", "'2015-10-06 00:00:00+0000'");
+        values.put("date7", "'2015-10-07 00:00:00+0000'");
+        values.put("date8", "'2015-10-08 00:00:00+0000'");
+        values.put("date9", "'2015-10-09 00:00:00+0000'");
+        scriptExecutor.executeScriptTemplate("SimpleEntity/insert_many_rows.cql", values);
+
+        final SimpleStatement statement = new SimpleStatement("SELECT * FROM simple WHERE id = :id LIMIT 100");
+
+        CassandraLogAsserter logAsserter = new CassandraLogAsserter();
+
+        logAsserter.prepareLogLevel(SimpleEntity.class.getCanonicalName());
+
+        //When
+        final List<TypedMap> typedMaps = manager.raw()
+                .nativeQuery(statement, id)
+                .withDMLResultsDisplaySize(2)
+                .getTypedMaps();
+
+        //Then
+        try {
+            assertThat(typedMaps).hasSize(9);
+
+            logAsserter.assertNotContains("value: id - date3");
+        } finally {
+
+        }
     }
 }

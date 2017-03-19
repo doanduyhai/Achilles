@@ -29,16 +29,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.ImmutableMap;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.manager.EntityWithClusteringColumns_Manager;
 import info.archinnov.achilles.internals.entities.EntityWithClusteringColumns;
+import info.archinnov.achilles.it.utils.CassandraLogAsserter;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
@@ -463,6 +467,59 @@ public class TestDSLEntityWithClusterings {
                         .sorted()
                         .collect(toList())
         ).containsExactly("val3", "val5");
+    }
+
+    @Test
+    public void should_dsl_select_slice_with_displayed_results_max() throws Exception {
+        //Given
+        final Map<String, Object> values = new HashMap<>();
+        final long id1 = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final long id2 = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        values.put("id1", id1);
+        values.put("id2", id1);
+        values.put("id3", id1);
+        values.put("id4", id2);
+        values.put("id5", id2);
+
+        final UUID uuid = new UUID(0L, 0L);
+
+        values.put("uuid1", uuid);
+        values.put("uuid2", uuid);
+        values.put("uuid3", uuid);
+        values.put("uuid4", uuid);
+        values.put("uuid5", uuid);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+        values.put("date1", "'2015-10-01 00:00:00+0000'");
+        values.put("date2", "'2015-10-02 00:00:00+0000'");
+        values.put("date3", "'2015-10-03 00:00:00+0000'");
+        values.put("date4", "'2015-10-01 00:00:00+0000'");
+        values.put("date5", "'2015-10-02 00:00:00+0000'");
+
+        scriptExecutor.executeScriptTemplate("EntityWithClusteringColumns/insert_many_rows.cql", values);
+
+        final CassandraLogAsserter logAsserter = new CassandraLogAsserter();
+        logAsserter.prepareLogLevel(EntityWithClusteringColumns.class.getCanonicalName());
+        Logger logger = (Logger) LoggerFactory.getLogger(EntityWithClusteringColumns.class);
+        logger.setLevel(Level.DEBUG);
+
+        final List<EntityWithClusteringColumns> found = manager.dsl()
+                .select()
+                .allColumns_FromBaseTable()
+                .where()
+                .id().Eq(id1)
+                .withDMLResultsDisplaySize(2)
+                .getList();
+
+        try {
+            assertThat(found).hasSize(3);
+
+            logAsserter.assertNotContains("val1");
+        } finally {
+            logger.setLevel(Level.WARN);
+        }
     }
 
     @Test

@@ -93,14 +93,14 @@ public class BoundStatementWrapper implements StatementWrapper {
     }
 
     @Override
-    public ResultSet logReturnResults(ResultSet originalResultSet) {
+    public ResultSet logReturnResults(ResultSet originalResultSet, int maxDisplayedRows) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Log returned results for query %s", bs.preparedStatement().getQueryString()));
         }
 
         if (actualLogger.isDebugEnabled()) {
             final ResultSetWrapper wrapper = new ResultSetWrapper(originalResultSet);
-            logReturnedResultsInternal(actualLogger, queryId, wrapper);
+            logReturnedResultsInternal(actualLogger, queryId, wrapper, maxDisplayedRows);
             return wrapper;
         } else {
             return originalResultSet;

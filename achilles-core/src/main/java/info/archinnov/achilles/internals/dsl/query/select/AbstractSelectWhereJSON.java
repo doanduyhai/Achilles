@@ -74,7 +74,7 @@ public abstract class AbstractSelectWhereJSON<T extends AbstractSelectWhereJSON<
     @Override
     public CompletableFuture<Tuple2<List<String>, ExecutionInfo>> getListJSONAsyncWithStats() {
         final RuntimeEngine rte = getRte();
-        final CassandraOptions cassandraOptions = getOptions();
+        final CassandraOptions options = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
@@ -85,8 +85,8 @@ public abstract class AbstractSelectWhereJSON<T extends AbstractSelectWhereJSON<
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
         return futureRS
-                .thenApply(cassandraOptions::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
+                .thenApply(options::resultSetAsyncListener)
+                .thenApply(x -> statementWrapper.logReturnResults(x, options.computeMaxDisplayedResults(rte.configContext)))
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(resultSet -> Tuple2.of(IntStream
                         .range(0, resultSet.getAvailableWithoutFetching())

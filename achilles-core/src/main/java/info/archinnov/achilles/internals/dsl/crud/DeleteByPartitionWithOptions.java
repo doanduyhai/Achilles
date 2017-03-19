@@ -79,7 +79,6 @@ public class DeleteByPartitionWithOptions<ENTITY> extends AbstractOptionsForUpda
 
         return cfutureRS
                 .thenApply(options::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo());

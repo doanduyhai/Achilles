@@ -35,7 +35,6 @@ import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.interceptor.DefaultPostLoadBeanValidationInterceptor;
 import info.archinnov.achilles.internals.interceptor.DefaultPreMutateBeanValidationInterceptor;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
@@ -44,7 +43,6 @@ import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.interceptor.Interceptor;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.strategy.NamingStrategy;
-import info.archinnov.achilles.type.tuples.Tuple3;
 
 public class ConfigurationContext {
 
@@ -94,6 +92,8 @@ public class ConfigurationContext {
     private StatementsCache statementsCache;
 
     private Map<CodecSignature<?,?>, Codec<?, ?>> runtimeCodecs = new HashMap<>();
+
+    private Integer DMLResultsDisplaySize;
 
     public boolean isForceSchemaGeneration() {
         return forceSchemaGeneration;
@@ -305,7 +305,6 @@ public class ConfigurationContext {
             entityProperty.inject(schemaNameProvider.get());
         }
 
-
         LOGGER.debug("Injecting default bean factory");
         entityProperty.inject(defaultBeanFactory);
 
@@ -362,5 +361,13 @@ public class ConfigurationContext {
 
     public void setRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
         this.runtimeCodecs = runtimeCodecs;
+    }
+
+    public Integer getDMLResultsDisplaySize() {
+        return DMLResultsDisplaySize;
+    }
+
+    public void setDMLResultsDisplaySize(Integer DMLResultsDisplaySize) {
+        this.DMLResultsDisplaySize = DMLResultsDisplaySize;
     }
 }

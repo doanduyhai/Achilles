@@ -79,7 +79,6 @@ public class InsertWithOptions<ENTITY> extends AbstractOptionsForCRUDInsert<Inse
 
         return cfutureRS
                 .thenApply(this.options::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo())

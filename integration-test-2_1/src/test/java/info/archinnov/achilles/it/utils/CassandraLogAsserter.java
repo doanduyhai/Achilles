@@ -83,14 +83,14 @@ public class CassandraLogAsserter {
     }
 
     public void assertContains(String text) {
-        asssertPatternToBe(text, true);
+        assertPatternToBe(text, true);
     }
 
     public void assertNotContains(String text) {
-        asssertPatternToBe(text, false);
+        assertPatternToBe(text, false);
     }
 
-    private void asssertPatternToBe(String text, boolean present) {
+    private void assertPatternToBe(String text, boolean present) {
         final Iterator<String> standardOutputs = asList(split(logStream.toString(), "\n")).iterator();
         try {
             boolean textFound = false;

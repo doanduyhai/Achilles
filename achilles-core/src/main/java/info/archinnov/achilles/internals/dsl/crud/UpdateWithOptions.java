@@ -78,7 +78,6 @@ public class UpdateWithOptions<ENTITY> extends AbstractOptionsForCRUDUpdate<Upda
 
         return cfutureRS
                 .thenApply(this.options::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo())

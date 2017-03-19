@@ -77,7 +77,6 @@ public class InsertJSONWithOptions extends AbstractOptionsForCRUDInsert<InsertJS
 
         return cfutureRS
                 .thenApply(getOptions()::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo());

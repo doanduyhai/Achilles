@@ -95,7 +95,6 @@ public class DeleteWithOptions<ENTITY> extends AbstractOptionsForUpdateOrDelete<
 
         return cfutureRS
                 .thenApply(options::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo())

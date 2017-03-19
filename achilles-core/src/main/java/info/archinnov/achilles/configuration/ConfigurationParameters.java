@@ -37,6 +37,18 @@ package info.archinnov.achilles.configuration;
  * <strong>FORCE_SCHEMA_GENERATION</strong> (OPTIONAL): create missing column families for entities if they are not found. <strong>Default = 'false'</strong>
  If set to <strong>false</strong> and no column family is found for any entity, <strong>Achilles</strong> will raise an <strong>AchillesInvalidColumnFamilyException</strong></p>
  * </li>
+ * <li>
+ * <strong>VALIDATE_SCHEMA</strong> (OPTIONAL): enable or disable schema validation at start-up. <strong>Default = 'true'</strong>
+ * </li>
+ * </ul>
+ * <br/>
+ * <br/>
+ * <h4>DML</h4>
+ * <ul>
+ *     <li>
+ *         <strong>DML_RESULTS_DISPLAY_SIZE</strong> (OPTIONAL): set the max number of returned rows to be displayed if ACHILLES_DML_STATEMENT logger or entity logger is debug-enabled
+ *         .There is a <strong>hard-coded</strong> limit of 100 rows so if you provide a greater value it will be capped to 100 and floor to 0 (e.g. disable returned results display)
+ *     </li>
  * </ul>
  * <br/>
  * <br/>
@@ -236,9 +248,9 @@ package info.archinnov.achilles.configuration;
  * new LinkedBlockingQueue<Runnable>(1000),
  * DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY)
  * </code></pre>
+ * For more details, please check <strong><a href="https://github.com/doanduyhai/Achilles/wiki/Asynchronous-Operations">Asynchronous Operations</a></strong></p>
  * </li>
  * </ul>
- For more details, please check <strong><a href="https://github.com/doanduyhai/Achilles/wiki/Asynchronous-Operations">Asynchronous Operations</a></strong></p>
  */
 public enum ConfigurationParameters {
     NATIVE_SESSION("achilles.cassandra.native.session"),
@@ -283,7 +295,9 @@ public enum ConfigurationParameters {
     DEFAULT_EXECUTOR_SERVICE_MAX_THREAD("achilles.executor.service.default.thread.max"),
     DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE("achilles.executor.service.default.thread.keepalive"),
     DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE("achilles.executor.service.default.queue.size"),
-    DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY("achilles.executor.service.thread.factory");
+    DEFAULT_EXECUTOR_SERVICE_THREAD_FACTORY("achilles.executor.service.thread.factory"),
+
+    DML_RESULTS_DISPLAY_SIZE("achilles.dml.results_display.size");
 
 
     private String label;
