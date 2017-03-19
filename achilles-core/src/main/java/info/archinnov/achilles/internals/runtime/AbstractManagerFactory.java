@@ -117,7 +117,9 @@ public abstract class AbstractManagerFactory {
     protected void bootstrap() {
         addNativeCodecs();
         injectDependencies();
-        createSchema();
+        if (configContext.isForceSchemaGeneration()) {
+            createSchema();
+        }
         if (configContext.isValidateSchema()) {
             validateSchema();
         }
@@ -196,47 +198,45 @@ public abstract class AbstractManagerFactory {
     protected void createSchema() {
         final Session session = configContext.getSession();
         final List<Class<?>> manageEntities = configContext.getManageEntities().isEmpty() ? entityClasses : configContext.getManageEntities();
-        if (configContext.isForceSchemaGeneration()) {
-
-            for (AbstractUDTClassProperty<?> x : getUdtClassProperties()) {
-                final long udtCountForClass = entityProperties
-                        .stream()
-                        .filter(entityProperty -> manageEntities.contains(entityProperty.entityClass))
-                        .flatMap(entityProperty -> entityProperty.allColumns.stream())
-                        .filter(property -> property.containsUDTProperty())
-                        .filter(property -> property.getUDTClassProperties().contains(x))
-                        .count();
-
-                if(udtCountForClass>0)
-                    generateUDTAtRuntime(session, x);
-            }
-
-
-            final long viewCount = entityProperties
+        for (AbstractUDTClassProperty<?> x : getUdtClassProperties()) {
+            final long udtCountForClass = entityProperties
                     .stream()
-                    .filter(AbstractEntityProperty::isView)
+                    .filter(entityProperty -> manageEntities.contains(entityProperty.entityClass))
+                    .flatMap(entityProperty -> entityProperty.allColumns.stream())
+                    .filter(property -> property.containsUDTProperty())
+                    .filter(property -> property.getUDTClassProperties().contains(x))
                     .count();
 
-            //Inject base table property into view property
-            if (viewCount > 0) {
-                final Map<Class<?>, AbstractEntityProperty<?>> entityPropertiesMap = entityProperties
-                        .stream()
-                        .filter(AbstractEntityProperty::isTable)
-                        .collect(Collectors.toMap(x -> x.entityClass, x -> x));
+            if(udtCountForClass>0)
+                generateUDTAtRuntime(session, x);
+        }
 
-                entityProperties
-                        .stream()
-                        .filter(AbstractEntityProperty::isView)
-                        .map(x -> (AbstractViewProperty<?>)x)
-                        .forEach(x -> x.setBaseClassProperty(entityPropertiesMap.get(x.getBaseEntityClass())));
-            }
+
+        final long viewCount = entityProperties
+                .stream()
+                .filter(AbstractEntityProperty::isView)
+                .count();
+
+        //Inject base table property into view property
+        if (viewCount > 0) {
+            final Map<Class<?>, AbstractEntityProperty<?>> entityPropertiesMap = entityProperties
+                    .stream()
+                    .filter(AbstractEntityProperty::isTable)
+                    .collect(Collectors.toMap(x -> x.entityClass, x -> x));
 
             entityProperties
                     .stream()
-                    .filter(x -> manageEntities.contains(x.entityClass))
-                    .forEach(x -> generateSchemaAtRuntime(session, x));
-
+                    .filter(AbstractEntityProperty::isView)
+                    .map(x -> (AbstractViewProperty<?>)x)
+                    .forEach(x -> x.setBaseClassProperty(entityPropertiesMap.get(x.getBaseEntityClass())));
         }
+
+        entityProperties
+                .stream()
+                .filter(x -> manageEntities.contains(x.entityClass))
+                .forEach(x -> generateSchemaAtRuntime(session, x));
+
+
     }
 
     protected void prepareStaticStatements() {
