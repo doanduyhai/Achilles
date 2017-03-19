@@ -124,15 +124,15 @@ public class ConsistencyLevelOrderingIT {
         entityWithStaticAnnotationsManager
                 .crud()
                 .insert(entity)
-                .withConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM)
+                .withConsistencyLevel(ConsistencyLevel.EACH_QUORUM)
                 .execute();
 
         //Then
-        logAsserter.assertConsistencyLevels(ConsistencyLevel.LOCAL_QUORUM);
+        logAsserter.assertConsistencyLevels(ConsistencyLevel.EACH_QUORUM);
     }
 
     @Test
-    public void should_override_achilles_consistency_setting_by_cluster_consistency_config() throws Exception {
+    public void should_override_cluster_consistency_config_by_achilles_consistency_setting() throws Exception {
         //Given
         final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
         final EntityAsChild entityAsChild = new EntityAsChild(id, "val", "another_val");
@@ -147,6 +147,6 @@ public class ConsistencyLevelOrderingIT {
                 .execute();
 
         //Then
-        logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL);
+        logAsserter.assertConsistencyLevels(ConsistencyLevel.LOCAL_QUORUM);
     }
 }

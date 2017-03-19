@@ -368,8 +368,8 @@ public abstract class AbstractEntityProperty<T> implements
          * 1. Set at runtime (see this.writeConsistency(), this.readConsistency() and this.serialConsistency() )
          * 2. Defined by static annotation on entity
          * 3. Defined by Consistency Level Map as Achilles Config
-         * 4. Defined as QueryOptions in the injected Cluster object
-         * 5. Defined by Achilles Config
+         * 4. Defined by Achilles Config
+         * 5. Defined as QueryOptions in the injected Cluster object
          * 6. Hard-coded value LOCAL_ONE & LOCAL_SERIAL
          */
 
@@ -380,16 +380,16 @@ public abstract class AbstractEntityProperty<T> implements
         this.readConsistencyLevel =
                 OverridingOptional.from(staticReadConsistency)
                         .andThen(configContext.getReadConsistencyLevelForTable(tableOrViewName))
-                        .andThen(clusterConsistency)
                         .andThen(configContext.getDefaultReadConsistencyLevel())
+                        .andThen(clusterConsistency)
                         .defaultValue(ConfigurationContext.DEFAULT_CONSISTENCY_LEVEL)
                         .get();
 
         this.writeConsistencyLevel =
                 OverridingOptional.from(staticWriteConsistency)
                         .andThen(configContext.getWriteConsistencyLevelForTable(tableOrViewName))
-                        .andThen(clusterConsistency)
                         .andThen(configContext.getDefaultWriteConsistencyLevel())
+                        .andThen(clusterConsistency)
                         .defaultValue(ConfigurationContext.DEFAULT_CONSISTENCY_LEVEL)
                         .get();
 
