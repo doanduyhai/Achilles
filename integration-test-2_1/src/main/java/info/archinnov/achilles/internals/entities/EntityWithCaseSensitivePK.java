@@ -30,8 +30,12 @@ public class EntityWithCaseSensitivePK {
     private Long id;
 
     @Column("clusteringColumn")
-    @ClusteringColumn
+    @ClusteringColumn(1)
     private Long clust;
+
+    @Column("priority")
+    @ClusteringColumn(2)
+    private Integer priority;
 
     @Column("listString")
     private List<String> list;
@@ -49,9 +53,10 @@ public class EntityWithCaseSensitivePK {
     public EntityWithCaseSensitivePK() {
     }
 
-    public EntityWithCaseSensitivePK(Long id, Long clust) {
+    public EntityWithCaseSensitivePK(Long id, Long clust, Integer priority) {
         this.id = id;
         this.clust = clust;
+        this.priority = priority;
     }
 
     public Long getId() {
@@ -68,6 +73,14 @@ public class EntityWithCaseSensitivePK {
 
     public void setClust(Long clust) {
         this.clust = clust;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
     }
 
     public List<String> getList() {

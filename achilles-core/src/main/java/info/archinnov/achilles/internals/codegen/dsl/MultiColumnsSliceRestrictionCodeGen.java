@@ -137,7 +137,7 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
         StringJoiner dataTypeJoiner = new StringJoiner(",");
         fieldInfos
                 .stream()
-                .map(x -> x.quotedCqlColumn)
+                .map(x -> x.quotedCqlColumn.replaceAll("\"", "\\\\\""))
                 .forEach(x -> paramsJoiner.add("\"" + x + "\""));
 
         final String params = paramsJoiner.toString();
@@ -177,7 +177,7 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
 
         fieldInfos
                 .stream()
-                .map(x -> x.quotedCqlColumn)
+                .map(x -> x.quotedCqlColumn.replaceAll("\"", "\\\\\""))
                 .forEach(x -> {
                     paramsJoinerRelation1AsString.add("\"" + x + "\"");
                     paramsJoinerRelation2AsString.add("\"" + x + "\"");
@@ -240,12 +240,12 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
 
         fieldInfos1
                 .stream()
-                .map(x -> x.quotedCqlColumn)
+                .map(x -> x.quotedCqlColumn.replaceAll("\"", "\\\\\""))
                 .forEach(x -> paramsJoinerRelation1AsString.add("\"" + x + "\""));
 
         fieldInfos2
                 .stream()
-                .map(x -> x.quotedCqlColumn)
+                .map(x -> x.quotedCqlColumn.replaceAll("\"", "\\\\\""))
                 .forEach(x -> paramsJoinerRelation2AsString.add("\"" + x + "\""));
 
         final String paramsRelation1AsString = paramsJoinerRelation1AsString.toString();

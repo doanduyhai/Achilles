@@ -1,2 +1,2 @@
-INSERT INTO achilles_embedded.entity_with_case_sensitive_pk("partitionKey", "clusteringColumn", "listString", "setString", "mapIntString", "udtWithNoKeyspace")
-VALUES (${partitionKey}, 10, ['1', '2'], {'1', '2'}, {1: '1', 2: '2'}, {id: 1, "VALUE": 'test'});
+INSERT INTO achilles_embedded.entity_with_case_sensitive_pk("partitionKey", "clusteringColumn", priority, "listString", "setString", "mapIntString", "udtWithNoKeyspace")
+VALUES (${partitionKey}, 10, 1, ['1', '2'], {'1', '2'}, {1: '1', 2: '2'}, {id: 1, "VALUE": 'test'});

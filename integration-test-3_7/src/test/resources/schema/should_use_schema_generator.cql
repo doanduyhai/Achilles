@@ -75,12 +75,13 @@ CREATE TABLE IF NOT EXISTS test.table_with_bytebuffer(
 CREATE TABLE IF NOT EXISTS test.entity_with_case_sensitive_pk(
 		"partitionKey" bigint,
 		"clusteringColumn" bigint,
+		priority int,
 		"listString" list<text>,
 		"mapIntString" map<int, text>,
 		"setString" set<text>,
 		"udtWithNoKeyspace" frozen<test.no_ks>,
-		PRIMARY KEY("partitionKey", "clusteringColumn"))
-	WITH CLUSTERING ORDER BY("clusteringColumn" ASC);
+		PRIMARY KEY("partitionKey", "clusteringColumn", priority))
+	WITH CLUSTERING ORDER BY("clusteringColumn" ASC, priority ASC);
 CREATE TABLE IF NOT EXISTS test.entity_with_clusterings(
 		id bigint,
 		uuid uuid,
