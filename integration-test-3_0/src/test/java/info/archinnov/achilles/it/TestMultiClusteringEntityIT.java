@@ -27,6 +27,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -274,5 +275,87 @@ public class TestMultiClusteringEntityIT {
                 + " AND (c1,c2) >= (1,1) AND (c1,c2) <= (3,1)").all();
 
         assertThat(all).isEmpty();
+    }
+
+    @Test
+    public void should_delete_by_partition_only() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        scriptExecutor.executeScriptTemplate("MultiClusteringEntity/insertRows.cql", ImmutableMap.of("id", id));
+
+        //When
+        manager.dsl()
+                .delete()
+                .allColumns_FromBaseTable()
+                .where()
+                .id().Eq(id)
+                .execute();
+
+        final List<Row> all = session.execute("SELECT value FROM achilles_embedded.multi_clustering_entity WHERE id = " + id).all();
+
+        //Then
+        assertThat(all).isEmpty();
+    }
+
+    @Test
+    public void should_delete_by_partition_and_first_clustering_column_only() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        scriptExecutor.executeScriptTemplate("MultiClusteringEntity/insertRows.cql", ImmutableMap.of("id", id));
+
+        //When
+        manager.dsl()
+                .delete()
+                .allColumns_FromBaseTable()
+                .where()
+                .id().Eq(id)
+                .c1().Eq(3)
+                .execute();
+
+        final List<Row> all = session.execute("SELECT c1,c2 FROM achilles_embedded.multi_clustering_entity WHERE id = " + id).all();
+
+        //Then
+        assertThat(all).hasSize(6);
+        assertThat(all.get(0).getInt("c1")).isEqualTo(1);
+        assertThat(all.get(0).getInt("c2")).isEqualTo(1);
+        assertThat(all.get(1).getInt("c1")).isEqualTo(1);
+        assertThat(all.get(1).getInt("c2")).isEqualTo(2);
+        assertThat(all.get(2).getInt("c1")).isEqualTo(1);
+        assertThat(all.get(2).getInt("c2")).isEqualTo(3);
+
+        assertThat(all.get(3).getInt("c1")).isEqualTo(2);
+        assertThat(all.get(3).getInt("c2")).isEqualTo(1);
+        assertThat(all.get(4).getInt("c1")).isEqualTo(2);
+        assertThat(all.get(4).getInt("c2")).isEqualTo(2);
+        assertThat(all.get(5).getInt("c1")).isEqualTo(2);
+        assertThat(all.get(5).getInt("c2")).isEqualTo(3);
+    }
+
+    @Test
+    public void should_delete_by_partition_and_first_clustering_column_range() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        scriptExecutor.executeScriptTemplate("MultiClusteringEntity/insertRows.cql", ImmutableMap.of("id", id));
+
+        //When
+        manager.dsl()
+                .delete()
+                .allColumns_FromBaseTable()
+                .where()
+                .id().Eq(id)
+                .c1().Gte_And_Lte(1, 2)
+                .execute();
+
+        final List<Row> all = session.execute("SELECT c1,c2 FROM achilles_embedded.multi_clustering_entity WHERE id = " + id).all();
+
+        //Then
+        assertThat(all).hasSize(3);
+
+        assertThat(all.get(0).getInt("c1")).isEqualTo(3);
+        assertThat(all.get(0).getInt("c2")).isEqualTo(1);
+        assertThat(all.get(1).getInt("c1")).isEqualTo(3);
+        assertThat(all.get(1).getInt("c2")).isEqualTo(2);
+        assertThat(all.get(2).getInt("c1")).isEqualTo(3);
+        assertThat(all.get(2).getInt("c2")).isEqualTo(3);
     }
 }
