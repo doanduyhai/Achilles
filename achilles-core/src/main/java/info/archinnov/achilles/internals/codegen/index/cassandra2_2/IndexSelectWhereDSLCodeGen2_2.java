@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.codegen.index.cassandra2_2;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_SELECT_WHERE_JSON;
 
 import java.util.List;
 
@@ -44,7 +43,7 @@ public class IndexSelectWhereDSLCodeGen2_2 extends IndexSelectWhereDSLCodeGen2_1
                                                     List<FieldSignatureInfo> partitionKeys,
                                                     List<FieldSignatureInfo> clusteringCols) {
         final ClassSignatureParams jsonClassSignatureParams = ClassSignatureParams.of(INDEX_SELECT_DSL_SUFFIX,
-                INDEX_SELECT_WHERE_JSON_DSL_SUFFIX, INDEX_SELECT_END_JSON_DSL_SUFFIX,
+                WHERE_JSON_DSL_SUFFIX, END_JSON_DSL_SUFFIX,
                 ABSTRACT_SELECT_WHERE_PARTITION_JSON, ABSTRACT_INDEX_SELECT_WHERE_JSON);
         return buildWhereClassesInternal(signature, jsonClassSignatureParams);
 

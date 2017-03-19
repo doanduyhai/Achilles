@@ -285,7 +285,7 @@ public class TestEntityWithComplexIndices {
                 .allColumns_FromBaseTable()
                 .where()
                 .simpleIndex().Eq("312")
-                .clust1_And_clust2_And_clust3().clust1_And_clust2_And_clust3_Gte_And_clust1_And_clust2_Lte(1, 1, "1", 3, 2)
+                .clust1_clust2_clust3().clust1_And_clust2_And_clust3_Gte_And_clust1_And_clust2_Lte(1, 1, "1", 3, 2)
                 .getList();
 
         //Then

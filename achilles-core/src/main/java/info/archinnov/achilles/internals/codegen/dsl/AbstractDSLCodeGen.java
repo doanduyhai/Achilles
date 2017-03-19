@@ -50,16 +50,16 @@ public abstract class AbstractDSLCodeGen {
     public static final String LTE = "lte";
 
     public static final Comparator<Tuple2<String, PartitionKeyInfo>> TUPLE2_PARTITION_KEY_SORTER =
-            (o1, o2) -> o1._2().order.compareTo(o2._2().order);
+            Comparator.comparing(o -> o._2().order);
 
     public static final Comparator<Tuple4<String, String, TypeName, PartitionKeyInfo>> TUPLE4_PARTITION_KEY_SORTER =
-            (o1, o2) -> o1._4().order.compareTo(o2._4().order);
+            Comparator.comparing(o -> o._4().order);
 
     public static final Comparator<Tuple4<String, String, TypeName, ClusteringColumnInfo>> TUPLE4_CLUSTERING_COLUMN_SORTER =
-            (o1, o2) -> o1._4().order.compareTo(o2._4().order);
+            Comparator.comparing(o -> o._4().order);
 
     public static final Comparator<IndexFieldSignatureInfo> INDEX_FIELD_SIGNATURE_SORTER =
-            (o1, o2) -> o1.fieldName.compareTo(o2.fieldName);
+            Comparator.comparing(o -> o.fieldName);
 
     public List<ClassSignatureInfo> buildClassesSignatureForWhereClause(EntityMetaSignature signature,
                                                                                   ClassSignatureParams classSignatureParams,
@@ -101,15 +101,6 @@ public abstract class AbstractDSLCodeGen {
                 endClassName));
 
         return signatures;
-    }
-
-    public MethodSpec buildWhereConstructor(TypeName whereType) {
-        return MethodSpec.constructorBuilder()
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(whereType, "where")
-                .addStatement("super(where)")
-                .build();
-
     }
 
     public MethodSpec buildWhereConstructorWithOptions(TypeName whereType) {

@@ -144,7 +144,7 @@ public class TestEntityWithCaseSensitivePKIT {
                 .fromBaseTable()
                 .where()
                 .id().Eq(id)
-                .clust_And_priority().Gte_And_Lte(9L, 1, 11L, 1)
+                .clust_priority().Gte_And_Lte(9L, 1, 11L, 1)
                 .getOne();
 
         //Then

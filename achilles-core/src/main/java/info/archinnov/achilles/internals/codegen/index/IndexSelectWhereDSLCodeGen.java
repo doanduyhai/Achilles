@@ -52,11 +52,11 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
     public List<TypeSpec> buildWhereClasses(GlobalParsingContext context, EntityMetaSignature signature) {
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(INDEX_SELECT_DSL_SUFFIX,
-                INDEX_SELECT_WHERE_DSL_SUFFIX, INDEX_SELECT_END_DSL_SUFFIX,
+                WHERE_DSL_SUFFIX, END_DSL_SUFFIX,
                 ABSTRACT_SELECT_WHERE_PARTITION, ABSTRACT_INDEX_SELECT_WHERE);
 
         final ClassSignatureParams typedMapClassSignatureParams = ClassSignatureParams.of(INDEX_SELECT_DSL_SUFFIX,
-                INDEX_SELECT_WHERE_TYPED_MAP_DSL_SUFFIX, INDEX_SELECT_END_TYPED_MAP_DSL_SUFFIX,
+                WHERE_TYPED_MAP_DSL_SUFFIX, END_TYPED_MAP_DSL_SUFFIX,
                 ABSTRACT_SELECT_WHERE_PARTITION_TYPED_MAP, ABSTRACT_INDEX_SELECT_WHERE_TYPED_MAP);
 
         final List<TypeSpec> typeSpecs = buildWhereClassesInternal(signature, classSignatureParams);
@@ -74,7 +74,7 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         List<TypeSpec> typeSpecs = new ArrayList<>();
 
 
-        String indexSelectWhereClassName = signature.className + classSignatureParams.whereDslSuffix;
+        String indexSelectWhereClassName = classSignatureParams.whereDslSuffix;
         final TypeSpec.Builder indexSelectWhereBuilder = TypeSpec.classBuilder(indexSelectWhereClassName)
                 .superclass(classSignatureParams.abstractWherePartitionType)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -88,7 +88,7 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         final ClassSignatureInfo lastSignature = ClassSignatureInfo.of(endTypeName, endReturnTypeName, abstractEndType, endClassName);
 
         String parentClassName = signature.indexSelectClassName()
-                + "." + signature.className + classSignatureParams.whereDslSuffix;
+                + "." + classSignatureParams.whereDslSuffix;
 
         final List<IndexFieldSignatureInfo> nativeIndexCols = getIndexedColsSignatureInfo(IndexImpl.NATIVE, signature.fieldMetaSignatures);
         nativeIndexCols.forEach(x -> buildNativeIndexRelation(indexSelectWhereBuilder,
@@ -137,7 +137,7 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
         clusteringCols.forEach(x -> this.buildClusteringColumnRelation(builder, signature,x, lastSignature, classSignatureParams));
 
         String parentClassName = signature.indexSelectClassName()
-                + "." + signature.className + classSignatureParams.endDslSuffix;
+                + "." + classSignatureParams.endDslSuffix;
 
         nativeIndexCols.forEach(x -> buildNativeIndexRelation(builder, x, parentClassName, lastSignature, ReturnType.THIS));
 
@@ -157,7 +157,7 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
                                          ClassSignatureInfo lastSignature,
                                          ReturnType returnType) {
 
-        final String relationClassName = upperCaseFirst(indexFieldInfo.fieldName) + DSL_RELATION_SUFFIX;
+        final String relationClassName = upperCaseFirst(indexFieldInfo.fieldName);
         TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + relationClassName);
 
         final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(relationClassName)
@@ -287,9 +287,9 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
                                           ClassSignatureInfo lastSignature,
                                           ClassSignatureParams classSignatureParams) {
 
-        final String relationClassName = upperCaseFirst(partitionInfo.fieldName) + DSL_RELATION_SUFFIX;
+        final String relationClassName = upperCaseFirst(partitionInfo.fieldName);
         TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, signature.indexSelectClassName()
-                + "." + signature.className + classSignatureParams.endDslSuffix
+                + "." + classSignatureParams.endDslSuffix
                 + "." + relationClassName);
 
         final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(relationClassName)
@@ -310,9 +310,9 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
                                               ClassSignatureInfo lastSignature,
                                               ClassSignatureParams classSignatureParams) {
 
-        final String relationClassName = upperCaseFirst(clusteringColumnInfo.fieldName) + DSL_RELATION_SUFFIX;
+        final String relationClassName = upperCaseFirst(clusteringColumnInfo.fieldName);
         TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, signature.indexSelectClassName()
-                + "." + signature.className + classSignatureParams.endDslSuffix
+                + "." + classSignatureParams.endDslSuffix
                 + "." + relationClassName);
 
         TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(relationClassName)

@@ -43,12 +43,12 @@ public abstract class IndexSelectDSLCodeGen extends SelectDSLCodeGen {
                 .forSelectColumns(signature.indexSelectColumnsReturnType(),
                         signature.indexSelectColumnsTypedMapReturnType(),
                         signature.indexSelectFromReturnType(),
-                        signature.className + INDEX_SELECT_COLUMNS_DSL_SUFFIX);
+                        COLUMNS_DSL_SUFFIX);
 
         SelectColumnsSignature signatureForSelectColumnsTypedMap = SelectColumnsSignature
                 .forSelectColumnsTypedMap(signature.indexSelectColumnsTypedMapReturnType(),
                         signature.indexSelectFromTypedMapReturnType(),
-                        signature.className + INDEX_SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX);
+                        COLUMNS_TYPED_MAP_DSL_SUFFIX);
 
         final TypeSpec.Builder selectClassBuilder = TypeSpec.classBuilder(signature.indexSelectClassName())
                 .superclass(ABSTRACT_SELECT)
@@ -133,7 +133,7 @@ public abstract class IndexSelectDSLCodeGen extends SelectDSLCodeGen {
 
         TypeName selectEndTypeName = ClassName.get(DSL_PACKAGE, signature.indexSelectEndReturnType());
 
-        return TypeSpec.classBuilder(signature.className + INDEX_SELECT_FROM_DSL_SUFFIX)
+        return TypeSpec.classBuilder(FROM_DSL_SUFFIX)
                 .superclass(ABSTRACT_SELECT_FROM)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()
@@ -161,7 +161,7 @@ public abstract class IndexSelectDSLCodeGen extends SelectDSLCodeGen {
 
         TypeName selectEndTypedMapTypeName = ClassName.get(DSL_PACKAGE, signature.indexSelectEndTypedMapReturnType());
 
-        return TypeSpec.classBuilder(signature.className + INDEX_SELECT_FROM_TYPED_MAP_DSL_SUFFIX)
+        return TypeSpec.classBuilder(FROM_TYPED_MAP_DSL_SUFFIX)
                 .superclass(ABSTRACT_SELECT_FROM_TYPED_MAP)
                 .addModifiers(Modifier.PUBLIC)
                 .addMethod(MethodSpec.constructorBuilder()

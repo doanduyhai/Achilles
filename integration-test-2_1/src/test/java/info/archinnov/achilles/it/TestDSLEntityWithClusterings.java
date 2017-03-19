@@ -156,7 +156,7 @@ public class TestDSLEntityWithClusterings {
                 .fromBaseTable()
                 .where()
                 .id().Eq(id)
-                .uuid_And_date().Gte_And_Lt(uuid1, date2, uuid2, date4)
+                .uuid_date().Gte_And_Lt(uuid1, date2, uuid2, date4)
                 .getList();
 
         //Then
@@ -178,7 +178,7 @@ public class TestDSLEntityWithClusterings {
                 .fromBaseTable()
                 .where()
                 .id().Eq(id)
-                .uuid_And_date().Gte(uuid2, date4)
+                .uuid_date().Gte(uuid2, date4)
                 .getList();
 
         assertThat(list).hasSize(2);
@@ -244,7 +244,7 @@ public class TestDSLEntityWithClusterings {
                 .fromBaseTable()
                 .where()
                 .id().Eq(id)
-                .uuid_And_date().uuid_And_date_Gt_And_uuid_Lt(uuid1, date2, uuid2)
+                .uuid_date().uuid_And_date_Gt_And_uuid_Lt(uuid1, date2, uuid2)
                 .getList();
 
         //Then

@@ -331,7 +331,7 @@ public class TestDSLSimpleEntity {
         final Date date2 = new Date();
 
         //When
-        final SimpleEntity_Select.SimpleEntity_SelectEnd dsl = manager
+        final SimpleEntity_Select.E dsl = manager
                 .dsl()
                 .select()
                 .date()
@@ -615,7 +615,7 @@ public class TestDSLSimpleEntity {
         final Date date = buildDateKey();
 
         //When
-        final SimpleEntity_Delete.SimpleEntity_DeleteEnd dsl = manager
+        final SimpleEntity_Delete.E dsl = manager
                 .dsl()
                 .delete()
                 .simpleMap()
@@ -1247,7 +1247,7 @@ public class TestDSLSimpleEntity {
         final Date date = buildDateKey();
 
         //When
-        final SimpleEntity_Update.SimpleEntity_UpdateEnd dsl = manager
+        final SimpleEntity_Update.E dsl = manager
                 .dsl()
                 .update()
                 .fromBaseTable()

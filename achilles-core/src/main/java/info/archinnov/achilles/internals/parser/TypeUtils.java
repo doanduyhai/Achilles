@@ -80,53 +80,32 @@ import info.archinnov.achilles.validation.Validator;
 public class TypeUtils {
 
     public static final String META_SUFFIX = "_AchillesMeta";
+
     public static final String DSL_RELATION_SUFFIX = "_Relation";
     public static final String DSL_RELATION = "Relation";
-    public static final String SELECT_COLUMNS_DSL_SUFFIX = "_SelectColumns";
-    public static final String INDEX_SELECT_COLUMNS_DSL_SUFFIX = "_IndexSelectColumns";
-    public static final String SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX = "_SelectColumnsTypedMap";
-    public static final String INDEX_SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX = "_IndexSelectColumnsTypedMap";
+
+    public static final String COLUMNS_DSL_SUFFIX = "Cols";
+    public static final String COLUMNS_TYPED_MAP_DSL_SUFFIX = "ColsTM";
+    public static final String FROM_DSL_SUFFIX = "F";
+    public static final String FROM_JSON_DSL_SUFFIX = "F_J";
+    public static final String FROM_TYPED_MAP_DSL_SUFFIX = "F_TM";
+    public static final String WHERE_DSL_SUFFIX = "W";
+    public static final String WHERE_TYPED_MAP_DSL_SUFFIX = "W_TM";
+    public static final String WHERE_JSON_DSL_SUFFIX = "W_J";
+    public static final String END_DSL_SUFFIX = "E";
+    public static final String END_TYPED_MAP_DSL_SUFFIX = "E_TM";
+    public static final String END_JSON_DSL_SUFFIX = "E_J";
+
     public static final String SELECT_DSL_SUFFIX = "_Select";
     public static final String INDEX_SELECT_DSL_SUFFIX = "_SelectIndex";
-    public static final String SELECT_FROM_DSL_SUFFIX = "_SelectFrom";
-    public static final String INDEX_SELECT_FROM_DSL_SUFFIX = "_IndexSelectFrom";
-    public static final String SELECT_FROM_JSON_DSL_SUFFIX = "_SelectFromJSON";
-    public static final String INDEX_SELECT_FROM_JSON_DSL_SUFFIX = "_IndexSelectFromJSON";
-    public static final String SELECT_FROM_TYPED_MAP_DSL_SUFFIX = "_SelectFromTypedMap";
-    public static final String INDEX_SELECT_FROM_TYPED_MAP_DSL_SUFFIX = "_IndexSelectFromTypedMap";
-    public static final String SELECT_WHERE_DSL_SUFFIX = "_SelectWhere";
-    public static final String INDEX_SELECT_WHERE_DSL_SUFFIX = "_IndexSelectWhere";
-    public static final String SELECT_WHERE_TYPED_MAP_DSL_SUFFIX = "_SelectWhereTypedMap";
-    public static final String INDEX_SELECT_WHERE_TYPED_MAP_DSL_SUFFIX = "_IndexSelectWhereTypedMap";
-    public static final String SELECT_WHERE_JSON_DSL_SUFFIX = "_SelectWhereJSON";
-    public static final String INDEX_SELECT_WHERE_JSON_DSL_SUFFIX = "_IndexSelectWhereJSON";
-    public static final String SELECT_END_DSL_SUFFIX = "_SelectEnd";
-    public static final String INDEX_SELECT_END_DSL_SUFFIX = "_IndexSelectEnd";
-    public static final String SELECT_END_TYPED_MAP_DSL_SUFFIX = "_SelectEndTypedMap";
-    public static final String INDEX_SELECT_END_TYPED_MAP_DSL_SUFFIX = "_IndexSelectEndTypedMap";
-    public static final String SELECT_END_JSON_DSL_SUFFIX = "_SelectEndJSON";
-    public static final String INDEX_SELECT_END_JSON_DSL_SUFFIX = "_IndexSelectEndJSON";
 
     public static final String DELETE_DSL_SUFFIX = "_Delete";
     public static final String DELETE_STATIC_DSL_SUFFIX = "_DeleteStatic";
-    public static final String DELETE_COLUMNS_DSL_SUFFIX = "_DeleteColumns";
-    public static final String DELETE_STATIC_COLUMNS_DSL_SUFFIX = "_DeleteStaticColumns";
-    public static final String DELETE_FROM_DSL_SUFFIX = "_DeleteFrom";
-    public static final String DELETE_STATIC_FROM_DSL_SUFFIX = "_DeleteStaticFrom";
-    public static final String DELETE_WHERE_DSL_SUFFIX = "_DeleteWhere";
-    public static final String DELETE_STATIC_WHERE_DSL_SUFFIX = "_DeleteStaticWhere";
-    public static final String DELETE_END_DSL_SUFFIX = "_DeleteEnd";
-    public static final String DELETE_STATIC_END_DSL_SUFFIX = "_DeleteStaticEnd";
+
+
     public static final String UPDATE_DSL_SUFFIX = "_Update";
     public static final String UPDATE_STATIC_DSL_SUFFIX = "_UpdateStatic";
-    public static final String UPDATE_FROM_DSL_SUFFIX = "_UpdateFrom";
-    public static final String UPDATE_STATIC_FROM_DSL_SUFFIX = "_UpdateStaticFrom";
-    public static final String UPDATE_COLUMNS_DSL_SUFFIX = "_UpdateColumns";
-    public static final String UPDATE_STATIC_COLUMNS_DSL_SUFFIX = "_UpdateStaticColumns";
-    public static final String UPDATE_WHERE_DSL_SUFFIX = "_UpdateWhere";
-    public static final String UPDATE_STATIC_WHERE_DSL_SUFFIX = "_UpdateStaticWhere";
-    public static final String UPDATE_END_DSL_SUFFIX = "_UpdateEnd";
-    public static final String UPDATE_STATIC_END_DSL_SUFFIX = "_UpdateStaticEnd";
+
     public static final String MANAGER_SUFFIX = "_Manager";
     public static final String CRUD_SUFFIX = "_CRUD";
     public static final String DSL_SUFFIX = "_DSL";

@@ -61,13 +61,13 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
             final List<FieldSignatureInfo> fieldInfosMinusOne = clusteringCols.stream().limit(i - 1).collect(toList());
 
             String multiRelationName = fieldInfos
-                    .stream().map(x -> x.fieldName).reduce((a, b) -> a + "_And_" + b)
+                    .stream().map(x -> x.fieldName).reduce((a, b) -> a + "_" + b)
                     .get();
 
             TypeName multiRelationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName
-                    + "." + multiRelationName + DSL_RELATION_SUFFIX);
+                    + "." + multiRelationName);
 
-            TypeSpec multiRelationClass = TypeSpec.classBuilder(multiRelationName + DSL_RELATION_SUFFIX)
+            TypeSpec multiRelationClass = TypeSpec.classBuilder(multiRelationName)
                     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                     .addMethod(buildTuplesColumnRelation(GT, lastSignature.returnClassType, fieldInfos, returnType))
                     .addMethod(buildTuplesColumnRelation(GTE, lastSignature.returnClassType, fieldInfos, returnType))

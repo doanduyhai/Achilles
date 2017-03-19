@@ -56,7 +56,7 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(DELETE_DSL_SUFFIX,
-                DELETE_WHERE_DSL_SUFFIX, DELETE_END_DSL_SUFFIX,
+                WHERE_DSL_SUFFIX, END_DSL_SUFFIX,
                 ABSTRACT_DELETE_WHERE_PARTITION, ABSTRACT_DELETE_WHERE, ABSTRACT_DELETE_END);
 
         final List<ClassSignatureInfo> classesSignature =
@@ -83,7 +83,7 @@ public abstract class DeleteWhereDSLCodeGen extends AbstractDSLCodeGen
         final List<FieldSignatureInfo> partitionKeys = getPartitionKeysSignatureInfo(signature.fieldMetaSignatures);
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(DELETE_STATIC_DSL_SUFFIX,
-                DELETE_STATIC_WHERE_DSL_SUFFIX, DELETE_STATIC_END_DSL_SUFFIX,
+                WHERE_DSL_SUFFIX, END_DSL_SUFFIX,
                 ABSTRACT_DELETE_WHERE_PARTITION, ABSTRACT_DELETE_WHERE, ABSTRACT_DELETE_END);
 
         final List<ClassSignatureInfo> classesSignature =

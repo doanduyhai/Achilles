@@ -77,8 +77,7 @@ public class IndexSelectWhereDSLCodeGen_DSE_5_0_0 extends IndexSelectWhereDSLCod
 
         partitionKeys.forEach(x -> this.buildPartitionKeyRelation(builder, signature,x, lastSignature, classSignatureParams));
 
-        String parentClassName = signature.indexSelectClassName()
-                + "." + signature.className + classSignatureParams.endDslSuffix;
+        String parentClassName = signature.indexSelectClassName() + "." + classSignatureParams.endDslSuffix;
 
         nativeIndexCols.forEach(x -> buildNativeIndexRelation(builder, x, parentClassName, lastSignature, ReturnType.THIS));
 

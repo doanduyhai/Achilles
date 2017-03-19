@@ -58,11 +58,11 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen
         final Optional<FieldSignatureInfo> firstClustering = clusteringCols.stream().limit(1).findFirst();
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(SELECT_DSL_SUFFIX,
-                SELECT_WHERE_DSL_SUFFIX, SELECT_END_DSL_SUFFIX,
+                WHERE_DSL_SUFFIX, END_DSL_SUFFIX,
                 ABSTRACT_SELECT_WHERE_PARTITION, ABSTRACT_SELECT_WHERE);
 
         final ClassSignatureParams typedMapClassSignatureParams = ClassSignatureParams.of(SELECT_DSL_SUFFIX,
-                SELECT_WHERE_TYPED_MAP_DSL_SUFFIX, SELECT_END_TYPED_MAP_DSL_SUFFIX,
+                WHERE_TYPED_MAP_DSL_SUFFIX, END_TYPED_MAP_DSL_SUFFIX,
                 ABSTRACT_SELECT_WHERE_PARTITION_TYPED_MAP, ABSTRACT_SELECT_WHERE_TYPED_MAP);
 
         final List<TypeSpec> partitionKeysWhereClasses = buildWhereClassesInternal(signature, selectWhereDSLCodeGen, partitionKeys, clusteringCols,

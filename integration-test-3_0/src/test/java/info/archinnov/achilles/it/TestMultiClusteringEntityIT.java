@@ -267,7 +267,7 @@ public class TestMultiClusteringEntityIT {
                 .allColumns_FromBaseTable()
                 .where()
                 .id().Eq(id)
-                .c1_And_c2().Gte_And_Lte(1, 1, 3, 1)
+                .c1_c2().Gte_And_Lte(1, 1, 3, 1)
                 .execute();
 
         //Then

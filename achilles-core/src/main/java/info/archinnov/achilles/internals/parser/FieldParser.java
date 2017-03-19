@@ -647,7 +647,7 @@ public class FieldParser {
         }
 
         public String relationClassnameForUpdate() {
-            return upperCaseFirst(context.fieldName) + DSL_RELATION_SUFFIX;
+            return upperCaseFirst(context.fieldName);
         }
 
         public FieldSpec buildPropertyAsField() {

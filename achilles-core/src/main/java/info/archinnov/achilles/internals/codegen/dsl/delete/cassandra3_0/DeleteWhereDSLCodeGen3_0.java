@@ -18,7 +18,6 @@ package info.archinnov.achilles.internals.codegen.dsl.delete.cassandra3_0;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_DELETE_END;
-import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_DELETE_WHERE;
 
 import java.util.List;
 
@@ -46,7 +45,7 @@ public class DeleteWhereDSLCodeGen3_0 extends DeleteWhereDSLCodeGen2_2
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(DELETE_DSL_SUFFIX,
-                DELETE_WHERE_DSL_SUFFIX, DELETE_END_DSL_SUFFIX,
+                WHERE_DSL_SUFFIX, END_DSL_SUFFIX,
                 ABSTRACT_DELETE_WHERE_PARTITION, ABSTRACT_DELETE_END);
 
         final List<ClassSignatureInfo> classesSignature =
