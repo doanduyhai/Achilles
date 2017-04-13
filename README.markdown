@@ -1,7 +1,8 @@
 ![Achilles](https://raw.github.com/wiki/doanduyhai/Achilles/assets/Achilles_New_Logo.png)
 
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Build Status](https://travis-ci.org/doanduyhai/Achilles.png?branch=master)](https://travis-ci.org/doanduyhai/Achilles)
+
+[![Build Status](https://travis-ci.org/doanduyhai/Achilles.png?branch=master)](https://travis-ci.org/doanduyhai/Achilles)
 
 ## Presentation #
 
