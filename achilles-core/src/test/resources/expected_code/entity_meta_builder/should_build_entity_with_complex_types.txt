@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.type.SimpleType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
+import info.archinnov.achilles.annotations.Factory;
 import info.archinnov.achilles.generated.function.Array_Byte_Type;
 import info.archinnov.achilles.generated.function.Array_Primitive_byte_Type;
 import info.archinnov.achilles.generated.function.Boolean_Type;
@@ -67,19 +68,24 @@ import info.archinnov.achilles.type.tuples.Tuple3;
 import java.lang.Boolean;
 import java.lang.Byte;
 import java.lang.Class;
+import java.lang.IllegalArgumentException;
 import java.lang.Integer;
 import java.lang.Long;
+import java.lang.NoSuchMethodException;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
+import java.lang.reflect.Constructor;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 /**
  * Meta class of all entities of type TestEntityWithComplexTypes<br/>
@@ -444,6 +450,25 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   @Override
   protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getComputedColumns() {
     return Arrays.asList(writeTime,writeTimeWithCodec);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getConstructorProperties() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  protected Constructor<TestEntityWithComplexTypes> getConstructor() {
+    return Stream.of(getEntityClass().getConstructors())
+                .filter(x -> x.isAnnotationPresent(Factory.class)).findFirst()
+                .map(Constructor.class::cast)
+                .orElseGet(() -> {
+                    try {
+                        return Constructor.class.cast(getEntityClass().getConstructor());
+                    } catch (NoSuchMethodException e) {
+                        throw new IllegalArgumentException("Invalid class " + getEntityClass().getName());
+                    }
+                 });
   }
 
   @Override

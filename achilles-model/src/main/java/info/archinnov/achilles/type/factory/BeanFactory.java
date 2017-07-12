@@ -16,10 +16,12 @@
 
 package info.archinnov.achilles.type.factory;
 
+import java.lang.reflect.Constructor;
+
 /**
  * Interface to create new instance of entities and UDT classes
  */
 public interface BeanFactory {
 
-    <T> T newInstance(Class<T> clazz);
+    <T> T newInstance(Constructor<T> clazz, Object[] args);
 }

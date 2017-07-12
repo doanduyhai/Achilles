@@ -19,6 +19,7 @@ package info.archinnov.achilles.internals.parser;
 import static com.squareup.javapoet.TypeName.OBJECT;
 import static java.lang.String.format;
 
+import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -27,7 +28,9 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import info.archinnov.achilles.annotations.Factory;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.datastax.driver.core.*;
@@ -179,6 +182,9 @@ public class TypeUtils {
     public static final ClassName HASHBIMAP = ClassName.get(HashBiMap.class);
     public static final ClassName ACHILLES_META_ANNOT = ClassName.get(AchillesMeta.class);
     public static final ClassName DSE_SEARCH_ANNOT = ClassName.get(DSE_Search.class);
+    public static final ClassName FACTORY = ClassName.get(Factory.class);
+
+    public static final ArrayTypeName OBJECT_ARRAY = ArrayTypeName.of(Object.class);
 
     // DSL
     public static final ClassName ABSTRACT_SELECT = ClassName.get(AbstractSelect.class);
@@ -245,15 +251,21 @@ public class TypeUtils {
     // Common
     public static final TypeName WILDCARD = WildcardTypeName.subtypeOf(TypeName.OBJECT);
     public static final ClassName OPTIONAL = ClassName.get(Optional.class);
+    public static final ClassName CONSTRUCTOR = ClassName.get(Constructor.class);
     public static final ClassName CLASS = ClassName.get(Class.class);
     public static final ClassName ARRAYS_UTILS = ClassName.get(ArrayUtils.class);
     public static final ClassName ARRAY_LIST = ClassName.get(ArrayList.class);
     public static final ClassName ARRAYS = ClassName.get(Arrays.class);
+    public static final ClassName STREAM = ClassName.get(Stream.class);
+    public static final ClassName COLLECTIONS = ClassName.get(Collections.class);
     public static final ClassName COLLECTORS = ClassName.get(Collectors.class);
     public static final ClassName SETS = ClassName.get(Sets.class);
     public static final ClassName SIMPLE_DATE_FORMAT = ClassName.get(SimpleDateFormat.class);
     public static final TypeName LIST_OBJECT = ParameterizedTypeName.get(ClassName.get(List.class), TypeName.OBJECT);
     public static final TypeName OVERRIDE_ANNOTATION = ClassName.get(Override.class);
+    public static final TypeName NO_SUCH_METHOD_EXCEPTION = ClassName.get(NoSuchMethodException.class);
+    public static final TypeName ILLEGAL_ARGUMENT_EXCEPTION = ClassName.get(IllegalArgumentException.class);
+    public static final TypeName UNSUPPORTED_OPERATION_EXCEPTION = ClassName.get(UnsupportedOperationException.class);
 
     // Jackson types
     public static final ClassName SIMPLE_TYPE = ClassName.get(SimpleType.class);

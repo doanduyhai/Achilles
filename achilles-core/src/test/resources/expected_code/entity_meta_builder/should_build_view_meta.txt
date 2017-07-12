@@ -6,6 +6,7 @@ import com.datastax.driver.core.DataType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
+import info.archinnov.achilles.annotations.Factory;
 import info.archinnov.achilles.generated.function.Date_Type;
 import info.archinnov.achilles.generated.function.Double_Type;
 import info.archinnov.achilles.generated.function.Long_Type;
@@ -27,14 +28,19 @@ import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSens
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import java.lang.Class;
 import java.lang.Double;
+import java.lang.IllegalArgumentException;
 import java.lang.Long;
+import java.lang.NoSuchMethodException;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Meta class of all entities of type TestViewSensorByType<br/>
@@ -149,6 +155,25 @@ public final class TestViewSensorByType_AchillesMeta extends AbstractViewPropert
   @Override
   protected List<AbstractProperty<TestViewSensorByType, ?, ?>> getComputedColumns() {
     return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestViewSensorByType, ?, ?>> getConstructorProperties() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  protected Constructor<TestViewSensorByType> getConstructor() {
+    return Stream.of(getEntityClass().getConstructors())
+                .filter(x -> x.isAnnotationPresent(Factory.class)).findFirst()
+                .map(Constructor.class::cast)
+                .orElseGet(() -> {
+                    try {
+                        return Constructor.class.cast(getEntityClass().getConstructor());
+                    } catch (NoSuchMethodException e) {
+                        throw new IllegalArgumentException("Invalid class " + getEntityClass().getName());
+                    }
+                 });
   }
 
   @Override

@@ -26,6 +26,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
+import info.archinnov.achilles.annotations.Factory;
 import org.apache.commons.collections.map.HashedMap;
 
 import com.squareup.javapoet.TypeName;
@@ -70,13 +71,20 @@ public abstract class BeanValidator {
         aptUtils.validateFalse(modifiers.contains(Modifier.FINAL), "Bean type '%s' should not be final", name);
     }
 
-    public void validateHasPublicConstructor(AptUtils aptUtils, TypeName typeName, TypeElement typeElement) {
-        final long constructorCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
-                .stream()
-                .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
-                .filter(x -> x.getParameters().size() == 0) //No arg constructor
-                .count();
-        aptUtils.validateTrue(constructorCount == 1, "Bean type '%s' should have a public no-args constructor", typeName);
+    public void validateHasSingleValidConstructor(AptUtils aptUtils, TypeName typeName, TypeElement typeElement) {
+        final long constructorsCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
+                    .stream()
+                    .filter(x -> {
+                        final Factory factory = x.getAnnotation(Factory.class);
+                        if (factory == null) { // no-arg case
+                            return x.getParameters().size() == 0;
+                        }
+                        return factory.value().length == x.getParameters().size();
+                    }) //Marked as the factory
+                    .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
+                    .count();
+        aptUtils.validateTrue(constructorsCount == 1,
+                "Bean type '%s' should have a public no-args constructor or a @Factory constructor matching parameters", typeName);
     }
 
     public void validateNoDuplicateNames(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {

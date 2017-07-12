@@ -17,7 +17,9 @@
 package info.archinnov.achilles.internals.metamodel;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
+import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,13 +56,17 @@ public abstract class AbstractUDTClassProperty<A>
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractUDTClassProperty.class);
 
+    protected static final Object[] NO_ARG = new Object[0];
+
     public final Optional<String> staticKeyspace;
     public final Optional<InternalNamingStrategy> staticNamingStrategy;
     public final Optional<String> staticUdtName;
     public final Class<A> udtClass;
     public final String udtName;
     public final List<AbstractProperty<A, ?, ?>> componentsProperty;
+    public final List<AbstractProperty<A, ?, ?>> constructorProperties;
     public final Class<?> parentEntityClass;
+    public final Constructor<A> constructor;
     protected BeanFactory udtFactory;
     protected UserTypeFactory userTypeFactory;
     protected UserType userType;
@@ -73,9 +79,15 @@ public abstract class AbstractUDTClassProperty<A>
         this.staticUdtName = getStaticUdtName();
         this.udtName = getUdtName();
         this.udtClass = getUdtClass();
-        this.componentsProperty = getComponentsProperty();
         this.parentEntityClass = getParentEntityClass();
+        this.constructorProperties = getConstructorProperties();
+        this.componentsProperty = getComponentsProperty().stream().filter(x -> !constructorProperties.contains(x)).collect(toList());
+        this.constructor = getConstructor();
     }
+
+    protected abstract List<AbstractProperty<A, ?, ?>> getConstructorProperties();
+
+    protected abstract Constructor<A> getConstructor();
 
     protected abstract Optional<String> getStaticKeyspace();
 
@@ -93,7 +105,15 @@ public abstract class AbstractUDTClassProperty<A>
 
     protected abstract UDTValue createUDTFromBean(A instance, Optional<CassandraOptions> cassandraOptions);
 
-    protected abstract A createBeanFromUDT(UDTValue udtValue);
+    protected A createBeanFromUDT(UDTValue udtValue) {
+        final List<AbstractProperty<A, ?, ?>> constructorProperties = getConstructorProperties();
+        final A instance = udtFactory.newInstance(
+                constructor, constructorProperties.isEmpty() ? NO_ARG : constructorProperties.stream()
+                        .map(x -> x.decodeFromGettable(udtValue))
+                        .toArray(Object[]::new));
+        getComponentsProperty().forEach(x -> x.decodeField(udtValue, instance));
+        return instance;
+    }
 
     protected UserType getUserType(Optional<CassandraOptions> cassandraOptions) {
         if (cassandraOptions.isPresent()) {

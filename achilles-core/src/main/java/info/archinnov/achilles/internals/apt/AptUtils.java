@@ -456,7 +456,7 @@ public class AptUtils {
         return getter.get();
     }
 
-    public ExecutableElement findSetter(TypeElement classElm, VariableElement elm, String setterName) {
+    public ExecutableElement findSetter(TypeElement classElm, VariableElement elm, String setterName, boolean optional) {
         TypeMirror typeMirror = elm.asType();
         final Optional<ExecutableElement> setter = ElementFilter.methodsIn(elementUtils.getAllMembers(classElm))
                 .stream()
@@ -470,8 +470,12 @@ public class AptUtils {
                 .filter(x -> x.getReturnType().getKind() == TypeKind.VOID)
                 .findFirst();
 
-        validateTrue(setter.isPresent(), "Cannot find setter 'void %s(%s value)' for field '%s' in class '%s'",
-                setterName, typeMirror, elm.getSimpleName(), classElm.getQualifiedName());
+        if (!optional) {
+            validateTrue(setter.isPresent(), "Cannot find setter 'void %s(%s value)' for field '%s' in class '%s'",
+                    setterName, typeMirror, elm.getSimpleName(), classElm.getQualifiedName());
+        } else if (!setter.isPresent()) {
+            return null;
+        }
         return setter.get();
     }
 

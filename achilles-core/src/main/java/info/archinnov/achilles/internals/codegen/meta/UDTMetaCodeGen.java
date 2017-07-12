@@ -16,27 +16,46 @@
 
 package info.archinnov.achilles.internals.codegen.meta;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.datastax.driver.core.UDTValue;
-import com.squareup.javapoet.*;
-
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
+import info.archinnov.achilles.annotations.Factory;
 import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.StringJoiner;
+
+import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_PROPERTY;
+import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_UDT_CLASS_PROPERTY;
+import static info.archinnov.achilles.internals.parser.TypeUtils.ARRAYS;
+import static info.archinnov.achilles.internals.parser.TypeUtils.CLASS;
+import static info.archinnov.achilles.internals.parser.TypeUtils.JAVA_DRIVER_UDT_VALUE_TYPE;
+import static info.archinnov.achilles.internals.parser.TypeUtils.JAVA_DRIVER_USER_TYPE;
+import static info.archinnov.achilles.internals.parser.TypeUtils.LIST;
+import static info.archinnov.achilles.internals.parser.TypeUtils.META_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.OPTIONAL;
+import static info.archinnov.achilles.internals.parser.TypeUtils.OPTIONS;
+import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
+import static info.archinnov.achilles.internals.parser.TypeUtils.UDT_META_PACKAGE;
+import static info.archinnov.achilles.internals.parser.TypeUtils.WILDCARD;
+import static info.archinnov.achilles.internals.parser.TypeUtils.classTypeOf;
+import static info.archinnov.achilles.internals.parser.TypeUtils.genericType;
+import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
 
@@ -52,6 +71,12 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
 
         final Optional<Strategy> strategy = aptUtils.getAnnotationOnClass(elm, Strategy.class);
 
+        final Factory factory = ElementFilter.constructorsIn(elm.getEnclosedElements()).stream()
+                .map(x -> x.getAnnotation(Factory.class))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+
         final String className = elm.getSimpleName() + META_SUFFIX;
         TypeName classType = ClassName.get(UDT_META_PACKAGE, className);
         final TypeSpec.Builder builder = TypeSpec.classBuilder(className)
@@ -64,8 +89,9 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addMethod(buildGetUdtClass(rawBeanType))
                 .addMethod(buildGetParentEntityClass(context))
                 .addMethod(buildComponentsProperty(rawBeanType, parsingResults))
-                .addMethod(buildCreateUDTFromBeanT(rawBeanType, parsingResults))
-                .addMethod(buildCreateBeanFromUDT(rawBeanType, parsingResults));
+                .addMethod(buildConstructorProperties(rawBeanType, factory))
+                .addMethod(buildConstructor(rawBeanType))
+                .addMethod(buildCreateUDTFromBeanT(rawBeanType, parsingResults));
 
         for (FieldMetaSignature x : parsingResults) {
             builder.addField(x.buildPropertyAsField());
@@ -195,22 +221,8 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
         return builder.build();
     }
 
-    private MethodSpec buildCreateBeanFromUDT(TypeName rawBeanType, List<FieldMetaSignature> parsingResults) {
-        final ClassName udtType = ClassName.get(UDTValue.class);
-
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder("createBeanFromUDT")
-                .addAnnotation(Override.class)
-                .addModifiers(Modifier.PROTECTED)
-                .addParameter(udtType, "udtValue")
-                .returns(rawBeanType)
-                .addStatement("final $T instance = udtFactory.newInstance(udtClass)", rawBeanType);
-
-        for (FieldMetaSignature x : parsingResults) {
-            builder.addStatement("$L.decodeField(udtValue, instance)", x.context.fieldName);
-        }
-
-        builder.addStatement("return instance");
-
-        return builder.build();
+    @Override
+    public String getClassAccessorName() {
+        return "getUdtClass";
     }
 }

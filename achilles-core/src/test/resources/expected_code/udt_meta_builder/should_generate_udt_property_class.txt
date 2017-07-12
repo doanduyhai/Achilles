@@ -70,6 +70,25 @@ public final class TestUDT_AchillesMeta extends info.archinnov.achilles.internal
   }
 
   @java.lang.Override
+  protected java.util.List<info.archinnov.achilles.internals.metamodel.AbstractProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, ?, ?>> getConstructorProperties() {
+    return java.util.Collections.emptyList();
+  }
+
+  @java.lang.Override
+  protected java.lang.reflect.Constructor<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT> getConstructor() {
+    return java.util.stream.Stream.of(getUdtClass().getConstructors())
+                .filter(x -> x.isAnnotationPresent(info.archinnov.achilles.annotations.Factory.class)).findFirst()
+                .map(java.lang.reflect.Constructor.class::cast)
+                .orElseGet(() -> {
+                    try {
+                        return java.lang.reflect.Constructor.class.cast(getUdtClass().getConstructor());
+                    } catch (java.lang.NoSuchMethodException e) {
+                        throw new java.lang.IllegalArgumentException("Invalid class " + getUdtClass().getName());
+                    }
+                 });
+  }
+
+  @java.lang.Override
   protected com.datastax.driver.core.UDTValue createUDTFromBean(info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance, java.util.Optional<info.archinnov.achilles.internals.options.CassandraOptions> cassandraOptions) {
     final com.datastax.driver.core.UserType dynamicUserType = this.getUserType(cassandraOptions);
     final com.datastax.driver.core.UDTValue udtValue = dynamicUserType.newValue();
@@ -77,14 +96,5 @@ public final class TestUDT_AchillesMeta extends info.archinnov.achilles.internal
     list.encodeFieldToUdt(instance, udtValue, cassandraOptions);
     map.encodeFieldToUdt(instance, udtValue, cassandraOptions);
     return udtValue;
-  }
-
-  @java.lang.Override
-  protected info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT createBeanFromUDT(com.datastax.driver.core.UDTValue udtValue) {
-    final info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance = udtFactory.newInstance(udtClass);
-    name.decodeField(udtValue, instance);
-    list.decodeField(udtValue, instance);
-    map.decodeField(udtValue, instance);
-    return instance;
   }
 }

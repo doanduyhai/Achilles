@@ -24,6 +24,7 @@ import static info.archinnov.achilles.validation.Validator.validateNotNull;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
+import java.lang.reflect.Constructor;
 import java.util.*;
 
 import org.slf4j.Logger;
@@ -67,6 +68,8 @@ public abstract class AbstractEntityProperty<T> implements
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityProperty.class);
 
+    private static final Object[] NO_ARG = new Object[0];
+
     public final Logger entityLogger;
     public final Class<T> entityClass;
     public final Optional<String> staticKeyspace;
@@ -89,6 +92,8 @@ public abstract class AbstractEntityProperty<T> implements
     public final List<AbstractProperty<T, ?, ?>> allColumns;
     public final List<AbstractProperty<T, ?, ?>> allColumnsWithComputed;
     public final List<Interceptor<T>> interceptors = new ArrayList<>();
+    public final List<AbstractProperty<T, ?, ?>> constructorProperties;
+    public final Constructor<T> constructor;
     protected BeanFactory beanFactory;
     protected Optional<String> keyspace = Optional.empty();
     protected ConsistencyLevel readConsistencyLevel;
@@ -96,7 +101,6 @@ public abstract class AbstractEntityProperty<T> implements
     protected ConsistencyLevel serialConsistencyLevel;
     protected InsertStrategy insertStrategy;
     public Optional<SchemaNameProvider> schemaStrategy = Optional.empty();
-
 
     public AbstractEntityProperty() {
         entityClass = getEntityClass();
@@ -119,8 +123,14 @@ public abstract class AbstractEntityProperty<T> implements
         computedColumns = getComputedColumns();
         counterColumns = getCounterColumns();
         allColumns = getAllColumns();
-        allColumnsWithComputed = getAllColumnsWithComputed();
+        constructorProperties = getConstructorProperties();
+        allColumnsWithComputed = getAllColumnsWithComputed().stream().filter(x -> !constructorProperties.contains(x)).collect(toList());
+        constructor = getConstructor();
     }
+
+    protected abstract List<AbstractProperty<T, ?, ?>> getConstructorProperties();
+
+    protected abstract Constructor<T> getConstructor();
 
     protected abstract Class<T> getEntityClass();
 
@@ -231,8 +241,14 @@ public abstract class AbstractEntityProperty<T> implements
                     entityClass.getCanonicalName(), row));
         }
         if (row != null) {
-            T newInstance = beanFactory.newInstance(entityClass);
-            final List<String> cqlColumns = row.getColumnDefinitions().asList().stream().map(def -> def.getName()).collect(toList());
+            final List<String> cqlColumns = row.getColumnDefinitions().asList().stream().map(ColumnDefinitions.Definition::getName).collect(toList());
+            // start by creating the instance with mandatory parameters
+            T newInstance = beanFactory.newInstance(constructor, constructorProperties.isEmpty() ? NO_ARG : constructorProperties
+                    .stream()
+                    .filter(x -> cqlColumns.contains(x.getColumnForSelect()))
+                    .map(x -> x.decodeFromGettable(row))
+                    .toArray(Object[]::new));
+            // setters now
             allColumnsWithComputed
                     .stream()
                     .filter(x -> cqlColumns.contains(x.getColumnForSelect()))

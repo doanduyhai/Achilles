@@ -24,19 +24,26 @@ import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.factory.BeanFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
+
 public class DefaultBeanFactory implements BeanFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultBeanFactory.class);
 
     @Override
-    public <T> T newInstance(Class<T> clazz) {
+    public <T> T newInstance(Constructor<T> constructor, Object[] args) {
         if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format("Creating new instance of class %s", clazz.getCanonicalName()));
+            LOGGER.trace(format("Creating new instance of class %s", constructor.getClass().getCanonicalName()));
         }
         try {
-            return clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new AchillesException(format("Cannot instantiate instance of class '%s'. Did you forget to declare a default constructor ?", clazz.getCanonicalName()));
+            return constructor.newInstance(args);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new AchillesException(format("Cannot instantiate instance of class '%s'. Did you forget to declare a default constructor ?",
+                    constructor.getDeclaringClass().getCanonicalName()));
         }
     }
 }
