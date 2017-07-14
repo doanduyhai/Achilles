@@ -19,8 +19,8 @@ package info.archinnov.achilles.internals.entities;
 import com.datastax.driver.core.ConsistencyLevel;
 import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.annotations.Enumerated;
-import info.archinnov.achilles.annotations.Factory;
 import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.annotations.Table;
 
@@ -50,7 +50,7 @@ public class ImmutableEntity {
     @Column
     private final Map<Integer, String> simpleMap;
 
-    @Factory({"id", "date", "value", "consistencyList", "simpleSet", "simpleMap"})
+    @EntityCreator({"id", "date", "value", "consistencyList", "simpleSet", "simpleMap"})
     public ImmutableEntity(final long id, final Date date, final String value,
                            final List<ConsistencyLevel> consistencyList,
                            final Set<Double> simpleSet,

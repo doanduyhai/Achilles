@@ -26,7 +26,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
-import info.archinnov.achilles.annotations.Factory;
+import info.archinnov.achilles.annotations.EntityCreator;
 import org.apache.commons.collections.map.HashedMap;
 
 import com.squareup.javapoet.TypeName;
@@ -75,16 +75,17 @@ public abstract class BeanValidator {
         final long constructorsCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
                     .stream()
                     .filter(x -> {
-                        final Factory factory = x.getAnnotation(Factory.class);
-                        if (factory == null) { // no-arg case
+                        final EntityCreator entityCreator = x.getAnnotation(EntityCreator.class);
+                        if (entityCreator == null) { // no-arg case
                             return x.getParameters().size() == 0;
                         }
-                        return factory.value().length == x.getParameters().size();
+                        final String[] value = entityCreator.value();
+                        return value.length == 0 || value.length == x.getParameters().size();
                     }) //Marked as the factory
                     .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
                     .count();
         aptUtils.validateTrue(constructorsCount == 1,
-                "Bean type '%s' should have a public no-args constructor or a @Factory constructor matching parameters", typeName);
+                "Bean type '%s' should have a public no-args constructor or a @EntityCreator constructor matching parameters", typeName);
     }
 
     public void validateNoDuplicateNames(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {

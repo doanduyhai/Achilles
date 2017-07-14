@@ -5,7 +5,7 @@ import com.datastax.driver.core.DataType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
-import info.archinnov.achilles.annotations.Factory;
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.generated.function.Long_Type;
 import info.archinnov.achilles.generated.meta.entity.TestEntityWithCounterColumn_AchillesMeta.ColumnsForFunctions;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
@@ -136,7 +136,7 @@ public final class TestEntityWithCounterColumn_AchillesMeta extends AbstractEnti
   @Override
   protected Constructor<TestEntityWithCounterColumn> getConstructor() {
     return Stream.of(getEntityClass().getConstructors())
-                .filter(x -> x.isAnnotationPresent(Factory.class)).findFirst()
+                .filter(x -> x.isAnnotationPresent(EntityCreator.class)).findFirst()
                 .map(Constructor.class::cast)
                 .orElseGet(() -> {
                     try {

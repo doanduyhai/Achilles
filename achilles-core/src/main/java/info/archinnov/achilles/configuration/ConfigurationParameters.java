@@ -163,7 +163,7 @@ package info.archinnov.achilles.configuration;
  * </ul>
  * <br/>
  * <br/>
- * <h4>Bean Factory</h4>
+ * <h4>Bean EntityCreator</h4>
  * <br/>
  * <br/>
  * <ul>

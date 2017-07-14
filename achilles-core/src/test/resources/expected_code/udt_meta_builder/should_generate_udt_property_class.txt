@@ -77,7 +77,7 @@ public final class TestUDT_AchillesMeta extends info.archinnov.achilles.internal
   @java.lang.Override
   protected java.lang.reflect.Constructor<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT> getConstructor() {
     return java.util.stream.Stream.of(getUdtClass().getConstructors())
-                .filter(x -> x.isAnnotationPresent(info.archinnov.achilles.annotations.Factory.class)).findFirst()
+                .filter(x -> x.isAnnotationPresent(info.archinnov.achilles.annotations.EntityCreator.class)).findFirst()
                 .map(java.lang.reflect.Constructor.class::cast)
                 .orElseGet(() -> {
                     try {

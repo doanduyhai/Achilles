@@ -25,7 +25,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.Factory;
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.annotations.MaterializedView;
 import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.annotations.TTL;
@@ -47,6 +47,7 @@ import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.type.tuples.Tuple2;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -190,8 +191,8 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                .addJavadoc("   <li>expose all property meta classes for encoding/decoding purpose on unitary columns<li/>\n")
                .addJavadoc("<ul/>\n");
 
-        final Factory factory = ElementFilter.constructorsIn(elm.getEnclosedElements()).stream()
-                .map(x -> x.getAnnotation(Factory.class))
+        final ExecutableElement constructor = ElementFilter.constructorsIn(elm.getEnclosedElements()).stream()
+                .filter(x -> x.getAnnotation(EntityCreator.class) != null)
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(null);
@@ -207,7 +208,7 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addMethod(buildClusteringColumns(fieldMetaSignatures, rawBeanType))
                 .addMethod(buildNormalColumns(fieldMetaSignatures, rawBeanType))
                 .addMethod(buildComputedColumns(fieldMetaSignatures, rawBeanType))
-                .addMethod(buildConstructorProperties(rawClassTypeName, factory))
+                .addMethod(buildConstructorProperties(rawClassTypeName, constructor))
                 .addMethod(buildConstructor(rawClassTypeName));
 
         if (entityType == EntityType.TABLE) {

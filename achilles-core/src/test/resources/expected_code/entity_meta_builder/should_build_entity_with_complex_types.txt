@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.type.SimpleType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
-import info.archinnov.achilles.annotations.Factory;
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.generated.function.Array_Byte_Type;
 import info.archinnov.achilles.generated.function.Array_Primitive_byte_Type;
 import info.archinnov.achilles.generated.function.Boolean_Type;
@@ -460,7 +460,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   @Override
   protected Constructor<TestEntityWithComplexTypes> getConstructor() {
     return Stream.of(getEntityClass().getConstructors())
-                .filter(x -> x.isAnnotationPresent(Factory.class)).findFirst()
+                .filter(x -> x.isAnnotationPresent(EntityCreator.class)).findFirst()
                 .map(Constructor.class::cast)
                 .orElseGet(() -> {
                     try {

@@ -64,7 +64,7 @@ import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TestConstructorFactory {
+public class TestConstructorEntityCreator {
 
     @Rule
     public AchillesTestResource<ManagerFactory> resource = AchillesTestResourceBuilder

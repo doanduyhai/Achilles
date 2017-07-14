@@ -31,10 +31,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.CONSTRUCTOR)
 @Documented
-public @interface Factory {
+public @interface EntityCreator {
     /**
      * The field names to inject to the constructor.
-     * Others can use setters as an entity without @Factory.
+     * Others can use setters as an entity without @EntityCreator.
      */
     String[] value() default {};
 

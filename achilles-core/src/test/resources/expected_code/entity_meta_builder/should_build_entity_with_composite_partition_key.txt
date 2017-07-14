@@ -5,7 +5,7 @@ import com.datastax.driver.core.DataType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
-import info.archinnov.achilles.annotations.Factory;
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.generated.function.Long_Type;
 import info.archinnov.achilles.generated.function.String_Type;
 import info.archinnov.achilles.generated.function.UUID_Type;
@@ -151,7 +151,7 @@ public final class TestEntityWithCompositePartitionKey_AchillesMeta extends Abst
   @Override
   protected Constructor<TestEntityWithCompositePartitionKey> getConstructor() {
     return Stream.of(getEntityClass().getConstructors())
-                .filter(x -> x.isAnnotationPresent(Factory.class)).findFirst()
+                .filter(x -> x.isAnnotationPresent(EntityCreator.class)).findFirst()
                 .map(Constructor.class::cast)
                 .orElseGet(() -> {
                     try {

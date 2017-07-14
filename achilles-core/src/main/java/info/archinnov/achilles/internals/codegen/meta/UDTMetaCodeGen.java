@@ -22,7 +22,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import info.archinnov.achilles.annotations.Factory;
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
@@ -71,12 +71,6 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
 
         final Optional<Strategy> strategy = aptUtils.getAnnotationOnClass(elm, Strategy.class);
 
-        final Factory factory = ElementFilter.constructorsIn(elm.getEnclosedElements()).stream()
-                .map(x -> x.getAnnotation(Factory.class))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
-
         final String className = elm.getSimpleName() + META_SUFFIX;
         TypeName classType = ClassName.get(UDT_META_PACKAGE, className);
         final TypeSpec.Builder builder = TypeSpec.classBuilder(className)
@@ -89,7 +83,11 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addMethod(buildGetUdtClass(rawBeanType))
                 .addMethod(buildGetParentEntityClass(context))
                 .addMethod(buildComponentsProperty(rawBeanType, parsingResults))
-                .addMethod(buildConstructorProperties(rawBeanType, factory))
+                .addMethod(buildConstructorProperties(rawBeanType, ElementFilter.constructorsIn(elm.getEnclosedElements()).stream()
+                        .filter(x -> x.getAnnotation(EntityCreator.class) != null)
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElse(null)))
                 .addMethod(buildConstructor(rawBeanType))
                 .addMethod(buildCreateUDTFromBeanT(rawBeanType, parsingResults));
 

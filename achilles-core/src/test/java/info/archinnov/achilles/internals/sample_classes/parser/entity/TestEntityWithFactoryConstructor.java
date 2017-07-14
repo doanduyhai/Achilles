@@ -17,7 +17,7 @@
 package info.archinnov.achilles.internals.sample_classes.parser.entity;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Factory;
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
@@ -31,7 +31,7 @@ public class TestEntityWithFactoryConstructor {
     @Column
     private String value;
 
-    @Factory({"id", "value"})
+    @EntityCreator({"id", "value"})
     public TestEntityWithFactoryConstructor(Long id, String value) {
         this.id = id;
         this.value = value;

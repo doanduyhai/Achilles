@@ -21,7 +21,7 @@ import javax.lang.model.util.ElementFilter;
 
 import com.squareup.javapoet.TypeName;
 
-import info.archinnov.achilles.annotations.Factory;
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.internals.parser.CodecFactory;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 
@@ -47,9 +47,9 @@ public class EntityParsingContext {
         this.namingStrategy = namingStrategy;
         this.className = entityType.toString();
         this.optionalSetters = ElementFilter.constructorsIn(elm.getEnclosedElements()).stream()
-                .map(x -> x.getAnnotation(Factory.class))
+                .map(x -> x.getAnnotation(EntityCreator.class))
                 .filter(Objects::nonNull)
-                .map(Factory::value)
+                .map(EntityCreator::value)
                 .map(v -> Stream.of(v).collect(toSet()))
                 .findFirst()
                 .orElse(emptySet());

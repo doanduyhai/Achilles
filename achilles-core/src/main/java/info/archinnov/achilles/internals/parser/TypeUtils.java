@@ -30,7 +30,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import info.archinnov.achilles.annotations.Factory;
+import info.archinnov.achilles.annotations.EntityCreator;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.datastax.driver.core.*;
@@ -182,7 +182,7 @@ public class TypeUtils {
     public static final ClassName HASHBIMAP = ClassName.get(HashBiMap.class);
     public static final ClassName ACHILLES_META_ANNOT = ClassName.get(AchillesMeta.class);
     public static final ClassName DSE_SEARCH_ANNOT = ClassName.get(DSE_Search.class);
-    public static final ClassName FACTORY = ClassName.get(Factory.class);
+    public static final ClassName FACTORY = ClassName.get(EntityCreator.class);
 
     public static final ArrayTypeName OBJECT_ARRAY = ArrayTypeName.of(Object.class);
 

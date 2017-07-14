@@ -19,10 +19,11 @@ package info.archinnov.achilles.internals.codegen.meta;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
-import info.archinnov.achilles.annotations.Factory;
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -92,13 +93,16 @@ public interface CommonBeanMetaCodeGen {
         return genericType(LIST, genericType(ABSTRACT_PROPERTY, rawClassType, WILDCARD, WILDCARD));
     }
 
-    default MethodSpec buildConstructorProperties(final TypeName rawClassTypeName, final Factory factory) {
+    default MethodSpec buildConstructorProperties(final TypeName rawClassTypeName, final ExecutableElement constructor) {
         final MethodSpec.Builder base = MethodSpec.methodBuilder("getConstructorProperties")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
                 .returns(propertyListType(rawClassTypeName));
-        if (factory != null && factory.value().length > 0) {
-            base.addStatement("return $T.asList($L)", ARRAYS, Stream.of(factory.value()).collect(joining(",")));
+        if (constructor != null) {
+            final String[] fields = constructor.getAnnotation(EntityCreator.class).value();
+            base.addStatement("return $T.asList($L)", ARRAYS, (fields.length == 0 ?
+                    constructor.getParameters().stream().map(p -> p.getSimpleName().toString()) : Stream.of(fields))
+                    .collect(joining(",")));
         } else {
             base.addStatement("return $T.emptyList()", COLLECTIONS);
         }
