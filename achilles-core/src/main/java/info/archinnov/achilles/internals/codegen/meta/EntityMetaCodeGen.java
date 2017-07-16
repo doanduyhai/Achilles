@@ -25,7 +25,6 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.annotations.MaterializedView;
 import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.annotations.TTL;
@@ -50,10 +49,8 @@ import org.apache.commons.lang3.StringUtils;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 
@@ -101,6 +98,7 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.genericType;
 import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -191,11 +189,7 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                .addJavadoc("   <li>expose all property meta classes for encoding/decoding purpose on unitary columns<li/>\n")
                .addJavadoc("<ul/>\n");
 
-        final ExecutableElement constructor = ElementFilter.constructorsIn(elm.getEnclosedElements()).stream()
-                .filter(x -> x.getAnnotation(EntityCreator.class) != null)
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+        final ExecutableElement constructor = AptUtils.findConstructor(elm).orElse(null);
 
         builder.addAnnotation(ACHILLES_META_ANNOT)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -209,7 +203,7 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addMethod(buildNormalColumns(fieldMetaSignatures, rawBeanType))
                 .addMethod(buildComputedColumns(fieldMetaSignatures, rawBeanType))
                 .addMethod(buildConstructorProperties(rawClassTypeName, constructor))
-                .addMethod(buildConstructor(rawClassTypeName));
+                .addMethod(buildCreate(rawClassTypeName, constructor == null ? emptyList() : constructor.getParameters()));
 
         if (entityType == EntityType.TABLE) {
             builder.superclass(genericType(ABSTRACT_ENTITY_PROPERTY, rawBeanType))
@@ -532,11 +526,6 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addJavadoc("Static class to expose $S fields for <strong>type-safe</strong> function calls", parentClassName)
                 .initializer(CodeBlock.builder().addStatement("new $T()", typeName).build())
                 .build();
-    }
-
-    @Override
-    public String getClassAccessorName() {
-        return "getEntityClass";
     }
 
     public static class EntityMetaSignature {

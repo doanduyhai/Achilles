@@ -25,28 +25,25 @@ import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_PROPERTY;
 import static info.archinnov.achilles.internals.parser.TypeUtils.ARRAYS;
 import static info.archinnov.achilles.internals.parser.TypeUtils.COLLECTIONS;
-import static info.archinnov.achilles.internals.parser.TypeUtils.CONSTRUCTOR;
-import static info.archinnov.achilles.internals.parser.TypeUtils.FACTORY;
-import static info.archinnov.achilles.internals.parser.TypeUtils.ILLEGAL_ARGUMENT_EXCEPTION;
 import static info.archinnov.achilles.internals.parser.TypeUtils.LIST;
 import static info.archinnov.achilles.internals.parser.TypeUtils.NAMING_STRATEGY;
-import static info.archinnov.achilles.internals.parser.TypeUtils.NO_SUCH_METHOD_EXCEPTION;
+import static info.archinnov.achilles.internals.parser.TypeUtils.OBJECT_ARRAY;
 import static info.archinnov.achilles.internals.parser.TypeUtils.OPTIONAL;
-import static info.archinnov.achilles.internals.parser.TypeUtils.STREAM;
 import static info.archinnov.achilles.internals.parser.TypeUtils.WILDCARD;
 import static info.archinnov.achilles.internals.parser.TypeUtils.genericType;
 import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.getNamingStrategy;
 import static java.util.stream.Collectors.joining;
 
 public interface CommonBeanMetaCodeGen {
-    String getClassAccessorName();
-
     default MethodSpec buildGetStaticNamingStrategy(Optional<Strategy> strategy) {
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("getStaticNamingStrategy")
                 .addAnnotation(Override.class)
@@ -69,23 +66,30 @@ public interface CommonBeanMetaCodeGen {
                 .build();
     }
 
-    default MethodSpec buildConstructor(final TypeName rawClassTypeName) {
-        return MethodSpec.methodBuilder("getConstructor")
+    // just create(Object[] args) then casts of all params and finally new X(params)
+    default MethodSpec buildCreate(final TypeName rawClassTypeName, final List<? extends VariableElement> parameters) {
+        final AtomicInteger counter = new AtomicInteger();
+        return MethodSpec.methodBuilder("create")
+                .addParameter(OBJECT_ARRAY, "args", Modifier.FINAL)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
-                .returns(genericType(CONSTRUCTOR, rawClassTypeName))
-                .addStatement("return $T.of(" + getClassAccessorName() + "().getConstructors())\n" +
-                                "        .filter(x -> x.isAnnotationPresent($T.class)).findFirst()\n" +
-                                "        .map($T.class::cast)\n" +
-                                "        .orElseGet(() -> {\n" +
-                                "            try {\n" +
-                                "                return $T.class.cast(" + getClassAccessorName() + "().getConstructor());\n" +
-                                "            } catch ($T e) {\n" +
-                                "                throw new $T(\"Invalid class \" + " + getClassAccessorName() + "().getName());\n" +
-                                "            }\n" +
-                                "         })",
-                        STREAM, FACTORY, CONSTRUCTOR, CONSTRUCTOR,
-                        NO_SUCH_METHOD_EXCEPTION, ILLEGAL_ARGUMENT_EXCEPTION)
+                .returns(rawClassTypeName)
+                .addStatement("return new $T(" + parameters.stream()
+                        .map(p -> "$T.class.cast(args[" + counter.getAndIncrement() + "])")
+                        .collect(joining(",\n")) + ")", Stream.concat(
+                        Stream.of(rawClassTypeName),
+                        // casts, unwrap parameterized types to let the cast work (List<Foo> will cast the arg as List.class.cast(x))
+                        parameters.stream().map(e -> {
+                            final TypeName t = TypeName.get(e.asType());
+                            if (t.isPrimitive()) {
+                                return t.box();
+                            }
+                            if (ParameterizedTypeName.class.isInstance(t)) {
+                                return ParameterizedTypeName.class.cast(t).rawType;
+                            }
+                            return t;
+                        }))
+                        .toArray(TypeName[]::new))
                 .build();
     }
 

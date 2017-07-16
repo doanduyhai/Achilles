@@ -111,7 +111,9 @@ public class FieldInfoParser {
                 .orElseGet(() -> context.namingStrategy.apply(fieldName));
 
         final ExecutableElement getter = aptUtils.findGetter(classElm, elm, deriveGetterName(elm));
-        final ExecutableElement setter = aptUtils.findSetter(classElm, elm, deriveSetterName(elm), context.optionalSetters.contains(elm.getSimpleName().toString()));
+        final ExecutableElement setter = aptUtils.findSetter(
+                classElm, elm, deriveSetterName(elm),
+                context.allOptional || context.optionalSetters.contains(elm.getSimpleName().toString()));
 
         final Tuple2<CodeBlock, ColumnType> columnTypeCode = buildColumnType(context.globalContext, elm, fieldName, rawEntityClass);
         final Tuple2<CodeBlock, ColumnInfo> columnInfoCode = buildColumnInfo(context.globalContext, annotationTree, elm, fieldName, rawEntityClass);
@@ -139,8 +141,8 @@ public class FieldInfoParser {
                         .endControlFlow()
                         .build() :
                 CodeBlock.builder()
-                    .add("($T entity$$, $T value$$) -> entity$$.$L(value$$)", rawEntityClass, currentType, setter.getSimpleName().toString())
-                    .build();
+                        .add("($T entity$$, $T value$$) -> entity$$.$L(value$$)", rawEntityClass, currentType, setter.getSimpleName().toString())
+                        .build();
 
         return new FieldInfoContext(CodeBlock.builder()
                 .add("new $T<>($L, $L, $S, $S, $L, $L, $L)", FIELD_INFO, getterLambda, setterLambda,
@@ -360,8 +362,8 @@ public class FieldInfoParser {
 
     private IndexInfoContext getNativeIndexInfoContext(VariableElement elm, EntityParsingContext context, Optional<TypedMap> indexAnnot) {
         return indexAnnot.get()
-                            .<IndexInfoContext>getTyped("indexInfoContext")
-                            .build(elm, context);
+                .<IndexInfoContext>getTyped("indexInfoContext")
+                .build(elm, context);
     }
 
     protected Tuple2<CodeBlock, IndexInfo> buildDSESearchIndexInfo(AnnotationTree annotationTree) {
@@ -371,8 +373,8 @@ public class FieldInfoParser {
                 .<DSESearchInfoContext>getTyped("dseSearchInfoContext");
 
         builder.add("$T.forDSESearch($L)",
-                    INDEX_INFO,
-                    dseSearchInfoContext.fullTextSearchEnabled);
+                INDEX_INFO,
+                dseSearchInfoContext.fullTextSearchEnabled);
 
         return Tuple2.of(builder.build(), IndexInfo.forDSESearch(dseSearchInfoContext.fullTextSearchEnabled));
     }

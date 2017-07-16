@@ -15,20 +15,9 @@
  */
 package info.archinnov.achilles.internals.context;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import javax.validation.Validator;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
@@ -39,10 +28,18 @@ import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
-import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.interceptor.Interceptor;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.strategy.NamingStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.validation.Validator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 public class ConfigurationContext {
 
@@ -81,8 +78,6 @@ public class ConfigurationContext {
 
     private ExecutorService executorService;
     private boolean providedExecutorService;
-
-    private BeanFactory defaultBeanFactory;
 
     private Session session;
     private boolean providedSession = false;
@@ -250,14 +245,6 @@ public class ConfigurationContext {
         this.executorService = executorService;
     }
 
-    public BeanFactory getDefaultBeanFactory() {
-        return defaultBeanFactory;
-    }
-
-    public void setDefaultBeanFactory(BeanFactory defaultBeanFactory) {
-        this.defaultBeanFactory = defaultBeanFactory;
-    }
-
     public Session getSession() {
         return session;
     }
@@ -304,9 +291,6 @@ public class ConfigurationContext {
             LOGGER.debug("Injecting schema name provider");
             entityProperty.inject(schemaNameProvider.get());
         }
-
-        LOGGER.debug("Injecting default bean factory");
-        entityProperty.inject(defaultBeanFactory);
 
         LOGGER.debug("Injecting Jackson mapper");
         entityProperty.inject(jacksonMapperFactory.getMapper(entityClass));

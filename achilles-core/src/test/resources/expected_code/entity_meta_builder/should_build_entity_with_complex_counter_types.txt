@@ -6,7 +6,6 @@ import com.datastax.driver.core.DataType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
-import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.generated.function.Long_Type;
 import info.archinnov.achilles.generated.function.String_Type;
 import info.archinnov.achilles.generated.function.UUID_Type;
@@ -27,20 +26,17 @@ import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntity
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import java.lang.Class;
-import java.lang.IllegalArgumentException;
 import java.lang.Integer;
 import java.lang.Long;
-import java.lang.NoSuchMethodException;
+import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 /**
  * Meta class of all entities of type TestEntityWithComplexCounters<br/>
@@ -176,17 +172,8 @@ public final class TestEntityWithComplexCounters_AchillesMeta extends AbstractEn
   }
 
   @Override
-  protected Constructor<TestEntityWithComplexCounters> getConstructor() {
-    return Stream.of(getEntityClass().getConstructors())
-                .filter(x -> x.isAnnotationPresent(EntityCreator.class)).findFirst()
-                .map(Constructor.class::cast)
-                .orElseGet(() -> {
-                    try {
-                        return Constructor.class.cast(getEntityClass().getConstructor());
-                    } catch (NoSuchMethodException e) {
-                        throw new IllegalArgumentException("Invalid class " + getEntityClass().getName());
-                    }
-                 });
+  protected TestEntityWithComplexCounters create(final Object[] args) {
+    return new TestEntityWithComplexCounters();
   }
 
   @Override

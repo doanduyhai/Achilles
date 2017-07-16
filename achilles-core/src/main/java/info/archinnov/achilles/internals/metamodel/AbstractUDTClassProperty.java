@@ -16,29 +16,19 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
-
-import java.lang.reflect.Constructor;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.schemabuilder.CreateType;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
-import info.archinnov.achilles.internals.injectable.*;
+import info.archinnov.achilles.internals.injectable.InjectJacksonMapper;
+import info.archinnov.achilles.internals.injectable.InjectKeyspace;
+import info.archinnov.achilles.internals.injectable.InjectRuntimeCodecs;
+import info.archinnov.achilles.internals.injectable.InjectSchemaStrategy;
+import info.archinnov.achilles.internals.injectable.InjectUserAndTupleTypeFactory;
 import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
@@ -46,12 +36,22 @@ import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
-import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 public abstract class AbstractUDTClassProperty<A>
         implements InjectUserAndTupleTypeFactory,
-        InjectBeanFactory, InjectKeyspace,
+        InjectKeyspace,
         InjectJacksonMapper, InjectRuntimeCodecs, InjectSchemaStrategy {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractUDTClassProperty.class);
@@ -66,8 +66,6 @@ public abstract class AbstractUDTClassProperty<A>
     public final List<AbstractProperty<A, ?, ?>> componentsProperty;
     public final List<AbstractProperty<A, ?, ?>> constructorProperties;
     public final Class<?> parentEntityClass;
-    public final Constructor<A> constructor;
-    protected BeanFactory udtFactory;
     protected UserTypeFactory userTypeFactory;
     protected UserType userType;
     protected Optional<SchemaNameProvider> schemaNameProvider = Optional.empty();
@@ -82,12 +80,11 @@ public abstract class AbstractUDTClassProperty<A>
         this.parentEntityClass = getParentEntityClass();
         this.constructorProperties = getConstructorProperties();
         this.componentsProperty = getComponentsProperty().stream().filter(x -> !constructorProperties.contains(x)).collect(toList());
-        this.constructor = getConstructor();
     }
 
-    protected abstract List<AbstractProperty<A, ?, ?>> getConstructorProperties();
+    protected abstract A create(Object[] args);
 
-    protected abstract Constructor<A> getConstructor();
+    protected abstract List<AbstractProperty<A, ?, ?>> getConstructorProperties();
 
     protected abstract Optional<String> getStaticKeyspace();
 
@@ -107,8 +104,7 @@ public abstract class AbstractUDTClassProperty<A>
 
     protected A createBeanFromUDT(UDTValue udtValue) {
         final List<AbstractProperty<A, ?, ?>> constructorProperties = getConstructorProperties();
-        final A instance = udtFactory.newInstance(
-                constructor, constructorProperties.isEmpty() ? NO_ARG : constructorProperties.stream()
+        final A instance = create(constructorProperties.isEmpty() ? NO_ARG : constructorProperties.stream()
                         .map(x -> x.decodeFromGettable(udtValue))
                         .toArray(Object[]::new));
         getComponentsProperty().forEach(x -> x.decodeField(udtValue, instance));
@@ -161,14 +157,6 @@ public abstract class AbstractUDTClassProperty<A>
         }
 
         return type.getQueryString().replaceFirst("\t+", "") + ";";
-    }
-
-    @Override
-    public void inject(BeanFactory factory) {
-        udtFactory = factory;
-        for (AbstractProperty<A, ?, ?> x : componentsProperty) {
-            x.inject(udtFactory);
-        }
     }
 
     @Override

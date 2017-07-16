@@ -16,24 +16,27 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.GettableData;
 import com.datastax.driver.core.SettableData;
 import com.datastax.driver.core.UDTValue;
 import com.google.common.reflect.TypeToken;
-
-import info.archinnov.achilles.internals.injectable.*;
+import info.archinnov.achilles.internals.injectable.InjectJacksonMapper;
+import info.archinnov.achilles.internals.injectable.InjectKeyspace;
+import info.archinnov.achilles.internals.injectable.InjectRuntimeCodecs;
+import info.archinnov.achilles.internals.injectable.InjectSchemaStrategy;
+import info.archinnov.achilles.internals.injectable.InjectUserAndTupleTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.utils.NamingHelper;
 import info.archinnov.achilles.type.SchemaNameProvider;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
 public abstract class AbstractProperty<ENTITY, VALUEFROM, VALUETO>
-        implements InjectUserAndTupleTypeFactory, InjectBeanFactory,
+        implements InjectUserAndTupleTypeFactory,
         InjectJacksonMapper, InjectRuntimeCodecs, InjectKeyspace, InjectSchemaStrategy {
     public final FieldInfo<ENTITY, VALUEFROM> fieldInfo;
     public final String fieldName;

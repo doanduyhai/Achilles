@@ -22,7 +22,6 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.apt.AptUtils;
@@ -31,11 +30,10 @@ import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 
@@ -55,6 +53,7 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.WILDCARD;
 import static info.archinnov.achilles.internals.parser.TypeUtils.classTypeOf;
 import static info.archinnov.achilles.internals.parser.TypeUtils.genericType;
 import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
+import static java.util.Collections.emptyList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
@@ -73,6 +72,7 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
 
         final String className = elm.getSimpleName() + META_SUFFIX;
         TypeName classType = ClassName.get(UDT_META_PACKAGE, className);
+        final ExecutableElement constructor = AptUtils.findConstructor(elm).orElse(null);
         final TypeSpec.Builder builder = TypeSpec.classBuilder(className)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(genericType(ABSTRACT_UDT_CLASS_PROPERTY, rawBeanType))
@@ -83,12 +83,8 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addMethod(buildGetUdtClass(rawBeanType))
                 .addMethod(buildGetParentEntityClass(context))
                 .addMethod(buildComponentsProperty(rawBeanType, parsingResults))
-                .addMethod(buildConstructorProperties(rawBeanType, ElementFilter.constructorsIn(elm.getEnclosedElements()).stream()
-                        .filter(x -> x.getAnnotation(EntityCreator.class) != null)
-                        .filter(Objects::nonNull)
-                        .findFirst()
-                        .orElse(null)))
-                .addMethod(buildConstructor(rawBeanType))
+                .addMethod(buildConstructorProperties(rawBeanType, constructor))
+                .addMethod(buildCreate(rawBeanType, constructor == null ? emptyList() : constructor.getParameters()))
                 .addMethod(buildCreateUDTFromBeanT(rawBeanType, parsingResults));
 
         for (FieldMetaSignature x : parsingResults) {
@@ -217,10 +213,5 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
         builder.addStatement("return udtValue");
 
         return builder.build();
-    }
-
-    @Override
-    public String getClassAccessorName() {
-        return "getUdtClass";
     }
 }

@@ -16,24 +16,12 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
-import static java.lang.String.format;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.GettableData;
 import com.datastax.driver.core.SettableData;
 import com.datastax.driver.core.UDTValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
-
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
@@ -42,8 +30,17 @@ import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.types.RuntimeCodecWrapper;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
-import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+
+import static java.lang.String.format;
 
 public class ComputedProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProperty<ENTITY, VALUEFROM, VALUETO> {
 
@@ -134,11 +131,6 @@ public class ComputedProperty<ENTITY, VALUEFROM, VALUETO> extends AbstractProper
 
     @Override
     public void inject(ObjectMapper mapper) {
-        // No op
-    }
-
-    @Override
-    public void inject(BeanFactory factory) {
         // No op
     }
 

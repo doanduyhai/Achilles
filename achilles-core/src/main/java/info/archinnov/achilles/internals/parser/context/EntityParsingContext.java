@@ -16,17 +16,16 @@
 
 package info.archinnov.achilles.internals.parser.context;
 
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-
 import com.squareup.javapoet.TypeName;
-
 import info.archinnov.achilles.annotations.EntityCreator;
+import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.CodecFactory;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptySet;
@@ -39,6 +38,7 @@ public class EntityParsingContext {
     public final GlobalParsingContext globalContext;
     public final String className;
     public final Collection<String> optionalSetters;
+    public final boolean allOptional;
 
     public EntityParsingContext(TypeElement elm, TypeName entityType, InternalNamingStrategy namingStrategy, GlobalParsingContext globalContext) {
         this.entityTypeElement = elm;
@@ -46,13 +46,10 @@ public class EntityParsingContext {
         this.globalContext = globalContext;
         this.namingStrategy = namingStrategy;
         this.className = entityType.toString();
-        this.optionalSetters = ElementFilter.constructorsIn(elm.getEnclosedElements()).stream()
-                .map(x -> x.getAnnotation(EntityCreator.class))
-                .filter(Objects::nonNull)
-                .map(EntityCreator::value)
-                .map(v -> Stream.of(v).collect(toSet()))
-                .findFirst()
-                .orElse(emptySet());
+
+        final Optional<ExecutableElement> constructor = AptUtils.findConstructor(elm);
+        this.allOptional = constructor.isPresent() && constructor.get().getAnnotation(EntityCreator.class).value().length == 0;
+        this.optionalSetters = constructor.isPresent() ? Stream.of(constructor.get().getAnnotation(EntityCreator.class).value()).collect(toSet()) : emptySet();
     }
 
     public boolean hasCodecFor(TypeName typeName) {

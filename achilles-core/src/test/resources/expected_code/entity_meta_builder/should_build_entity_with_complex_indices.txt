@@ -5,7 +5,6 @@ import com.datastax.driver.core.DataType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
-import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.generated.function.List_String_Type;
 import info.archinnov.achilles.generated.function.Long_Type;
 import info.archinnov.achilles.generated.function.Map_Integer_String_Type;
@@ -31,21 +30,18 @@ import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntity
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import java.lang.Class;
-import java.lang.IllegalArgumentException;
 import java.lang.Integer;
 import java.lang.Long;
-import java.lang.NoSuchMethodException;
+import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Meta class of all entities of type TestEntityWithComplexIndices<br/>
@@ -193,17 +189,8 @@ public final class TestEntityWithComplexIndices_AchillesMeta extends AbstractEnt
   }
 
   @Override
-  protected Constructor<TestEntityWithComplexIndices> getConstructor() {
-    return Stream.of(getEntityClass().getConstructors())
-                .filter(x -> x.isAnnotationPresent(EntityCreator.class)).findFirst()
-                .map(Constructor.class::cast)
-                .orElseGet(() -> {
-                    try {
-                        return Constructor.class.cast(getEntityClass().getConstructor());
-                    } catch (NoSuchMethodException e) {
-                        throw new IllegalArgumentException("Invalid class " + getEntityClass().getName());
-                    }
-                 });
+  protected TestEntityWithComplexIndices create(final Object[] args) {
+    return new TestEntityWithComplexIndices();
   }
 
   @Override
