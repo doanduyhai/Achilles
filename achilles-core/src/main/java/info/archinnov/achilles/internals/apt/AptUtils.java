@@ -16,29 +16,6 @@
 
 package info.archinnov.achilles.internals.apt;
 
-import static com.google.auto.common.MoreTypes.asDeclared;
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
-
-import java.lang.annotation.Annotation;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.Messager;
-import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.*;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-import javax.tools.Diagnostic;
-
-import org.eclipse.jdt.internal.compiler.apt.model.ExecutableElementImpl;
-import org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl;
-import org.eclipse.jdt.internal.compiler.apt.model.VariableElementImpl;
-
 import com.datastax.driver.core.UDTValue;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
@@ -47,14 +24,47 @@ import com.squareup.javapoet.TypeName;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacElements;
-
-import info.archinnov.achilles.annotations.CodecRegistry;
-import info.archinnov.achilles.annotations.Table;
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
+import org.eclipse.jdt.internal.compiler.apt.model.ExecutableElementImpl;
+import org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl;
+import org.eclipse.jdt.internal.compiler.apt.model.VariableElementImpl;
+
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
+import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.google.auto.common.MoreTypes.asDeclared;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Utility methods for compile time type handling
@@ -443,6 +453,13 @@ public class AptUtils {
         }
     }
 
+    public static Optional<ExecutableElement> findConstructor(TypeElement classElm) {
+        return ElementFilter.constructorsIn(classElm.getEnclosedElements()).stream()
+                .filter(x -> x.getAnnotation(EntityCreator.class) != null)
+                .filter(Objects::nonNull)
+                .findFirst();
+    }
+
     public ExecutableElement findGetter(TypeElement classElm, VariableElement elm, List<String> getterNames) {
         TypeMirror typeMirror = elm.asType();
         final Optional<ExecutableElement> getter = ElementFilter.methodsIn(elementUtils.getAllMembers(classElm))
@@ -456,7 +473,7 @@ public class AptUtils {
         return getter.get();
     }
 
-    public ExecutableElement findSetter(TypeElement classElm, VariableElement elm, String setterName) {
+    public ExecutableElement findSetter(TypeElement classElm, VariableElement elm, String setterName, boolean optional) {
         TypeMirror typeMirror = elm.asType();
         final Optional<ExecutableElement> setter = ElementFilter.methodsIn(elementUtils.getAllMembers(classElm))
                 .stream()
@@ -470,8 +487,12 @@ public class AptUtils {
                 .filter(x -> x.getReturnType().getKind() == TypeKind.VOID)
                 .findFirst();
 
-        validateTrue(setter.isPresent(), "Cannot find setter 'void %s(%s value)' for field '%s' in class '%s'",
-                setterName, typeMirror, elm.getSimpleName(), classElm.getQualifiedName());
+        if (!optional) {
+            validateTrue(setter.isPresent(), "Cannot find setter 'void %s(%s value)' for field '%s' in class '%s'",
+                    setterName, typeMirror, elm.getSimpleName(), classElm.getQualifiedName());
+        } else if (!setter.isPresent()) {
+            return null;
+        }
         return setter.get();
     }
 

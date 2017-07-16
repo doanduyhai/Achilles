@@ -16,20 +16,13 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
-import static java.lang.String.format;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.GettableData;
+import com.datastax.driver.core.SettableData;
+import com.datastax.driver.core.UDTValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
-
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
@@ -37,8 +30,15 @@ import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
-import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static java.lang.String.format;
 
 public class JdkOptionalProperty<ENTITY, FROM, TO> extends AbstractProperty<ENTITY, Optional<FROM>, TO> {
 
@@ -138,11 +138,6 @@ public class JdkOptionalProperty<ENTITY, FROM, TO> extends AbstractProperty<ENTI
     @Override
     public List<AbstractUDTClassProperty<?>> getUDTClassProperties() {
         return aProperty.getUDTClassProperties();
-    }
-
-    @Override
-    public void inject(BeanFactory factory) {
-        aProperty.inject(factory);
     }
 
     @Override

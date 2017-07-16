@@ -279,6 +279,32 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
     }
 
     @Test
+    public void should_support_custom_factory_constructor() throws Exception {
+        setExec(aptUtils -> {
+            final String className = TestEntityWithFactoryConstructor.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+
+            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
+        });
+        launchTest(TestEntityWithFactoryConstructor.class);
+    }
+
+    @Test
+    public void should_support_custom_defaults_factory_constructor() throws Exception {
+        setExec(aptUtils -> {
+            final String className = TestEntityWithDefaultsFactoryConstructor.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+
+            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
+            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
+            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
+        });
+        launchTest(TestEntityWithDefaultsFactoryConstructor.class);
+    }
+
+    @Test
     public void should_fail_building_final_class() throws Exception {
         setExec(aptUtils -> {
             final String className = TestEntityWithFinalClass.class.getCanonicalName();

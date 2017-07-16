@@ -16,31 +16,26 @@
 
 package info.archinnov.achilles.internals.codegen.meta;
 
-import static com.squareup.javapoet.TypeName.BOOLEAN;
-import static com.squareup.javapoet.TypeName.INT;
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.MATERIALIZED_VIEW;
-import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
-import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
-import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
-import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
-import java.util.*;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Row;
-import com.squareup.javapoet.*;
-
-import info.archinnov.achilles.annotations.*;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
+import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.MaterializedView;
+import info.archinnov.achilles.annotations.Strategy;
+import info.archinnov.achilles.annotations.TTL;
+import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
-import info.archinnov.achilles.internals.metamodel.columns.*;
+import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.KeyColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
@@ -49,6 +44,63 @@ import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.type.tuples.Tuple2;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.StringJoiner;
+
+import static com.squareup.javapoet.TypeName.BOOLEAN;
+import static com.squareup.javapoet.TypeName.INT;
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.MATERIALIZED_VIEW;
+import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.CLUSTERING;
+import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.COUNTER;
+import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.STATIC;
+import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.STATIC_COUNTER;
+import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_ENTITY_PROPERTY;
+import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_VIEW_PROPERTY;
+import static info.archinnov.achilles.internals.parser.TypeUtils.ACHILLES_META_ANNOT;
+import static info.archinnov.achilles.internals.parser.TypeUtils.ARRAYS;
+import static info.archinnov.achilles.internals.parser.TypeUtils.BIMAP;
+import static info.archinnov.achilles.internals.parser.TypeUtils.CLASS;
+import static info.archinnov.achilles.internals.parser.TypeUtils.COLUMNS_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.COLUMNS_FOR_FUNCTIONS_CLASS;
+import static info.archinnov.achilles.internals.parser.TypeUtils.COLUMNS_TYPED_MAP_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.CONSISTENCY_LEVEL;
+import static info.archinnov.achilles.internals.parser.TypeUtils.DELETE_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.DELETE_STATIC_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.END_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.END_JSON_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.END_TYPED_MAP_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.ENTITY_META_PACKAGE;
+import static info.archinnov.achilles.internals.parser.TypeUtils.FROM_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.FROM_JSON_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.FROM_TYPED_MAP_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.HASHBIMAP;
+import static info.archinnov.achilles.internals.parser.TypeUtils.INDEX_SELECT_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.INSERT_STRATEGY;
+import static info.archinnov.achilles.internals.parser.TypeUtils.META_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.OPTIONAL;
+import static info.archinnov.achilles.internals.parser.TypeUtils.SELECT_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
+import static info.archinnov.achilles.internals.parser.TypeUtils.UPDATE_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.UPDATE_STATIC_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.WHERE_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.WHERE_JSON_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.WHERE_TYPED_MAP_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.WILDCARD;
+import static info.archinnov.achilles.internals.parser.TypeUtils.classTypeOf;
+import static info.archinnov.achilles.internals.parser.TypeUtils.genericType;
+import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
+import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
+import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
 
@@ -84,7 +136,7 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         final FieldValidator fieldValidator = globalParsingContext.fieldValidator();
 
         beanValidator.validateIsAConcreteNonFinalClass(aptUtils, elm);
-        beanValidator.validateHasPublicConstructor(aptUtils, rawClassTypeName, elm);
+        beanValidator.validateHasSingleValidConstructor(aptUtils, rawClassTypeName, elm);
         beanValidator.validateNoDuplicateNames(aptUtils, rawClassTypeName, fieldMetaSignatures);
         beanValidator.validateHasPartitionKey(aptUtils, rawClassTypeName, fieldMetaSignatures);
 
@@ -137,6 +189,8 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                .addJavadoc("   <li>expose all property meta classes for encoding/decoding purpose on unitary columns<li/>\n")
                .addJavadoc("<ul/>\n");
 
+        final ExecutableElement constructor = AptUtils.findConstructor(elm).orElse(null);
+
         builder.addAnnotation(ACHILLES_META_ANNOT)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildEntityClass(rawClassTypeName))
@@ -147,7 +201,9 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addMethod(buildPartitionKeys(fieldMetaSignatures, rawBeanType))
                 .addMethod(buildClusteringColumns(fieldMetaSignatures, rawBeanType))
                 .addMethod(buildNormalColumns(fieldMetaSignatures, rawBeanType))
-                .addMethod(buildComputedColumns(fieldMetaSignatures, rawBeanType));
+                .addMethod(buildComputedColumns(fieldMetaSignatures, rawBeanType))
+                .addMethod(buildConstructorProperties(rawClassTypeName, constructor))
+                .addMethod(buildCreate(rawClassTypeName, constructor == null ? emptyList() : constructor.getParameters()));
 
         if (entityType == EntityType.TABLE) {
             builder.superclass(genericType(ABSTRACT_ENTITY_PROPERTY, rawBeanType))
@@ -470,10 +526,6 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addJavadoc("Static class to expose $S fields for <strong>type-safe</strong> function calls", parentClassName)
                 .initializer(CodeBlock.builder().addStatement("new $T()", typeName).build())
                 .build();
-    }
-
-    private ParameterizedTypeName propertyListType(TypeName rawClassType) {
-        return genericType(LIST, genericType(ABSTRACT_PROPERTY, rawClassType, WILDCARD, WILDCARD));
     }
 
     public static class EntityMetaSignature {

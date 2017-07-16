@@ -16,29 +16,26 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumnType;
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateDefaultTTL;
-import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.*;
-import static info.archinnov.achilles.validation.Validator.validateNotNull;
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
-
-import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.TableMetadata;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.BiMap;
-
 import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
-import info.archinnov.achilles.internals.injectable.*;
+import info.archinnov.achilles.internals.injectable.InjectConsistency;
+import info.archinnov.achilles.internals.injectable.InjectInsertStrategy;
+import info.archinnov.achilles.internals.injectable.InjectJacksonMapper;
+import info.archinnov.achilles.internals.injectable.InjectKeyspace;
+import info.archinnov.achilles.internals.injectable.InjectRuntimeCodecs;
+import info.archinnov.achilles.internals.injectable.InjectSchemaStrategy;
+import info.archinnov.achilles.internals.injectable.InjectUserAndTupleTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.BeanValueExtractor;
@@ -51,21 +48,40 @@ import info.archinnov.achilles.internals.utils.CollectionsHelper;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
-import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.interceptor.Event;
 import info.archinnov.achilles.type.interceptor.Interceptor;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.StringJoiner;
+
+import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumnType;
+import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
+import static info.archinnov.achilles.internals.schema.SchemaValidator.validateDefaultTTL;
+import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticDeleteQueries;
+import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticInsertQueries;
+import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.generateStaticSelectQuery;
+import static info.archinnov.achilles.validation.Validator.validateNotNull;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 
 public abstract class AbstractEntityProperty<T> implements
-        InjectBeanFactory, InjectKeyspace,
+        InjectKeyspace,
         InjectConsistency, InjectInsertStrategy,
         InjectUserAndTupleTypeFactory,
         InjectJacksonMapper, InjectSchemaStrategy,
         InjectRuntimeCodecs {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityProperty.class);
+
+    private static final Object[] NO_ARG = new Object[0];
 
     public final Logger entityLogger;
     public final Class<T> entityClass;
@@ -89,14 +105,13 @@ public abstract class AbstractEntityProperty<T> implements
     public final List<AbstractProperty<T, ?, ?>> allColumns;
     public final List<AbstractProperty<T, ?, ?>> allColumnsWithComputed;
     public final List<Interceptor<T>> interceptors = new ArrayList<>();
-    protected BeanFactory beanFactory;
+    public final List<AbstractProperty<T, ?, ?>> constructorProperties;
     protected Optional<String> keyspace = Optional.empty();
     protected ConsistencyLevel readConsistencyLevel;
     protected ConsistencyLevel writeConsistencyLevel;
     protected ConsistencyLevel serialConsistencyLevel;
     protected InsertStrategy insertStrategy;
     public Optional<SchemaNameProvider> schemaStrategy = Optional.empty();
-
 
     public AbstractEntityProperty() {
         entityClass = getEntityClass();
@@ -119,8 +134,13 @@ public abstract class AbstractEntityProperty<T> implements
         computedColumns = getComputedColumns();
         counterColumns = getCounterColumns();
         allColumns = getAllColumns();
-        allColumnsWithComputed = getAllColumnsWithComputed();
+        constructorProperties = getConstructorProperties();
+        allColumnsWithComputed = getAllColumnsWithComputed().stream().filter(x -> !constructorProperties.contains(x)).collect(toList());
     }
+
+    protected abstract List<AbstractProperty<T, ?, ?>> getConstructorProperties();
+
+    protected abstract T create(Object[] args);
 
     protected abstract Class<T> getEntityClass();
 
@@ -231,8 +251,14 @@ public abstract class AbstractEntityProperty<T> implements
                     entityClass.getCanonicalName(), row));
         }
         if (row != null) {
-            T newInstance = beanFactory.newInstance(entityClass);
-            final List<String> cqlColumns = row.getColumnDefinitions().asList().stream().map(def -> def.getName()).collect(toList());
+            final List<String> cqlColumns = row.getColumnDefinitions().asList().stream().map(ColumnDefinitions.Definition::getName).collect(toList());
+            // start by creating the instance with mandatory parameters
+            T newInstance = create(constructorProperties.isEmpty() ? NO_ARG : constructorProperties
+                    .stream()
+                    .filter(x -> cqlColumns.contains(x.getColumnForSelect()))
+                    .map(x -> x.decodeFromGettable(row))
+                    .toArray(Object[]::new));
+            // setters now
             allColumnsWithComputed
                     .stream()
                     .filter(x -> cqlColumns.contains(x.getColumnForSelect()))
@@ -429,20 +455,6 @@ public abstract class AbstractEntityProperty<T> implements
         for (AbstractProperty<T, ?, ?> x : allColumns) {
             x.inject(schemaNameProvider);
         }
-    }
-
-    @Override
-    public void inject(BeanFactory factory) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format("Injecting bean factory %s into entity meta of %s",
-                    factory, entityClass.getCanonicalName()));
-        }
-        beanFactory = factory;
-
-        for (AbstractProperty<T, ?, ?> x : allColumns) {
-            x.inject(factory);
-        }
-
     }
 
     @Override

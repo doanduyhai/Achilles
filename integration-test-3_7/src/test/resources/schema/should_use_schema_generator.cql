@@ -342,6 +342,24 @@ CREATE TABLE IF NOT EXISTS test.entity_with_udts(
 		setudt set<frozen<test.udt_no_ks>>,
 		tupleudt frozen<tuple<int, udt_no_ks>>,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.immutable_defaults_value(
+		id bigint,
+		date timestamp,
+		consistencylist list<text>,
+		simplemap map<int, text>,
+		simpleset set<double>,
+		value text,
+		PRIMARY KEY(id, date))
+	WITH CLUSTERING ORDER BY(date ASC);
+CREATE TABLE IF NOT EXISTS test.immutable_value(
+		id bigint,
+		date timestamp,
+		consistencylist list<text>,
+		simplemap map<int, text>,
+		simpleset set<double>,
+		value text,
+		PRIMARY KEY(id, date))
+	WITH CLUSTERING ORDER BY(date ASC);
 CREATE TABLE IF NOT EXISTS test.multi_clustering_entity(
 		id bigint,
 		c1 int,

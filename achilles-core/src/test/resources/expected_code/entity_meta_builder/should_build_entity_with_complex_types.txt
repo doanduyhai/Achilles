@@ -69,11 +69,13 @@ import java.lang.Byte;
 import java.lang.Class;
 import java.lang.Integer;
 import java.lang.Long;
+import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -444,6 +446,16 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   @Override
   protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getComputedColumns() {
     return Arrays.asList(writeTime,writeTimeWithCodec);
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getConstructorProperties() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  protected TestEntityWithComplexTypes create(final Object[] args) {
+    return new TestEntityWithComplexTypes();
   }
 
   @Override

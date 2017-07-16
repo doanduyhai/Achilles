@@ -16,26 +16,31 @@
 
 package info.archinnov.achilles.internals.parser.validator;
 
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
-
-import java.util.*;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-
-import org.apache.commons.collections.map.HashedMap;
-
 import com.squareup.javapoet.TypeName;
-
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.type.tuples.Tuple2;
+import org.apache.commons.collections.map.HashedMap;
+
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 public abstract class BeanValidator {
 
@@ -70,13 +75,22 @@ public abstract class BeanValidator {
         aptUtils.validateFalse(modifiers.contains(Modifier.FINAL), "Bean type '%s' should not be final", name);
     }
 
-    public void validateHasPublicConstructor(AptUtils aptUtils, TypeName typeName, TypeElement typeElement) {
-        final long constructorCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
+    public void validateHasSingleValidConstructor(AptUtils aptUtils, TypeName typeName, TypeElement typeElement) {
+        final List<ExecutableElement> constructors = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
                 .stream()
+                .filter(x -> {
+                    final EntityCreator entityCreator = x.getAnnotation(EntityCreator.class);
+                    if (entityCreator == null) { // no-arg case
+                        return x.getParameters().size() == 0;
+                    }
+                    final String[] value = entityCreator.value();
+                    return value.length == 0 || value.length == x.getParameters().size();
+                }) //Marked as the factory
                 .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
-                .filter(x -> x.getParameters().size() == 0) //No arg constructor
-                .count();
-        aptUtils.validateTrue(constructorCount == 1, "Bean type '%s' should have a public no-args constructor", typeName);
+                .collect(toList());
+        aptUtils.validateTrue(
+                (constructors.size() > 1 ? constructors.stream().filter(c -> c.getAnnotation(EntityCreator.class) != null).count() : constructors.size()) == 1,
+                "Bean type '%s' should have a public no-args constructor or a single @EntityCreator constructor matching parameters", typeName);
     }
 
     public void validateNoDuplicateNames(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {

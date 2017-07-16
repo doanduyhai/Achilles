@@ -16,41 +16,36 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.driver.core.GettableData;
 import com.datastax.driver.core.SettableData;
 import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
-
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
-import info.archinnov.achilles.internals.injectable.InjectBeanFactory;
 import info.archinnov.achilles.internals.injectable.InjectKeyspace;
 import info.archinnov.achilles.internals.injectable.InjectUserAndTupleTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
-
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
-import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A> extends AbstractProperty<ENTITY, A, UDTValue>
-        implements InjectUserAndTupleTypeFactory, InjectBeanFactory, InjectKeyspace {
+        implements InjectUserAndTupleTypeFactory, InjectKeyspace {
 
     public static final TypeToken<UDTValue> UDT_VALUE_TYPE_TOKEN = new TypeToken<UDTValue>() {
     };
@@ -152,11 +147,6 @@ public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A
     @Override
     public void inject(UserTypeFactory userTypeFactory, TupleTypeFactory tupleTypeFactory) {
         udtClassProperty.inject(userTypeFactory, tupleTypeFactory);
-    }
-
-    @Override
-    public void inject(BeanFactory factory) {
-        udtClassProperty.inject(factory);
     }
 
     @Override

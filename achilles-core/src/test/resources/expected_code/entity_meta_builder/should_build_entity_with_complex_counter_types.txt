@@ -28,10 +28,12 @@ import info.archinnov.achilles.type.strategy.InsertStrategy;
 import java.lang.Class;
 import java.lang.Integer;
 import java.lang.Long;
+import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -162,6 +164,16 @@ public final class TestEntityWithComplexCounters_AchillesMeta extends AbstractEn
   @Override
   protected List<AbstractProperty<TestEntityWithComplexCounters, ?, ?>> getComputedColumns() {
     return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithComplexCounters, ?, ?>> getConstructorProperties() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  protected TestEntityWithComplexCounters create(final Object[] args) {
+    return new TestEntityWithComplexCounters();
   }
 
   @Override

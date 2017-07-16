@@ -16,36 +16,82 @@
 
 package info.archinnov.achilles.internals.parser;
 
-import static com.datastax.driver.core.ClusteringOrder.ASC;
-import static com.datastax.driver.core.ClusteringOrder.DESC;
-import static info.archinnov.achilles.internals.apt.AptUtils.*;
-import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
-import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static java.util.Arrays.asList;
-import static java.util.Optional.ofNullable;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
-import java.util.*;
-import javax.lang.model.element.*;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
 import com.datastax.driver.core.ClusteringOrder;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.TypeName;
-
-import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.annotations.ClusteringColumn;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.Computed;
+import info.archinnov.achilles.annotations.Counter;
+import info.archinnov.achilles.annotations.DSE_Search;
+import info.archinnov.achilles.annotations.Frozen;
+import info.archinnov.achilles.annotations.Index;
+import info.archinnov.achilles.annotations.JSON;
+import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.annotations.SASI.Analyzer;
 import info.archinnov.achilles.annotations.SASI.IndexMode;
 import info.archinnov.achilles.annotations.SASI.Normalization;
+import info.archinnov.achilles.annotations.Static;
 import info.archinnov.achilles.internals.apt.AptUtils;
-import info.archinnov.achilles.internals.metamodel.columns.*;
+import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
+import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
-import info.archinnov.achilles.internals.parser.context.*;
+import info.archinnov.achilles.internals.parser.context.DSESearchInfoContext;
+import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
+import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
+import info.archinnov.achilles.internals.parser.context.IndexInfoContext;
+import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
+
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import static com.datastax.driver.core.ClusteringOrder.ASC;
+import static com.datastax.driver.core.ClusteringOrder.DESC;
+import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
+import static info.archinnov.achilles.internals.apt.AptUtils.enclosingClass;
+import static info.archinnov.achilles.internals.apt.AptUtils.extractTypedMap;
+import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.CLUSTERING;
+import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.COMPUTED;
+import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.COUNTER;
+import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.NORMAL;
+import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.PARTITION;
+import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.STATIC;
+import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.STATIC_COUNTER;
+import static info.archinnov.achilles.internals.parser.TypeUtils.ARRAYS;
+import static info.archinnov.achilles.internals.parser.TypeUtils.CLUSTERING_COLUMN_INFO;
+import static info.archinnov.achilles.internals.parser.TypeUtils.CLUSTERING_ORDER;
+import static info.archinnov.achilles.internals.parser.TypeUtils.COLUMN_INFO;
+import static info.archinnov.achilles.internals.parser.TypeUtils.COLUMN_TYPE;
+import static info.archinnov.achilles.internals.parser.TypeUtils.COMPUTED_COLUMN_INFO;
+import static info.archinnov.achilles.internals.parser.TypeUtils.FIELD_INFO;
+import static info.archinnov.achilles.internals.parser.TypeUtils.INDEX_INFO;
+import static info.archinnov.achilles.internals.parser.TypeUtils.INDEX_TYPE;
+import static info.archinnov.achilles.internals.parser.TypeUtils.PARTITION_KEY_INFO;
+import static info.archinnov.achilles.internals.parser.TypeUtils.SASI_ANALYZER;
+import static info.archinnov.achilles.internals.parser.TypeUtils.SASI_INDEX_MODE;
+import static info.archinnov.achilles.internals.parser.TypeUtils.SASI_NORMALIZATION;
+import static info.archinnov.achilles.internals.parser.TypeUtils.UNSUPPORTED_OPERATION_EXCEPTION;
+import static java.util.Arrays.asList;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class FieldInfoParser {
 
@@ -65,7 +111,9 @@ public class FieldInfoParser {
                 .orElseGet(() -> context.namingStrategy.apply(fieldName));
 
         final ExecutableElement getter = aptUtils.findGetter(classElm, elm, deriveGetterName(elm));
-        final ExecutableElement setter = aptUtils.findSetter(classElm, elm, deriveSetterName(elm));
+        final ExecutableElement setter = aptUtils.findSetter(
+                classElm, elm, deriveSetterName(elm),
+                context.allOptional || context.optionalSetters.contains(elm.getSimpleName().toString()));
 
         final Tuple2<CodeBlock, ColumnType> columnTypeCode = buildColumnType(context.globalContext, elm, fieldName, rawEntityClass);
         final Tuple2<CodeBlock, ColumnInfo> columnInfoCode = buildColumnInfo(context.globalContext, annotationTree, elm, fieldName, rawEntityClass);
@@ -86,9 +134,15 @@ public class FieldInfoParser {
                 .add("($T entity$$) -> entity$$.$L()", rawEntityClass, getter.getSimpleName().toString())
                 .build();
 
-        CodeBlock setterLambda = CodeBlock.builder()
-                .add("($T entity$$, $T value$$) -> entity$$.$L(value$$)", rawEntityClass, currentType, setter.getSimpleName().toString())
-                .build();
+        CodeBlock setterLambda = setter == null ?
+                CodeBlock.builder()
+                        .beginControlFlow("($T entity$$, $T value$$) ->", rawEntityClass, currentType)
+                        .add("throw new $T(\"" + fieldName + " can't be set\");", UNSUPPORTED_OPERATION_EXCEPTION)
+                        .endControlFlow()
+                        .build() :
+                CodeBlock.builder()
+                        .add("($T entity$$, $T value$$) -> entity$$.$L(value$$)", rawEntityClass, currentType, setter.getSimpleName().toString())
+                        .build();
 
         return new FieldInfoContext(CodeBlock.builder()
                 .add("new $T<>($L, $L, $S, $S, $L, $L, $L)", FIELD_INFO, getterLambda, setterLambda,
@@ -308,8 +362,8 @@ public class FieldInfoParser {
 
     private IndexInfoContext getNativeIndexInfoContext(VariableElement elm, EntityParsingContext context, Optional<TypedMap> indexAnnot) {
         return indexAnnot.get()
-                            .<IndexInfoContext>getTyped("indexInfoContext")
-                            .build(elm, context);
+                .<IndexInfoContext>getTyped("indexInfoContext")
+                .build(elm, context);
     }
 
     protected Tuple2<CodeBlock, IndexInfo> buildDSESearchIndexInfo(AnnotationTree annotationTree) {
@@ -319,8 +373,8 @@ public class FieldInfoParser {
                 .<DSESearchInfoContext>getTyped("dseSearchInfoContext");
 
         builder.add("$T.forDSESearch($L)",
-                    INDEX_INFO,
-                    dseSearchInfoContext.fullTextSearchEnabled);
+                INDEX_INFO,
+                dseSearchInfoContext.fullTextSearchEnabled);
 
         return Tuple2.of(builder.build(), IndexInfo.forDSESearch(dseSearchInfoContext.fullTextSearchEnabled));
     }

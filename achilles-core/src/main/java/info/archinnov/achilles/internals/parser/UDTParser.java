@@ -87,6 +87,6 @@ public class UDTParser extends AbstractBeanParser {
         aptUtils.validateFalse(isSupportedType,
                 "Type '%s' cannot be annotated with '%s' because it is a supported type",
                 udtTypeName, UDT.class.getCanonicalName());
-        context.beanValidator().validateHasPublicConstructor(aptUtils, udtTypeName, typeElement);
+        context.beanValidator().validateHasSingleValidConstructor(aptUtils, udtTypeName, typeElement);
     }
 }

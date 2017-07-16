@@ -16,19 +16,34 @@
 
 package info.archinnov.achilles.internals.codegen.meta;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.getNamingStrategy;
-
-import java.util.Optional;
-import javax.lang.model.element.Modifier;
-
 import com.squareup.javapoet.MethodSpec;
-
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeName;
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 
-public interface CommonBeanMetaCodeGen {
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
+import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_PROPERTY;
+import static info.archinnov.achilles.internals.parser.TypeUtils.ARRAYS;
+import static info.archinnov.achilles.internals.parser.TypeUtils.COLLECTIONS;
+import static info.archinnov.achilles.internals.parser.TypeUtils.LIST;
+import static info.archinnov.achilles.internals.parser.TypeUtils.NAMING_STRATEGY;
+import static info.archinnov.achilles.internals.parser.TypeUtils.OBJECT_ARRAY;
+import static info.archinnov.achilles.internals.parser.TypeUtils.OPTIONAL;
+import static info.archinnov.achilles.internals.parser.TypeUtils.WILDCARD;
+import static info.archinnov.achilles.internals.parser.TypeUtils.genericType;
+import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.getNamingStrategy;
+import static java.util.stream.Collectors.joining;
+
+public interface CommonBeanMetaCodeGen {
     default MethodSpec buildGetStaticNamingStrategy(Optional<Strategy> strategy) {
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("getStaticNamingStrategy")
                 .addAnnotation(Override.class)
@@ -49,5 +64,52 @@ public interface CommonBeanMetaCodeGen {
         return builder
                 .addStatement("return $T.empty()", OPTIONAL)
                 .build();
+    }
+
+    // just create(Object[] args) then casts of all params and finally new X(params)
+    default MethodSpec buildCreate(final TypeName rawClassTypeName, final List<? extends VariableElement> parameters) {
+        final AtomicInteger counter = new AtomicInteger();
+        return MethodSpec.methodBuilder("create")
+                .addParameter(OBJECT_ARRAY, "args", Modifier.FINAL)
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PROTECTED)
+                .returns(rawClassTypeName)
+                .addStatement("return new $T(" + parameters.stream()
+                        .map(p -> "$T.class.cast(args[" + counter.getAndIncrement() + "])")
+                        .collect(joining(",\n")) + ")", Stream.concat(
+                        Stream.of(rawClassTypeName),
+                        // casts, unwrap parameterized types to let the cast work (List<Foo> will cast the arg as List.class.cast(x))
+                        parameters.stream().map(e -> {
+                            final TypeName t = TypeName.get(e.asType());
+                            if (t.isPrimitive()) {
+                                return t.box();
+                            }
+                            if (ParameterizedTypeName.class.isInstance(t)) {
+                                return ParameterizedTypeName.class.cast(t).rawType;
+                            }
+                            return t;
+                        }))
+                        .toArray(TypeName[]::new))
+                .build();
+    }
+
+    default ParameterizedTypeName propertyListType(TypeName rawClassType) {
+        return genericType(LIST, genericType(ABSTRACT_PROPERTY, rawClassType, WILDCARD, WILDCARD));
+    }
+
+    default MethodSpec buildConstructorProperties(final TypeName rawClassTypeName, final ExecutableElement constructor) {
+        final MethodSpec.Builder base = MethodSpec.methodBuilder("getConstructorProperties")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PROTECTED)
+                .returns(propertyListType(rawClassTypeName));
+        if (constructor != null) {
+            final String[] fields = constructor.getAnnotation(EntityCreator.class).value();
+            base.addStatement("return $T.asList($L)", ARRAYS, (fields.length == 0 ?
+                    constructor.getParameters().stream().map(p -> p.getSimpleName().toString()) : Stream.of(fields))
+                    .collect(joining(",")));
+        } else {
+            base.addStatement("return $T.emptyList()", COLLECTIONS);
+        }
+        return base.build();
     }
 }

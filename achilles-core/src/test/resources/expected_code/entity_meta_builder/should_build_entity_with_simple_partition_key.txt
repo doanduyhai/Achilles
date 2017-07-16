@@ -24,10 +24,12 @@ import info.archinnov.achilles.type.strategy.InsertStrategy;
 import java.lang.Class;
 import java.lang.Integer;
 import java.lang.Long;
+import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -121,6 +123,16 @@ public final class TestEntityWithSimplePartitionKey_AchillesMeta extends Abstrac
   @Override
   protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getComputedColumns() {
     return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithSimplePartitionKey, ?, ?>> getConstructorProperties() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  protected TestEntityWithSimplePartitionKey create(final Object[] args) {
+    return new TestEntityWithSimplePartitionKey();
   }
 
   @Override

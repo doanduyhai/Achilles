@@ -405,7 +405,7 @@ public abstract class AbstractManagerFactoryBuilder<T extends AbstractManagerFac
     }
 
     /**
-     * Define the Thread Factory for the ExecutorService (ThreadPool) to be used internally for asynchronous operations.
+     * Define the Thread EntityCreator for the ExecutorService (ThreadPool) to be used internally for asynchronous operations.
      * <br/>
      * The default ExecutorService is configured as below:
      * <pre class="code"><code class="java">

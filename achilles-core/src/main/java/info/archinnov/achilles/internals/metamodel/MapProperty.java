@@ -16,17 +16,6 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toMap;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.GettableData;
 import com.datastax.driver.core.SettableData;
@@ -34,7 +23,6 @@ import com.datastax.driver.core.UDTValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
-
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
@@ -44,8 +32,17 @@ import info.archinnov.achilles.internals.utils.NamingHelper;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
-import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toMap;
 
 public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
         AbstractProperty<ENTITY, Map<KEYFROM, VALUEFROM>, Map<KEYTO, VALUETO>> {
@@ -263,12 +260,6 @@ public class MapProperty<ENTITY, KEYFROM, KEYTO, VALUEFROM, VALUETO> extends
     public void inject(ObjectMapper mapper) {
         keyProperty.inject(mapper);
         valueProperty.inject(mapper);
-    }
-
-    @Override
-    public void inject(BeanFactory factory) {
-        keyProperty.inject(factory);
-        valueProperty.inject(factory);
     }
 
     @Override

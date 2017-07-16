@@ -26,10 +26,12 @@ import info.archinnov.achilles.type.strategy.InsertStrategy;
 import java.lang.Class;
 import java.lang.Integer;
 import java.lang.Long;
+import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -136,6 +138,16 @@ public final class TestEntityWithStaticCounterColumn_AchillesMeta extends Abstra
   @Override
   protected List<AbstractProperty<TestEntityWithStaticCounterColumn, ?, ?>> getComputedColumns() {
     return Arrays.asList();
+  }
+
+  @Override
+  protected List<AbstractProperty<TestEntityWithStaticCounterColumn, ?, ?>> getConstructorProperties() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  protected TestEntityWithStaticCounterColumn create(final Object[] args) {
+    return new TestEntityWithStaticCounterColumn();
   }
 
   @Override

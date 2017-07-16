@@ -17,23 +17,12 @@
 package info.archinnov.achilles.internals.metamodel;
 
 
-import static java.lang.String.format;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.driver.core.SettableData;
 import com.datastax.driver.core.TupleType;
 import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.UDTValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
-
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
@@ -41,8 +30,16 @@ import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
-import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.tuples.Tuple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
 
 public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends AbstractProperty<ENTITY, T, TupleValue>
          {
@@ -107,13 +104,6 @@ public abstract class AbstractTupleProperty<ENTITY, T extends Tuple> extends Abs
         }
     }
 
-
-    @Override
-    public void inject(BeanFactory factory) {
-        for (AbstractProperty<ENTITY, ?, ?> x : componentsProperty()) {
-            x.inject(factory);
-        }
-    }
 
     @Override
     public void injectRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
