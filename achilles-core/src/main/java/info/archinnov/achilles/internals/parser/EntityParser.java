@@ -24,6 +24,7 @@ import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
+import info.archinnov.achilles.internals.parser.context.AccessorsExclusionContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
 
@@ -40,14 +41,22 @@ public class EntityParser extends AbstractBeanParser {
 
     public EntityMetaSignature parseEntity(TypeElement elm, GlobalParsingContext globalParsingContext) {
 
-        final List<FieldMetaSignature> parsingResults = parseFields(elm, fieldParser, globalParsingContext);
-        return entityMetaCodeGen.buildEntityMeta(EntityType.TABLE, elm, globalParsingContext, parsingResults);
+        final List<AccessorsExclusionContext> accessorsExclusionContexts = prebuildAccessorsExclusion(elm, globalParsingContext);
+        final List<FieldMetaSignature> fieldMetaSignatures = parseFields(elm, fieldParser, accessorsExclusionContexts, globalParsingContext);
+        final List<FieldMetaSignature> customConstructorFieldMetaSignatures =
+                parseCustomConstructor(elm.getSimpleName().toString(), elm, fieldMetaSignatures);
+        return entityMetaCodeGen.buildEntityMeta(EntityType.TABLE, elm, globalParsingContext,
+                fieldMetaSignatures, customConstructorFieldMetaSignatures);
     }
 
     public EntityMetaSignature parseView(TypeElement elm, GlobalParsingContext globalParsingContext) {
 
-        final List<FieldMetaSignature> parsingResults = parseFields(elm, fieldParser, globalParsingContext);
-        return entityMetaCodeGen.buildEntityMeta(EntityType.VIEW, elm, globalParsingContext, parsingResults);
+        final List<AccessorsExclusionContext> accessorsExclusionContexts = prebuildAccessorsExclusion(elm, globalParsingContext);
+        final List<FieldMetaSignature> fieldMetaSignatures = parseFields(elm, fieldParser, accessorsExclusionContexts, globalParsingContext);
+        final List<FieldMetaSignature> customConstructorFieldMetaSignatures =
+                parseCustomConstructor(elm.getSimpleName().toString(), elm, fieldMetaSignatures);
+        return entityMetaCodeGen.buildEntityMeta(EntityType.VIEW, elm, globalParsingContext,
+                fieldMetaSignatures, customConstructorFieldMetaSignatures);
     }
 
 

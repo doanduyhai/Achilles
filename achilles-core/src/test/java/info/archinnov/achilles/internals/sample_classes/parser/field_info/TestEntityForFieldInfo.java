@@ -146,6 +146,9 @@ public class TestEntityForFieldInfo {
     @Column("UpperCase")
     private String upperCase;
 
+    @Column
+    private String columnWithNoSetter;
+
 
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
@@ -210,5 +213,9 @@ public class TestEntityForFieldInfo {
 
     public void setUpperCase(String upperCase) {
         this.upperCase = upperCase;
+    }
+
+    public String getColumnWithNoSetter() {
+        return columnWithNoSetter;
     }
 }

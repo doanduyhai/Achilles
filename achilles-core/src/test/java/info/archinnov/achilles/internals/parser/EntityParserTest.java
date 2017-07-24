@@ -35,8 +35,7 @@ import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.apt_utils.AptAssertOK;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntitySensor;
-import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithComplexTypes;
+import info.archinnov.achilles.internals.sample_classes.parser.entity.*;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForAnnotationTree;
 import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorByType;
 
@@ -93,6 +92,82 @@ public class EntityParserTest extends AbstractTestProcessor {
                 .processedWith(this)
                 .compilesWithoutError();
 
+    }
+
+    @Test
+    public void should_fail_because_no_matching_field_name_for_constructor_param_javac() throws Exception {
+        //Given
+        AptAssertOK exec = aptUtils -> {
+            try {
+                final EntityParser parser = new EntityParser(aptUtils);
+                final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithNoMatchingFieldForParamInConstructor.class.getCanonicalName());
+                parser.parseEntity(typeElement, globalParsingContext);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
+            }
+        };
+
+        setExec(exec);
+
+        failTestWithMessage("Cannot find matching field name for parameter 'myValue' of @EntityCreator constructor on entity 'TestEntityWithNoMatchingFieldForParamInConstructor'");
+    }
+
+    @Test
+    public void should_fail_because_no_matching_field_name_for_declared_constructor_param_javac() throws Exception {
+        //Given
+        AptAssertOK exec = aptUtils -> {
+            try {
+                final EntityParser parser = new EntityParser(aptUtils);
+                final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithNoMatchingFieldForDeclaredParamInConstructor.class.getCanonicalName());
+                parser.parseEntity(typeElement, globalParsingContext);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
+            }
+        };
+
+        setExec(exec);
+
+        failTestWithMessage("Cannot find matching field name for declared field 'my_value' on @EntityCreator annotation on entity 'TestEntityWithNoMatchingFieldForDeclaredParamInConstructor'");
+    }
+
+    @Test
+    public void should_fail_because_incorrect_field_type_for_constructor_param_javac() throws Exception {
+        //Given
+        AptAssertOK exec = aptUtils -> {
+            try {
+                final EntityParser parser = new EntityParser(aptUtils);
+                final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithWrongParamTypeInConstructor.class.getCanonicalName());
+                parser.parseEntity(typeElement, globalParsingContext);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
+            }
+        };
+
+        setExec(exec);
+
+        failTestWithMessage("The type of parameter 'value' of @EntityCreator constructor on entity 'TestEntityWithWrongParamTypeInConstructor' is wrong, it should be 'java.lang.String'");
+    }
+
+    @Test
+    public void should_fail_because_incorrect_field_type_for_declared_constructor_param_javac() throws Exception {
+        //Given
+        AptAssertOK exec = aptUtils -> {
+            try {
+                final EntityParser parser = new EntityParser(aptUtils);
+                final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithWrongDeclaredParamTypeInConstructor.class.getCanonicalName());
+                parser.parseEntity(typeElement, globalParsingContext);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
+            }
+        };
+
+        setExec(exec);
+
+        failTestWithMessage("The type of declared parameter 'value' on @EntityCreator annotation of entity 'TestEntityWithWrongDeclaredParamTypeInConstructor' is wrong, it should be 'java.lang.String'");
     }
 
     @Test

@@ -27,10 +27,7 @@ import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityAsAbstract;
-import info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityAsFinal;
-import info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityAsInterface;
-import info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithNoPublicConstructor;
+import info.archinnov.achilles.internals.sample_classes.parser.validator.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BeanValidatorTest extends AbstractTestProcessor {
@@ -38,11 +35,12 @@ public class BeanValidatorTest extends AbstractTestProcessor {
     private GlobalParsingContext context = GlobalParsingContext.defaultContext();
     private BeanValidator beanValidator = new BeanValidator() {};
 
+
     @Test
     public void should_fail_validating_an_interface() throws Exception {
         setExec(aptUtils -> {
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityAsInterface.class.getCanonicalName());
-            beanValidator.validateIsAConcreteNonFinalClass(aptUtils, typeElement);
+            beanValidator.validateIsAConcreteClass(aptUtils, typeElement);
         });
         failTestWithMessage("Bean type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityAsInterface' should be a class",
                 TestEntityAsInterface.class);
@@ -53,20 +51,10 @@ public class BeanValidatorTest extends AbstractTestProcessor {
     public void should_fail_validating_an_abstract_class() throws Exception {
         setExec(aptUtils -> {
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityAsAbstract.class.getCanonicalName());
-            beanValidator.validateIsAConcreteNonFinalClass(aptUtils, typeElement);
+            beanValidator.validateIsAConcreteClass(aptUtils, typeElement);
         });
         failTestWithMessage("Bean type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityAsAbstract' should not be abstract",
                 TestEntityAsAbstract.class);
-    }
-
-    @Test
-    public void should_fail_validating_a_final_class() throws Exception {
-        setExec(aptUtils -> {
-            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityAsFinal.class.getCanonicalName());
-            beanValidator.validateIsAConcreteNonFinalClass(aptUtils, typeElement);
-        });
-        failTestWithMessage("Bean type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityAsFinal' should not be final",
-                TestEntityAsFinal.class);
     }
 
     @Test
@@ -74,8 +62,18 @@ public class BeanValidatorTest extends AbstractTestProcessor {
         setExec(aptUtils -> {
             final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithNoPublicConstructor.class.getCanonicalName());
             final TypeName typeName = ClassName.get(TestEntityWithNoPublicConstructor.class);
-            beanValidator.validateHasPublicConstructor(aptUtils, typeName, typeElement);
+            beanValidator.validateConstructor(aptUtils, typeName, typeElement);
         });
-        failTestWithMessage("Bean type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithNoPublicConstructor' should have a public no-args constructor", TestEntityWithNoPublicConstructor.class);
+        failTestWithMessage("Bean type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithNoPublicConstructor' should have either a public no-args constructor or ONE custom constructor with annotation @EntityCreator", TestEntityWithNoPublicConstructor.class);
+    }
+
+    @Test
+    public void should_fail_validating_class_with_two_custom_constructors() throws Exception {
+        setExec(aptUtils -> {
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithNoPublicConstructor.class.getCanonicalName());
+            final TypeName typeName = ClassName.get(TestEntityWithTwoCustomConstructors.class);
+            beanValidator.validateConstructor(aptUtils, typeName, typeElement);
+        });
+        failTestWithMessage("Bean type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithTwoCustomConstructors' should have either a public no-args constructor or ONE custom constructor with annotation @EntityCreator", TestEntityWithTwoCustomConstructors.class);
     }
 }

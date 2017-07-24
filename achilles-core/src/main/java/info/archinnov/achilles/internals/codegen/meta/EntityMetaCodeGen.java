@@ -24,6 +24,7 @@ import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -64,7 +65,9 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         this.aptUtils = aptUtils;
     }
 
-    public EntityMetaSignature buildEntityMeta(EntityType entityType, TypeElement elm, GlobalParsingContext globalParsingContext, List<FieldMetaSignature> fieldMetaSignatures) {
+    public EntityMetaSignature buildEntityMeta(EntityType entityType, TypeElement elm, GlobalParsingContext globalParsingContext,
+                                               List<FieldMetaSignature> fieldMetaSignatures,
+                                               List<FieldMetaSignature> customConstructorFieldMetaSignatures) {
         final TypeName rawClassTypeName = getRawType(TypeName.get(elm.asType()));
         final Optional<Consistency> consistency = aptUtils.getAnnotationOnClass(elm, Consistency.class);
         final Optional<TTL> ttl = aptUtils.getAnnotationOnClass(elm, TTL.class);
@@ -83,10 +86,10 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         final BeanValidator beanValidator = globalParsingContext.beanValidator();
         final FieldValidator fieldValidator = globalParsingContext.fieldValidator();
 
-        beanValidator.validateIsAConcreteNonFinalClass(aptUtils, elm);
-        beanValidator.validateHasPublicConstructor(aptUtils, rawClassTypeName, elm);
+        beanValidator.validateIsAConcreteClass(aptUtils, elm);
         beanValidator.validateNoDuplicateNames(aptUtils, rawClassTypeName, fieldMetaSignatures);
         beanValidator.validateHasPartitionKey(aptUtils, rawClassTypeName, fieldMetaSignatures);
+        beanValidator.validateConstructor(aptUtils, rawClassTypeName, elm);
 
         final boolean isCounter = beanValidator.isCounterTable(aptUtils, rawClassTypeName, fieldMetaSignatures);
 
@@ -147,7 +150,8 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addMethod(buildPartitionKeys(fieldMetaSignatures, rawBeanType))
                 .addMethod(buildClusteringColumns(fieldMetaSignatures, rawBeanType))
                 .addMethod(buildNormalColumns(fieldMetaSignatures, rawBeanType))
-                .addMethod(buildComputedColumns(fieldMetaSignatures, rawBeanType));
+                .addMethod(buildComputedColumns(fieldMetaSignatures, rawBeanType))
+                .addMethod(buildConstructorInjectedColumns(customConstructorFieldMetaSignatures, rawBeanType));
 
         if (entityType == EntityType.TABLE) {
             builder.superclass(genericType(ABSTRACT_ENTITY_PROPERTY, rawBeanType))
@@ -167,6 +171,8 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                     .addMethod(buildGetBaseEntityClass(viewBaseClass.get()));
         }
 
+        builder.addMethod(buildNewInstanceFromCustomConstructor(customConstructorFieldMetaSignatures, rawClassTypeName));
+
         for(FieldMetaSignature x: fieldMetaSignatures) {
             builder.addField(x.buildPropertyAsField());
         }
@@ -175,7 +181,39 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         builder.addType(EntityMetaColumnsForFunctionsCodeGen.createColumnsClassForFunctionParam(fieldMetaSignatures))
                 .addField(buildColumnsField(className));
 
-        return new EntityMetaSignature(entityType, builder.build(), elm.getSimpleName().toString(), typeName, rawBeanType, viewBaseClass, fieldMetaSignatures);
+        return new EntityMetaSignature(entityType, builder.build(), elm.getSimpleName().toString(), typeName, rawBeanType, viewBaseClass,
+                fieldMetaSignatures, customConstructorFieldMetaSignatures);
+    }
+
+    private MethodSpec buildNewInstanceFromCustomConstructor(List<FieldMetaSignature> customConstructorFieldMetaSignatures, TypeName rawClassTypeName) {
+        final MethodSpec.Builder methodSpec = MethodSpec
+                .methodBuilder("newInstanceFromCustomConstructor")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PROTECTED)
+                .addParameter(ROW, "row", Modifier.FINAL)
+                .addParameter(genericType(LIST, STRING), "cqlColumns", Modifier.FINAL)
+                .returns(rawClassTypeName);
+
+        if (customConstructorFieldMetaSignatures.size() > 0) {
+            customConstructorFieldMetaSignatures
+                    .forEach(field ->
+                            methodSpec.addStatement("final $T $L_value = cqlColumns.contains($L.getColumnForSelect()) ? $L.decodeFromGettable(row): null",
+                                    field.sourceType.box(),
+                                    field.context.fieldName,
+                                    field.context.fieldName,
+                                    field.context.fieldName)
+                    );
+
+            methodSpec.addStatement(customConstructorFieldMetaSignatures
+                    .stream()
+                    .map(fieldMeta -> fieldMeta.context.fieldName + "_value")
+                    .collect(joining(",", "return new $T(", ")")), rawClassTypeName);
+        } else {
+            final String errorMessage = "Cannot instantiate entity '" + rawClassTypeName.toString() + "' using custom constructor because no custom constructor (@EntityCreator) is defined";
+            methodSpec.addStatement("throw new $T($S)", TypeName.get(UnsupportedOperationException.class), errorMessage);
+        }
+
+        return methodSpec.build();
     }
 
     private MethodSpec buildFieldNameToCqlColumn(List<FieldMetaSignature> parsingResults) {
@@ -312,6 +350,21 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                 .forEach(x -> joiner.add(x));
 
         return MethodSpec.methodBuilder("getComputedColumns")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PROTECTED)
+                .returns(propertyListType(rawClassType))
+                .addStatement("return $T.asList($L)", ARRAYS, joiner.toString())
+                .build();
+    }
+
+    private MethodSpec buildConstructorInjectedColumns(List<FieldMetaSignature> constructorFieldMetaSignatures, TypeName rawClassType) {
+        StringJoiner joiner = new StringJoiner(",");
+        constructorFieldMetaSignatures
+                .stream()
+                .map(x -> x.context.fieldName)
+                .forEach(x -> joiner.add(x));
+
+        return MethodSpec.methodBuilder("getConstructorInjectedColumns")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
                 .returns(propertyListType(rawClassType))
@@ -485,8 +538,9 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         public final List<FieldMetaSignature> fieldMetaSignatures;
         public final EntityType entityType;
         public final Optional<TypeName> viewBaseClass;
+        public final List<FieldMetaSignature> constructorInjectedFieldMetaSignatures;
 
-        public EntityMetaSignature(EntityType entityType, TypeSpec sourceCode, String className, TypeName typeName, TypeName entityRawClass, Optional<TypeName> viewBaseClass, List<FieldMetaSignature> fieldMetaSignatures) {
+        public EntityMetaSignature(EntityType entityType, TypeSpec sourceCode, String className, TypeName typeName, TypeName entityRawClass, Optional<TypeName> viewBaseClass, List<FieldMetaSignature> fieldMetaSignatures, List<FieldMetaSignature> constructorInjectedFieldMetaSignatures) {
             this.entityType = entityType;
             this.sourceCode = sourceCode;
             this.className = className;
@@ -495,6 +549,7 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
             this.viewBaseClass = viewBaseClass;
             this.fieldMetaSignatures = fieldMetaSignatures;
             this.fieldName = className.substring(0, 1).toLowerCase() + className.substring(1);
+            this.constructorInjectedFieldMetaSignatures = constructorInjectedFieldMetaSignatures;
         }
 
         public boolean hasClustering() {

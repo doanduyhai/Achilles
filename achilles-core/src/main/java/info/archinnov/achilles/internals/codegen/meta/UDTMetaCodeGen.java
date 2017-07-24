@@ -18,6 +18,7 @@ package info.archinnov.achilles.internals.codegen.meta;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
+import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.List;
@@ -46,7 +47,9 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
         this.aptUtils = aptUtils;
     }
 
-    public TypeSpec buildUDTClassProperty(TypeElement elm, EntityParsingContext context, List<FieldMetaSignature> parsingResults) {
+    public TypeSpec buildUDTClassProperty(TypeElement elm, EntityParsingContext context,
+                                          List<FieldMetaSignature> fieldMetaSignatures,
+                                          List<FieldMetaSignature> customConstructorFieldMetaSignatures) {
 
         final TypeName rawBeanType = TypeName.get(aptUtils.erasure(elm));
 
@@ -63,11 +66,12 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addMethod(buildGetUdtName(elm, context))
                 .addMethod(buildGetUdtClass(rawBeanType))
                 .addMethod(buildGetParentEntityClass(context))
-                .addMethod(buildComponentsProperty(rawBeanType, parsingResults))
-                .addMethod(buildCreateUDTFromBeanT(rawBeanType, parsingResults))
-                .addMethod(buildCreateBeanFromUDT(rawBeanType, parsingResults));
+                .addMethod(buildComponentsProperty(rawBeanType, fieldMetaSignatures))
+                .addMethod(buildConstructorInjectedProperties(rawBeanType, customConstructorFieldMetaSignatures))
+                .addMethod(buildCreateUDTFromBeanT(rawBeanType, fieldMetaSignatures))
+                .addMethod(buildNewInstanceFromCustomConstructor(rawBeanType, customConstructorFieldMetaSignatures));
 
-        for (FieldMetaSignature x : parsingResults) {
+        for (FieldMetaSignature x : fieldMetaSignatures) {
             builder.addField(x.buildPropertyAsField());
         }
 
@@ -175,6 +179,26 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
 
     }
 
+    private MethodSpec buildConstructorInjectedProperties(TypeName rawBeanType, List<FieldMetaSignature> constructorInjectedProperties) {
+        TypeName returnType = genericType(LIST, genericType(ABSTRACT_PROPERTY, rawBeanType, WILDCARD, WILDCARD));
+        final StringJoiner allFields = new StringJoiner(", ");
+        constructorInjectedProperties
+                .stream()
+                .map(x -> x.context.fieldName)
+                .forEach(x -> allFields.add(x));
+
+        StringBuilder fieldList = new StringBuilder();
+        fieldList.append("return $T.asList(").append(allFields.toString()).append(")");
+
+        return MethodSpec.methodBuilder("getConstructorInjectedProperty")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PROTECTED)
+                .returns(returnType)
+                .addStatement(fieldList.toString(), ARRAYS)
+                .build();
+
+    }
+
     private MethodSpec buildCreateUDTFromBeanT(TypeName rawBeanType, List<FieldMetaSignature> parsingResults) {
 
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("createUDTFromBean")
@@ -195,22 +219,51 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
         return builder.build();
     }
 
-    private MethodSpec buildCreateBeanFromUDT(TypeName rawBeanType, List<FieldMetaSignature> parsingResults) {
-        final ClassName udtType = ClassName.get(UDTValue.class);
+//    private MethodSpec buildCreateBeanFromUDT(TypeName rawBeanType, List<FieldMetaSignature> parsingResults) {
+//        final ClassName udtType = ClassName.get(UDTValue.class);
+//
+//        final MethodSpec.Builder builder = MethodSpec.methodBuilder("createBeanFromUDT")
+//                .addAnnotation(Override.class)
+//                .addModifiers(Modifier.PROTECTED)
+//                .addParameter(udtType, "udtValue")
+//                .returns(rawBeanType)
+//                .addStatement("final $T instance = udtFactory.newInstance(udtClass)", rawBeanType);
+//
+//        for (FieldMetaSignature x : parsingResults) {
+//            builder.addStatement("$L.decodeField(udtValue, instance)", x.context.fieldName);
+//        }
+//
+//        builder.addStatement("return instance");
+//
+//        return builder.build();
+//    }
 
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder("createBeanFromUDT")
+    private MethodSpec buildNewInstanceFromCustomConstructor(TypeName rawBeanType, List<FieldMetaSignature> customConstructorFieldMetaSignatures) {
+        final MethodSpec.Builder methodSpec = MethodSpec.methodBuilder("newInstanceFromCustomConstructor")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
-                .addParameter(udtType, "udtValue")
-                .returns(rawBeanType)
-                .addStatement("final $T instance = udtFactory.newInstance(udtClass)", rawBeanType);
+                .addParameter(JAVA_DRIVER_UDT_VALUE_TYPE, "udtValue")
+                .returns(rawBeanType);
 
-        for (FieldMetaSignature x : parsingResults) {
-            builder.addStatement("$L.decodeField(udtValue, instance)", x.context.fieldName);
+        if (customConstructorFieldMetaSignatures.size() > 0) {
+
+            customConstructorFieldMetaSignatures
+                    .forEach(field ->
+                            methodSpec.addStatement("final $T $L_value = $L.decodeFromGettable(udtValue)",
+                                    field.sourceType.box(),
+                                    field.context.fieldName,
+                                    field.context.fieldName)
+                    );
+
+            methodSpec.addStatement(customConstructorFieldMetaSignatures
+                    .stream()
+                    .map(fieldMeta -> fieldMeta.context.fieldName + "_value")
+                    .collect(joining(",", "return new $T(", ")")), rawBeanType);
+        } else {
+            final String errorMessage = "Cannot instantiate entity '" + rawBeanType.toString() + "' using custom constructor because no custom constructor (@EntityCreator) is defined";
+            methodSpec.addStatement("throw new $T($S)", TypeName.get(UnsupportedOperationException.class), errorMessage);
         }
 
-        builder.addStatement("return instance");
-
-        return builder.build();
+        return methodSpec.build();
     }
 }

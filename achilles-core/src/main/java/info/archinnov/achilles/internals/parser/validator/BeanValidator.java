@@ -30,6 +30,7 @@ import org.apache.commons.collections.map.HashedMap;
 
 import com.squareup.javapoet.TypeName;
 
+import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
@@ -62,21 +63,26 @@ public abstract class BeanValidator {
         }
     }
 
-    public void validateIsAConcreteNonFinalClass(AptUtils aptUtils, TypeElement typeElement) {
+    public void validateIsAConcreteClass(AptUtils aptUtils, TypeElement typeElement) {
         final Name name = typeElement.getQualifiedName();
         aptUtils.validateTrue(typeElement.getKind() == ElementKind.CLASS, "Bean type '%s' should be a class", name);
         final Set<Modifier> modifiers = typeElement.getModifiers();
         aptUtils.validateFalse(modifiers.contains(Modifier.ABSTRACT), "Bean type '%s' should not be abstract", name);
-        aptUtils.validateFalse(modifiers.contains(Modifier.FINAL), "Bean type '%s' should not be final", name);
     }
 
-    public void validateHasPublicConstructor(AptUtils aptUtils, TypeName typeName, TypeElement typeElement) {
-        final long constructorCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
+    public void validateConstructor(AptUtils aptUtils, TypeName typeName, TypeElement typeElement) {
+        final long defaultConstructorCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
                 .stream()
                 .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
                 .filter(x -> x.getParameters().size() == 0) //No arg constructor
                 .count();
-        aptUtils.validateTrue(constructorCount == 1, "Bean type '%s' should have a public no-args constructor", typeName);
+
+        final long customConstructorCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
+                .stream()
+                .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
+                .filter(x -> x.getAnnotation(EntityCreator.class) != null) //has @EntityCreator annotation
+                .count();
+        aptUtils.validateTrue(defaultConstructorCount == 1 || customConstructorCount == 1, "Bean type '%s' should have either a public no-args constructor or ONE custom constructor with annotation @EntityCreator", typeName);
     }
 
     public void validateNoDuplicateNames(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {
