@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,32 @@
 
 package info.archinnov.achilles.internals.sample_classes.parser.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Table;
-import info.archinnov.achilles.annotations.PartitionKey;
-import info.archinnov.achilles.internals.sample_classes.APUnitTest;
+import java.util.UUID;
 
-@APUnitTest
+import javax.validation.constraints.NotNull;
+
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.EntityCreator;
+import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.Table;
+
 @Table
-public final class TestEntityWithFinalClass {
+public class TestEntityWithNoMatchingFieldForParamInConstructor {
 
     @PartitionKey
-    private Long id;
+    private UUID id;
 
     @Column
     private String value;
 
-    public Long getId() {
-        return id;
+    @EntityCreator
+    public TestEntityWithNoMatchingFieldForParamInConstructor(UUID id, String myValue) {
+        this.id = id;
+        this.value = myValue;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public UUID getId() {
+        return id;
     }
 
     public String getValue() {

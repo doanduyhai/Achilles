@@ -303,6 +303,7 @@ public class TypeUtils {
 
     // Java Driver types
     public static final TypeName CLUSTER = ClassName.get(Cluster.class);
+    public static final TypeName ROW = ClassName.get(Row.class);
     public static final TypeName SELECT_DOT_SELECTION = ClassName.get(Select.Selection.class);
     public static final TypeName SELECT_DOT_WHERE = ClassName.get(Select.Where.class);
     public static final TypeName DELETE_DOT_WHERE = ClassName.get(Delete.Where.class);

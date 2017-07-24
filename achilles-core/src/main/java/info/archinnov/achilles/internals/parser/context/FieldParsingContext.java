@@ -57,7 +57,7 @@ public class FieldParsingContext {
         this.className = className;
         this.simpleClassName = className.replaceAll("([^.]+\\.)" ,"");
         this.fieldName = fieldName;
-        this.entityContext = new EntityParsingContext(typeElement, typeName, parsingContext.namingStrategy, parsingContext);
+        this.entityContext = new EntityParsingContext(typeElement, typeName, parsingContext.namingStrategy, Collections.emptyList(), parsingContext);
         this.columnType = null;
         this.columnInfo = null;
         this.indexInfo = null;

@@ -70,6 +70,11 @@ public final class TestUDT_AchillesMeta extends info.archinnov.achilles.internal
   }
 
   @java.lang.Override
+  protected java.util.List<info.archinnov.achilles.internals.metamodel.AbstractProperty<info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT, ?, ?>> getConstructorInjectedProperty() {
+    return java.util.Arrays.asList();
+  }
+
+  @java.lang.Override
   protected com.datastax.driver.core.UDTValue createUDTFromBean(info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance, java.util.Optional<info.archinnov.achilles.internals.options.CassandraOptions> cassandraOptions) {
     final com.datastax.driver.core.UserType dynamicUserType = this.getUserType(cassandraOptions);
     final com.datastax.driver.core.UDTValue udtValue = dynamicUserType.newValue();
@@ -80,11 +85,7 @@ public final class TestUDT_AchillesMeta extends info.archinnov.achilles.internal
   }
 
   @java.lang.Override
-  protected info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT createBeanFromUDT(com.datastax.driver.core.UDTValue udtValue) {
-    final info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT instance = udtFactory.newInstance(udtClass);
-    name.decodeField(udtValue, instance);
-    list.decodeField(udtValue, instance);
-    map.decodeField(udtValue, instance);
-    return instance;
+  protected info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT newInstanceFromCustomConstructor(com.datastax.driver.core.UDTValue udtValue) {
+    throw new java.lang.UnsupportedOperationException("Cannot instantiate entity 'info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT' using custom constructor because no custom constructor (@EntityCreator) is defined");
   }
 }

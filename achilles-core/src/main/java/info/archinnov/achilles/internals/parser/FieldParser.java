@@ -713,12 +713,15 @@ public class FieldParser {
         final public String fieldName;
         final public String quotedCqlColumn;
         final public List<FieldMetaSignature> fieldMetaSignatures;
+        final public List<FieldMetaSignature> customConstructorFieldMetaSignatures;
         final public boolean isFrozen;
 
-        public UDTMetaSignature(String fieldName, String quotedCqlColumn, List<FieldMetaSignature> fieldMetaSignatures, boolean isFrozen) {
+        public UDTMetaSignature(String fieldName, String quotedCqlColumn, List<FieldMetaSignature> fieldMetaSignatures,
+                                List<FieldMetaSignature> customConstructorFieldMetaSignatures, boolean isFrozen) {
             this.fieldName = fieldName;
             this.quotedCqlColumn = quotedCqlColumn;
             this.fieldMetaSignatures = fieldMetaSignatures;
+            this.customConstructorFieldMetaSignatures = customConstructorFieldMetaSignatures;
             this.isFrozen = isFrozen;
         }
     }

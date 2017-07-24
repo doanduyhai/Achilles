@@ -17,8 +17,11 @@
 package info.archinnov.achilles.internals.codegen.meta;
 
 import static info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer.getTypeParsingResults;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.lang.model.element.TypeElement;
@@ -30,10 +33,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
+import info.archinnov.achilles.internals.apt_utils.AptAssertOK;
 import info.archinnov.achilles.internals.cassandra_version.V3_0;
 import info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
 import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.context.AccessorsExclusionContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.parser.entity.*;
 import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewCounter;
@@ -58,7 +63,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_simple_partition_key.txt"));
@@ -74,7 +79,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_composite_partition_key.txt"));
@@ -90,7 +95,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_clustering_column.txt"));
@@ -106,7 +111,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_counter_column.txt"));
@@ -122,7 +127,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_static_counter_column.txt"));
@@ -138,7 +143,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_static_column.txt"));
@@ -154,7 +159,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_computed_column.txt"));
@@ -170,7 +175,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_inherited_entity.txt"));
@@ -186,7 +191,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_static_annotations.txt"));
@@ -202,7 +207,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_complex_types.txt"));
@@ -218,7 +223,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_complex_counter_types.txt"));
@@ -234,7 +239,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_complex_indices.txt"));
@@ -254,13 +259,54 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, globalParsingContext);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, globalParsingContext, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, globalParsingContext, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_implicit_field_parsing.txt"));
         });
         launchTest(TestEntityWithImplicitFieldParsing.class);
     }
+
+    @Test
+    public void should_build_entity_with_custom_constructor() throws Exception {
+        final AptAssertOK aptAssertOK = aptUtils -> {
+            final String className = TestEntityWithCustomConstructor.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+
+            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
+            final List<AccessorsExclusionContext> exclusionContexts = Arrays.asList(
+                    new AccessorsExclusionContext("id", false, true),
+                    new AccessorsExclusionContext("date", false, true),
+                    new AccessorsExclusionContext("value", false, true));
+            final List<FieldParser.FieldMetaSignature> fieldMetaSignatures = getTypeParsingResults(aptUtils, typeElement, exclusionContexts, context);
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, fieldMetaSignatures, fieldMetaSignatures).sourceCode;
+
+            assertThat(buildSource(typeSpec)).isEqualTo(
+                    readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_custom_constructor.txt"));
+        }; setExec(aptAssertOK);
+        launchTest(TestEntityWithCustomConstructor.class);
+    }
+
+    @Test
+    public void should_build_entity_with_custom_constructor_with_declared_fields() throws Exception {
+        final AptAssertOK aptAssertOK = aptUtils -> {
+            final String className = TestEntityWithCustomConstructorAndDeclaredFields.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+
+            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
+            final List<AccessorsExclusionContext> exclusionContexts = Arrays.asList(
+                    new AccessorsExclusionContext("id", false, true),
+                    new AccessorsExclusionContext("date", false, true),
+                    new AccessorsExclusionContext("value", false, true));
+            final List<FieldParser.FieldMetaSignature> fieldMetaSignatures = getTypeParsingResults(aptUtils, typeElement, exclusionContexts, context);
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.TABLE, typeElement, context, fieldMetaSignatures, fieldMetaSignatures).sourceCode;
+
+            assertThat(buildSource(typeSpec)).isEqualTo(
+                    readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_entity_with_custom_constructor_with_declared_fields.txt"));
+        }; setExec(aptAssertOK);
+        launchTest(TestEntityWithCustomConstructorAndDeclaredFields.class);
+    }
+
 
     @Test
     public void should_build_view_meta() throws Exception {
@@ -270,28 +316,12 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults).sourceCode;
+            final TypeSpec typeSpec = builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults, emptyList()).sourceCode;
 
             assertThat(buildSource(typeSpec)).isEqualTo(
                     readCodeBlockFromFile("expected_code/entity_meta_builder/should_build_view_meta.txt"));
         });
         launchTest(TestViewSensorByType.class);
-    }
-
-    @Test
-    public void should_fail_building_final_class() throws Exception {
-        setExec(aptUtils -> {
-            final String className = TestEntityWithFinalClass.class.getCanonicalName();
-            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
-
-            final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
-
-        });
-        failTestWithMessage(
-                "Bean type 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithFinalClass' should not be final",
-                TestEntityWithFinalClass.class);
     }
 
     @Test
@@ -302,7 +332,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList());
 
         });
         failTestWithMessage(
@@ -318,10 +348,11 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList());
         });
         failTestWithMessage(
-                "Bean type 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithNoPublicConstructor' should have a public no-args constructor",
+                "Bean type 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithNoPublicConstructor' " +
+                        "should have either a public no-args constructor or ONE custom constructor with annotation @EntityCreator",
                 TestEntityWithNoPublicConstructor.class);
     }
 
@@ -333,7 +364,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList());
         });
         failTestWithMessage(
                 "The class 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithDuplicateCQLColumn' already contains a cql column with name 'value'",
@@ -348,7 +379,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList());
         });
         failTestWithMessage(
                 "The class 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithNoPartitionKey' should have at least 1 partition key (@PartitionKey)",
@@ -363,7 +394,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList());
         });
         failTestWithMessage(
                 "The class 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithStaticWithoutClustering' cannot have static columns without at least 1 clustering column",
@@ -378,7 +409,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList());
         });
         failTestWithMessage(
                 "Target field 'one' in @Computed annotation of field 'value' of class 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithWrongComputed' does not exist",
@@ -393,7 +424,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList());
         });
         failTestWithMessage(
                 "The @PartitionKey ordering is wrong in class 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithWrongCompositePartitionKey'",
@@ -408,7 +439,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList());
         });
         failTestWithMessage(
                 "The @ClusteringColumn ordering is wrong in class 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithWrongClusteringColumns'",
@@ -423,7 +454,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList());
         });
         failTestWithMessage(
                 "The class 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityAsChildShadowingVariable' already contains a field with name 'value'",
@@ -438,7 +469,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults, emptyList());
 
         });
         failTestWithMessage(
@@ -454,7 +485,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults, emptyList());
 
         });
         failTestWithMessage(
@@ -470,7 +501,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults, emptyList());
 
         });
         failTestWithMessage(
@@ -486,7 +517,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
             final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, context);
-            builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults);
+            builder.buildEntityMeta(EntityType.VIEW, typeElement, context, parsingResults, emptyList());
 
         });
         failTestWithMessage(

@@ -2,6 +2,7 @@ package info.archinnov.achilles.generated;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.UDTValue;
 import com.fasterxml.jackson.databind.type.SimpleType;
@@ -72,6 +73,7 @@ import java.lang.Long;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
+import java.lang.UnsupportedOperationException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Date;
@@ -88,7 +90,7 @@ import java.util.UUID;
  *    <li>determining runtime consistency levels (read/write,serial)<li/>
  *    <li>determining runtime insert strategy<li/>
  *    <li>trigger event interceptors (if any)<li/>
- *    <li>map a com.datastax.driver.core.Row back to an instance of TestEntityWithComplexTypes<li/>
+ *    <li>map a Row back to an instance of TestEntityWithComplexTypes<li/>
  *    <li>determine runtime keyspace name using static annotations and runtime SchemaNameProvider (if any)<li/>
  *    <li>determine runtime table name using static annotations and runtime SchemaNameProvider (if any)<li/>
  *    <li>generate schema during bootstrap<li/>
@@ -447,6 +449,11 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   }
 
   @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getConstructorInjectedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
   protected boolean isCounterTable() {
     return false;
   }
@@ -489,6 +496,11 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   @Override
   protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getCounterColumns() {
     return Arrays.asList();
+  }
+
+  @Override
+  protected TestEntityWithComplexTypes newInstanceFromCustomConstructor(final Row row, final List<String> cqlColumns) {
+    throw new UnsupportedOperationException("Cannot instantiate entity 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithComplexTypes' using custom constructor because no custom constructor (@EntityCreator) is defined");
   }
 
   /**

@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.schemabuilder.CreateType;
@@ -60,6 +61,7 @@ public abstract class AbstractUDTClassProperty<A>
     public final Class<A> udtClass;
     public final String udtName;
     public final List<AbstractProperty<A, ?, ?>> componentsProperty;
+    public final List<AbstractProperty<A, ?, ?>> constructorInjectedProperty;
     public final Class<?> parentEntityClass;
     protected BeanFactory udtFactory;
     protected UserTypeFactory userTypeFactory;
@@ -74,6 +76,7 @@ public abstract class AbstractUDTClassProperty<A>
         this.udtName = getUdtName();
         this.udtClass = getUdtClass();
         this.componentsProperty = getComponentsProperty();
+        this.constructorInjectedProperty = getConstructorInjectedProperty();
         this.parentEntityClass = getParentEntityClass();
     }
 
@@ -89,11 +92,35 @@ public abstract class AbstractUDTClassProperty<A>
 
     protected abstract List<AbstractProperty<A, ?, ?>> getComponentsProperty();
 
+    protected abstract List<AbstractProperty<A, ?, ?>> getConstructorInjectedProperty();
+
     protected abstract Class<?> getParentEntityClass();
 
     protected abstract UDTValue createUDTFromBean(A instance, Optional<CassandraOptions> cassandraOptions);
 
-    protected abstract A createBeanFromUDT(UDTValue udtValue);
+    protected abstract A newInstanceFromCustomConstructor(UDTValue udtValue);
+
+    protected A createBeanFromUDT(UDTValue udtValue) {
+        if (udtValue != null) {
+            final A instance;
+            if (constructorInjectedProperty.size() == 0) {
+                instance = udtFactory.newInstance(udtClass);
+                componentsProperty
+                        .stream()
+                        .forEach(x -> x.decodeField(udtValue, instance));
+            } else {
+                instance = newInstanceFromCustomConstructor(udtValue);
+
+                // Call setters for remaining fields not injected by constructor
+                componentsProperty
+                        .stream()
+                        .filter(x -> !constructorInjectedProperty.contains(x))
+                        .forEach(x -> x.decodeField(udtValue, instance));
+            }
+            return instance;
+        }
+        return null;
+    }
 
     protected UserType getUserType(Optional<CassandraOptions> cassandraOptions) {
         if (cassandraOptions.isPresent()) {

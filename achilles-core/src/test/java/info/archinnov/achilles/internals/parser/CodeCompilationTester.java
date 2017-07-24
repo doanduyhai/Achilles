@@ -17,58 +17,193 @@
 package info.archinnov.achilles.internals.parser;
 
 
-import java.util.Optional;
-
+import com.datastax.driver.core.ClusteringOrder;
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ProtocolVersion;
+import com.datastax.driver.core.Row;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
-
+import info.archinnov.achilles.internals.parser.CodeCompilationTester.ColumnsForFunctions;
+import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
 import info.archinnov.achilles.internals.codec.FallThroughCodec;
-import info.archinnov.achilles.internals.metamodel.JdkOptionalProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.SimpleProperty;
+import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
+import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
-import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs;
+import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithCustomConstructor;
+import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
+import info.archinnov.achilles.type.strategy.InsertStrategy;
+import java.lang.Class;
+import java.lang.Double;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * This class purpose is to test that generated code does compile
  */
-public class CodeCompilationTester {
+public class CodeCompilationTester extends AbstractEntityProperty<TestEntityWithCustomConstructor> {
 
-    /** * Meta class for 'overridenName' property <br/> * The meta class exposes some useful methods: <ul> *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li> *    <li>encodeField: extract the current property value from the given info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs instance and encode to CQL java compatible type </li> *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li> * </ul> */
-    @java.lang.SuppressWarnings("serial")
-    public static final SimpleProperty<TestEntityForCodecs, String, String> overridenName =
-    new SimpleProperty<>(
-        new FieldInfo<>((TestEntityForCodecs entity$) -> entity$.getOverridenName(),
-            (TestEntityForCodecs entity$, java.lang.String value$) -> entity$.setOverridenName(value$),
-                "overridenName", "\"overRiden\"",
-                ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()),
-                DataType.text(), gettableData$ -> gettableData$.get("\"overRiden\"", String.class),
-                (settableData$, value$) -> settableData$.set("\"overRiden\"", value$, java.lang.String.class),
-                new TypeToken<java.lang.String>(){}, new TypeToken<java.lang.String>(){},
-                new FallThroughCodec<>(java.lang.String.class));
+    /**
+     * Meta class for 'id' property <br/>
+     * The meta class exposes some useful methods: <ul>
+     *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+     *    <li>encodeField: extract the current property value from the given TestEntityWithCustomConstructor instance and encode to CQL java compatible type </li>
+     *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+     * </ul>
+     */
+    @SuppressWarnings({"serial", "unchecked"})
+    public static final SimpleProperty<TestEntityWithCustomConstructor, Long, Long> id = new SimpleProperty<TestEntityWithCustomConstructor, Long, Long>(new FieldInfo<>((TestEntityWithCustomConstructor entity$) -> entity$.getId(), (TestEntityWithCustomConstructor entity$, Long value$) -> {}, "id", "id", ColumnType.PARTITION, new PartitionKeyInfo(1, false), IndexInfo.noIndex()), DataType.bigint(), gettableData$ -> gettableData$.get("id", long.class), (settableData$, value$) -> settableData$.set("id", value$, long.class), new TypeToken<Long>(){}, new TypeToken<Long>(){}, new FallThroughCodec<>(Long.class));
+
+    /**
+     * Meta class for 'date' property <br/>
+     * The meta class exposes some useful methods: <ul>
+     *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+     *    <li>encodeField: extract the current property value from the given TestEntityWithCustomConstructor instance and encode to CQL java compatible type </li>
+     *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+     * </ul>
+     */
+    @SuppressWarnings({"serial", "unchecked"})
+    public static final SimpleProperty<TestEntityWithCustomConstructor, Date, Date> date = new SimpleProperty<TestEntityWithCustomConstructor, Date, Date>(new FieldInfo<>((TestEntityWithCustomConstructor entity$) -> entity$.getDate(), (TestEntityWithCustomConstructor entity$, Date value$) -> {}, "date", "date", ColumnType.CLUSTERING, new ClusteringColumnInfo(1, false, ClusteringOrder.ASC), IndexInfo.noIndex()), DataType.timestamp(), gettableData$ -> gettableData$.get("date", java.util.Date.class), (settableData$, value$) -> settableData$.set("date", value$, java.util.Date.class), new TypeToken<Date>(){}, new TypeToken<Date>(){}, new FallThroughCodec<>(Date.class));
+
+    /**
+     * Meta class for 'value' property <br/>
+     * The meta class exposes some useful methods: <ul>
+     *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li>
+     *    <li>encodeField: extract the current property value from the given TestEntityWithCustomConstructor instance and encode to CQL java compatible type </li>
+     *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li>
+     * </ul>
+     */
+    @SuppressWarnings({"serial", "unchecked"})
+    public static final SimpleProperty<TestEntityWithCustomConstructor, Double, Double> value = new SimpleProperty<TestEntityWithCustomConstructor, Double, Double>(new FieldInfo<>((TestEntityWithCustomConstructor entity$) -> entity$.getValue(), (TestEntityWithCustomConstructor entity$, Double value$) -> {}, "value", "value", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), DataType.cdouble(), gettableData$ -> gettableData$.get("value", java.lang.Double.class), (settableData$, value$) -> settableData$.set("value", value$, java.lang.Double.class), new TypeToken<Double>(){}, new TypeToken<Double>(){}, new FallThroughCodec<>(Double.class));
+
+    /**
+     * Static class to expose "TestEntityWithCustomConstructor_AchillesMeta" fields for <strong>type-safe</strong> function calls */
+    public static final CodeCompilationTester.ColumnsForFunctions COLUMNS = new CodeCompilationTester.ColumnsForFunctions();
+
+    @Override
+    protected Class<TestEntityWithCustomConstructor> getEntityClass() {
+        return TestEntityWithCustomConstructor.class;
+    }
+
+    @Override
+    protected String getDerivedTableOrViewName() {
+        return "testentitywithcustomconstructor";
+    }
+
+    @Override
+    protected BiMap<String, String> fieldNameToCqlColumn() {
+        BiMap<String,String> map = HashBiMap.create(3);
+        map.put("id", "id");
+        map.put("date", "date");
+        map.put("value", "value");
+        return map;
+    }
+
+    @Override
+    protected Optional<ConsistencyLevel> getStaticReadConsistency() {
+        return Optional.empty();
+    }
+
+    @Override
+    protected Optional<InternalNamingStrategy> getStaticNamingStrategy() {
+        return Optional.empty();
+    }
+
+    @Override
+    protected List<AbstractProperty<TestEntityWithCustomConstructor, ?, ?>> getPartitionKeys() {
+        return Arrays.asList(id);
+    }
+
+    @Override
+    protected List<AbstractProperty<TestEntityWithCustomConstructor, ?, ?>> getClusteringColumns() {
+        return Arrays.asList(date);
+    }
+
+    @Override
+    protected List<AbstractProperty<TestEntityWithCustomConstructor, ?, ?>> getNormalColumns() {
+        return Arrays.asList(value);
+    }
+
+    @Override
+    protected List<AbstractProperty<TestEntityWithCustomConstructor, ?, ?>> getComputedColumns() {
+        return Arrays.asList();
+    }
+
+    @Override
+    protected List<AbstractProperty<TestEntityWithCustomConstructor, ?, ?>> getConstructorInjectedColumns() {
+        return Arrays.asList(id,date,value);
+    }
+
+    @Override
+    protected boolean isCounterTable() {
+        return false;
+    }
+
+    @Override
+    protected Optional<String> getStaticKeyspace() {
+        return Optional.empty();
+    }
+
+    @Override
+    protected Optional<String> getStaticTableOrViewName() {
+        return Optional.empty();
+    }
+
+    @Override
+    protected Optional<ConsistencyLevel> getStaticWriteConsistency() {
+        return Optional.empty();
+    }
+
+    @Override
+    protected Optional<ConsistencyLevel> getStaticSerialConsistency() {
+        return Optional.empty();
+    }
+
+    @Override
+    protected Optional<Integer> getStaticTTL() {
+        return Optional.empty();
+    }
+
+    @Override
+    protected Optional<InsertStrategy> getStaticInsertStrategy() {
+        return Optional.empty();
+    }
+
+    @Override
+    protected List<AbstractProperty<TestEntityWithCustomConstructor, ?, ?>> getStaticColumns() {
+        return Arrays.asList();
+    }
+
+    @Override
+    protected List<AbstractProperty<TestEntityWithCustomConstructor, ?, ?>> getCounterColumns() {
+        return Arrays.asList();
+    }
+
+    @Override
+    protected TestEntityWithCustomConstructor newInstanceFromCustomConstructor(final Row row, List<String> cqlColumns) {
+        final long id_value = id.decodeFromGettable(row);
+        final Date date_value = date.decodeFromGettable(row);
+        final Double value_value = value.decodeFromGettable(row);
+        return new TestEntityWithCustomConstructor(id_value,date_value,value_value);
+    }
+
+    /**
+     * Utility class to expose all fields with their CQL type for function call */
+    public static final class ColumnsForFunctions {
 
 
-    /** * Meta class for 'jdkInstant' property <br/> * The meta class exposes some useful methods: <ul> *    <li>encodeFromJava: encode a property from raw Java to CQL java compatible type </li> *    <li>encodeField: extract the current property value from the given info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs instance and encode to CQL java compatible type </li> *    <li>decodeFromGettable: decode from a {@link com.datastax.driver.core.GettableData} instance (Row, UDTValue, TupleValue) the current property</li> * </ul> */
-    @java.lang.SuppressWarnings("serial")
-    public static final SimpleProperty<TestEntityForCodecs, java.time.Instant, java.time.Instant> jdkInstant =
-    new SimpleProperty<>(
-        new FieldInfo<>((TestEntityForCodecs entity$) -> entity$.getJdkInstant(),
-            (TestEntityForCodecs entity$, java.time.Instant value$) -> entity$.setJdkInstant(value$),
-            "jdkInstant", "jdk_instant", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()),
-        DataType.timestamp(), gettableData$ -> gettableData$.get("jdk_instant", java.time.Instant.class),
-        (settableData$, value$) -> settableData$.set("jdk_instant", value$, java.time.Instant.class),
-        new TypeToken<java.time.Instant>(){}, new TypeToken<java.time.Instant>(){},
-        new FallThroughCodec<>(java.time.Instant.class));
-
-    public static final JdkOptionalProperty<TestEntityForCodecs, ProtocolVersion, java.lang.String> optionalProtocolVersion =
-    new JdkOptionalProperty<>(new FieldInfo<>((TestEntityForCodecs entity$) -> entity$.getOptionalProtocolVersion(),
-    (TestEntityForCodecs entity$, java.util.Optional<ProtocolVersion> value$) -> entity$.setOptionalProtocolVersion(value$),
-    "optionalProtocolVersion", "optional_protocol_version", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()),
-    new SimpleProperty<>(FieldInfo.<TestEntityForCodecs, ProtocolVersion> of("optionalProtocolVersion", "optional_protocol_version"),
-    DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new com.google.common.reflect.TypeToken<ProtocolVersion>(){}, new com.google.common.reflect.TypeToken<java.lang.String>(){}, new info.archinnov.achilles.internals.codec.EnumNameCodec<>(java.util.Arrays.asList(ProtocolVersion.values()), ProtocolVersion.class)));
-
-
+    }
 }

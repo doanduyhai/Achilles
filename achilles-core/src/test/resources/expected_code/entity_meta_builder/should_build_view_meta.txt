@@ -3,6 +3,7 @@ package info.archinnov.achilles.generated;
 import com.datastax.driver.core.ClusteringOrder;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.Row;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
@@ -31,6 +32,7 @@ import java.lang.Long;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
+import java.lang.UnsupportedOperationException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -42,7 +44,7 @@ import java.util.Optional;
  * <ul>
  *    <li>determining runtime consistency levels (read/write,serial)<li/>
  *    <li>trigger event interceptors (if any)<li/>
- *    <li>map a com.datastax.driver.core.Row back to an instance of TestViewSensorByType<li/>
+ *    <li>map a Row back to an instance of TestViewSensorByType<li/>
  *    <li>determine runtime keyspace name using static annotations and runtime SchemaNameProvider (if any)<li/>
  *    <li>determine runtime table name using static annotations and runtime SchemaNameProvider (if any)<li/>
  *    <li>generate schema during bootstrap<li/>
@@ -152,6 +154,11 @@ public final class TestViewSensorByType_AchillesMeta extends AbstractViewPropert
   }
 
   @Override
+  protected List<AbstractProperty<TestViewSensorByType, ?, ?>> getConstructorInjectedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
   protected Optional<String> getStaticKeyspace() {
     return Optional.empty();
   }
@@ -164,6 +171,11 @@ public final class TestViewSensorByType_AchillesMeta extends AbstractViewPropert
   @Override
   public Class<?> getBaseEntityClass() {
     return TestEntitySensor.class;
+  }
+
+  @Override
+  protected TestViewSensorByType newInstanceFromCustomConstructor(final Row row, final List<String> cqlColumns) {
+    throw new UnsupportedOperationException("Cannot instantiate entity 'info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorByType' using custom constructor because no custom constructor (@EntityCreator) is defined");
   }
 
   /**

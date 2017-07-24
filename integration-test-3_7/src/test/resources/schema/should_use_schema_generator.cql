@@ -25,6 +25,12 @@ CREATE TYPE IF NOT EXISTS test.my_type(
 CREATE TYPE IF NOT EXISTS test.udt_collections_primitive(
 		listint list<int>,
 		setdouble set<double>);
+CREATE TYPE IF NOT EXISTS test.custom_constructor_declared_fields_udt(
+		idx bigint,
+		value text);
+CREATE TYPE IF NOT EXISTS test.custom_constructor_udt(
+		idx bigint,
+		value text);
 CREATE TYPE IF NOT EXISTS test.having_nested_type(
 		value text,
 		udtlist list<frozen<test.no_ks>>,
@@ -189,6 +195,18 @@ CREATE TABLE IF NOT EXISTS test.entity_composite_pk(
 CREATE TABLE IF NOT EXISTS test.entity_counter(
 		id bigint,
 		count counter,
+		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.custom_constructor_declared_fields(
+		id bigint,
+		name text,
+		udt frozen<test.custom_constructor_declared_fields_udt>,
+		value double,
+		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.entity_custom_constructor(
+		id bigint,
+		name text,
+		udt frozen<test.custom_constructor_udt>,
+		value double,
 		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.entitywithimplicitfieldparsing(
 		id bigint,

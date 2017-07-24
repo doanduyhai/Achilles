@@ -21,6 +21,7 @@ import static com.datastax.driver.core.ClusteringOrder.DESC;
 import static info.archinnov.achilles.internals.apt.AptUtils.*;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -39,6 +40,7 @@ import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.annotations.SASI.Analyzer;
 import info.archinnov.achilles.annotations.SASI.IndexMode;
 import info.archinnov.achilles.annotations.SASI.Normalization;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.metamodel.columns.*;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
@@ -64,8 +66,10 @@ public class FieldInfoParser {
                 .map(x -> x.value().isEmpty() ? null : x.value())
                 .orElseGet(() -> context.namingStrategy.apply(fieldName));
 
-        final ExecutableElement getter = aptUtils.findGetter(classElm, elm, deriveGetterName(elm));
-        final ExecutableElement setter = aptUtils.findSetter(classElm, elm, deriveSetterName(elm));
+        final Optional<AccessorsExclusionContext> optionalAccessorExclusion = context.accessorsExclusionContexts
+                .stream()
+                .filter(x -> x.fieldName.equals(fieldName))
+                .findFirst();
 
         final Tuple2<CodeBlock, ColumnType> columnTypeCode = buildColumnType(context.globalContext, elm, fieldName, rawEntityClass);
         final Tuple2<CodeBlock, ColumnInfo> columnInfoCode = buildColumnInfo(context.globalContext, annotationTree, elm, fieldName, rawEntityClass);
@@ -82,13 +86,39 @@ public class FieldInfoParser {
             indexInfoCode = buildNativeIndexInfo(annotationTree, elm, context);
         }
 
-        CodeBlock getterLambda = CodeBlock.builder()
-                .add("($T entity$$) -> entity$$.$L()", rawEntityClass, getter.getSimpleName().toString())
-                .build();
+        final CodeBlock getterLambda;
+        final CodeBlock setterLambda;
 
-        CodeBlock setterLambda = CodeBlock.builder()
-                .add("($T entity$$, $T value$$) -> entity$$.$L(value$$)", rawEntityClass, currentType, setter.getSimpleName().toString())
-                .build();
+        if (optionalAccessorExclusion.isPresent()) {
+            final AccessorsExclusionContext exclusionContext = optionalAccessorExclusion.get();
+
+            // Right now we always have getters, until Immutable entities is implemented
+            final ExecutableElement getter = aptUtils.findGetter(classElm, elm, deriveGetterName(elm));
+            getterLambda = CodeBlock.builder()
+                    .add("($T entity$$) -> entity$$.$L()", rawEntityClass, getter.getSimpleName().toString())
+                    .build();
+
+            if (exclusionContext.noSetter) {
+                setterLambda = CodeBlock.builder()
+                        .add("($T entity$$, $T value$$) -> {}", rawEntityClass, currentType)
+                        .build();
+            } else {
+                throw new AchillesBeanMappingException(format("AccessorsExclusionContext for for entity '%s' but the setter is present", context.className));
+            }
+
+        } else {
+
+            final ExecutableElement getter = aptUtils.findGetter(classElm, elm, deriveGetterName(elm));
+            final ExecutableElement setter = aptUtils.findSetter(classElm, elm, deriveSetterName(elm));
+
+            getterLambda = CodeBlock.builder()
+                    .add("($T entity$$) -> entity$$.$L()", rawEntityClass, getter.getSimpleName().toString())
+                    .build();
+
+            setterLambda = CodeBlock.builder()
+                    .add("($T entity$$, $T value$$) -> entity$$.$L(value$$)", rawEntityClass, currentType, setter.getSimpleName().toString())
+                    .build();
+        }
 
         return new FieldInfoContext(CodeBlock.builder()
                 .add("new $T<>($L, $L, $S, $S, $L, $L, $L)", FIELD_INFO, getterLambda, setterLambda,

@@ -19,8 +19,10 @@ package info.archinnov.achilles.internals.parser.validator.cassandra3_0;
 import static info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer.getTypeParsingResults;
 import static info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType.TABLE;
 import static info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType.VIEW;
+import static java.util.Collections.emptyList;
 
 import java.util.Arrays;
+import java.util.Collections;
 import javax.lang.model.element.TypeElement;
 
 import org.junit.Test;
@@ -50,8 +52,8 @@ public class BeanValidator3_0Test extends AbstractTestProcessor {
             final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorByType.class.getCanonicalName());
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
-            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context), emptyList());
+            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context), emptyList());
 
             beanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
         });
@@ -65,8 +67,8 @@ public class BeanValidator3_0Test extends AbstractTestProcessor {
             final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorByType.class.getCanonicalName());
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
-            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context), emptyList());
+            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context), emptyList());
 
             beanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
         });
@@ -80,8 +82,8 @@ public class BeanValidator3_0Test extends AbstractTestProcessor {
             final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorByType.class.getCanonicalName());
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
-            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context), emptyList());
+            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context), emptyList());
 
             beanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
         });
@@ -95,8 +97,8 @@ public class BeanValidator3_0Test extends AbstractTestProcessor {
             final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorWithColumnNotMatchBase.class.getCanonicalName());
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
-            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context), emptyList());
+            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context), emptyList());
 
             beanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
         });
@@ -110,8 +112,8 @@ public class BeanValidator3_0Test extends AbstractTestProcessor {
             final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorWithMissingPK.class.getCanonicalName());
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
-            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context), emptyList());
+            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context), emptyList());
 
             beanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
         });
@@ -125,8 +127,8 @@ public class BeanValidator3_0Test extends AbstractTestProcessor {
             final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorWithMissingCollection.class.getCanonicalName());
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
-            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context), emptyList());
+            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context), emptyList());
 
             beanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
         });
@@ -140,8 +142,8 @@ public class BeanValidator3_0Test extends AbstractTestProcessor {
             final TypeElement typeElementView = aptUtils.elementUtils.getTypeElement(TestViewSensorWithMultipleNonPK.class.getCanonicalName());
 
             final EntityMetaCodeGen builder = new EntityMetaCodeGen(aptUtils);
-            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context));
-            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context));
+            final EntityMetaCodeGen.EntityMetaSignature baseSignature = builder.buildEntityMeta(TABLE, typeElementBase, context, getTypeParsingResults(aptUtils, typeElementBase, context), emptyList());
+            final EntityMetaCodeGen.EntityMetaSignature viewSignature = builder.buildEntityMeta(VIEW, typeElementView, context, getTypeParsingResults(aptUtils, typeElementView, context), emptyList());
 
             beanValidator.validateViewsAgainstBaseTable(aptUtils, Arrays.asList(viewSignature), Arrays.asList(baseSignature));
         });
