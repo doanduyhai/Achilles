@@ -17,19 +17,13 @@
 package info.archinnov.achilles.embedded;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
-@RunWith(MockitoJUnitRunner.class)
 public class CassandraEmbeddedServerBuilderTest {
 
     @Test

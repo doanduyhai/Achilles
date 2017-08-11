@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.codegen.index;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -25,27 +24,21 @@ import javax.lang.model.element.TypeElement;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.squareup.javapoet.JavaFile;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.cassandra_version.V2_1;
-import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_1.SelectDSLCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.index.cassandra2_1.IndexSelectDSLCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.EntityParser;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.dsl.index.TestEntityWithIndexAndUDT;
-import info.archinnov.achilles.internals.sample_classes.dsl.select.TestEntityWithUDTAsClustering;
 import info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter;
 import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 
-@RunWith(MockitoJUnitRunner.class)
 public class IndexSelectDSLCodeGenTest extends AbstractTestProcessor {
 
   @Test

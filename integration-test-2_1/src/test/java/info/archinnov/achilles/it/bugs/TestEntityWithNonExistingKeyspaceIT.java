@@ -24,8 +24,6 @@ import static java.lang.String.format;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Cluster;
 
@@ -34,7 +32,6 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.internals.entities.EntityWithNonExistingKeyspace;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestEntityWithNonExistingKeyspaceIT {
 
     @Rule

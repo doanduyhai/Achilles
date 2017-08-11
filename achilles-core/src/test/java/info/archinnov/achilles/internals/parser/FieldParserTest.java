@@ -35,7 +35,6 @@ import javax.lang.model.element.VariableElement;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.truth0.Truth;
 
 import com.datastax.driver.core.UDTValue;
@@ -62,7 +61,6 @@ import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FieldParserTest extends AbstractTestProcessor {
 
     private static final String TUPLE_VALUE_CLASSNAME = "com.datastax.driver.core.TupleValue";

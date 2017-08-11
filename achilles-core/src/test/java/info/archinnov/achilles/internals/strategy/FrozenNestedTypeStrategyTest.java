@@ -22,8 +22,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
@@ -34,7 +32,6 @@ import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes;
 import info.archinnov.achilles.internals.parser.validator.cassandra2_1.NestedTypeValidator2_1;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
 
     GlobalParsingContext globalParsingContext = GlobalParsingContext.defaultContext();

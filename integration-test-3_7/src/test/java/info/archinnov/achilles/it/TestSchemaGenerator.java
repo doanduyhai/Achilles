@@ -19,8 +19,6 @@ package info.archinnov.achilles.it;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ProtocolVersion;
@@ -32,7 +30,6 @@ import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.schema.SchemaGenerator;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestSchemaGenerator extends AbstractTestUtil {
 
     private SchemaContext context = new SchemaContext("my_ks", false, false);

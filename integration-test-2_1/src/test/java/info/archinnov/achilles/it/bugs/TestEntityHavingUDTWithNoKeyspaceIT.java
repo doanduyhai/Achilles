@@ -19,8 +19,6 @@ package info.archinnov.achilles.it.bugs;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Cluster;
 
@@ -28,7 +26,6 @@ import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.internals.entities.EntityWithNestedUDT;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestEntityHavingUDTWithNoKeyspaceIT {
 
     @Test

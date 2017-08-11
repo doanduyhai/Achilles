@@ -32,8 +32,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ExecutionInfo;
@@ -59,7 +57,6 @@ import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestCRUDSimpleEntity {
 
     @Rule

@@ -24,8 +24,6 @@ import javax.lang.model.element.TypeElement;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.squareup.javapoet.JavaFile;
 
@@ -41,7 +39,6 @@ import info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter;
 import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ManagerCodeGenTest extends AbstractTestProcessor {
 
 

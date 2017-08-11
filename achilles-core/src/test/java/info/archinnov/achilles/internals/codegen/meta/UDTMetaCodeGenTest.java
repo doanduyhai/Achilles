@@ -26,15 +26,12 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.TypeElement;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer;
-import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.AccessorsExclusionContext;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
@@ -43,7 +40,6 @@ import info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestUDTWithCustomConstructor;
 import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 
-@RunWith(MockitoJUnitRunner.class)
 public class UDTMetaCodeGenTest extends AbstractTestProcessor
         implements TypeParsingResultConsumer {
 

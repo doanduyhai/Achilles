@@ -34,26 +34,16 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.*;
 import com.google.common.collect.ImmutableMap;
 
 import info.archinnov.achilles.annotations.Enumerated;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.generated.ManagerFactory;
-import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_2_2;
 import info.archinnov.achilles.generated.ManagerFactory_For_IT_2_2;
-import info.archinnov.achilles.generated.function.FunctionsRegistry;
 import info.archinnov.achilles.generated.function.SystemFunctions;
 import info.archinnov.achilles.generated.manager.EntityForJSONCall_Manager;
-import info.archinnov.achilles.generated.manager.EntityWithComplexTypes_Manager;
-import info.archinnov.achilles.generated.manager.SimpleEntity_Manager;
 import info.archinnov.achilles.generated.meta.entity.EntityForJSONCall_AchillesMeta;
-import info.archinnov.achilles.generated.meta.entity.EntityWithComplexTypes_AchillesMeta;
-import info.archinnov.achilles.generated.meta.entity.SimpleEntity_AchillesMeta;
 import info.archinnov.achilles.internals.codecs.EncodingOrdinalCodec;
 import info.archinnov.achilles.internals.codecs.ProtocolVersionCodec;
 import info.archinnov.achilles.internals.entities.EntityForJSONCall;
@@ -66,9 +56,7 @@ import info.archinnov.achilles.script.ScriptExecutor;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener;
-import info.archinnov.achilles.type.tuples.Tuple3;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestJSONCall {
 
     @Rule

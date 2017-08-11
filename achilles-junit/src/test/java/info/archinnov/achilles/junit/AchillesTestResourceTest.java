@@ -21,18 +21,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
 import info.archinnov.achilles.internals.runtime.AbstractManagerFactory;
 
-@RunWith(MockitoJUnitRunner.class)
 public class AchillesTestResourceTest {
 
     private String randomKeyspace = RandomStringUtils.randomAlphabetic(20).toLowerCase();
+
     @Rule
     public AchillesTestResource<AbstractManagerFactory> resource = AchillesTestResourceBuilder
             .forJunit()

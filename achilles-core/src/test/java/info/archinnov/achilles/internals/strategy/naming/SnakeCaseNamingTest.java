@@ -19,10 +19,7 @@ package info.archinnov.achilles.internals.strategy.naming;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
 public class SnakeCaseNamingTest {
 
     private InternalNamingStrategy strategy = new SnakeCaseNaming();

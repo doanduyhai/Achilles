@@ -25,8 +25,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -43,7 +41,6 @@ import info.archinnov.achilles.script.ScriptExecutor;
 import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener.LWTResult;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestEntityWithStaticColumn {
 
     @Rule

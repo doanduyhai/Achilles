@@ -19,20 +19,15 @@ package info.archinnov.achilles.internals.parser.validator;
 import javax.lang.model.element.TypeElement;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
-import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.parser.validator.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class BeanValidatorTest extends AbstractTestProcessor {
 
-    private GlobalParsingContext context = GlobalParsingContext.defaultContext();
     private BeanValidator beanValidator = new BeanValidator() {};
 
 

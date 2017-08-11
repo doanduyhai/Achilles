@@ -24,8 +24,6 @@ import java.util.Arrays;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.*;
 import com.google.common.collect.Sets;
@@ -38,7 +36,6 @@ import info.archinnov.achilles.internals.entities.UDTWithCollectionsPrimitive;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestNotUsePrimitiveArrayCodecs {
 
     @Rule

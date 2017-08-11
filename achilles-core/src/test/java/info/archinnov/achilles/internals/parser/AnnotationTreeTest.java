@@ -29,8 +29,6 @@ import javax.tools.Diagnostic;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.truth0.Truth;
 
 import com.google.testing.compile.JavaSourceSubjectFactory;
@@ -47,7 +45,6 @@ import info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple3;
 
-@RunWith(MockitoJUnitRunner.class)
 public class AnnotationTreeTest extends AbstractTestProcessor {
 
     private GlobalParsingContext globalParsingContext = GlobalParsingContext.defaultContext();

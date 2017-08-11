@@ -22,21 +22,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.UDTValue;
 
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.manager.EntityLayer1_Manager;
-import info.archinnov.achilles.generated.meta.entity.EntityLayer1_AchillesMeta;
 import info.archinnov.achilles.internals.entities.*;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.type.TypedMap;
 
-@RunWith(MockitoJUnitRunner.class)
 public class MultiLayerNestingIT {
 
     @Rule

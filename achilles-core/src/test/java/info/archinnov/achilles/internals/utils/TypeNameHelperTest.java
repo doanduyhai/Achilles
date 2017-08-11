@@ -22,13 +22,10 @@ import static org.assertj.core.api.Assertions.*;
 import java.math.BigDecimal;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.LocalDate;
 import com.squareup.javapoet.TypeName;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TypeNameHelperTest {
 
     @Test

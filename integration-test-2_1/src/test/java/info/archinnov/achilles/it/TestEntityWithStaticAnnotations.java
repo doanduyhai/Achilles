@@ -23,13 +23,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
@@ -43,7 +39,6 @@ import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestEntityWithStaticAnnotations {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestEntityWithStaticAnnotations.class);

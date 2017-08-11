@@ -24,8 +24,6 @@ import javax.lang.model.element.TypeElement;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.truth0.Truth;
 
 import com.google.testing.compile.JavaSourceSubjectFactory;
@@ -40,7 +38,6 @@ import info.archinnov.achilles.internals.sample_classes.functions.*;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FunctionParserTest extends AbstractTestProcessor {
 
     private final GlobalParsingContext context = GlobalParsingContext.defaultContext();

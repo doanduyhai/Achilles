@@ -19,20 +19,16 @@ package info.archinnov.achilles.it.bugs;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Cluster;
 
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.internals.entities.EntityWithMissingPartitionKey;
 import info.archinnov.achilles.internals.entities.EntityWithMissingClustering;
 import info.archinnov.achilles.internals.entities.EntityWithMissingStaticCol;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ValidateSchemaIT {
 
     @Rule

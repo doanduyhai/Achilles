@@ -24,8 +24,6 @@ import javax.tools.Diagnostic;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.truth0.Truth;
 
 import com.google.testing.compile.JavaSourceSubjectFactory;
@@ -39,7 +37,6 @@ import info.archinnov.achilles.internals.sample_classes.parser.entity.*;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForAnnotationTree;
 import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorByType;
 
-@RunWith(MockitoJUnitRunner.class)
 public class EntityParserTest extends AbstractTestProcessor {
 
     private final GlobalParsingContext globalParsingContext = GlobalParsingContext.defaultContext();

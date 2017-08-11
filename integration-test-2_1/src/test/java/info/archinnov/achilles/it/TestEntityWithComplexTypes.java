@@ -32,8 +32,6 @@ import java.util.*;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.utils.UUIDs;
@@ -59,7 +57,6 @@ import info.archinnov.achilles.type.tuples.Tuple1;
 import info.archinnov.achilles.type.tuples.Tuple2;
 import info.archinnov.achilles.type.tuples.Tuple3;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestEntityWithComplexTypes {
 
     @Rule

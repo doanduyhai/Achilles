@@ -24,8 +24,6 @@ import java.util.Date;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.google.common.collect.ImmutableMap;
@@ -42,7 +40,6 @@ import info.archinnov.achilles.it.utils.CassandraLogAsserter;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ConsistencyLevelOrderingIT {
 
     @Rule

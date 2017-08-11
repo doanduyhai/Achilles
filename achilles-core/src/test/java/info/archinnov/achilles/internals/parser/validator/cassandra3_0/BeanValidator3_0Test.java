@@ -22,12 +22,9 @@ import static info.archinnov.achilles.internals.metamodel.AbstractEntityProperty
 import static java.util.Collections.emptyList;
 
 import java.util.Arrays;
-import java.util.Collections;
 import javax.lang.model.element.TypeElement;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
@@ -39,7 +36,6 @@ import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntity
 import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithCompositePartitionKey;
 import info.archinnov.achilles.internals.sample_classes.parser.view.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class BeanValidator3_0Test extends AbstractTestProcessor {
 
     private GlobalParsingContext context = GlobalParsingContext.defaultContext();
