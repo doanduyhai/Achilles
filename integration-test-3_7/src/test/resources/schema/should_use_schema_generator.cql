@@ -292,6 +292,12 @@ CREATE TABLE IF NOT EXISTS it_3_6.non_frozen_udt(
 		nonfrozen it_3_6.non_frozen_udt,
 		value text,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.entity_primitive_clustering(
+		partition bigint,
+		clustering boolean,
+		value text,
+		PRIMARY KEY(partition, clustering))
+	WITH CLUSTERING ORDER BY(clustering ASC);
 CREATE TABLE IF NOT EXISTS it_3_7.entity_with_sasi_indices(
 		id bigint,
 		clust int,

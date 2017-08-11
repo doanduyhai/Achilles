@@ -71,8 +71,10 @@ public interface BaseSingleColumnRestriction {
 
         if (paramTypeName.isPrimitive()) {
             builder.addStatement("final $T varargs = $T.<Object>asList(($T[])$L)", LIST_OBJECT, ARRAYS, paramTypeName, param)
-                    .addStatement("final $T encodedVarargs = $T.stream(($T[])$L).mapToObj(x -> meta.$L.encodeFromJava(x, $T.of(cassandraOptions))).collect($T.toList())",
-                            LIST_OBJECT, ARRAYS, paramTypeName, param, param, OPTIONAL, COLLECTORS);
+                    .addStatement("final $T encodedVarargs = new $T<>($L.length);", LIST_OBJECT, ARRAY_LIST, param)
+                    .beginControlFlow("for($T $L_element : $L)", paramTypeName, param, param)
+                        .addStatement("encodedVarargs.add(meta.$L.encodeFromJava($L_element, $T.of(cassandraOptions)))", param, param, OPTIONAL)
+                    .endControlFlow();
         } else {
             builder.addStatement("final $T varargs = $T.<Object>asList((Object[])$L)", LIST_OBJECT, ARRAYS, param)
                     .addStatement("final $T encodedVarargs = $T.<$T>stream(($T[])$L).map(x -> meta.$L.encodeFromJava(x, $T.of(cassandraOptions))).collect($T.toList())",
