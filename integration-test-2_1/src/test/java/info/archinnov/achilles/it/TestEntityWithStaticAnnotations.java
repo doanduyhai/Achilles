@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.google.common.collect.ImmutableMap;
 
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
@@ -37,7 +36,6 @@ import info.archinnov.achilles.internals.entities.EntityWithStaticAnnotations;
 import info.archinnov.achilles.it.utils.CassandraLogAsserter;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
-import info.archinnov.achilles.script.ScriptExecutor;
 
 public class TestEntityWithStaticAnnotations {
 
@@ -58,22 +56,28 @@ public class TestEntityWithStaticAnnotations {
                     .build());
 
     private Session session = resource.getNativeSession();
-    private ScriptExecutor scriptExecutor = resource.getScriptExecutor();
     private EntityWithStaticAnnotations_Manager manager = resource.getManagerFactory().forEntityWithStaticAnnotations();
 
     @Test
-    public void should_insert_using_static_strategy_an_consistency_level() throws Exception {
+    public void should_insert_using_static_insert_strategy_and_consistency_level() throws Exception {
         //Given
         final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
-        scriptExecutor.executeScriptTemplate("EntityWithStaticAnnotations/insert_single_row.cql", ImmutableMap.of("id", id));
-        final EntityWithStaticAnnotations entity = new EntityWithStaticAnnotations(id, "new_val", null);
+        final EntityWithStaticAnnotations entity = new EntityWithStaticAnnotations(id, "val", "overriden_val");
+
+        manager
+                .crud()
+                .insert(entity)
+                .usingTimeToLive(1000)
+                .execute();
+
+        final EntityWithStaticAnnotations newEntity = new EntityWithStaticAnnotations(id, "new_val", null);
         final CassandraLogAsserter logAsserter = new CassandraLogAsserter();
         logAsserter.prepareLogLevelForDriverConnection();
 
         //When
         manager
                 .crud()
-                .insert(entity)
+                .insert(newEntity)
                 .usingTimeToLive(1000)
                 .execute();
 
@@ -82,6 +86,10 @@ public class TestEntityWithStaticAnnotations {
 
         assertThat(actual).isNotNull();
         assertThat(actual.getString("value")).isEqualTo("new_val");
+        /*
+         *  Since the InsertStrategy is NOT NULL FIELDS, the value of "overRiden" is "overriden_val" as
+         *  it was inserted previously. The new "null" value is not taken into account.
+         */
         assertThat(actual.getString("\"overRiden\"")).isEqualTo("overriden_val");
 
         logAsserter.assertConsistencyLevels(LOCAL_ONE);
@@ -144,10 +152,16 @@ public class TestEntityWithStaticAnnotations {
     public void should_find_using_static_consistency() throws Exception {
         //Given
         final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
-        scriptExecutor.executeScriptTemplate("EntityWithStaticAnnotations/insert_single_row.cql", ImmutableMap.of("id", id));
+        final EntityWithStaticAnnotations entity = new EntityWithStaticAnnotations(id, "new_val", "overriden_val");
+        manager
+                .crud()
+                .insert(entity)
+                .usingTimeToLive(1000)
+                .execute();
 
         final CassandraLogAsserter logAsserter = new CassandraLogAsserter();
         logAsserter.prepareLogLevelForDriverConnection();
+
 
         //When
         final EntityWithStaticAnnotations actual = manager
