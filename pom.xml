@@ -117,7 +117,6 @@
         <fest.util.version>1.2.3</fest.util.version>
         <junit.version>4.10</junit.version>
         <mockito.version>1.9.5</mockito.version>
-        <powermock.version>1.5</powermock.version>
 
         <jmh.version>1.1.1</jmh.version>
         <compile-testing.version>0.7</compile-testing.version>
@@ -418,6 +417,12 @@
                 <version>${fasterxml.jackson.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>${felix.version}</version>
+            </dependency>
+
             <!-- Embedded server & JUnit rule -->
             <dependency>
                 <groupId>junit</groupId>
@@ -443,27 +448,27 @@
                 <artifactId>logback-core</artifactId>
                 <version>${logback.version}</version>
             </dependency>
+
+            <!--TEST-->
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj-core.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.powermock</groupId>
                 <artifactId>powermock-api-mockito</artifactId>
                 <version>${powermock.version}</version>
+                <scope>test</scope>
             </dependency>
 
-            <dependency>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>${felix.version}</version>
-            </dependency>
 
         </dependencies>
     </dependencyManagement>
@@ -495,11 +500,6 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
