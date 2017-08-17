@@ -20,10 +20,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 import java.util.*;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.util.ElementFilter;
 
 import org.apache.commons.collections.map.HashedMap;
@@ -31,11 +28,13 @@ import org.apache.commons.collections.map.HashedMap;
 import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.annotations.EntityCreator;
+import info.archinnov.achilles.annotations.Immutable;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
+import info.archinnov.achilles.internals.parser.context.ConstructorInfo;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 public abstract class BeanValidator {
@@ -70,19 +69,64 @@ public abstract class BeanValidator {
         aptUtils.validateFalse(modifiers.contains(Modifier.ABSTRACT), "Bean type '%s' should not be abstract", name);
     }
 
-    public void validateConstructor(AptUtils aptUtils, TypeName typeName, TypeElement typeElement) {
+    public ConstructorInfo validateConstructor(AptUtils aptUtils, TypeName typeName, TypeElement typeElement) {
+
+        final Optional<Immutable> immutable = aptUtils.getAnnotationOnClass(typeElement, Immutable.class);
+
+        final long customConstructorCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
+                .stream()
+                .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
+                .filter(x -> x.getParameters().size() > 0) // multi arg(s) constructor
+                .count();
+
         final long defaultConstructorCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
                 .stream()
                 .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
                 .filter(x -> x.getParameters().size() == 0) //No arg constructor
                 .count();
 
-        final long customConstructorCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
+        final long entityCreatorConstructorCount = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
                 .stream()
                 .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
+                .filter(x -> x.getParameters().size() > 0) // multi arg(s) constructor
                 .filter(x -> x.getAnnotation(EntityCreator.class) != null) //has @EntityCreator annotation
                 .count();
-        aptUtils.validateTrue(defaultConstructorCount == 1 || customConstructorCount == 1, "Bean type '%s' should have either a public no-args constructor or ONE custom constructor with annotation @EntityCreator", typeName);
+
+
+        aptUtils.validateTrue((immutable.isPresent() && customConstructorCount == 1 && defaultConstructorCount == 0) ||
+                (entityCreatorConstructorCount == 1) ||
+                (defaultConstructorCount == 1), "Entity type '%s' should:\n\t" +
+                "1. either be annotated with @Immutable, have NO default constructor and EXACTLY 1 custom constructor\n\t" +
+                "2. or have EXACTLY 1 custom constructor annotated with @EntityCreator and optionally one default constructor and multiple other custom constructors\n\t" +
+                "3. or have EXACTLY 1 default constructor and one or more custom constructor(s) (nominal scenario)\n", typeName);
+
+        if(immutable.isPresent() && customConstructorCount == 1 && defaultConstructorCount == 0) {
+            final ExecutableElement constructor = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
+                    .stream()
+                    .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
+                    .filter(x -> x.getParameters().size() > 0) // multi arg(s) constructor
+                    .findFirst().get();
+            return ConstructorInfo.immutable(constructor);
+        } else if (entityCreatorConstructorCount == 1) {
+            final ExecutableElement constructor = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
+                    .stream()
+                    .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
+                    .filter(x -> x.getParameters().size() > 0) // multi arg(s) constructor
+                    .filter(x -> x.getAnnotation(EntityCreator.class) != null) //has @EntityCreator annotation
+                    .findFirst().get();
+
+            return ConstructorInfo.entityCreator(constructor);
+        } else if (defaultConstructorCount == 1) {
+            final ExecutableElement constructor = ElementFilter.constructorsIn(typeElement.getEnclosedElements())
+                    .stream()
+                    .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
+                    .filter(x -> x.getParameters().size() == 0) //No arg constructor
+                    .findFirst().get();
+            return ConstructorInfo.defaultConstructor(constructor);
+        } else {
+            aptUtils.printError("Cannot determine appropriate constructor type for entity type '%s'", typeName);
+            throw new IllegalStateException(format("Cannot determine appropriate constructor type for entity type '%s'", typeElement));
+        }
     }
 
     public void validateNoDuplicateNames(AptUtils aptUtils, TypeName rawClassType, List<FieldMetaSignature> parsingResults) {

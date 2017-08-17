@@ -31,7 +31,6 @@ import com.squareup.javapoet.TypeName;
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.metamodel.columns.KeyColumnInfo;
-import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.*;
 import info.archinnov.achilles.type.tuples.Tuple2;

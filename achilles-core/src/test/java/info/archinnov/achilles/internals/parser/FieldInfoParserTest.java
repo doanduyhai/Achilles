@@ -771,6 +771,29 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
     }
 
     @Test
+    public void should_generate_field_info_for_public_final_columns() throws Exception {
+        setExec(aptUtils -> {
+            final FieldInfoParser parser = new FieldInfoParser(aptUtils);
+            final String className = TestEntityForFieldInfo.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final List<AccessorsExclusionContext> exclusionContexts = Arrays.asList(new AccessorsExclusionContext("immutableColumn", true, true));
+            final EntityParsingContext context = new EntityParsingContext(typeElement,
+                    ClassName.get(TestEntityForFieldInfo.class), strategy, exclusionContexts,
+                    globalParsingContext);
+
+            VariableElement elm = findFieldInType(typeElement, "immutableColumn");
+
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
+
+            FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
+
+            assertThat(fieldInfo.codeBlock.toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/method_parser/should_generate_field_info_for_public_final_columns.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
     public void should_fail_compilation_when_no_getter() throws Exception {
         setExec(aptUtils -> {
             FieldInfoParser parser = new FieldInfoParser(aptUtils);

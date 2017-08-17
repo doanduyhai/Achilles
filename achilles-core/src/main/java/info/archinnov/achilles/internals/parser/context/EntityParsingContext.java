@@ -54,10 +54,6 @@ public class EntityParsingContext {
         this.className = entityType.toString();
     }
 
-    public boolean hasCodecFor(TypeName typeName) {
-        return globalContext.hasCodecFor(typeName);
-    }
-
     public CodecFactory.CodecInfo getCodecFor(TypeName typeName) {
         return globalContext.getCodecFor(typeName);
     }

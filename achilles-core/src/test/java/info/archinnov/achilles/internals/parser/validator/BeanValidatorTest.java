@@ -16,14 +16,20 @@
 
 package info.archinnov.achilles.internals.parser.validator;
 
+import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.ENTITY_CREATOR;
+import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.IMMUTABLE;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import javax.lang.model.element.TypeElement;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
+import info.archinnov.achilles.internals.parser.context.ConstructorInfo;
 import info.archinnov.achilles.internals.sample_classes.parser.validator.*;
 
 public class BeanValidatorTest extends AbstractTestProcessor {
@@ -59,7 +65,7 @@ public class BeanValidatorTest extends AbstractTestProcessor {
             final TypeName typeName = ClassName.get(TestEntityWithNoPublicConstructor.class);
             beanValidator.validateConstructor(aptUtils, typeName, typeElement);
         });
-        failTestWithMessage("Bean type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithNoPublicConstructor' should have either a public no-args constructor or ONE custom constructor with annotation @EntityCreator", TestEntityWithNoPublicConstructor.class);
+        failTestWithMessage("Entity type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithNoPublicConstructor'", TestEntityWithNoPublicConstructor.class);
     }
 
     @Test
@@ -69,6 +75,32 @@ public class BeanValidatorTest extends AbstractTestProcessor {
             final TypeName typeName = ClassName.get(TestEntityWithTwoCustomConstructors.class);
             beanValidator.validateConstructor(aptUtils, typeName, typeElement);
         });
-        failTestWithMessage("Bean type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithTwoCustomConstructors' should have either a public no-args constructor or ONE custom constructor with annotation @EntityCreator", TestEntityWithTwoCustomConstructors.class);
+        failTestWithMessage("Entity type 'info.archinnov.achilles.internals.sample_classes.parser.validator.TestEntityWithTwoCustomConstructors' should", TestEntityWithTwoCustomConstructors.class);
+    }
+
+    @Test
+    public void should_validate_immutable_entity() throws Exception {
+        setExec(aptUtils -> {
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestImmutableEntity.class.getCanonicalName());
+            final TypeName typeName = ClassName.get(TestImmutableEntity.class);
+            final ConstructorInfo constructorInfo = beanValidator.validateConstructor(aptUtils, typeName, typeElement);
+
+            assertThat(constructorInfo).isNotNull();
+            assertThat(constructorInfo.type).isSameAs(IMMUTABLE);
+        });
+        launchTest();
+    }
+
+    @Test
+    public void should_validate_entity_with_EntityCreator_constructor() throws Exception {
+        setExec(aptUtils -> {
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithEntityCreatorConstructor.class.getCanonicalName());
+            final TypeName typeName = ClassName.get(TestEntityWithEntityCreatorConstructor.class);
+            final ConstructorInfo constructorInfo = beanValidator.validateConstructor(aptUtils, typeName, typeElement);
+
+            assertThat(constructorInfo).isNotNull();
+            assertThat(constructorInfo.type).isSameAs(ENTITY_CREATOR);
+        });
+        launchTest();
     }
 }

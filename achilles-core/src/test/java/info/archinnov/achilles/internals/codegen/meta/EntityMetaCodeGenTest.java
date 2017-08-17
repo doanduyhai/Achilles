@@ -347,8 +347,7 @@ public class EntityMetaCodeGenTest extends AbstractTestProcessor
             builder.buildEntityMeta(EntityType.TABLE, typeElement, context, parsingResults, emptyList());
         });
         failTestWithMessage(
-                "Bean type 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithNoPublicConstructor' " +
-                        "should have either a public no-args constructor or ONE custom constructor with annotation @EntityCreator",
+                "Entity type 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithNoPublicConstructor' should",
                 TestEntityWithNoPublicConstructor.class);
     }
 

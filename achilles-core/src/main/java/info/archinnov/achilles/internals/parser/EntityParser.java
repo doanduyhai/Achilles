@@ -44,7 +44,8 @@ public class EntityParser extends AbstractBeanParser {
         final List<AccessorsExclusionContext> accessorsExclusionContexts = prebuildAccessorsExclusion(elm, globalParsingContext);
         final List<FieldMetaSignature> fieldMetaSignatures = parseFields(elm, fieldParser, accessorsExclusionContexts, globalParsingContext);
         final List<FieldMetaSignature> customConstructorFieldMetaSignatures =
-                parseCustomConstructor(elm.getSimpleName().toString(), elm, fieldMetaSignatures);
+                parseAndValidateCustomConstructor(globalParsingContext.beanValidator(),
+                        elm.getSimpleName().toString(), elm, fieldMetaSignatures);
         return entityMetaCodeGen.buildEntityMeta(EntityType.TABLE, elm, globalParsingContext,
                 fieldMetaSignatures, customConstructorFieldMetaSignatures);
     }
@@ -54,7 +55,8 @@ public class EntityParser extends AbstractBeanParser {
         final List<AccessorsExclusionContext> accessorsExclusionContexts = prebuildAccessorsExclusion(elm, globalParsingContext);
         final List<FieldMetaSignature> fieldMetaSignatures = parseFields(elm, fieldParser, accessorsExclusionContexts, globalParsingContext);
         final List<FieldMetaSignature> customConstructorFieldMetaSignatures =
-                parseCustomConstructor(elm.getSimpleName().toString(), elm, fieldMetaSignatures);
+                parseAndValidateCustomConstructor(globalParsingContext.beanValidator(),
+                        elm.getSimpleName().toString(), elm, fieldMetaSignatures);
         return entityMetaCodeGen.buildEntityMeta(EntityType.VIEW, elm, globalParsingContext,
                 fieldMetaSignatures, customConstructorFieldMetaSignatures);
     }

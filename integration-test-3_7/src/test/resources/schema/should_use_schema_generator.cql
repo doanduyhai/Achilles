@@ -1,6 +1,9 @@
 CREATE TYPE IF NOT EXISTS test.adress_udt(
 		street text,
 		number int);
+CREATE TYPE IF NOT EXISTS test.immutable_udt(
+		idx bigint,
+		value text);
 CREATE TYPE IF NOT EXISTS test.layer2(
 		layer text,
 		layer3 frozen<test.layer3>);
@@ -365,6 +368,12 @@ CREATE TABLE IF NOT EXISTS test.entity_with_udts(
 		optionaludt test.udt_no_ks,
 		setudt set<frozen<test.udt_no_ks>>,
 		tupleudt frozen<tuple<int, udt_no_ks>>,
+		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS test.immutable_entity(
+		id bigint,
+		name text,
+		udt frozen<test.immutable_udt>,
+		value double,
 		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.multi_clustering_entity(
 		id bigint,

@@ -34,7 +34,9 @@ import info.archinnov.achilles.internals.apt_utils.AptAssertOK;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.parser.entity.*;
+import info.archinnov.achilles.internals.sample_classes.parser.entity.TestImmutableEntity;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForAnnotationTree;
+import info.archinnov.achilles.internals.sample_classes.parser.validator.*;
 import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorByType;
 
 public class EntityParserTest extends AbstractTestProcessor {
@@ -92,6 +94,31 @@ public class EntityParserTest extends AbstractTestProcessor {
     }
 
     @Test
+    public void should_generate_meta_signature_for_immutable_entity_javac() throws Exception {
+        //Given
+        AptAssertOK exec = aptUtils -> {
+            try {
+                final EntityParser parser = new EntityParser(aptUtils);
+                final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestImmutableEntity.class.getCanonicalName());
+                final EntityMetaCodeGen.EntityMetaSignature metaSignature = parser.parseEntity(typeElement, globalParsingContext);
+
+                assertThat(metaSignature).isNotNull();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
+            }
+        };
+
+        setExec(exec);
+
+        Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
+                .that(Arrays.asList(loadClass(TestImmutableUDT.class), loadClass(TestImmutableEntity.class)))
+                .processedWith(this)
+                .compilesWithoutError();
+
+    }
+
+    @Test
     public void should_fail_because_no_matching_field_name_for_constructor_param_javac() throws Exception {
         //Given
         AptAssertOK exec = aptUtils -> {
@@ -130,6 +157,25 @@ public class EntityParserTest extends AbstractTestProcessor {
     }
 
     @Test
+    public void should_fail_because_no_matching_field_name_for_immutable_constructor_param_javac() throws Exception {
+        //Given
+        AptAssertOK exec = aptUtils -> {
+            try {
+                final EntityParser parser = new EntityParser(aptUtils);
+                final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestImmutableEntityWithNoMatchingFieldForParamInConstructor.class.getCanonicalName());
+                parser.parseEntity(typeElement, globalParsingContext);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
+            }
+        };
+
+        setExec(exec);
+
+        failTestWithMessage("Cannot find matching field name for parameter 'partitionKey' of constructor on @Immutable entity 'TestImmutableEntityWithNoMatchingFieldForParamInConstructor'");
+    }
+
+    @Test
     public void should_fail_because_incorrect_field_type_for_constructor_param_javac() throws Exception {
         //Given
         AptAssertOK exec = aptUtils -> {
@@ -165,6 +211,40 @@ public class EntityParserTest extends AbstractTestProcessor {
         setExec(exec);
 
         failTestWithMessage("The type of declared parameter 'value' on @EntityCreator annotation of entity 'TestEntityWithWrongDeclaredParamTypeInConstructor' is wrong, it should be 'java.lang.String'");
+    }
+
+    @Test
+    public void should_fail_because_incorrect_field_type_for_immutable_constructor_param_javac() throws Exception {
+        //Given
+        setExec(aptUtils -> {
+            try {
+                final EntityParser parser = new EntityParser(aptUtils);
+                final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestImmutableEntityWithWrongParamTypeInConstructor.class.getCanonicalName());
+                parser.parseEntity(typeElement, globalParsingContext);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
+            }
+        });
+
+        failTestWithMessage("The type of parameter 'partition' of constructor on @Immutable entity 'TestImmutableEntityWithWrongParamTypeInConstructor' is wrong, it should be 'java.lang.Long'");
+    }
+
+    @Test
+    public void should_fail_because_not_public_final_field_type_for_immutable_constructor_param_javac() throws Exception {
+        //Given
+        setExec(aptUtils -> {
+            try {
+                final EntityParser parser = new EntityParser(aptUtils);
+                final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestImmutableEntityWithNonPublicFinalField.class.getCanonicalName());
+                parser.parseEntity(typeElement, globalParsingContext);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
+            }
+        });
+
+        failTestWithMessage("Field 'partition' in entity 'TestImmutableEntityWithNonPublicFinalField' should have 'public final' modifier because it is an @Immutable entity");
     }
 
     @Test

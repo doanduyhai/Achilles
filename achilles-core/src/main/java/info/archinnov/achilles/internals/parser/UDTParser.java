@@ -62,7 +62,8 @@ public class UDTParser extends AbstractBeanParser {
                     accessorsExclusionContexts, globalContext);
 
             final List<FieldMetaSignature> customConstructorFieldMetaSignatures =
-                    parseCustomConstructor(rawUdtTypeName.toString(), typeElement, fieldMetaSignatures);
+                    parseAndValidateCustomConstructor(globalContext.beanValidator(),
+                            rawUdtTypeName.toString(), typeElement, fieldMetaSignatures);
 
             TypeSpec udtClassPropertyCode = udtMetaCodeGen.buildUDTClassProperty(typeElement, context.entityContext,
                     fieldMetaSignatures, customConstructorFieldMetaSignatures);

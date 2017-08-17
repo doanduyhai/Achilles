@@ -149,6 +149,16 @@ public class TestEntityForFieldInfo {
     @Column
     private String columnWithNoSetter;
 
+    @Column
+    public final String immutableColumn;
+
+    public TestEntityForFieldInfo() {
+        this.immutableColumn = null;
+    }
+
+    public TestEntityForFieldInfo(String immutableColumn) {
+        this.immutableColumn = immutableColumn;
+    }
 
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;

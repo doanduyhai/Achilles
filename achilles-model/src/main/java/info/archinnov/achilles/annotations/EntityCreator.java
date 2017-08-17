@@ -20,14 +20,14 @@ import java.lang.annotation.*;
 
 /**
  * Define the custom constructor to be use to instantiate the entity. There should be maximum
- * one non-default constructor annotated with @EntityModel.
+ * one non-default constructor annotated with @EntityCreator.
  * <br/>
  * <br/>
  * All the parameters of this custom constructor should:
  *
  * <ul>
  *     <li>1. have the same name as an existing mapped field</li>
- *     <li>2. have the same Java type as an existing mapped field (for primitive types, we rely on autoboxing so you can use 'Long' or 'long' for example, it does not matter</li>
+ *     <li>2. have the same Java type as an existing mapped field (for primitive types, we rely on autoboxing so you can use 'Long' or 'long' for example, it does not matter)</li>
  * </ul>
  * <em>Please note that it is not mandatory to inject all mapped-fields in your custom constructor, some fields cat be set using setter or just let be null</em>
  * <br/>
@@ -106,7 +106,7 @@ import java.lang.annotation.*;
  * }
  * </code></pre>
  *
- * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#entitycreator" target="_blank">@ASCII</a>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#entitycreator" target="_blank">@EntityCreator</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value=ElementType.CONSTRUCTOR)

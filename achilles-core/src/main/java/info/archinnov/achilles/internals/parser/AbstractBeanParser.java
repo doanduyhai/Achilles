@@ -17,6 +17,9 @@
 package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
+import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.DEFAULT;
+import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.ENTITY_CREATOR;
+import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.IMMUTABLE;
 import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
 import static info.archinnov.achilles.validation.Validator.validateBeanMappingTrue;
 import static java.util.stream.Collectors.toList;
@@ -25,7 +28,6 @@ import static org.apache.commons.lang3.ArrayUtils.isEmpty;
 
 import java.util.*;
 import java.util.stream.Stream;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -38,8 +40,10 @@ import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.context.AccessorsExclusionContext;
+import info.archinnov.achilles.internals.parser.context.ConstructorInfo;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
+import info.archinnov.achilles.internals.parser.validator.BeanValidator;
 import info.archinnov.achilles.internals.strategy.field_filtering.FieldFilter;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 
@@ -71,23 +75,47 @@ public abstract class AbstractBeanParser {
                 .filter(fieldFilter);
     }
 
-    public List<FieldMetaSignature> parseCustomConstructor(String entityClass, TypeElement elm, List<FieldMetaSignature> fieldMetaSignatures) {
+    public List<FieldMetaSignature> parseAndValidateCustomConstructor(BeanValidator beanValidator, String entityClass, TypeElement elm, List<FieldMetaSignature> fieldMetaSignatures) {
 
         final List<String> fieldNames = fieldMetaSignatures.stream().map(x -> x.context.fieldName).collect(toList());
         final Map<String, FieldMetaSignature> fieldMetaByFieldName = fieldMetaSignatures.stream().collect(toMap(x -> x.context.fieldName, x -> x));
 
-        final Optional<ExecutableElement> customConstructorOptional = ElementFilter.constructorsIn(elm.getEnclosedElements())
-                .stream()
-                .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
-                .filter(x -> x.getAnnotation(EntityCreator.class) != null)
-                .findFirst();
+        final TypeName rawClassTypeName = getRawType(TypeName.get(elm.asType()));
+        final ConstructorInfo constructorInfo = beanValidator.validateConstructor(aptUtils, rawClassTypeName, elm);
 
-        if (!customConstructorOptional.isPresent()) {
-            return Collections.emptyList();
-        } else {
-            final ExecutableElement customConstructor = customConstructorOptional.get();
-            final List<? extends VariableElement> parameters = customConstructor.getParameters();
-            final EntityCreator annotation = customConstructor.getAnnotation(EntityCreator.class);
+        if (constructorInfo.type == IMMUTABLE) {
+            final List<? extends VariableElement> parameters = constructorInfo.constructor.getParameters();
+            for (VariableElement param : parameters) {
+                final String paramName = param.getSimpleName().toString();
+                final TypeName paramBoxedType = TypeName.get(param.asType()).box();
+
+                aptUtils.validateTrue(fieldNames.contains(paramName),
+                        "Cannot find matching field name for parameter '%s' of constructor on @Immutable entity '%s'",
+                        paramName, entityClass);
+                final TypeName boxedSourceType = fieldMetaByFieldName.get(paramName).sourceType.box();
+                aptUtils.validateTrue(boxedSourceType.equals(paramBoxedType),
+                        "The type of parameter '%s' of constructor on @Immutable entity '%s' is wrong, it should be '%s'",
+                        paramName, entityClass, boxedSourceType.toString());
+
+                final VariableElement matchingField = ElementFilter.fieldsIn(aptUtils.elementUtils.getAllMembers(elm))
+                        .stream()
+                        .filter(element -> element.getSimpleName().toString().equals(paramName))
+                        .findFirst()
+                        .get();
+                final Set<Modifier> modifiers = matchingField.getModifiers();
+                aptUtils.validateTrue(modifiers.contains(Modifier.PUBLIC) && modifiers.contains(Modifier.FINAL),
+                        "Field '%s' in entity '%s' should have 'public final' modifier because it is an @Immutable entity", paramName, entityClass);
+            }
+
+            return parameters
+                    .stream()
+                    .map(param -> fieldMetaByFieldName.get(param.getSimpleName().toString()))
+                    .collect(toList());
+
+        } else if (constructorInfo.type == ENTITY_CREATOR) {
+
+            final List<? extends VariableElement> parameters = constructorInfo.constructor.getParameters();
+            final EntityCreator annotation = constructorInfo.constructor.getAnnotation(EntityCreator.class);
 
             if (isEmpty(annotation.value())) {
 
@@ -95,11 +123,11 @@ public abstract class AbstractBeanParser {
                     final String paramName = param.getSimpleName().toString();
                     final TypeName paramBoxedType = TypeName.get(param.asType()).box();
 
-                    validateBeanMappingTrue(fieldNames.contains(paramName),
+                    aptUtils.validateTrue(fieldNames.contains(paramName),
                             "Cannot find matching field name for parameter '%s' of @EntityCreator constructor on entity '%s'",
                             paramName, entityClass);
                     final TypeName sourceType = fieldMetaByFieldName.get(paramName).sourceType.box();
-                    validateBeanMappingTrue(sourceType.equals(paramBoxedType),
+                    aptUtils.validateTrue(sourceType.equals(paramBoxedType),
                             "The type of parameter '%s' of @EntityCreator constructor on entity '%s' is wrong, it should be '%s'",
                             paramName, entityClass, sourceType.toString());
                 }
@@ -113,21 +141,21 @@ public abstract class AbstractBeanParser {
 
                 final List<String> matchingFieldNames = Arrays.asList(annotation.value());
 
-                validateBeanMappingTrue(matchingFieldNames.size() == parameters.size(),
+                aptUtils.validateTrue(matchingFieldNames.size() == parameters.size(),
                         "There should be '%s' declared field name in the @EntityCreator annotation for the entity '%s'",
                         parameters.size(), entityClass);
 
-                for(int i=0; i< parameters.size(); i++) {
+                for (int i = 0; i < parameters.size(); i++) {
                     final TypeName parameterBoxedType = TypeName.get(parameters.get(i).asType()).box();
                     final String matchingFieldName = matchingFieldNames.get(i);
 
-                    validateBeanMappingTrue(fieldNames.contains(matchingFieldName),
+                    aptUtils.validateTrue(fieldNames.contains(matchingFieldName),
                             "Cannot find matching field name for declared field '%s' on @EntityCreator annotation on entity '%s'",
                             matchingFieldName, entityClass);
 
                     final TypeName sourceType = fieldMetaByFieldName.get(matchingFieldName).sourceType.box();
 
-                    validateBeanMappingTrue(sourceType.equals(parameterBoxedType),
+                    aptUtils.validateTrue(sourceType.equals(parameterBoxedType),
                             "The type of declared parameter '%s' on @EntityCreator annotation of entity '%s' is wrong, it should be '%s'",
                             matchingFieldName, entityClass, sourceType.toString());
                 }
@@ -137,6 +165,8 @@ public abstract class AbstractBeanParser {
                         .map(fieldName -> fieldMetaByFieldName.get(fieldName))
                         .collect(toList());
             }
+        } else {
+            return Collections.emptyList();
         }
     }
 
@@ -144,20 +174,13 @@ public abstract class AbstractBeanParser {
 
         final TypeName rawClassTypeName = getRawType(TypeName.get(elm.asType()));
 
-        context.beanValidator().validateConstructor(aptUtils, rawClassTypeName, elm);
+        final ConstructorInfo constructorInfo = context.beanValidator().validateConstructor(aptUtils, rawClassTypeName, elm);
 
-        final Optional<ExecutableElement> customConstructorOptional = ElementFilter.constructorsIn(elm.getEnclosedElements())
-                .stream()
-                .filter(x -> x.getModifiers().contains(Modifier.PUBLIC)) // public constructor
-                .filter(x -> x.getAnnotation(EntityCreator.class) != null)
-                .findFirst();
-
-        if (!customConstructorOptional.isPresent()) {
+        if (constructorInfo.type == DEFAULT) {
             return Collections.emptyList();
-        } else {
-            final ExecutableElement customConstructor = customConstructorOptional.get();
-            final List<? extends VariableElement> parameters = customConstructor.getParameters();
-            final EntityCreator annotation = customConstructor.getAnnotation(EntityCreator.class);
+        } else if (constructorInfo.type == ENTITY_CREATOR) {
+            final List<? extends VariableElement> parameters = constructorInfo.constructor.getParameters();
+            final EntityCreator annotation = constructorInfo.constructor.getAnnotation(EntityCreator.class);
 
             if (isEmpty(annotation.value())) {
                 return parameters
@@ -170,6 +193,14 @@ public abstract class AbstractBeanParser {
                         .map(fieldName -> new AccessorsExclusionContext(fieldName, false, true))
                         .collect(toList());
             }
+        }
+        // (constructorInfo.type == IMMUTABLE)
+        else {
+            final List<? extends VariableElement> parameters = constructorInfo.constructor.getParameters();
+            return parameters
+                    .stream()
+                    .map(param -> new AccessorsExclusionContext(param.getSimpleName().toString(), true, true))
+                    .collect(toList());
         }
     }
 

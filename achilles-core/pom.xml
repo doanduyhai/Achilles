@@ -175,6 +175,7 @@
                                     <directory>src/test/java</directory>
                                     <includes>
                                         <include>**/TestEntity*.java</include>
+                                        <include>**/TestImmutable*.java</include>
                                         <include>**/TestView*.java</include>
                                         <include>**/TestUDT*.java</include>
                                         <include>**/TestCodecRegistry*.java</include>
