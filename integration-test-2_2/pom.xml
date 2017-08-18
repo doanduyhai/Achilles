@@ -64,6 +64,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.2</version>
                 <configuration>
+                    <annotationProcessors>
+                        <annotationProcessor>info.archinnov.achilles.internals.apt.processors.meta.AchillesProcessor</annotationProcessor>
+                    </annotationProcessors>
                     <debug>false</debug>
                     <verbose>false</verbose>
                     <useIncrementalCompilation>false</useIncrementalCompilation>
