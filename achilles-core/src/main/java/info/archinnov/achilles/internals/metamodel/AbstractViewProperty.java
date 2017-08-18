@@ -22,7 +22,10 @@ import static info.archinnov.achilles.internals.statements.PreparedStatementGene
 import static info.archinnov.achilles.validation.Validator.validateNotNull;
 import static java.lang.String.format;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +38,6 @@ import com.datastax.driver.core.Session;
 import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
-import info.archinnov.achilles.internals.injectable.*;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.schema.SchemaContext;
 import info.archinnov.achilles.internals.schema.SchemaCreator;
@@ -43,7 +45,6 @@ import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
 import info.archinnov.achilles.type.interceptor.Event;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
-import info.archinnov.achilles.type.tuples.Tuple3;
 import info.archinnov.achilles.validation.Validator;
 
 public abstract class AbstractViewProperty<T> extends AbstractEntityProperty<T> {

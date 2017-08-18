@@ -32,11 +32,11 @@ import com.datastax.driver.core.*;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import info.archinnov.achilles.internals.cache.CacheKey;
-import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.AsyncAware;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForSelect;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;

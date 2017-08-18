@@ -16,8 +16,6 @@
 
 package info.archinnov.achilles.type.codec;
 
-import java.util.Map;
-
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 
 /**

@@ -28,11 +28,8 @@ import info.archinnov.achilles.annotations.DSE_Search;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.internals.apt.AptUtils;
-import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
-import info.archinnov.achilles.internals.parser.context.DSESearchInfoContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 
 public class FieldValidator2_1 extends FieldValidator {

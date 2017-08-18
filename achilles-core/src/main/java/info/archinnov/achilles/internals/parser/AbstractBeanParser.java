@@ -17,9 +17,7 @@
 package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
-import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.DEFAULT;
-import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.ENTITY_CREATOR;
-import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.IMMUTABLE;
+import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.*;
 import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;

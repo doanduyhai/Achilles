@@ -17,12 +17,12 @@ package com.datastax.driver.core;
 
 import java.util.*;
 
-import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.exceptions.DriverInternalError;
 import com.datastax.driver.core.utils.Bytes;
+import com.google.common.collect.ImmutableMap;
 
 /*
  * Helps transforming Cassandra types (as read in the schema tables) to

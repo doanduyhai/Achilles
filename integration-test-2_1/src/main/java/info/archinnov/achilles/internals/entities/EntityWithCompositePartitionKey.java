@@ -19,8 +19,8 @@ package info.archinnov.achilles.internals.entities;
 import java.util.UUID;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.Table;
 
 @Table(table = "entity_composite_pk")
 public class EntityWithCompositePartitionKey {

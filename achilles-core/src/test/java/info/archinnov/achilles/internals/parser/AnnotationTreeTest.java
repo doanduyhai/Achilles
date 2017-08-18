@@ -36,7 +36,6 @@ import com.squareup.javapoet.ClassName;
 
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
-import info.archinnov.achilles.internals.apt_utils.AptAssertOK;
 import info.archinnov.achilles.internals.parser.context.CodecContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec;

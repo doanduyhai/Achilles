@@ -17,7 +17,7 @@
 package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import javax.lang.model.element.TypeElement;

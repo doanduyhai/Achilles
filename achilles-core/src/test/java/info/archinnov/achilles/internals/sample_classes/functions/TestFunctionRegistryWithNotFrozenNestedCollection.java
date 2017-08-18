@@ -16,9 +16,10 @@
 
 package info.archinnov.achilles.internals.sample_classes.functions;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
-import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.annotations.FunctionRegistry;
 
 @FunctionRegistry
 public interface TestFunctionRegistryWithNotFrozenNestedCollection {

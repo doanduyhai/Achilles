@@ -16,15 +16,15 @@
 
 package info.archinnov.achilles.internals.codegen.meta;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.COLUMNS_FOR_FUNCTIONS_CLASS;
-import static info.archinnov.achilles.internals.parser.TypeUtils.OPTIONAL;
-import static info.archinnov.achilles.internals.parser.TypeUtils.OVERRIDE_ANNOTATION;
+import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import java.util.List;
-
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;

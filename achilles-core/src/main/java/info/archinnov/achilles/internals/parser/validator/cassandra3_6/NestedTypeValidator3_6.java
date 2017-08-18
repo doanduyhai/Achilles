@@ -18,7 +18,7 @@ package info.archinnov.achilles.internals.parser.validator.cassandra3_6;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
 import static info.archinnov.achilles.internals.apt.AptUtils.getShortname;
-import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 
 import java.util.List;
 import java.util.Map;

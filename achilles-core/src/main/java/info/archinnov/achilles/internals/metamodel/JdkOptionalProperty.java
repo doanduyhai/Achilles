@@ -25,7 +25,10 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.GettableData;
+import com.datastax.driver.core.SettableData;
+import com.datastax.driver.core.UDTValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;

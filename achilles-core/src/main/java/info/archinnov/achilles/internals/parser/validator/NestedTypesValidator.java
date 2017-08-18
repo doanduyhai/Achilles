@@ -23,7 +23,9 @@ import javax.lang.model.type.TypeMirror;
 
 import com.squareup.javapoet.TypeName;
 
-import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.annotations.Frozen;
+import info.archinnov.achilles.annotations.Index;
+import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;

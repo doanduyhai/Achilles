@@ -16,12 +16,14 @@
 
 package info.archinnov.achilles.script;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.atIndex;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.google.common.base.Joiner;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -30,8 +32,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScriptExecutorTest {

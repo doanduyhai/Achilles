@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 

@@ -22,6 +22,7 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.UUID;
 
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.LocalDate;

@@ -30,13 +30,10 @@ import com.google.testing.compile.JavaSourceSubjectFactory;
 import com.google.testing.compile.JavaSourcesSubjectFactory;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
-import info.archinnov.achilles.internals.apt_utils.AptAssertOK;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.parser.entity.*;
-import info.archinnov.achilles.internals.sample_classes.parser.entity.TestImmutableEntity;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForAnnotationTree;
-import info.archinnov.achilles.internals.sample_classes.parser.validator.*;
 import info.archinnov.achilles.internals.sample_classes.parser.view.TestViewSensorByType;
 
 public class EntityParserTest extends AbstractTestProcessor {

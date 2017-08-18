@@ -18,8 +18,6 @@ package info.archinnov.achilles.internals.codegen.dsl;
 
 import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.TypeUtils.ARRAYS;
-import static info.archinnov.achilles.internals.parser.TypeUtils.COLLECTORS;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 import static java.util.stream.Collectors.toList;
 
@@ -29,8 +27,7 @@ import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ClassSignatureInfo;
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
+import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 
 public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRestriction {
 

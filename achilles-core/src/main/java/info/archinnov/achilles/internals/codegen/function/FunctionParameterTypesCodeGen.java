@@ -23,12 +23,10 @@ import static java.lang.String.format;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.context.FunctionsContext;
 import info.archinnov.achilles.internals.utils.TypeNameHelper;
 

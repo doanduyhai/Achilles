@@ -20,16 +20,12 @@ import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
+import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.context.DSESearchInfoContext;
 

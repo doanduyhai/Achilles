@@ -42,7 +42,6 @@ import info.archinnov.achilles.internals.injectable.InjectUserAndTupleTypeFactor
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
-
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;

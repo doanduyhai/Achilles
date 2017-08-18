@@ -26,8 +26,8 @@ import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.internals.parser.context.FunctionSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
+import info.archinnov.achilles.internals.parser.context.FunctionSignature;
 
 public abstract class FunctionsRegistryCodeGen {
 

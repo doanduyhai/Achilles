@@ -19,7 +19,6 @@ package info.archinnov.achilles.it;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;

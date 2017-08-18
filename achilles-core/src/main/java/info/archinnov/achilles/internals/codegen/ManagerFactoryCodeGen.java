@@ -30,11 +30,10 @@ import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.ManagerCodeGen.ManagerAndDSLClasses;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
-import info.archinnov.achilles.internals.parser.context.FunctionSignature.FunctionParamSignature;
-import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.parser.context.FunctionsContext;
 import info.archinnov.achilles.internals.parser.context.FunctionSignature;
-import info.archinnov.achilles.internals.utils.NamingHelper;
+import info.archinnov.achilles.internals.parser.context.FunctionSignature.FunctionParamSignature;
+import info.archinnov.achilles.internals.parser.context.FunctionsContext;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
 public class ManagerFactoryCodeGen {
 

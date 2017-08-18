@@ -16,9 +16,7 @@
 
 package info.archinnov.achilles.internals.cassandra_version;
 
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.JSON;
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDF_UDA;
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDT;
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.*;
 
 import java.util.Set;
 

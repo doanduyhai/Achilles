@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_2;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_SELECT_WHERE_JSON;
 
 import java.util.List;
 import java.util.Optional;

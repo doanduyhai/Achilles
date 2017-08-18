@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
 
-
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_2_2;
 import info.archinnov.achilles.generated.ManagerFactory_For_IT_2_2;
 import info.archinnov.achilles.generated.manager.EntityWithIndicesForJSON_Manager;

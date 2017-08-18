@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 

@@ -17,9 +17,7 @@
 package info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2;
 
 import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.dsl.JSONFunctionCallSupport;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;

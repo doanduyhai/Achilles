@@ -30,16 +30,11 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
 
-import info.archinnov.achilles.generated.ManagerFactory;
-import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_2_2;
 import info.archinnov.achilles.generated.ManagerFactory_For_IT_2_2;
 import info.archinnov.achilles.generated.manager.EntityWithNoKeyspaceUDT_Manager;
-import info.archinnov.achilles.generated.manager.EntityWithUDTForDynamicKeyspace_Manager;
 import info.archinnov.achilles.internals.entities.EntityWithNoKeyspaceUDT;
-import info.archinnov.achilles.internals.entities.EntityWithUDTForDynamicKeyspace;
 import info.archinnov.achilles.internals.entities.NoKeyspaceUDT;
-import info.archinnov.achilles.internals.entities.UDTWithNoKeyspace;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;

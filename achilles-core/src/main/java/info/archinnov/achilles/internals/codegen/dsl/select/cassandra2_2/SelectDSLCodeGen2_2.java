@@ -16,9 +16,7 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_2;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.DSL_PACKAGE;
-import static info.archinnov.achilles.internals.parser.TypeUtils.SELECT_DOT_WHERE;
-import static info.archinnov.achilles.internals.parser.TypeUtils.FROM_JSON_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;

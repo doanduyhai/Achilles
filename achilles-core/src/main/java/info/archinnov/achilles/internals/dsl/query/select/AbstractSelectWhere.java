@@ -30,12 +30,12 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Select;
 
-import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
+import info.archinnov.achilles.internals.dsl.TypedMapAware;
 import info.archinnov.achilles.internals.dsl.action.SelectAction;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForSelect;
-import info.archinnov.achilles.internals.dsl.TypedMapAware;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;

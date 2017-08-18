@@ -16,9 +16,7 @@
 
 package info.archinnov.achilles.internals.sample_classes.parser.field;
 
-import static info.archinnov.achilles.annotations.SASI.Analyzer.NON_TOKENIZING_ANALYZER;
-import static info.archinnov.achilles.annotations.SASI.Analyzer.NO_OP_ANALYZER;
-import static info.archinnov.achilles.annotations.SASI.Analyzer.STANDARD_ANALYZER;
+import static info.archinnov.achilles.annotations.SASI.Analyzer.*;
 import static info.archinnov.achilles.annotations.SASI.IndexMode.PREFIX;
 import static info.archinnov.achilles.annotations.SASI.IndexMode.SPARSE;
 import static info.archinnov.achilles.annotations.SASI.Normalization.LOWERCASE;

@@ -26,8 +26,6 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 
-import info.archinnov.achilles.internals.parser.TypeUtils;
-
 public class TypeNameHelper {
 
     public static String asString(TypeName type) throws IllegalStateException {

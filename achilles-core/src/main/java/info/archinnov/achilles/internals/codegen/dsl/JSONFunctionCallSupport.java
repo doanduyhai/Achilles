@@ -19,7 +19,6 @@ package info.archinnov.achilles.internals.codegen.dsl;
 import static com.squareup.javapoet.TypeName.BOOLEAN;
 import static com.squareup.javapoet.TypeName.OBJECT;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.TypeUtils.LIST;
 
 import javax.lang.model.element.Modifier;
 

@@ -16,7 +16,8 @@
 
 package info.archinnov.achilles.internals.dsl.crud;
 
-import static info.archinnov.achilles.internals.cache.CacheKey.Operation.*;
+import static info.archinnov.achilles.internals.cache.CacheKey.Operation.INSERT_IF_NOT_EXISTS_JSON;
+import static info.archinnov.achilles.internals.cache.CacheKey.Operation.INSERT_JSON;
 import static info.archinnov.achilles.internals.dsl.LWTHelper.triggerLWTListeners;
 import static java.lang.String.format;
 

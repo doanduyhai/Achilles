@@ -48,8 +48,6 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacElements;
 
-import info.archinnov.achilles.annotations.CodecRegistry;
-import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internals.parser.AnnotationTree;

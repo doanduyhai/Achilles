@@ -18,9 +18,11 @@ package info.archinnov.achilles.internals.sample_classes.parser.field;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.EntityCreator;
+import info.archinnov.achilles.annotations.Frozen;
+import info.archinnov.achilles.annotations.UDT;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 
 @APUnitTest

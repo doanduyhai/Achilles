@@ -21,7 +21,6 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
 import javax.annotation.processing.RoundEnvironment;
 
 import com.google.auto.common.MoreElements;

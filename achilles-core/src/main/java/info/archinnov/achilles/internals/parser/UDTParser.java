@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
-import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import java.util.List;

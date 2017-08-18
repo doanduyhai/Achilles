@@ -17,8 +17,8 @@
 package info.archinnov.achilles.internals.entities;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.Table;
 
 @Table(keyspace = "non_existing", table = "test_table")
 public class EntityWithNonExistingKeyspace {

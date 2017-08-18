@@ -18,13 +18,10 @@ package info.archinnov.achilles.internals.sample_classes.parser.strategy;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.UDTValue;
 
-import info.archinnov.achilles.annotations.Enumerated;
 import info.archinnov.achilles.annotations.Frozen;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;

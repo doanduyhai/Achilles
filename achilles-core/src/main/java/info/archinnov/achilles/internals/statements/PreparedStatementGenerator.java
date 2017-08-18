@@ -39,7 +39,6 @@ import info.archinnov.achilles.internals.metamodel.ComputedProperty;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.options.CassandraOptions;
-import info.archinnov.achilles.internals.runtime.BeanValueExtractor;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.validation.Validator;
 

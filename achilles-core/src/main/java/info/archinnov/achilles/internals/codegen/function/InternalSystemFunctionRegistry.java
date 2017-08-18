@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.codegen.function;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
@@ -26,12 +25,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 
+import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.FunctionSignature;
 import info.archinnov.achilles.internals.parser.context.FunctionSignature.FunctionParamSignature;
-import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public class InternalSystemFunctionRegistry {
 

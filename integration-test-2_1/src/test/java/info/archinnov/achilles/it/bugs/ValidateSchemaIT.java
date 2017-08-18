@@ -25,8 +25,8 @@ import com.datastax.driver.core.Cluster;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
-import info.archinnov.achilles.internals.entities.EntityWithMissingPartitionKey;
 import info.archinnov.achilles.internals.entities.EntityWithMissingClustering;
+import info.archinnov.achilles.internals.entities.EntityWithMissingPartitionKey;
 import info.archinnov.achilles.internals.entities.EntityWithMissingStaticCol;
 
 public class ValidateSchemaIT {

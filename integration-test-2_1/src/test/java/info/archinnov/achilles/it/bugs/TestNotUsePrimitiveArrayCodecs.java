@@ -25,7 +25,9 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.UDTValue;
 import com.google.common.collect.Sets;
 
 import info.archinnov.achilles.generated.ManagerFactory;

@@ -16,9 +16,7 @@
 
 package info.archinnov.achilles.internals.codegen.index;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.OPTIONAL;
-import static info.archinnov.achilles.internals.parser.TypeUtils.QUERY_BUILDER;
-import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
+import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import javax.lang.model.element.Modifier;
 

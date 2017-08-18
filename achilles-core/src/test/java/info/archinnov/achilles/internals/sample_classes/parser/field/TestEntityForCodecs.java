@@ -18,7 +18,6 @@ package info.archinnov.achilles.internals.sample_classes.parser.field;
 
 import static info.archinnov.achilles.annotations.Enumerated.Encoding.NAME;
 import static info.archinnov.achilles.annotations.Enumerated.Encoding.ORDINAL;
-import static info.archinnov.achilles.annotations.SASI.Analyzer.NON_TOKENIZING_ANALYZER;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -31,7 +30,6 @@ import com.datastax.driver.core.ProtocolVersion;
 
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.annotations.Enumerated.Encoding;
-import info.archinnov.achilles.annotations.SASI.IndexMode;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 import info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec;
 import info.archinnov.achilles.internals.sample_classes.codecs.StringToLongCodec;

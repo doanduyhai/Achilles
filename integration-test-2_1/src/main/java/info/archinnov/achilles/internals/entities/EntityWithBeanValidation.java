@@ -23,9 +23,9 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.Frozen;
 import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.Table;
 
 @Table(table = "bean_validation")
 public class EntityWithBeanValidation {

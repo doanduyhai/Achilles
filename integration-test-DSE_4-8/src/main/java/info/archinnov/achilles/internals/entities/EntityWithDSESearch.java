@@ -18,7 +18,10 @@ package info.archinnov.achilles.internals.entities;
 
 import java.util.Date;
 
-import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.DSE_Search;
+import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.Table;
 
 @Table(keyspace = "achilles_dse_it", table = "search")
 public class EntityWithDSESearch {

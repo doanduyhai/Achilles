@@ -20,10 +20,12 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.utils.NamingHelper;
 
 public class ManagerFactoryBuilderCodeGen {
 

@@ -18,7 +18,6 @@ package info.archinnov.achilles.internals.metamodel.functions;
 
 
 import java.util.List;
-
 import java.util.Optional;
 import java.util.stream.Collectors;
 

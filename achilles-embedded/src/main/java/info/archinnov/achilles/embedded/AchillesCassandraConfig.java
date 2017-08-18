@@ -18,15 +18,14 @@ package info.archinnov.achilles.embedded;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.cassandra.config.Config;
 import org.apache.cassandra.config.ConfigurationLoader;
 import org.apache.cassandra.config.EncryptionOptions;
 import org.apache.cassandra.config.ParameterizedClass;
 import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class AchillesCassandraConfig implements ConfigurationLoader {
 

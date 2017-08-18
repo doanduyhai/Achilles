@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.lang.model.element.TypeElement;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import com.squareup.javapoet.ClassName;

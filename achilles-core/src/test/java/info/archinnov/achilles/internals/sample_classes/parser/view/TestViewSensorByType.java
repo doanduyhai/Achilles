@@ -20,8 +20,8 @@ import java.util.Date;
 
 import info.archinnov.achilles.annotations.ClusteringColumn;
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.annotations.MaterializedView;
+import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntitySensor;
 

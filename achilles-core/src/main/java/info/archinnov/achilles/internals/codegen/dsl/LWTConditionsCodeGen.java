@@ -24,8 +24,7 @@ import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ClassSignatureInfo;
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
+import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 

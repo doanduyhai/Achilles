@@ -17,7 +17,8 @@
 package info.archinnov.achilles.internals.dsl.crud;
 
 import static info.archinnov.achilles.internals.dsl.LWTHelper.triggerLWTListeners;
-import static info.archinnov.achilles.type.interceptor.Event.*;
+import static info.archinnov.achilles.type.interceptor.Event.POST_UPDATE;
+import static info.archinnov.achilles.type.interceptor.Event.PRE_UPDATE;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 

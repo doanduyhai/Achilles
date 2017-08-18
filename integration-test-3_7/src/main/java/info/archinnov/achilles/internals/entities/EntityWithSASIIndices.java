@@ -18,9 +18,7 @@ package info.archinnov.achilles.internals.entities;
 
 import static info.archinnov.achilles.annotations.SASI.Analyzer.NON_TOKENIZING_ANALYZER;
 import static info.archinnov.achilles.annotations.SASI.Analyzer.STANDARD_ANALYZER;
-import static info.archinnov.achilles.annotations.SASI.IndexMode.CONTAINS;
-import static info.archinnov.achilles.annotations.SASI.IndexMode.PREFIX;
-import static info.archinnov.achilles.annotations.SASI.IndexMode.SPARSE;
+import static info.archinnov.achilles.annotations.SASI.IndexMode.*;
 import static info.archinnov.achilles.annotations.SASI.Normalization.LOWERCASE;
 
 import info.archinnov.achilles.annotations.*;

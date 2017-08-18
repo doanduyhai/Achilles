@@ -17,10 +17,8 @@
 package info.archinnov.achilles.internals.codegen.dsl.delete.cassandra3_0;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.TypeUtils.ABSTRACT_DELETE_END;
 
 import java.util.List;
-
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.ClassName;

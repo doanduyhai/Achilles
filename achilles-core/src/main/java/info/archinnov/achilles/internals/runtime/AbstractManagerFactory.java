@@ -19,9 +19,7 @@ package info.archinnov.achilles.internals.runtime;
 import static info.archinnov.achilles.internals.schema.SchemaCreator.generateSchemaAtRuntime;
 import static info.archinnov.achilles.internals.schema.SchemaCreator.generateUDTAtRuntime;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,7 +46,6 @@ import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractUDTClassProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractViewProperty;
-import info.archinnov.achilles.internals.metamodel.UDTProperty;
 import info.archinnov.achilles.internals.metamodel.functions.FunctionProperty;
 import info.archinnov.achilles.internals.utils.CodecRegistryHelper;
 

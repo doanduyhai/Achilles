@@ -21,7 +21,6 @@ import java.util.List;
 
 import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.index.IndexSelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;

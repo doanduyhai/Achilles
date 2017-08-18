@@ -20,7 +20,6 @@ package info.archinnov.achilles.it;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -28,7 +27,7 @@ import java.util.TimeZone;
 
 import org.junit.Test;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.Cluster;
 
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_DSE_5_0_0;
 import info.archinnov.achilles.generated.ManagerFactory_For_IT_DSE_5_0_0;

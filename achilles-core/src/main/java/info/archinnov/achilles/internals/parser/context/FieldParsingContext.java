@@ -18,8 +18,8 @@ package info.archinnov.achilles.internals.parser.context;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.FIELD_INFO;
 
-import java.util.*;
-
+import java.util.Collections;
+import java.util.Objects;
 import javax.lang.model.element.TypeElement;
 
 import com.squareup.javapoet.CodeBlock;

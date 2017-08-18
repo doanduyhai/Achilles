@@ -27,9 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.internals.codegen.function.InternalSystemFunctionRegistry;
 import info.archinnov.achilles.internals.codegen.function.cassandra2_2.FunctionsRegistryCodeGen2_2;
 import info.archinnov.achilles.internals.parser.context.FunctionSignature;
 

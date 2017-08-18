@@ -28,7 +28,7 @@ import java.util.TimeZone;
 
 import org.junit.Test;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.Cluster;
 
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_DSE_4_8;
 import info.archinnov.achilles.generated.ManagerFactory_For_IT_DSE_4_8;

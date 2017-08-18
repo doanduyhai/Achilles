@@ -18,7 +18,6 @@ package info.archinnov.achilles.internals.parser.context;
 
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static java.util.stream.Collectors.reducing;
 import static java.util.stream.Collectors.toList;
 
 import java.util.*;

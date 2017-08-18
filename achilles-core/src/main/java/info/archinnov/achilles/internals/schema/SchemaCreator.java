@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.schema;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 import java.util.*;
 
@@ -30,7 +29,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
-import com.datastax.driver.core.schemabuilder.UDTType;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;

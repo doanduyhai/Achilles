@@ -16,9 +16,7 @@
 
 package info.archinnov.achilles.internals.parser.context;
 
-import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.DEFAULT;
-import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.ENTITY_CREATOR;
-import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.IMMUTABLE;
+import static info.archinnov.achilles.internals.parser.context.ConstructorInfo.ConstructorType.*;
 
 import javax.lang.model.element.ExecutableElement;
 

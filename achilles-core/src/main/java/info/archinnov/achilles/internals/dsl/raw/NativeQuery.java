@@ -31,11 +31,11 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.ResultSet;
 
-import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.LWTHelper;
 import info.archinnov.achilles.internals.dsl.RawAndTypeMapDefaultImpl;
 import info.archinnov.achilles.internals.dsl.action.MutationAction;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.NativeStatementWrapper;
 import info.archinnov.achilles.internals.statements.StatementWrapper;

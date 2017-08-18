@@ -18,9 +18,7 @@ package info.archinnov.achilles.internals.parser.validator.cassandra3_7;
 
 import static info.archinnov.achilles.annotations.SASI.Analyzer.NO_OP_ANALYZER;
 import static info.archinnov.achilles.annotations.SASI.IndexMode.SPARSE;
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.DSE_SEARCH;
 import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
-import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static java.util.Arrays.asList;
 
 import java.util.Optional;
@@ -31,9 +29,7 @@ import info.archinnov.achilles.annotations.DSE_Search;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.internals.apt.AptUtils;
-import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
-import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 import info.archinnov.achilles.internals.parser.validator.cassandra2_1.FieldValidator2_1;

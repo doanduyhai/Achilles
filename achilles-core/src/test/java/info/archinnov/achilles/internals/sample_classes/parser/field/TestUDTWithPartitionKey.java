@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.sample_classes.parser.field;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.annotations.UDT;
 

@@ -17,16 +17,9 @@
 package info.archinnov.achilles.it;
 
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME;
-import static info.archinnov.achilles.generated.function.SystemFunctions.*;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Optional;
-import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -35,7 +28,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.ProtocolVersion;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
 
 import info.archinnov.achilles.annotations.Enumerated;
@@ -47,9 +42,6 @@ import info.archinnov.achilles.generated.meta.entity.EntityForJSONCall_AchillesM
 import info.archinnov.achilles.internals.codecs.EncodingOrdinalCodec;
 import info.archinnov.achilles.internals.codecs.ProtocolVersionCodec;
 import info.archinnov.achilles.internals.entities.EntityForJSONCall;
-import info.archinnov.achilles.internals.entities.EntityWithComplexTypes;
-import info.archinnov.achilles.internals.entities.SimpleEntity;
-import info.archinnov.achilles.internals.entities.TestUDT;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;

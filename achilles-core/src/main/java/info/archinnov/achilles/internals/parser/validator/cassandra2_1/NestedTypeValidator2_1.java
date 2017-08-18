@@ -37,7 +37,7 @@ import info.archinnov.achilles.internals.metamodel.index.IndexType;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;
 import info.archinnov.achilles.internals.parser.validator.NestedTypesValidator;
-import info.archinnov.achilles.type.tuples.*;
+import info.archinnov.achilles.type.tuples.Tuple;
 
 public class NestedTypeValidator2_1 extends NestedTypesValidator {
 

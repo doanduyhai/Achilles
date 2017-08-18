@@ -21,7 +21,6 @@ import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 
 import java.util.List;
-
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.ClassName;

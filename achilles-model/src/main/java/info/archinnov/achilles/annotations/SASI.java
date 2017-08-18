@@ -17,7 +17,6 @@
 package info.archinnov.achilles.annotations;
 
 import java.lang.annotation.*;
-import java.util.Locale;
 
 /**
  * Annotation for SASI index

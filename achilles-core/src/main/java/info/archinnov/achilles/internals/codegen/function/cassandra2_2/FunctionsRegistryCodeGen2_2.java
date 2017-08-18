@@ -16,12 +16,13 @@
 
 package info.archinnov.achilles.internals.codegen.function.cassandra2_2;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static info.archinnov.achilles.internals.parser.TypeUtils.SYSTEM_FUNCTIONS_CLASS;
 
 import java.util.List;
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.codegen.dsl.JSONFunctionCallSupport;
 import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;

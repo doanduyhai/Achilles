@@ -22,30 +22,19 @@ import static info.archinnov.achilles.generated.function.SystemFunctions.writeti
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.collect.ImmutableMap;
 
-import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_3_0;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_3_2;
-import info.archinnov.achilles.generated.ManagerFactory_For_IT_3_0;
 import info.archinnov.achilles.generated.ManagerFactory_For_IT_3_2;
 import info.archinnov.achilles.generated.function.FunctionsRegistry;
-import info.archinnov.achilles.generated.function.SystemFunctions;
 import info.archinnov.achilles.generated.manager.EntityForCastFunctionCall_Manager;
-import info.archinnov.achilles.generated.manager.MultiClusteringEntity_Manager;
 import info.archinnov.achilles.generated.meta.entity.EntityForCastFunctionCall_AchillesMeta;
 import info.archinnov.achilles.internals.entities.EntityForCastFunctionCall;
-import info.archinnov.achilles.internals.entities.MultiClusteringEntity;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;

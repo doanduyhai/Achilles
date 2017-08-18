@@ -16,7 +16,8 @@
 
 package info.archinnov.achilles.internals.codegen.crud.cassandra2_2;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static info.archinnov.achilles.internals.parser.TypeUtils.INSERT_JSON_WITH_OPTIONS;
+import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
 
 import javax.lang.model.element.Modifier;
 

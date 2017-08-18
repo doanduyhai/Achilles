@@ -29,8 +29,8 @@ import com.squareup.javapoet.TypeName;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes;
 import info.archinnov.achilles.internals.parser.validator.cassandra2_1.NestedTypeValidator2_1;
+import info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes;
 
 public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
 

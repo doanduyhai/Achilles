@@ -25,7 +25,6 @@ import static info.archinnov.achilles.type.strategy.ColumnMappingStrategy.IMPLIC
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
 import javax.lang.model.SourceVersion;
 
 import org.apache.commons.lang3.StringUtils;

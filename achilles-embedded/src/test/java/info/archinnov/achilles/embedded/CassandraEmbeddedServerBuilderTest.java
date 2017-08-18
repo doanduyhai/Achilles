@@ -16,7 +16,7 @@
 
 package info.archinnov.achilles.embedded;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;

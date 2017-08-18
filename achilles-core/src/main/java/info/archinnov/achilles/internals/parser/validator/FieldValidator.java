@@ -22,7 +22,10 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.summingInt;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 
@@ -32,7 +35,9 @@ import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.metamodel.columns.KeyColumnInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
-import info.archinnov.achilles.internals.parser.context.*;
+import info.archinnov.achilles.internals.parser.context.CodecContext;
+import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 

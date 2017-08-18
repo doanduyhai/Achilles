@@ -16,7 +16,8 @@
 
 package info.archinnov.achilles.internals.parser;
 
-import static info.archinnov.achilles.internals.apt.AptUtils.*;
+import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
+import static info.archinnov.achilles.internals.apt.AptUtils.extractTypedMap;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 

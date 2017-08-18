@@ -34,7 +34,6 @@ import javax.lang.model.element.VariableElement;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.truth0.Truth;
 
 import com.datastax.driver.core.UDTValue;
@@ -42,7 +41,6 @@ import com.google.common.collect.Sets;
 import com.google.testing.compile.JavaSourcesSubjectFactory;
 import com.squareup.javapoet.ClassName;
 
-import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.cassandra_version.V3_6;

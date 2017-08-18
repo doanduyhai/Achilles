@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.entities;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.annotations.Immutable;
 import info.archinnov.achilles.annotations.UDT;
 

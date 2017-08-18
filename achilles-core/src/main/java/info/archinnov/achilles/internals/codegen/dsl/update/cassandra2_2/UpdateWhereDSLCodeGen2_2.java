@@ -16,7 +16,7 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2;
 
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.codegen.dsl.JSONFunctionCallSupport;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;

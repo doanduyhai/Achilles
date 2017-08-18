@@ -29,7 +29,6 @@ import javax.lang.model.element.TypeElement;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.datastax.driver.core.UDTValue;
 import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.annotations.Strategy;

@@ -19,7 +19,6 @@ package info.archinnov.achilles.internals.codegen.crud;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.CLUSTERING;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.PARTITION;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.TypeUtils.META_SUFFIX;
 
 import java.util.Comparator;
 import javax.lang.model.element.Modifier;

@@ -18,8 +18,6 @@ package info.archinnov.achilles.internals.sample_classes.parser.entity;
 
 import java.util.UUID;
 
-import javax.validation.constraints.NotNull;
-
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.EntityCreator;
 import info.archinnov.achilles.annotations.PartitionKey;

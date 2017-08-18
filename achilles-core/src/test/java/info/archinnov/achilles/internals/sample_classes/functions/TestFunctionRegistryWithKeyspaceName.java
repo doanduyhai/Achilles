@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.sample_classes.functions;
 
 import info.archinnov.achilles.annotations.FunctionRegistry;
-import info.archinnov.achilles.annotations.JSON;
 
 @FunctionRegistry(keyspace = "ks")
 public interface TestFunctionRegistryWithKeyspaceName {

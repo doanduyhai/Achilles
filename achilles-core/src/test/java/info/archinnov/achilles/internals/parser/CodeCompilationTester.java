@@ -17,6 +17,11 @@
 package info.archinnov.achilles.internals.parser;
 
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
 import com.datastax.driver.core.ClusteringOrder;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.DataType;
@@ -24,32 +29,16 @@ import com.datastax.driver.core.Row;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
-import info.archinnov.achilles.internals.parser.CodeCompilationTester.ColumnsForFunctions;
-import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
+
 import info.archinnov.achilles.internals.codec.FallThroughCodec;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
 import info.archinnov.achilles.internals.metamodel.SimpleProperty;
-import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
-import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
-import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
-import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
-import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
+import info.archinnov.achilles.internals.metamodel.columns.*;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
 import info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithCustomConstructor;
 import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
-import java.lang.Class;
-import java.lang.Double;
-import java.lang.Integer;
-import java.lang.Long;
-import java.lang.Override;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * This class purpose is to test that generated code does compile

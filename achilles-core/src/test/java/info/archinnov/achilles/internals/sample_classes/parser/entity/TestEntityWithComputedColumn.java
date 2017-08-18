@@ -18,8 +18,8 @@ package info.archinnov.achilles.internals.sample_classes.parser.entity;
 
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Computed;
-import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.Table;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
 
 @APUnitTest

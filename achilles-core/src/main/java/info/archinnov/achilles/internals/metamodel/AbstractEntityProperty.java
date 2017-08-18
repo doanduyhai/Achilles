@@ -16,9 +16,7 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumnType;
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateDefaultTTL;
+import static info.archinnov.achilles.internals.schema.SchemaValidator.*;
 import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.*;
 import static info.archinnov.achilles.validation.Validator.validateNotNull;
 import static java.lang.String.format;
@@ -33,7 +31,6 @@ import com.datastax.driver.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.BiMap;
 
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVersion;
 import info.archinnov.achilles.internals.context.ConfigurationContext;

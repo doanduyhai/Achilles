@@ -16,15 +16,12 @@
 
 package info.archinnov.achilles.internals.codegen.index.dse_5_0_0;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
+import static info.archinnov.achilles.internals.parser.TypeUtils.SELECT_DOT_WHERE;
 
 import java.util.List;
 import java.util.Optional;
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
@@ -32,7 +29,6 @@ import info.archinnov.achilles.internals.codegen.index.DSESearchSupport;
 import info.archinnov.achilles.internals.codegen.index.cassandra2_2.IndexSelectWhereDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.metamodel.index.IndexImpl;
-import info.archinnov.achilles.internals.parser.context.DSESearchInfoContext;
 
 public class IndexSelectWhereDSLCodeGen_DSE_5_0_0 extends IndexSelectWhereDSLCodeGen2_2
         implements DSESearchSupport{
