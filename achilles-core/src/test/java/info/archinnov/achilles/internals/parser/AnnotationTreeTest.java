@@ -58,7 +58,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
          *                                              @Frozen @EmptyCollectionIfNull Integer,
          *                                              @Enumerated(value = Enumerated.Encoding.NAME) Date>>> map;
          */
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement mapElt = findFieldByName(typeElement, "map");
@@ -117,9 +117,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -141,7 +139,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
          */
 
 
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement mapElt = findFieldByName(typeElement, "map");
@@ -200,9 +198,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -216,7 +212,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_trees_for_other_fields_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement idElm = findFieldByName(typeElement, "id");
@@ -259,9 +255,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -274,7 +268,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_trees_for_other_fields_javac_ecj() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement idElm = findFieldByName(typeElement, "id");
@@ -317,9 +311,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -333,7 +325,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_trees_json_map_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement jsonMap = findFieldByName(typeElement, "jsonMap");
@@ -351,9 +343,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -366,7 +356,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_trees_json_map_ecj() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement jsonMap = findFieldByName(typeElement, "jsonMap");
@@ -384,9 +374,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -400,7 +388,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_trees_map_with_nested_json_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement mapWithNestedJson = findFieldByName(typeElement, "mapWithNestedJson");
@@ -430,9 +418,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -445,7 +431,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_trees_map_with_nested_json_ecj() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement mapWithNestedJson = findFieldByName(typeElement, "mapWithNestedJson");
@@ -475,9 +461,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -491,7 +475,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_trees_map_for_level1_nesting_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement level1NestingElm = findFieldByName(typeElement, "level1Nesting");
@@ -525,9 +509,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -540,7 +522,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_trees_map_for_level1_nesting_ecj() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement level1NestingElm = findFieldByName(typeElement, "level1Nesting");
@@ -574,9 +556,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -590,7 +570,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_treemap_for_codec_annotation_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement mapWithCodec = findFieldByName(typeElement, "mapWithCodec");
@@ -610,9 +590,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -625,7 +603,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_treemap_for_codec_annotation_ecj() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement mapWithCodec = findFieldByName(typeElement, "mapWithCodec");
@@ -645,9 +623,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -661,7 +637,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_treemap_for_computed_annotation_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement writetime = findFieldByName(typeElement, "writetime");
@@ -683,9 +659,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -698,7 +672,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_treemap_for_computed_annotation_ecj() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement writetime = findFieldByName(typeElement, "writetime");
@@ -720,9 +694,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -736,7 +708,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_treemap_for_clustering_column_annotation_java() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement clusteringCol = findFieldByName(typeElement, "clusteringCol");
@@ -756,9 +728,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -771,7 +741,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_treemap_for_clustering_column_annotation_ecj() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement clusteringCol = findFieldByName(typeElement, "clusteringCol");
@@ -791,9 +761,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -808,7 +776,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
     @Test
     public void should_build_treemap_for_frozen_udt_annotation_ecj() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityForAnnotationTree.class.getCanonicalName());
                 final VariableElement testUdt = findFieldByName(typeElement, "testUdt");
@@ -827,9 +795,7 @@ public class AnnotationTreeTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))

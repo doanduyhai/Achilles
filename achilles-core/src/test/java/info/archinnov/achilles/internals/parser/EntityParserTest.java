@@ -46,7 +46,7 @@ public class EntityParserTest extends AbstractTestProcessor {
     @Test
     public void should_generate_meta_signature_for_complex_types_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithComplexTypes.class.getCanonicalName());
@@ -57,9 +57,7 @@ public class EntityParserTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
@@ -71,7 +69,7 @@ public class EntityParserTest extends AbstractTestProcessor {
     @Test
     public void should_generate_meta_signature_for_view_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestViewSensorByType.class.getCanonicalName());
@@ -82,9 +80,7 @@ public class EntityParserTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
                 .that(Arrays.asList(loadClass(TestViewSensorByType.class), loadClass(TestEntitySensor.class)))
@@ -96,7 +92,7 @@ public class EntityParserTest extends AbstractTestProcessor {
     @Test
     public void should_generate_meta_signature_for_immutable_entity_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestImmutableEntity.class.getCanonicalName());
@@ -107,9 +103,7 @@ public class EntityParserTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
                 .that(Arrays.asList(loadClass(TestImmutableUDT.class), loadClass(TestImmutableEntity.class)))
@@ -121,7 +115,7 @@ public class EntityParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_because_no_matching_field_name_for_constructor_param_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithNoMatchingFieldForParamInConstructor.class.getCanonicalName());
@@ -130,9 +124,7 @@ public class EntityParserTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         failTestWithMessage("Cannot find matching field name for parameter 'myValue' of @EntityCreator constructor on entity 'TestEntityWithNoMatchingFieldForParamInConstructor'");
     }
@@ -140,7 +132,7 @@ public class EntityParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_because_no_matching_field_name_for_declared_constructor_param_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithNoMatchingFieldForDeclaredParamInConstructor.class.getCanonicalName());
@@ -149,9 +141,7 @@ public class EntityParserTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         failTestWithMessage("Cannot find matching field name for declared field 'my_value' on @EntityCreator annotation on entity 'TestEntityWithNoMatchingFieldForDeclaredParamInConstructor'");
     }
@@ -159,7 +149,7 @@ public class EntityParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_because_no_matching_field_name_for_immutable_constructor_param_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestImmutableEntityWithNoMatchingFieldForParamInConstructor.class.getCanonicalName());
@@ -168,9 +158,7 @@ public class EntityParserTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         failTestWithMessage("Cannot find matching field name for parameter 'partitionKey' of constructor on @Immutable entity 'TestImmutableEntityWithNoMatchingFieldForParamInConstructor'");
     }
@@ -178,7 +166,7 @@ public class EntityParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_because_incorrect_field_type_for_constructor_param_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithWrongParamTypeInConstructor.class.getCanonicalName());
@@ -187,9 +175,7 @@ public class EntityParserTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         failTestWithMessage("The type of parameter 'value' of @EntityCreator constructor on entity 'TestEntityWithWrongParamTypeInConstructor' is wrong, it should be 'java.lang.String'");
     }
@@ -197,7 +183,7 @@ public class EntityParserTest extends AbstractTestProcessor {
     @Test
     public void should_fail_because_incorrect_field_type_for_declared_constructor_param_javac() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithWrongDeclaredParamTypeInConstructor.class.getCanonicalName());
@@ -206,9 +192,7 @@ public class EntityParserTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         failTestWithMessage("The type of declared parameter 'value' on @EntityCreator annotation of entity 'TestEntityWithWrongDeclaredParamTypeInConstructor' is wrong, it should be 'java.lang.String'");
     }
@@ -251,7 +235,7 @@ public class EntityParserTest extends AbstractTestProcessor {
     @Ignore
     public void should_generate_meta_signature_for_view_ecj() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestViewSensorByType.class.getCanonicalName());
@@ -262,9 +246,7 @@ public class EntityParserTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourcesSubjectFactory.javaSources())
                 .that(Arrays.asList(loadClass(TestViewSensorByType.class), loadClass(TestEntitySensor.class)))
@@ -279,7 +261,7 @@ public class EntityParserTest extends AbstractTestProcessor {
     @Test
     public void should_generate_meta_signature_for_complex_types_ecj() throws Exception {
         //Given
-        AptAssertOK exec = aptUtils -> {
+        setExec(aptUtils -> {
             try {
                 final EntityParser parser = new EntityParser(aptUtils);
                 final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(TestEntityWithComplexTypes.class.getCanonicalName());
@@ -290,9 +272,7 @@ public class EntityParserTest extends AbstractTestProcessor {
                 ex.printStackTrace();
                 aptUtils.messager.printMessage(Diagnostic.Kind.ERROR, ex.getMessage());
             }
-        };
-
-        setExec(exec);
+        });
 
         Truth.ASSERT.about(JavaSourceSubjectFactory.javaSource())
                 .that(loadClass(TestEntityForAnnotationTree.class))
