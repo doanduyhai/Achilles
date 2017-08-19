@@ -23,11 +23,13 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
+import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRestriction {
 
@@ -116,6 +118,37 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldInfo.fieldName, param1, OPTIONAL)
                 .addStatement("boundValues.add($L)", param2)
                 .addStatement("encodedValues.add(meta.$L.encodeFromJava($N, $T.of(cassandraOptions)))", fieldInfo.fieldName, param2, OPTIONAL)
+                .returns(nextType);
+
+        if (returnType == ReturnType.NEW) {
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
+        } else {
+            builder.addStatement("return $T.this", nextType);
+        }
+
+        return builder.build();
+    }
+
+    default MethodSpec buildDoubleTokenValueRelation(String relation1, String relation2, TypeName nextType, List<String> partitionKeyColumns, ReturnType returnType) {
+        final String methodName = upperCaseFirst(relation1) + "_And_" + upperCaseFirst(relation2);
+        final String fcall = partitionKeyColumns.stream().collect(Collectors.joining(",", "token(", ")"));
+
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ? AND $L $L ?</strong>",
+                        fcall, relationToSymbolForJavaDoc(relation1),
+                        fcall, relationToSymbolForJavaDoc(relation2))
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addParameter(TypeUtils.OBJECT_LONG, "tokenValue1")
+                .addParameter(TypeUtils.OBJECT_LONG, "tokenValue2")
+                .addStatement("where.and($T.$L($S,$T.bindMarker($S)))",
+                        QUERY_BUILDER, relation1, fcall, QUERY_BUILDER, "tokenValue1")
+                .addStatement("where.and($T.$L($S,$T.bindMarker($S)))",
+                        QUERY_BUILDER, relation2, fcall, QUERY_BUILDER, "tokenValue2")
+                .addStatement("boundValues.add($N)", "tokenValue1")
+                .addStatement("encodedValues.add($N)", "tokenValue1")
+                .addStatement("boundValues.add($N)", "tokenValue2")
+                .addStatement("encodedValues.add($N)", "tokenValue2")
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {

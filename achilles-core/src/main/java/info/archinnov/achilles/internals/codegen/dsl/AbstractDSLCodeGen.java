@@ -19,10 +19,7 @@ package info.archinnov.achilles.internals.codegen.dsl;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.ClassName;
@@ -77,7 +74,7 @@ public abstract class AbstractDSLCodeGen {
             final TypeName returnTypeName = ClassName.get(DSL_PACKAGE, signature.whereReturnType(x.fieldName,
                     classSignatureParams.dslSuffix, classSignatureParams.whereDslSuffix));
             signatures.add(ClassSignatureInfo.of(typeName, returnTypeName,
-                    classSignatureParams.abstractWherePartitionType, className));
+                    classSignatureParams.abstractWherePartitionType, className, ColumnType.PARTITION, x));
         }
 
         if (whereClauseFor == WhereClauseFor.NORMAL) {
@@ -90,7 +87,7 @@ public abstract class AbstractDSLCodeGen {
                         ? classSignatureParams.abstractWhereType
                         : genericType(classSignatureParams.abstractWhereType, returnTypeName, signature.entityRawClass);
 
-                signatures.add(ClassSignatureInfo.of(typeName, returnTypeName, superType, className));
+                signatures.add(ClassSignatureInfo.of(typeName, returnTypeName, superType, className, ColumnType.CLUSTERING, x));
             }
         }
 
@@ -101,7 +98,7 @@ public abstract class AbstractDSLCodeGen {
         final ClassName abstractEndType = classSignatureParams.abstractEndType.orElse(classSignatureParams.abstractWhereType);
 
         signatures.add(ClassSignatureInfo.of(endTypeName, endReturnTypeName, genericType(abstractEndType, endReturnTypeName, signature.entityRawClass),
-                endClassName));
+                endClassName, null, null));
 
         return signatures;
     }
@@ -375,17 +372,39 @@ public abstract class AbstractDSLCodeGen {
         public final TypeName returnClassType;
         public final TypeName superType;
         public final String className;
+        public final ColumnType columnType;
+        public final FieldSignatureInfo fieldSignatureInfo;
 
 
-        private ClassSignatureInfo(TypeName classType, TypeName returnClassType, TypeName superType, String className) {
+        private ClassSignatureInfo(TypeName classType, TypeName returnClassType, TypeName superType, String className, ColumnType columnType, FieldSignatureInfo fieldSignatureInfo) {
             this.classType = classType;
             this.returnClassType = returnClassType;
             this.superType = superType;
             this.className = className;
+            this.columnType = columnType;
+            this.fieldSignatureInfo = fieldSignatureInfo;
         }
 
-        public static ClassSignatureInfo of(TypeName classType, TypeName returnClassType, TypeName superType, String className) {
-            return new ClassSignatureInfo(classType, returnClassType, superType, className);
+        public static ClassSignatureInfo of(TypeName classType, TypeName returnClassType, TypeName superType, String className, ColumnType columnType, FieldSignatureInfo fieldSignatureInfo) {
+            return new ClassSignatureInfo(classType, returnClassType, superType, className, columnType, fieldSignatureInfo);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ClassSignatureInfo that = (ClassSignatureInfo) o;
+            return Objects.equals(classType, that.classType) &&
+                    Objects.equals(returnClassType, that.returnClassType) &&
+                    Objects.equals(superType, that.superType) &&
+                    Objects.equals(className, that.className) &&
+                    columnType == that.columnType &&
+                    Objects.equals(fieldSignatureInfo, that.fieldSignatureInfo);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(classType, returnClassType, superType, className, columnType, fieldSignatureInfo);
         }
     }
 

@@ -20,8 +20,11 @@ import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.r
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.MethodSpec;
@@ -29,6 +32,7 @@ import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
+import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public interface BaseSingleColumnRestriction {
 
@@ -83,6 +87,29 @@ public interface BaseSingleColumnRestriction {
 
         builder.addStatement("boundValues.add(varargs)")
                 .addStatement("encodedValues.add(encodedVarargs)")
+                .returns(nextType);
+
+        if (returnType == ReturnType.NEW) {
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
+        } else {
+            builder.addStatement("return $T.this", nextType);
+        }
+
+        return builder.build();
+    }
+
+    default MethodSpec buildTokenValueRelation(String relation, TypeName nextType, List<String> partitionKeyColumns, ReturnType returnType) {
+        final String fcall = partitionKeyColumns.stream().collect(Collectors.joining(",", "token(", ")"));
+        final String methodName = upperCaseFirst(relation);
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fcall, relationToSymbolForJavaDoc(relation))
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addParameter(TypeUtils.OBJECT_LONG, "tokenValue")
+                .addStatement("where.and($T.$L($S, $T.bindMarker($S)))",
+                        QUERY_BUILDER, relation, fcall, QUERY_BUILDER, "tokenValue")
+                .addStatement("boundValues.add($N)", "tokenValue")
+                .addStatement("encodedValues.add($N)", "tokenValue")
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {

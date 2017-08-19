@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.ImmutableMap;
 
@@ -180,6 +181,7 @@ public class TestDSLEntityWithClusterings {
 
         assertThat(list).hasSize(2);
     }
+
 
     @Test
     public void should_dsl_select_slice_with_asymetric_tuples_same_partition() throws Exception {

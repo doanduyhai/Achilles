@@ -17,11 +17,13 @@
 package info.archinnov.achilles.it;
 
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -33,11 +35,15 @@ import com.google.common.collect.ImmutableMap;
 
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
+import info.archinnov.achilles.generated.function.SystemFunctions;
 import info.archinnov.achilles.generated.manager.EntityWithCompositePartitionKey_Manager;
 import info.archinnov.achilles.internals.entities.EntityWithCompositePartitionKey;
+import info.archinnov.achilles.internals.metamodel.functions.FunctionCall;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
+import info.archinnov.achilles.type.tuples.Tuple2;
+import info.archinnov.achilles.type.tuples.Tuple3;
 
 public class TestEntityWithCompositePartitionKey {
 
@@ -98,6 +104,61 @@ public class TestEntityWithCompositePartitionKey {
     }
 
     @Test
+    public void should_dsl_select_with_token_value() throws Exception {
+        //Given
+        final long id1 = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final long id2 = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final long id3 = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final long id4 = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final long id5 = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final UUID uuid1 = new UUID(1L, 1L);
+        final UUID uuid2 = new UUID(2L, 2L);
+        final UUID uuid3 = new UUID(3L, 3L);
+        final UUID uuid4 = new UUID(4L, 4L);
+        final UUID uuid5 = new UUID(5L, 5L);
+
+        scriptExecutor.executeScriptTemplate("EntityWithCompositePartitionKey/insert_single_row.cql",
+                ImmutableMap.of("id", id1, "uuid", uuid1, "value", "val1"));
+        scriptExecutor.executeScriptTemplate("EntityWithCompositePartitionKey/insert_single_row.cql",
+                ImmutableMap.of("id", id2, "uuid", uuid2, "value", "val2"));
+        scriptExecutor.executeScriptTemplate("EntityWithCompositePartitionKey/insert_single_row.cql",
+                ImmutableMap.of("id", id3, "uuid", uuid3, "value", "val3"));
+        scriptExecutor.executeScriptTemplate("EntityWithCompositePartitionKey/insert_single_row.cql",
+                ImmutableMap.of("id", id4, "uuid", uuid4, "value", "val4"));
+        scriptExecutor.executeScriptTemplate("EntityWithCompositePartitionKey/insert_single_row.cql",
+                ImmutableMap.of("id", id5, "uuid", uuid5, "value", "val5"));
+
+        final List<Tuple2<Long, UUID>> tuple2s = session.execute("SELECT token(id, uuid) AS tokens,uuid FROM achilles_embedded.entity_composite_pk LIMIT 6")
+                .all()
+                .stream()
+                .map(row -> Tuple2.of(row.getLong("tokens"), row.getUUID("uuid")))
+                .sorted(Comparator.comparing(Tuple2::_1))
+                .limit(2)
+                .collect(toList());
+
+        final Long token = tuple2s.get(1)._1();
+
+        //When
+        final List<EntityWithCompositePartitionKey> actuals = manager
+                .dsl()
+                .select()
+                .uuid()
+                .fromBaseTable()
+                .where()
+                .tokenValueOf_id_uuid().Lte(token)
+                .getList();
+
+        //Then
+        assertThat(actuals).hasSize(2);
+        assertThat(actuals
+                .stream()
+                .map(EntityWithCompositePartitionKey::getUuid)
+                .sorted()
+                .collect(toList()))
+                .containsOnlyElementsOf(tuple2s.stream().map(Tuple2::_2).collect(toSet()));
+    }
+
+    @Test
     public void should_dsl_select_with_IN_clause() throws Exception {
         //Given
         final long id1 = RandomUtils.nextLong(0L, Long.MAX_VALUE);
@@ -117,6 +178,7 @@ public class TestEntityWithCompositePartitionKey {
         scriptExecutor.executeScriptTemplate("EntityWithCompositePartitionKey/insert_single_row.cql",
                 ImmutableMap.of("id", id2, "uuid", uuid3, "value", "val2-3"));
 
+
         //When
         final List<EntityWithCompositePartitionKey> actuals = manager
                 .dsl()
@@ -134,7 +196,7 @@ public class TestEntityWithCompositePartitionKey {
                 .stream()
                 .map(EntityWithCompositePartitionKey::getValue)
                 .sorted()
-                .collect(Collectors.toList()))
+                .collect(toList()))
                 .containsExactly("val1-1", "val2-1", "val2-3");
     }
 }

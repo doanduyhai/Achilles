@@ -80,7 +80,7 @@ public class TypeUtils {
 
     public static final String META_SUFFIX = "_AchillesMeta";
 
-    public static final String DSL_RELATION_SUFFIX = "_Relation";
+    public static final String DSL_TOKEN = "Token";
     public static final String DSL_RELATION = "Relation";
 
     public static final String COLUMNS_DSL_SUFFIX = "Cols";

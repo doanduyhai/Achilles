@@ -45,11 +45,9 @@ public class SelectWhereDSLCodeGen2_2 extends SelectWhereDSLCodeGen
                 WHERE_JSON_DSL_SUFFIX, END_JSON_DSL_SUFFIX,
                 ABSTRACT_SELECT_WHERE_PARTITION_JSON, ABSTRACT_SELECT_WHERE_JSON);
 
-        final Optional<FieldSignatureInfo> firstClustering = clusteringCols.stream().limit(1).findFirst();
-
         return buildWhereClassesInternal(signature, context.selectWhereDSLCodeGen(),
                 partitionKeys, clusteringCols,
-                firstClustering, jsonClassSignatureParams);
+                jsonClassSignatureParams);
 
     }
 

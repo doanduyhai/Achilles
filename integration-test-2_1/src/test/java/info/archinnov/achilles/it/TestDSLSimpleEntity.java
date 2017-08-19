@@ -105,6 +105,34 @@ public class TestDSLSimpleEntity {
     }
 
     @Test
+    public void should_dsl_select_with_token_value() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final Date date = buildDateKey();
+        scriptExecutor.executeScriptTemplate("SimpleEntity/insert_single_row.cql", ImmutableMap.of("id", id, "table", "simple"));
+
+        //When
+        final SimpleEntity actual = manager
+                .dsl()
+                .select()
+                .consistencyList()
+                .simpleSet()
+                .simpleMap()
+                .value()
+                .fromBaseTable()
+                .where()
+                .tokenValueOf_id().Gte_And_Lte(Long.MIN_VALUE, Long.MAX_VALUE)
+                .getOne();
+
+        //Then
+        assertThat(actual).isNotNull();
+        assertThat(actual.getConsistencyList()).containsExactly(ConsistencyLevel.QUORUM, ConsistencyLevel.LOCAL_ONE);
+        assertThat(actual.getSimpleSet()).containsExactly(1.0, 2.0);
+        assertThat(actual.getSimpleMap()).containsEntry(10, "ten");
+        assertThat(actual.getSimpleMap()).containsEntry(20, "twenty");
+    }
+
+    @Test
     public void should_dsl_select_slice() throws Exception {
         //Given
         final Map<String, Object> values = new HashMap<>();

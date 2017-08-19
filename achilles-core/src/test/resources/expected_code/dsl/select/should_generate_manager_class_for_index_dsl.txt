@@ -18,10 +18,12 @@ import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Selec
 import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.W_Clust.Relation;
 import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.W_Id;
 import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.W_Id.Relation;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.W_Id.Token;
 import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.W_TM_Clust;
 import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.W_TM_Clust.Relation;
 import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.W_TM_Id;
 import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.W_TM_Id.Relation;
+import info.archinnov.achilles.generated.dsl.TestEntityWithUDTAsClustering_Select.W_TM_Id.Token;
 import info.archinnov.achilles.generated.meta.entity.TestEntityWithUDTAsClustering_AchillesMeta;
 import info.archinnov.achilles.internals.dsl.query.select.AbstractSelect;
 import info.archinnov.achilles.internals.dsl.query.select.AbstractSelectColumns;
@@ -606,6 +608,10 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       return new TestEntityWithUDTAsClustering_Select.W_Id.Relation();
     }
 
+    public final TestEntityWithUDTAsClustering_Select.W_Id.Token tokenValueOf_id() {
+      return new TestEntityWithUDTAsClustering_Select.W_Id.Token();
+    }
+
     public final class Relation {
       /**
        * Generate a SELECT ... FROM ... WHERE ... <strong>id = ?</strong> */
@@ -628,6 +634,110 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         boundValues.add(varargs);
         encodedValues.add(encodedVarargs);
         return new TestEntityWithUDTAsClustering_Select.W_Clust(where, cassandraOptions);
+      }
+    }
+
+    public final class Token {
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) = ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E Eq(Long tokenValue) {
+        where.and(QueryBuilder.eq("token(id)", QueryBuilder.bindMarker("tokenValue")));
+        boundValues.add(tokenValue);
+        encodedValues.add(tokenValue);
+        return new TestEntityWithUDTAsClustering_Select.E(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) > ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E Gt(Long tokenValue) {
+        where.and(QueryBuilder.gt("token(id)", QueryBuilder.bindMarker("tokenValue")));
+        boundValues.add(tokenValue);
+        encodedValues.add(tokenValue);
+        return new TestEntityWithUDTAsClustering_Select.E(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) >= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E Gte(Long tokenValue) {
+        where.and(QueryBuilder.gte("token(id)", QueryBuilder.bindMarker("tokenValue")));
+        boundValues.add(tokenValue);
+        encodedValues.add(tokenValue);
+        return new TestEntityWithUDTAsClustering_Select.E(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E Lt(Long tokenValue) {
+        where.and(QueryBuilder.lt("token(id)", QueryBuilder.bindMarker("tokenValue")));
+        boundValues.add(tokenValue);
+        encodedValues.add(tokenValue);
+        return new TestEntityWithUDTAsClustering_Select.E(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E Lte(Long tokenValue) {
+        where.and(QueryBuilder.lte("token(id)", QueryBuilder.bindMarker("tokenValue")));
+        boundValues.add(tokenValue);
+        encodedValues.add(tokenValue);
+        return new TestEntityWithUDTAsClustering_Select.E(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) > ? AND token(id) < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E Gt_And_Lt(Long tokenValue1, Long tokenValue2) {
+        where.and(QueryBuilder.gt("token(id)",QueryBuilder.bindMarker("tokenValue1")));
+        where.and(QueryBuilder.lt("token(id)",QueryBuilder.bindMarker("tokenValue2")));
+        boundValues.add(tokenValue1);
+        encodedValues.add(tokenValue1);
+        boundValues.add(tokenValue2);
+        encodedValues.add(tokenValue2);
+        return new TestEntityWithUDTAsClustering_Select.E(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) > ? AND token(id) <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E Gt_And_Lte(Long tokenValue1, Long tokenValue2) {
+        where.and(QueryBuilder.gt("token(id)",QueryBuilder.bindMarker("tokenValue1")));
+        where.and(QueryBuilder.lte("token(id)",QueryBuilder.bindMarker("tokenValue2")));
+        boundValues.add(tokenValue1);
+        encodedValues.add(tokenValue1);
+        boundValues.add(tokenValue2);
+        encodedValues.add(tokenValue2);
+        return new TestEntityWithUDTAsClustering_Select.E(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) >= ? AND token(id) < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E Gte_And_Lt(Long tokenValue1, Long tokenValue2) {
+        where.and(QueryBuilder.gte("token(id)",QueryBuilder.bindMarker("tokenValue1")));
+        where.and(QueryBuilder.lt("token(id)",QueryBuilder.bindMarker("tokenValue2")));
+        boundValues.add(tokenValue1);
+        encodedValues.add(tokenValue1);
+        boundValues.add(tokenValue2);
+        encodedValues.add(tokenValue2);
+        return new TestEntityWithUDTAsClustering_Select.E(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) >= ? AND token(id) <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E Gte_And_Lte(Long tokenValue1, Long tokenValue2) {
+        where.and(QueryBuilder.gte("token(id)",QueryBuilder.bindMarker("tokenValue1")));
+        where.and(QueryBuilder.lte("token(id)",QueryBuilder.bindMarker("tokenValue2")));
+        boundValues.add(tokenValue1);
+        encodedValues.add(tokenValue1);
+        boundValues.add(tokenValue2);
+        encodedValues.add(tokenValue2);
+        return new TestEntityWithUDTAsClustering_Select.E(where, cassandraOptions);
       }
     }
   }
@@ -890,6 +1000,10 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
       return new TestEntityWithUDTAsClustering_Select.W_TM_Id.Relation();
     }
 
+    public final TestEntityWithUDTAsClustering_Select.W_TM_Id.Token tokenValueOf_id() {
+      return new TestEntityWithUDTAsClustering_Select.W_TM_Id.Token();
+    }
+
     public final class Relation {
       /**
        * Generate a SELECT ... FROM ... WHERE ... <strong>id = ?</strong> */
@@ -912,6 +1026,110 @@ public final class TestEntityWithUDTAsClustering_Select extends AbstractSelect {
         boundValues.add(varargs);
         encodedValues.add(encodedVarargs);
         return new TestEntityWithUDTAsClustering_Select.W_TM_Clust(where, cassandraOptions);
+      }
+    }
+
+    public final class Token {
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) = ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E_TM Eq(Long tokenValue) {
+        where.and(QueryBuilder.eq("token(id)", QueryBuilder.bindMarker("tokenValue")));
+        boundValues.add(tokenValue);
+        encodedValues.add(tokenValue);
+        return new TestEntityWithUDTAsClustering_Select.E_TM(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) > ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E_TM Gt(Long tokenValue) {
+        where.and(QueryBuilder.gt("token(id)", QueryBuilder.bindMarker("tokenValue")));
+        boundValues.add(tokenValue);
+        encodedValues.add(tokenValue);
+        return new TestEntityWithUDTAsClustering_Select.E_TM(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) >= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E_TM Gte(Long tokenValue) {
+        where.and(QueryBuilder.gte("token(id)", QueryBuilder.bindMarker("tokenValue")));
+        boundValues.add(tokenValue);
+        encodedValues.add(tokenValue);
+        return new TestEntityWithUDTAsClustering_Select.E_TM(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E_TM Lt(Long tokenValue) {
+        where.and(QueryBuilder.lt("token(id)", QueryBuilder.bindMarker("tokenValue")));
+        boundValues.add(tokenValue);
+        encodedValues.add(tokenValue);
+        return new TestEntityWithUDTAsClustering_Select.E_TM(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E_TM Lte(Long tokenValue) {
+        where.and(QueryBuilder.lte("token(id)", QueryBuilder.bindMarker("tokenValue")));
+        boundValues.add(tokenValue);
+        encodedValues.add(tokenValue);
+        return new TestEntityWithUDTAsClustering_Select.E_TM(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) > ? AND token(id) < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E_TM Gt_And_Lt(Long tokenValue1, Long tokenValue2) {
+        where.and(QueryBuilder.gt("token(id)",QueryBuilder.bindMarker("tokenValue1")));
+        where.and(QueryBuilder.lt("token(id)",QueryBuilder.bindMarker("tokenValue2")));
+        boundValues.add(tokenValue1);
+        encodedValues.add(tokenValue1);
+        boundValues.add(tokenValue2);
+        encodedValues.add(tokenValue2);
+        return new TestEntityWithUDTAsClustering_Select.E_TM(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) > ? AND token(id) <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E_TM Gt_And_Lte(Long tokenValue1, Long tokenValue2) {
+        where.and(QueryBuilder.gt("token(id)",QueryBuilder.bindMarker("tokenValue1")));
+        where.and(QueryBuilder.lte("token(id)",QueryBuilder.bindMarker("tokenValue2")));
+        boundValues.add(tokenValue1);
+        encodedValues.add(tokenValue1);
+        boundValues.add(tokenValue2);
+        encodedValues.add(tokenValue2);
+        return new TestEntityWithUDTAsClustering_Select.E_TM(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) >= ? AND token(id) < ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E_TM Gte_And_Lt(Long tokenValue1, Long tokenValue2) {
+        where.and(QueryBuilder.gte("token(id)",QueryBuilder.bindMarker("tokenValue1")));
+        where.and(QueryBuilder.lt("token(id)",QueryBuilder.bindMarker("tokenValue2")));
+        boundValues.add(tokenValue1);
+        encodedValues.add(tokenValue1);
+        boundValues.add(tokenValue2);
+        encodedValues.add(tokenValue2);
+        return new TestEntityWithUDTAsClustering_Select.E_TM(where, cassandraOptions);
+      }
+
+      /**
+       * Generate a SELECT ... FROM ... WHERE ... <strong>token(id) >= ? AND token(id) <= ?</strong> */
+      @SuppressWarnings("static-access")
+      public final TestEntityWithUDTAsClustering_Select.E_TM Gte_And_Lte(Long tokenValue1, Long tokenValue2) {
+        where.and(QueryBuilder.gte("token(id)",QueryBuilder.bindMarker("tokenValue1")));
+        where.and(QueryBuilder.lte("token(id)",QueryBuilder.bindMarker("tokenValue2")));
+        boundValues.add(tokenValue1);
+        encodedValues.add(tokenValue1);
+        boundValues.add(tokenValue2);
+        encodedValues.add(tokenValue2);
+        return new TestEntityWithUDTAsClustering_Select.E_TM(where, cassandraOptions);
       }
     }
   }
