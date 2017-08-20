@@ -36,7 +36,7 @@ public class EntityWithSASIIndices {
     @Column
     private String prefixNonTokenizer;
 
-    @SASI(indexMode = CONTAINS, analyzed = true, analyzerClass = STANDARD_ANALYZER, normalization = LOWERCASE)
+    @SASI(indexMode = CONTAINS, analyzed = true, analyzerClass = STANDARD_ANALYZER, normalization = LOWERCASE, enableStemming = true)
     @Column
     private String containsStandardAnalyzer;
 

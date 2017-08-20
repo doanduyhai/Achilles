@@ -203,21 +203,25 @@ public enum ServerStarter {
         final String commitLogFolder = (String) parameters.get(COMMIT_LOG_FOLDER);
         final String savedCachesFolder = (String) parameters.get(SAVED_CACHES_FOLDER);
         final String hintsFolder = (String) parameters.get(HINTS_FOLDER);
+        final String cdcRawFolder = (String) parameters.get(CDC_RAW_FOLDER);
 
         LOGGER.debug(" Embedded Cassandra data directory = {}", dataFolder);
         LOGGER.debug(" Embedded Cassandra commitlog directory = {}", commitLogFolder);
         LOGGER.debug(" Embedded Cassandra saved caches directory = {}", savedCachesFolder);
         LOGGER.debug(" Embedded Cassandra hints directory = {}", hintsFolder);
+        LOGGER.debug(" Embedded Cassandra cdc_raw directory = {}", cdcRawFolder);
 
         validateFolder(dataFolder);
         validateFolder(commitLogFolder);
         validateFolder(savedCachesFolder);
         validateFolder(hintsFolder);
+        validateFolder(cdcRawFolder);
 
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER, dataFolder);
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER, commitLogFolder);
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER, savedCachesFolder);
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_HINTS_FOLDER, hintsFolder);
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_CDC_RAW_FOLDER, cdcRawFolder);
 
     }
 

@@ -43,6 +43,7 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
     static final String ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER";
     static final String ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER";
     static final String ACHILLES_EMBEDDED_CASSANDRA_HINTS_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_HINTS_FOLDER";
+    static final String ACHILLES_EMBEDDED_CASSANDRA_CDC_RAW_FOLDER = "ACHILLES_EMBEDDED_CASSANDRA_CDC_RAW_FOLDER";
 
     @Override
     public Config loadConfig() throws ConfigurationException {
@@ -133,6 +134,7 @@ public class AchillesCassandraConfig implements ConfigurationLoader {
         config.commitlog_directory = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER);
         config.saved_caches_directory = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER);
         config.hints_directory = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_HINTS_FOLDER);
+        config.cdc_raw_directory = System.getProperty(ACHILLES_EMBEDDED_CASSANDRA_CDC_RAW_FOLDER);
         return config;
     }
 }

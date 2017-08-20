@@ -76,6 +76,8 @@ public class CassandraEmbeddedServerBuilder {
 
     private String hintsFolder;
 
+    private String cdcRawFolder;
+
     private boolean cleanDataFiles = true;
 
     private boolean cleanConfigFile = true;
@@ -246,6 +248,18 @@ public class CassandraEmbeddedServerBuilder {
      */
     public CassandraEmbeddedServerBuilder withHintsFolder(String hintsFolder) {
         this.hintsFolder = hintsFolder;
+        return this;
+    }
+
+    /**
+     * Specify cdc_raw folder for the embedded Cassandra server. Default
+     * value is 'target/cassandra_embedded/cdc_raw'
+     *
+     * @param cdcRawFolder cdc_raw folder for the embedded Cassandra server
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withCdcRawFolder(String cdcRawFolder) {
+        this.cdcRawFolder = cdcRawFolder;
         return this;
     }
 
@@ -553,6 +567,9 @@ public class CassandraEmbeddedServerBuilder {
 
         if (isNotBlank(hintsFolder))
             cassandraParams.put(HINTS_FOLDER, hintsFolder);
+
+        if (isNotBlank(cdcRawFolder))
+            cassandraParams.put(CDC_RAW_FOLDER, cdcRawFolder);
 
         if (isNotBlank(clusterName))
             cassandraParams.put(CLUSTER_NAME, clusterName);
