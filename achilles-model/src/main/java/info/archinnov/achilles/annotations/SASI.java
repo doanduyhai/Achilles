@@ -74,8 +74,8 @@ import java.lang.annotation.*;
  *                     <li>normalization (OPTIONAL)</li>
  *                     <li>locale (OPTIONAL)</li>
  *                     <li>maxCompactionFlushMemoryInMb (OPTIONAL)</li>
- *                     <li>enableStemming (OPTIONAL)</li>
- *                     <li>skipStopWords (OPTIONAL)</li>
+ *                     <li>enableStemming = <strong>false</strong> (DEFAULT)</li>
+ *                     <li>skipStopWords  = <strong>false</strong> (DEFAULT)</li>
  *                 </ul>
  *             </td>
  *         </tr>
