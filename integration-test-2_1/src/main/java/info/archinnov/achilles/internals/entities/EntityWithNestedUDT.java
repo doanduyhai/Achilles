@@ -16,6 +16,8 @@
 
 package info.archinnov.achilles.internals.entities;
 
+import java.util.Optional;
+
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Frozen;
 import info.archinnov.achilles.annotations.PartitionKey;
@@ -35,6 +37,8 @@ public class EntityWithNestedUDT {
     @Column
     private UDTWithNestedUDT complexUDT;
 
+    @Column
+    private Optional<@Frozen UDTWithNoKeyspace> optionalUDT;
 
     public Long getId() {
         return id;
@@ -58,5 +62,13 @@ public class EntityWithNestedUDT {
 
     public void setComplexUDT(UDTWithNestedUDT complexUDT) {
         this.complexUDT = complexUDT;
+    }
+
+    public Optional<UDTWithNoKeyspace> getOptionalUDT() {
+        return optionalUDT;
+    }
+
+    public void setOptionalUDT(Optional<UDTWithNoKeyspace> optionalUDT) {
+        this.optionalUDT = optionalUDT;
     }
 }

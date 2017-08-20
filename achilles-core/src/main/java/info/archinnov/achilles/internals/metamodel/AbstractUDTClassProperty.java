@@ -95,7 +95,7 @@ public abstract class AbstractUDTClassProperty<A>
 
     protected abstract Class<?> getParentEntityClass();
 
-    protected abstract UDTValue createUDTFromBean(A instance, Optional<CassandraOptions> cassandraOptions);
+    protected abstract UDTValue createUDTFromBean(A instance, boolean frozen, Optional<CassandraOptions> cassandraOptions);
 
     protected abstract A newInstanceFromCustomConstructor(UDTValue udtValue);
 
@@ -121,15 +121,15 @@ public abstract class AbstractUDTClassProperty<A>
         return null;
     }
 
-    protected UserType getUserType(Optional<CassandraOptions> cassandraOptions) {
-        if (cassandraOptions.isPresent()) {
-            return buildType(cassandraOptions);
+    protected UserType getUserType(boolean frozen, Optional<CassandraOptions> cassandraOptions) {
+        if (cassandraOptions.isPresent() || userType == null) {
+            return buildType(frozen, cassandraOptions);
         } else {
             return userType;
         }
     }
 
-    public UserType buildType(Optional<CassandraOptions> cassandraOptions) {
+    public UserType buildType(boolean frozen, Optional<CassandraOptions> cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Building UserType instance for the current UDT class meta %s", this.toString()));
         }
@@ -147,7 +147,7 @@ public abstract class AbstractUDTClassProperty<A>
                 .stream()
                 .map(property -> userTypeFactory.fieldFor(property.fieldInfo.cqlColumn, property.buildType(cassandraOptions)))
                 .collect(Collectors.toList());
-        return userTypeFactory.typeFor(keyspaceName.get(), udtName, fields);
+        return userTypeFactory.typeFor(keyspaceName.get(), udtName, frozen, fields);
     }
 
     public String generateSchema(SchemaContext context) {
@@ -183,7 +183,7 @@ public abstract class AbstractUDTClassProperty<A>
         for (AbstractProperty<A, ?, ?> x : componentsProperty) {
             x.inject(userTypeFactory, tupleTypeFactory);
         }
-        userType = this.buildType(schemaNameProvider.map(CassandraOptions::withSchemaNameProvider));
+        //userType = this.buildType(frozen, schemaNameProvider.map(CassandraOptions::withSchemaNameProvider));
     }
 
     @Override

@@ -56,8 +56,23 @@ public class FieldInfo<ENTITY, VALUEFROM> {
         this.indexInfo = null;
     }
 
+    private FieldInfo(String cqlColumn, String fieldName, boolean frozen) {
+        this.cqlColumn = cqlColumn;
+        this.quotedCqlColumn = NamingHelper.maybeQuote(cqlColumn);
+        this.fieldName = fieldName;
+        this.getter = null;
+        this.setter = null;
+        this.columnType = null;
+        this.columnInfo = new ColumnInfo(frozen);
+        this.indexInfo = null;
+    }
+
     public static <A, B> FieldInfo of(String cqlColumn, String fieldName) {
         return new FieldInfo<A, B>(cqlColumn, fieldName);
+    }
+
+    public static <A, B> FieldInfo of(String cqlColumn, String fieldName, boolean frozen) {
+        return new FieldInfo<A, B>(cqlColumn, fieldName, frozen);
     }
 
     public boolean hasIndex() {

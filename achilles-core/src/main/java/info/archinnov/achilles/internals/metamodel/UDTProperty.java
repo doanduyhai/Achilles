@@ -82,7 +82,7 @@ public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode from Java '%s' %s to CQL UDT type", fieldName, javaValue));
         }
-        return udtClassProperty.createUDTFromBean(javaValue, cassandraOptions);
+        return udtClassProperty.createUDTFromBean(javaValue, fieldInfo.columnInfo.frozen, cassandraOptions);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A
             LOGGER.debug(format("Build current '%s' UDT data type", fieldName));
         }
 
-        return udtClassProperty.buildType(cassandraOptions);
+        return udtClassProperty.buildType(fieldInfo.columnInfo.frozen, cassandraOptions);
     }
 
     @Override

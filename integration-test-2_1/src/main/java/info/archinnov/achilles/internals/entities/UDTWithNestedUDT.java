@@ -18,6 +18,7 @@ package info.archinnov.achilles.internals.entities;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Frozen;

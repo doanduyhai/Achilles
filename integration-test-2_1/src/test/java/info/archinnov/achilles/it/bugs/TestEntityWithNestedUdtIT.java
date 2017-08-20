@@ -20,6 +20,7 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -70,6 +71,7 @@ public class TestEntityWithNestedUdtIT {
         entity.setId(id);
         entity.setUdt(udtWithNoKeySpace);
         entity.setComplexUDT(udtWithNestedUDT);
+        entity.setOptionalUDT(Optional.of(udtWithNoKeySpace));
 
         //When
         manager.crud().insert(entity).execute();
@@ -79,6 +81,8 @@ public class TestEntityWithNestedUdtIT {
         assertThat(found).isNotNull();
         assertThat(found.getUdt()).isEqualTo(udtWithNoKeySpace);
         assertThat(found.getComplexUDT()).isEqualTo(udtWithNestedUDT);
+        assertThat(found.getOptionalUDT().isPresent()).isTrue();
+        assertThat(found.getOptionalUDT().get()).isEqualTo(udtWithNoKeySpace);
     }
 
     @Test

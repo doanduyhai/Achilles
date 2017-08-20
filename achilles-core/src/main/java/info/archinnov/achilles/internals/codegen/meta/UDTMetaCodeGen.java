@@ -204,9 +204,10 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
                 .addParameter(rawBeanType, "instance")
+                .addParameter(TypeName.BOOLEAN, "frozen")
                 .addParameter(genericType(OPTIONAL, OPTIONS), "cassandraOptions")
                 .returns(JAVA_DRIVER_UDT_VALUE_TYPE)
-                .addStatement("final $T dynamicUserType = this.getUserType($N)", JAVA_DRIVER_USER_TYPE, "cassandraOptions")
+                .addStatement("final $T dynamicUserType = this.getUserType($N, $N)", JAVA_DRIVER_USER_TYPE, "frozen", "cassandraOptions")
                 .addStatement("final $T udtValue = dynamicUserType.newValue()", JAVA_DRIVER_UDT_VALUE_TYPE);
 
         for (FieldMetaSignature x : parsingResults) {
@@ -217,25 +218,6 @@ public class UDTMetaCodeGen implements CommonBeanMetaCodeGen {
 
         return builder.build();
     }
-
-//    private MethodSpec buildCreateBeanFromUDT(TypeName rawBeanType, List<FieldMetaSignature> parsingResults) {
-//        final ClassName udtType = ClassName.get(UDTValue.class);
-//
-//        final MethodSpec.Builder builder = MethodSpec.methodBuilder("createBeanFromUDT")
-//                .addAnnotation(Override.class)
-//                .addModifiers(Modifier.PROTECTED)
-//                .addParameter(udtType, "udtValue")
-//                .returns(rawBeanType)
-//                .addStatement("final $T instance = udtFactory.newInstance(udtClass)", rawBeanType);
-//
-//        for (FieldMetaSignature x : parsingResults) {
-//            builder.addStatement("$L.decodeField(udtValue, instance)", x.context.fieldName);
-//        }
-//
-//        builder.addStatement("return instance");
-//
-//        return builder.build();
-//    }
 
     private MethodSpec buildNewInstanceFromCustomConstructor(TypeName rawBeanType, List<FieldMetaSignature> customConstructorFieldMetaSignatures) {
         final MethodSpec.Builder methodSpec = MethodSpec.methodBuilder("newInstanceFromCustomConstructor")

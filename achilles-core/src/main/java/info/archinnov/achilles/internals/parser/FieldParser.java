@@ -210,7 +210,8 @@ public class FieldParser {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final TypeMirror typeMirror1 = AptUtils.getTypeArguments(annotationTree.getCurrentType()).get(0);
         final TypeName sourceType1 = TypeName.get(typeMirror1);
-        final FieldMetaSignature parsingResult = parseType(annotationTree.next(), context.forOptionalType(context.entityRawType, sourceType1), sourceType1);
+        final boolean frozen = AptUtils.containsAnnotation(annotationTree, Frozen.class);
+        final FieldMetaSignature parsingResult = parseType(annotationTree.next(), context.forOptionalType(context.entityRawType, sourceType1, frozen), sourceType1);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L)",
                 JDK_OPTIONAL_PROPERTY,
                 context.fieldInfoCode,

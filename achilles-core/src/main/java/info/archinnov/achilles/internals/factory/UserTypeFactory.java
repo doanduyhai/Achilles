@@ -30,8 +30,8 @@ public class UserTypeFactory {
         this.registry = registry;
     }
 
-    public UserType typeFor(String keyspace, String typeName, Collection<UserType.Field> fields) {
-        return UserTypeBuilder.buildUserType(protocolVersion, registry, keyspace, typeName, fields);
+    public UserType typeFor(String keyspace, String typeName, boolean frozen, Collection<UserType.Field> fields) {
+        return UserTypeBuilder.buildUserType(protocolVersion, registry, keyspace, typeName, frozen, fields);
     }
 
     public UserType.Field fieldFor(String name, DataType dataType) {

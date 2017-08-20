@@ -42,7 +42,7 @@ public class NonEscapingSetAssignment extends Assignment.SetAssignment {
 
     @Override
     void appendTo(StringBuilder sb, List<Object> variables, CodecRegistry codecRegistry) {
-        sb.append(name.trim()).append('=');
+        sb.append(name).append('=');
         appendValue(value, codecRegistry, sb, variables);
     }
 

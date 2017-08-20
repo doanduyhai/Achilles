@@ -274,6 +274,7 @@ CREATE TABLE IF NOT EXISTS test.entity_with_native_collections(
 CREATE TABLE IF NOT EXISTS test.table_with_nested_udt(
 		id bigint,
 		complexudt frozen<test.having_nested_type>,
+		optionaludt test.no_ks,
 		udt frozen<test.no_ks>,
 		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.entity_with_no_ks_udt(

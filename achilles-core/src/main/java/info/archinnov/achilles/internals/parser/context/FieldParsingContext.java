@@ -90,15 +90,15 @@ public class FieldParsingContext {
 
     public FieldParsingContext noLambda(TypeName entityType, TypeName sourceType) {
         return new FieldParsingContext(entityContext, entityRawType, new FieldInfoContext(
-                CodeBlock.builder().add("$T.<$T, $T> of($S, $S)", FIELD_INFO, entityType, sourceType,
+                CodeBlock.builder().add("$T.<$T, $T> of($S, $S, true)", FIELD_INFO, entityType, sourceType,
                         fieldName, cqlColumn).build(),
                 fieldName, cqlColumn, columnType, columnInfo, indexInfo), false);
     }
 
-    public FieldParsingContext forOptionalType(TypeName entityType, TypeName nestedType) {
+    public FieldParsingContext forOptionalType(TypeName entityType, TypeName nestedType, boolean frozen) {
         return new FieldParsingContext(entityContext, entityRawType, new FieldInfoContext(
-                CodeBlock.builder().add("$T.<$T, $T> of($S, $S)", FIELD_INFO, entityType, nestedType,
-                    cqlColumn, fieldName).build(),
+                CodeBlock.builder().add("$T.<$T, $T> of($S, $S, $L)", FIELD_INFO, entityType, nestedType,
+                    cqlColumn, fieldName, frozen).build(),
                 fieldName, cqlColumn, columnType, columnInfo, indexInfo), true);
     }
 

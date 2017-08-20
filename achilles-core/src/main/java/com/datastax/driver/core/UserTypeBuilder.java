@@ -27,11 +27,11 @@ public class UserTypeBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserTypeBuilder.class);
 
-    public static UserType buildUserType(ProtocolVersion version, CodecRegistry registry, String keyspace, String typeName, Collection<UserType.Field> fields) {
+    public static UserType buildUserType(ProtocolVersion version, CodecRegistry registry, String keyspace, String typeName, boolean frozen, Collection<UserType.Field> fields) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Creating UserType instance for UDT %s in keyspace %s", typeName, keyspace));
         }
-        return new UserType(keyspace, typeName, fields, version, registry);
+        return new UserType(keyspace, typeName, frozen, fields, version, registry);
     }
 
     public static UserType.Field buildField(String name, DataType dataType) {
