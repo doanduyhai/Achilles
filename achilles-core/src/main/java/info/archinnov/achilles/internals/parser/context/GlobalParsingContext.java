@@ -43,6 +43,7 @@ import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.function.FunctionParameterTypesCodeGen;
 import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
 import info.archinnov.achilles.internals.codegen.index.IndexSelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.index.IndexSelectWhereDSLCodeGen;
@@ -77,6 +78,8 @@ public class GlobalParsingContext {
         VERSION_MAPPING.put(CASSANDRA_3_5, V3_5.INSTANCE);
         VERSION_MAPPING.put(CASSANDRA_3_6, V3_6.INSTANCE);
         VERSION_MAPPING.put(CASSANDRA_3_7, V3_7.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_8, V3_8.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_9, V3_8.INSTANCE);
         VERSION_MAPPING.put(DSE_4_8_X, info.archinnov.achilles.internals.cassandra_version.DSE_4_8_X.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_0, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_0.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_1, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_1.INSTANCE);
@@ -201,6 +204,10 @@ public class GlobalParsingContext {
 
     public FunctionsRegistryCodeGen functionsRegistryCodeGen() {
         return cassandraVersion.functionsRegistryCodeGen();
+    }
+
+    public FunctionParameterTypesCodeGen functionParameterTypesCodeGen() {
+        return cassandraVersion.functionParameterTypesCodeGen();
     }
 
     public boolean supportsFeature(CassandraFeature feature) {

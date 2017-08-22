@@ -30,9 +30,14 @@ import com.squareup.javapoet.*;
 import info.archinnov.achilles.internals.parser.context.FunctionsContext;
 import info.archinnov.achilles.internals.utils.TypeNameHelper;
 
-public class FunctionParameterTypesCodeGen {
+public abstract class FunctionParameterTypesCodeGen {
 
-    public static List<TypeSpec> buildParameterTypesClasses(FunctionsContext functionContext) {
+    public abstract List<TypeSpec> buildParameterTypesClasses(FunctionsContext functionContext);
+
+    protected abstract void enhanceGeneratedType(TypeSpec.Builder builder, TypeName typeName);
+
+
+    protected List<TypeSpec> buildParameterTypesClassesInternal(FunctionsContext functionContext) {
 
         final Set<TypeName> uniqueTypeNames = functionContext.allUsedTypes
                 .stream()
@@ -42,14 +47,10 @@ public class FunctionParameterTypesCodeGen {
         return uniqueTypeNames
             .stream()
             .map(typeName -> {
-
-                //TODO Enable it when https://issues.apache.org/jira/browse/CASSANDRA-10783 is done
-                //.addMethod(buildStaticWrapperMethod(boxed))
-
                 final TypeSpec.Builder builder = TypeSpec.classBuilder(TypeNameHelper.asString(typeName) + FUNCTION_TYPE_SUFFIX)
                         .superclass(genericType(ABSTRACT_CQL_COMPATIBLE_TYPE, typeName))
                         .addSuperinterface(FUNCTION_CALL)
-                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                        .addModifiers(Modifier.PUBLIC)
                         .addMethod(buildConstructor(typeName))
                         .addMethod(buildIsFunctionCall());
 
@@ -60,13 +61,14 @@ public class FunctionParameterTypesCodeGen {
                             .build());
                 }
 
+                enhanceGeneratedType(builder, typeName);
                 return builder.build();
             })
             .collect(Collectors.toList());
 
     }
 
-    private static MethodSpec buildConstructor(TypeName typeName) {
+    protected MethodSpec buildConstructor(TypeName typeName) {
         return MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PROTECTED)
                 .addParameter(genericType(OPTIONAL, typeName), "value", Modifier.FINAL)
@@ -74,7 +76,7 @@ public class FunctionParameterTypesCodeGen {
                 .build();
     }
 
-    private static MethodSpec buildIsFunctionCall() {
+    protected MethodSpec buildIsFunctionCall() {
         return MethodSpec.methodBuilder("isFunctionCall")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
@@ -83,16 +85,4 @@ public class FunctionParameterTypesCodeGen {
                 .build();
     }
 
-    private static MethodSpec buildStaticWrapperMethod(TypeName typeName) {
-        TypeName returnType = ClassName.get(FUNCTION_PACKAGE, TypeNameHelper.asString(typeName)+ FUNCTION_TYPE_SUFFIX);
-        return MethodSpec.methodBuilder("wrap")
-                .addJavadoc("Wrap value $T", typeName)
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                .addParameter(typeName, "wrappedValue", Modifier.FINAL)
-                .returns(returnType)
-                .addStatement("$T.validateNotNull(wrappedValue, $S)", VALIDATOR,
-                        format("The provided value for wrapper class %s should not be null", returnType))
-                .addStatement("return new $T($T.of(wrappedValue))", returnType, OPTIONAL)
-                .build();
-    }
 }

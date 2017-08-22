@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.cassandra_version;
+package info.archinnov.achilles.internals.config;
 
-public enum CassandraFeature {
+import info.archinnov.achilles.annotations.CompileTimeConfig;
+import info.archinnov.achilles.type.CassandraVersion;
+import info.archinnov.achilles.type.strategy.ColumnMappingStrategy;
 
-    UDT,
-    UDF_UDA,
-    JSON,
-    MATERIALIZED_VIEW,
-    SASI_INDEX,
-    LITERAL_VALUES_IN_FUNCTION_CALL,
-    DSE_SEARCH,
-
+@CompileTimeConfig(cassandraVersion = CassandraVersion.CASSANDRA_3_8,
+        columnMappingStrategy = ColumnMappingStrategy.EXPLICIT,
+        projectName = "IT_3_8")
+public interface AchillesConfig {
 }

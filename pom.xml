@@ -151,6 +151,7 @@
         <module>integration-test-3_2</module>
         <module>integration-test-3_6</module>
         <module>integration-test-3_7</module>
+        <module>integration-test-3_8</module>
     </modules>
 
     <dependencyManagement>
@@ -225,6 +226,13 @@
                 <artifactId>integration-test-3_6</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>info.archinnov</groupId>
+                <artifactId>integration-test-3_7</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- Cassandra -->
             <dependency>
                 <groupId>org.apache.cassandra</groupId>

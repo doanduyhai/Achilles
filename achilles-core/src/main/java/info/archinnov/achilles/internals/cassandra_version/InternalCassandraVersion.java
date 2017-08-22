@@ -42,10 +42,13 @@ import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2.UpdateD
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_2.UpdateWhereDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra3_0.UpdateWhereDSLCodeGen3_0;
 import info.archinnov.achilles.internals.codegen.dsl.update.cassandra3_6.UpdateDSLCodeGen3_6;
+import info.archinnov.achilles.internals.codegen.function.FunctionParameterTypesCodeGen;
 import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
+import info.archinnov.achilles.internals.codegen.function.cassandra2_1.FunctionParameterTypesCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.function.cassandra2_1.FunctionsRegistryCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.function.cassandra2_2.FunctionsRegistryCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.function.cassandra3_2.FunctionsRegistryCodeGen3_2;
+import info.archinnov.achilles.internals.codegen.function.cassandra3_8.FunctionParameterTypesCodeGen3_8;
 import info.archinnov.achilles.internals.codegen.index.IndexSelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.index.IndexSelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.index.cassandra2_1.IndexSelectDSLCodeGen2_1;
@@ -89,7 +92,7 @@ public interface InternalCassandraVersion {
     DeleteDSLCodeGen DELETE_DSL_CODE_GEN = new DeleteDSLCodeGen2_1();
     DeleteWhereDSLCodeGen DELETE_WHERE_DSL_CODE_GEN = new DeleteWhereDSLCodeGen2_1();
 
-    FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN = new FunctionsRegistryCodeGen2_1();
+
 
     CrudAPICodeGen CRUD_API_CODE_GEN_2_2 = new CrudAPICodeGen2_2();
     SelectDSLCodeGen SELECT_DSL_CODE_GEN_2_2 = new SelectDSLCodeGen2_2();
@@ -110,8 +113,14 @@ public interface InternalCassandraVersion {
 
     BeanValidator BEAN_VALIDATOR_3_0 = new BeanValidator3_0();
     NestedTypesValidator NESTED_TYPES_VALIDATOR_3_6 = new NestedTypeValidator3_6();
+
+    // Function calls
+    FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN = new FunctionsRegistryCodeGen2_1();
     FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN_2_2 = new FunctionsRegistryCodeGen2_2();
     FunctionsRegistryCodeGen FUNCTIONS_REGISTRY_CODE_GEN_3_2 = new FunctionsRegistryCodeGen3_2();
+
+    FunctionParameterTypesCodeGen FUNCTION_PARAMETER_TYPES_CODE_GEN = new FunctionParameterTypesCodeGen2_1();
+    FunctionParameterTypesCodeGen FUNCTION_PARAMETER_TYPES_CODE_GEN_3_8 = new FunctionParameterTypesCodeGen3_8();
 
     Set<CassandraFeature> getFeatures();
 
@@ -175,5 +184,9 @@ public interface InternalCassandraVersion {
 
     default FunctionsRegistryCodeGen functionsRegistryCodeGen() {
         return FUNCTIONS_REGISTRY_CODE_GEN;
+    }
+
+    default FunctionParameterTypesCodeGen functionParameterTypesCodeGen() {
+        return FUNCTION_PARAMETER_TYPES_CODE_GEN;
     }
 }

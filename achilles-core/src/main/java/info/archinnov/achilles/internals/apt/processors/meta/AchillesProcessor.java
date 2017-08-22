@@ -90,23 +90,23 @@ public class AchillesProcessor extends AbstractProcessor {
 
             try {
 
-                final GlobalParsingContext parsingContext = initGlobalParsingContext(annotations, roundEnv);
+                final GlobalParsingContext globalContext = initGlobalParsingContext(annotations, roundEnv);
 
-                validateCassandraVersionAgainstUsedAnnotations(annotations, parsingContext);
+                validateCassandraVersionAgainstUsedAnnotations(annotations, globalContext);
 
-                parseCodecRegistry(parsingContext, annotations, roundEnv);
+                parseCodecRegistry(globalContext, annotations, roundEnv);
 
-                final List<EntityMetaSignature> tableAndViewSignatures = discoverAndValidateTablesAndViews(annotations, roundEnv, parsingContext);
+                final List<EntityMetaSignature> tableAndViewSignatures = discoverAndValidateTablesAndViews(annotations, roundEnv, globalContext);
 
-                final FunctionsContext udfContext = parseAndValidateFunctionRegistry(parsingContext, annotations, roundEnv, tableAndViewSignatures);
+                final FunctionsContext udfContext = parseAndValidateFunctionRegistry(globalContext, annotations, roundEnv, tableAndViewSignatures);
 
-                final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance(parsingContext);
+                final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance(globalContext);
 
-                final ManagersAndDSLClasses managersAndDSLClasses = ManagerFactoryCodeGen.buildInstance(aptUtils, tableAndViewSignatures, udfContext, parsingContext);
+                final ManagersAndDSLClasses managersAndDSLClasses = ManagerFactoryCodeGen.buildInstance(aptUtils, tableAndViewSignatures, udfContext, globalContext);
 
                 aptUtils.printNote("[Achilles] Reading previously generated source files (if exist)");
                 try {
-                    final FileObject resource = aptUtils.filer.getResource(StandardLocation.SOURCE_OUTPUT, GENERATED_PACKAGE, parsingContext.managerFactoryBuilderClassName());
+                    final FileObject resource = aptUtils.filer.getResource(StandardLocation.SOURCE_OUTPUT, GENERATED_PACKAGE, globalContext.managerFactoryBuilderClassName());
                     final File generatedSourceFolder = new File(resource.toUri().getRawPath().replaceAll("(.+/info/archinnov/achilles/generated/).+", "$1"));
                     aptUtils.printNote("[Achilles] Cleaning previously generated source files folder : '%s'", generatedSourceFolder.getPath());
                     FileUtils.deleteDirectory(generatedSourceFolder);
@@ -115,18 +115,18 @@ public class AchillesProcessor extends AbstractProcessor {
                 }
 
                 aptUtils.printNote("[Achilles] Generating CQL compatible types (used by the application) as class for function calls");
-                for (TypeSpec typeSpec : FunctionParameterTypesCodeGen.buildParameterTypesClasses(udfContext)) {
+                for (TypeSpec typeSpec : globalContext.functionParameterTypesCodeGen().buildParameterTypesClasses(udfContext)) {
                     JavaFile.builder(FUNCTION_PACKAGE, typeSpec)
                             .build().writeTo(aptUtils.filer);
                 }
 
                 aptUtils.printNote("[Achilles] Generating SystemFunctions");
-                JavaFile.builder(FUNCTION_PACKAGE, parsingContext.functionsRegistryCodeGen().generateFunctionsRegistryClass(SYSTEM_FUNCTIONS_CLASS,
+                JavaFile.builder(FUNCTION_PACKAGE, globalContext.functionsRegistryCodeGen().generateFunctionsRegistryClass(SYSTEM_FUNCTIONS_CLASS,
                         SYSTEM_FUNCTIONS)).build().writeTo(aptUtils.filer);
 
-                if (parsingContext.supportsFeature(UDF_UDA)) {
+                if (globalContext.supportsFeature(UDF_UDA)) {
                     aptUtils.printNote("[Achilles] Generating FunctionsRegistry");
-                    JavaFile.builder(FUNCTION_PACKAGE, parsingContext.functionsRegistryCodeGen().generateFunctionsRegistryClass(FUNCTIONS_REGISTRY_CLASS,
+                    JavaFile.builder(FUNCTION_PACKAGE, globalContext.functionsRegistryCodeGen().generateFunctionsRegistryClass(FUNCTIONS_REGISTRY_CLASS,
                             udfContext.functionSignatures)).build().writeTo(aptUtils.filer);
                 }
 
@@ -140,7 +140,7 @@ public class AchillesProcessor extends AbstractProcessor {
                         .build().writeTo(aptUtils.filer);
 
                 aptUtils.printNote("[Achilles] Generating UDT meta classes");
-                for (TypeSpec typeSpec : parsingContext.udtTypes.values()) {
+                for (TypeSpec typeSpec : globalContext.udtTypes.values()) {
                     JavaFile.builder(UDT_META_PACKAGE, typeSpec)
                             .build().writeTo(aptUtils.filer);
                 }

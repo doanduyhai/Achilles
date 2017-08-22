@@ -47,6 +47,13 @@ CREATE TABLE IF NOT EXISTS test.entity_child(
 		child_value text,
 		value text,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS it_3_8.entity_for_aggregate(
+		partition bigint,
+		clustering int,
+		doubleval double,
+		stringval text,
+		PRIMARY KEY(partition, clustering))
+	WITH CLUSTERING ORDER BY(clustering ASC);
 CREATE TABLE IF NOT EXISTS test.entity_for_cast_fcall(
 		id bigint,
 		value text,

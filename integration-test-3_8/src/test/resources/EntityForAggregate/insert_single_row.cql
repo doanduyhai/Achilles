@@ -1,0 +1,1 @@
+INSERT INTO it_3_8.entity_for_aggregate(partition, clustering, doubleval, stringVal) VALUES (${id}, 1, 1.0, '1.0');

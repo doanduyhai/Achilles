@@ -314,6 +314,24 @@ public enum CassandraVersion {
      *
      */
     CASSANDRA_3_7,
+    /**
+     * New features:
+     * <br/>
+     * <ul>
+     *     <li>Allow literal value as parameter of UDF & UDA (CASSANDRA-10783)</li>
+     * </ul>
+     *
+     */
+    CASSANDRA_3_8,
+    /**
+     * New features:
+     * <br/>
+     * <ul>
+     *     <li>Allow literal value as parameter of UDF & UDA (CASSANDRA-10783)</li>
+     * </ul>
+     *
+     */
+    CASSANDRA_3_9,
 
     /**
      * Feature:
