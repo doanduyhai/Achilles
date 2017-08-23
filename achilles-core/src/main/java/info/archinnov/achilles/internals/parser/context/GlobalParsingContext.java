@@ -79,7 +79,8 @@ public class GlobalParsingContext {
         VERSION_MAPPING.put(CASSANDRA_3_6, V3_6.INSTANCE);
         VERSION_MAPPING.put(CASSANDRA_3_7, V3_7.INSTANCE);
         VERSION_MAPPING.put(CASSANDRA_3_8, V3_8.INSTANCE);
-        VERSION_MAPPING.put(CASSANDRA_3_9, V3_8.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_9, V3_9.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_10, V3_10.INSTANCE);
         VERSION_MAPPING.put(DSE_4_8_X, info.archinnov.achilles.internals.cassandra_version.DSE_4_8_X.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_0, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_0.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_1, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_1.INSTANCE);

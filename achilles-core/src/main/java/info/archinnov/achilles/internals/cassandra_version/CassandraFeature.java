@@ -24,6 +24,7 @@ public enum CassandraFeature {
     MATERIALIZED_VIEW,
     SASI_INDEX,
     LITERAL_VALUES_IN_FUNCTION_CALL,
+    DURATION_TYPE,
     DSE_SEARCH,
 
 }

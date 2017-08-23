@@ -20,6 +20,7 @@ import static info.archinnov.achilles.internals.cassandra_version.CassandraFeatu
 import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.SASI_INDEX;
 import static java.util.Arrays.asList;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.squareup.javapoet.TypeName;
@@ -29,10 +30,17 @@ import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
+import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 
 public class FieldValidator2_1 extends FieldValidator {
+
+    @Override
+    public List<TypeName> getAllowedTypes() {
+        return TypeUtils.ALLOWED_TYPES_2_1;
+    }
+
     @Override
     public void validateCompatibleIndexAnnotationsOnField(GlobalParsingContext context, AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
                                                           Optional<Index> index, Optional<SASI> sasi, Optional<DSE_Search> dseSearch) {

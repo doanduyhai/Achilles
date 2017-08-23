@@ -21,6 +21,7 @@ import static info.archinnov.achilles.annotations.SASI.IndexMode.SPARSE;
 import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
 import static java.util.Arrays.asList;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.squareup.javapoet.TypeName;
@@ -30,6 +31,7 @@ import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
+import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 import info.archinnov.achilles.internals.parser.validator.cassandra2_1.FieldValidator2_1;

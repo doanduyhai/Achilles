@@ -293,6 +293,7 @@ public class TypeUtils {
     public static final TypeName INET_ADDRESS = ClassName.get(InetAddress.class);
     public static final TypeName UUID = ClassName.get(UUID.class);
     public static final TypeName JAVA_DRIVER_LOCAL_DATE = ClassName.get(LocalDate.class);
+    public static final TypeName JAVA_DRIVER_DURATION = ClassName.get(Duration.class);
     public static final TypeName JAVA_UTIL_DATE = ClassName.get(Date.class);
     public static final TypeName JAVA_TIME_INSTANT = ClassName.get(java.time.Instant.class);
     public static final TypeName JAVA_TIME_LOCAL_DATE = ClassName.get(java.time.LocalDate.class);
@@ -333,26 +334,28 @@ public class TypeUtils {
     public static final ClassName TUPLE10 = ClassName.get(Tuple10.class);
 
 
-    public static final List<TypeName> ALLOWED_TYPES = new ArrayList<>();
-    public static final Set<TypeName> NATIVE_TYPES = new HashSet<>();
-    public static final Map<TypeName, TypeName> NATIVE_TYPES_MAPPING = new HashMap<>();
+    public static final List<TypeName> ALLOWED_TYPES_2_1 = new ArrayList<>();
+    public static final List<TypeName> ALLOWED_TYPES_3_10 = new ArrayList<>();
+    public static final Set<TypeName> NATIVE_TYPES_2_1 = new HashSet<>();
+    public static final Set<TypeName> NATIVE_TYPES_3_10 = new HashSet<>();
+//    public static final Map<TypeName, TypeName> NATIVE_TYPES_MAPPING = new HashMap<>();
     public static final Map<TypeName, String> DRIVER_TYPES_MAPPING = new HashMap<>();
     public static final Map<TypeName, String> DRIVER_TYPES_FUNCTION_PARAM_MAPPING = new HashMap<>();
 
     static {
         // Bytes
-        ALLOWED_TYPES.add(NATIVE_BYTE);
-        ALLOWED_TYPES.add(OBJECT_BYTE);
-        ALLOWED_TYPES.add(NATIVE_BYTE_ARRAY);
-        ALLOWED_TYPES.add(OBJECT_BYTE_ARRAY);
-        ALLOWED_TYPES.add(BYTE_BUFFER);
-        ALLOWED_TYPES.add(DOUBLE_ARRAY);
-        ALLOWED_TYPES.add(FLOAT_ARRAY);
-        ALLOWED_TYPES.add(INT_ARRAY);
-        ALLOWED_TYPES.add(LONG_ARRAY);
+        ALLOWED_TYPES_2_1.add(NATIVE_BYTE);
+        ALLOWED_TYPES_2_1.add(OBJECT_BYTE);
+        ALLOWED_TYPES_2_1.add(NATIVE_BYTE_ARRAY);
+        ALLOWED_TYPES_2_1.add(OBJECT_BYTE_ARRAY);
+        ALLOWED_TYPES_2_1.add(BYTE_BUFFER);
+        ALLOWED_TYPES_2_1.add(DOUBLE_ARRAY);
+        ALLOWED_TYPES_2_1.add(FLOAT_ARRAY);
+        ALLOWED_TYPES_2_1.add(INT_ARRAY);
+        ALLOWED_TYPES_2_1.add(LONG_ARRAY);
 
-        NATIVE_TYPES.add(OBJECT_BYTE);
-        NATIVE_TYPES.add(BYTE_BUFFER);
+        NATIVE_TYPES_2_1.add(OBJECT_BYTE);
+        NATIVE_TYPES_2_1.add(BYTE_BUFFER);
 
         DRIVER_TYPES_MAPPING.put(NATIVE_BYTE, "tinyint()");
         DRIVER_TYPES_MAPPING.put(OBJECT_BYTE, "tinyint()");
@@ -376,16 +379,16 @@ public class TypeUtils {
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(INT_ARRAY, "list<int>");
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(LONG_ARRAY, "list<bigint>");
 
-        NATIVE_TYPES_MAPPING.put(DOUBLE_ARRAY, genericType(LIST, OBJECT_DOUBLE));
-        NATIVE_TYPES_MAPPING.put(FLOAT_ARRAY, genericType(LIST, OBJECT_FLOAT));
-        NATIVE_TYPES_MAPPING.put(INT_ARRAY, genericType(LIST, OBJECT_INT));
-        NATIVE_TYPES_MAPPING.put(LONG_ARRAY, genericType(LIST, OBJECT_LONG));
+//        NATIVE_TYPES_MAPPING.put(DOUBLE_ARRAY, genericType(LIST, OBJECT_DOUBLE));
+//        NATIVE_TYPES_MAPPING.put(FLOAT_ARRAY, genericType(LIST, OBJECT_FLOAT));
+//        NATIVE_TYPES_MAPPING.put(INT_ARRAY, genericType(LIST, OBJECT_INT));
+//        NATIVE_TYPES_MAPPING.put(LONG_ARRAY, genericType(LIST, OBJECT_LONG));
 
         // Boolean
-        ALLOWED_TYPES.add(NATIVE_BOOLEAN);
-        ALLOWED_TYPES.add(OBJECT_BOOLEAN);
+        ALLOWED_TYPES_2_1.add(NATIVE_BOOLEAN);
+        ALLOWED_TYPES_2_1.add(OBJECT_BOOLEAN);
 
-        NATIVE_TYPES.add(OBJECT_BOOLEAN);
+        NATIVE_TYPES_2_1.add(OBJECT_BOOLEAN);
 
         DRIVER_TYPES_MAPPING.put(NATIVE_BOOLEAN, "cboolean()");
         DRIVER_TYPES_MAPPING.put(OBJECT_BOOLEAN, "cboolean()");
@@ -394,23 +397,23 @@ public class TypeUtils {
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_BOOLEAN, "boolean");
 
         // Datetime
-        ALLOWED_TYPES.add(JAVA_UTIL_DATE);
-        NATIVE_TYPES.add(JAVA_UTIL_DATE);
+        ALLOWED_TYPES_2_1.add(JAVA_UTIL_DATE);
+        NATIVE_TYPES_2_1.add(JAVA_UTIL_DATE);
 
         DRIVER_TYPES_MAPPING.put(JAVA_UTIL_DATE, "timestamp()");
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(JAVA_UTIL_DATE, "timestamp");
 
         // Date
-        ALLOWED_TYPES.add(JAVA_DRIVER_LOCAL_DATE);
-        NATIVE_TYPES.add(JAVA_DRIVER_LOCAL_DATE);
+        ALLOWED_TYPES_2_1.add(JAVA_DRIVER_LOCAL_DATE);
+        NATIVE_TYPES_2_1.add(JAVA_DRIVER_LOCAL_DATE);
 
         DRIVER_TYPES_MAPPING.put(JAVA_DRIVER_LOCAL_DATE, "date()");
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(JAVA_DRIVER_LOCAL_DATE, "date");
 
         //Short
-        ALLOWED_TYPES.add(NATIVE_SHORT);
-        ALLOWED_TYPES.add(OBJECT_SHORT);
-        NATIVE_TYPES.add(OBJECT_SHORT);
+        ALLOWED_TYPES_2_1.add(NATIVE_SHORT);
+        ALLOWED_TYPES_2_1.add(OBJECT_SHORT);
+        NATIVE_TYPES_2_1.add(OBJECT_SHORT);
 
         DRIVER_TYPES_MAPPING.put(NATIVE_SHORT, "smallint()");
         DRIVER_TYPES_MAPPING.put(OBJECT_SHORT, "smallint()");
@@ -419,9 +422,9 @@ public class TypeUtils {
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_SHORT, "smallint");
 
         // Double
-        ALLOWED_TYPES.add(NATIVE_DOUBLE);
-        ALLOWED_TYPES.add(OBJECT_DOUBLE);
-        NATIVE_TYPES.add(OBJECT_DOUBLE);
+        ALLOWED_TYPES_2_1.add(NATIVE_DOUBLE);
+        ALLOWED_TYPES_2_1.add(OBJECT_DOUBLE);
+        NATIVE_TYPES_2_1.add(OBJECT_DOUBLE);
 
         DRIVER_TYPES_MAPPING.put(NATIVE_DOUBLE, "cdouble()");
         DRIVER_TYPES_MAPPING.put(OBJECT_DOUBLE, "cdouble()");
@@ -430,11 +433,11 @@ public class TypeUtils {
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_DOUBLE, "double");
 
         // Float
-        ALLOWED_TYPES.add(BIG_DECIMAL);
-        ALLOWED_TYPES.add(NATIVE_FLOAT);
-        ALLOWED_TYPES.add(OBJECT_FLOAT);
-        NATIVE_TYPES.add(BIG_DECIMAL);
-        NATIVE_TYPES.add(OBJECT_FLOAT);
+        ALLOWED_TYPES_2_1.add(BIG_DECIMAL);
+        ALLOWED_TYPES_2_1.add(NATIVE_FLOAT);
+        ALLOWED_TYPES_2_1.add(OBJECT_FLOAT);
+        NATIVE_TYPES_2_1.add(BIG_DECIMAL);
+        NATIVE_TYPES_2_1.add(OBJECT_FLOAT);
 
         DRIVER_TYPES_MAPPING.put(BIG_DECIMAL, "decimal()");
         DRIVER_TYPES_MAPPING.put(NATIVE_FLOAT, "cfloat()");
@@ -445,18 +448,18 @@ public class TypeUtils {
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_FLOAT, "float");
 
         // InetAddress
-        ALLOWED_TYPES.add(INET_ADDRESS);
-        NATIVE_TYPES.add(INET_ADDRESS);
+        ALLOWED_TYPES_2_1.add(INET_ADDRESS);
+        NATIVE_TYPES_2_1.add(INET_ADDRESS);
 
         DRIVER_TYPES_MAPPING.put(INET_ADDRESS, "inet()");
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(INET_ADDRESS, "inet");
 
         // Integer
-        ALLOWED_TYPES.add(NATIVE_INT);
-        ALLOWED_TYPES.add(OBJECT_INT);
-        ALLOWED_TYPES.add(BIG_INT);
-        NATIVE_TYPES.add(OBJECT_INT);
-        NATIVE_TYPES.add(BIG_INT);
+        ALLOWED_TYPES_2_1.add(NATIVE_INT);
+        ALLOWED_TYPES_2_1.add(OBJECT_INT);
+        ALLOWED_TYPES_2_1.add(BIG_INT);
+        NATIVE_TYPES_2_1.add(OBJECT_INT);
+        NATIVE_TYPES_2_1.add(BIG_INT);
 
         DRIVER_TYPES_MAPPING.put(NATIVE_INT, "cint()");
         DRIVER_TYPES_MAPPING.put(OBJECT_INT, "cint()");
@@ -467,9 +470,9 @@ public class TypeUtils {
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(BIG_INT, "varint");
 
         // Long
-        ALLOWED_TYPES.add(NATIVE_LONG);
-        ALLOWED_TYPES.add(OBJECT_LONG);
-        NATIVE_TYPES.add(OBJECT_LONG);
+        ALLOWED_TYPES_2_1.add(NATIVE_LONG);
+        ALLOWED_TYPES_2_1.add(OBJECT_LONG);
+        NATIVE_TYPES_2_1.add(OBJECT_LONG);
 
         DRIVER_TYPES_MAPPING.put(NATIVE_LONG, "bigint()");
         DRIVER_TYPES_MAPPING.put(OBJECT_LONG, "bigint()");
@@ -478,56 +481,56 @@ public class TypeUtils {
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(OBJECT_LONG, "bigint");
 
         // String
-        ALLOWED_TYPES.add(STRING);
-        NATIVE_TYPES.add(STRING);
+        ALLOWED_TYPES_2_1.add(STRING);
+        NATIVE_TYPES_2_1.add(STRING);
 
         DRIVER_TYPES_MAPPING.put(STRING, "text()");
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(STRING, "text");
 
         // UUID
-        ALLOWED_TYPES.add(UUID);
-        NATIVE_TYPES.add(UUID);
+        ALLOWED_TYPES_2_1.add(UUID);
+        NATIVE_TYPES_2_1.add(UUID);
 
         DRIVER_TYPES_MAPPING.put(UUID, "uuid()");
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(UUID, "uuid");
 
         // Tuples
-        ALLOWED_TYPES.add(TUPLE1);
-        ALLOWED_TYPES.add(TUPLE2);
-        ALLOWED_TYPES.add(TUPLE3);
-        ALLOWED_TYPES.add(TUPLE4);
-        ALLOWED_TYPES.add(TUPLE5);
-        ALLOWED_TYPES.add(TUPLE6);
-        ALLOWED_TYPES.add(TUPLE7);
-        ALLOWED_TYPES.add(TUPLE8);
-        ALLOWED_TYPES.add(TUPLE9);
-        ALLOWED_TYPES.add(TUPLE10);
+        ALLOWED_TYPES_2_1.add(TUPLE1);
+        ALLOWED_TYPES_2_1.add(TUPLE2);
+        ALLOWED_TYPES_2_1.add(TUPLE3);
+        ALLOWED_TYPES_2_1.add(TUPLE4);
+        ALLOWED_TYPES_2_1.add(TUPLE5);
+        ALLOWED_TYPES_2_1.add(TUPLE6);
+        ALLOWED_TYPES_2_1.add(TUPLE7);
+        ALLOWED_TYPES_2_1.add(TUPLE8);
+        ALLOWED_TYPES_2_1.add(TUPLE9);
+        ALLOWED_TYPES_2_1.add(TUPLE10);
 
 
         // Collections
-        ALLOWED_TYPES.add(LIST);
-        ALLOWED_TYPES.add(SET);
-        ALLOWED_TYPES.add(MAP);
-        NATIVE_TYPES.add(LIST);
-        NATIVE_TYPES.add(SET);
-        NATIVE_TYPES.add(MAP);
+        ALLOWED_TYPES_2_1.add(LIST);
+        ALLOWED_TYPES_2_1.add(SET);
+        ALLOWED_TYPES_2_1.add(MAP);
+        NATIVE_TYPES_2_1.add(LIST);
+        NATIVE_TYPES_2_1.add(SET);
+        NATIVE_TYPES_2_1.add(MAP);
 
         // Driver tuple
-        ALLOWED_TYPES.add(JAVA_DRIVER_TUPLE_VALUE_TYPE);
-        NATIVE_TYPES.add(JAVA_DRIVER_TUPLE_VALUE_TYPE);
+        ALLOWED_TYPES_2_1.add(JAVA_DRIVER_TUPLE_VALUE_TYPE);
+        NATIVE_TYPES_2_1.add(JAVA_DRIVER_TUPLE_VALUE_TYPE);
 
         // Drive UDTValue
-        ALLOWED_TYPES.add(JAVA_DRIVER_UDT_VALUE_TYPE);
-        NATIVE_TYPES.add(JAVA_DRIVER_UDT_VALUE_TYPE);
+        ALLOWED_TYPES_2_1.add(JAVA_DRIVER_UDT_VALUE_TYPE);
+        NATIVE_TYPES_2_1.add(JAVA_DRIVER_UDT_VALUE_TYPE);
 
         //Java 8 types
-        ALLOWED_TYPES.add(JAVA_TIME_INSTANT);
-        ALLOWED_TYPES.add(JAVA_TIME_LOCAL_DATE);
-        ALLOWED_TYPES.add(JAVA_TIME_LOCAL_TIME);
-        ALLOWED_TYPES.add(JAVA_TIME_ZONED_DATE_TME);
+        ALLOWED_TYPES_2_1.add(JAVA_TIME_INSTANT);
+        ALLOWED_TYPES_2_1.add(JAVA_TIME_LOCAL_DATE);
+        ALLOWED_TYPES_2_1.add(JAVA_TIME_LOCAL_TIME);
+        ALLOWED_TYPES_2_1.add(JAVA_TIME_ZONED_DATE_TME);
 
         // Optional
-        ALLOWED_TYPES.add(TypeName.get(java.util.Optional.class));
+        ALLOWED_TYPES_2_1.add(TypeName.get(java.util.Optional.class));
 
 
         DRIVER_TYPES_MAPPING.put(JAVA_TIME_INSTANT, "timestamp()");
@@ -544,10 +547,19 @@ public class TypeUtils {
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(JAVA_TIME_LOCAL_TIME, "time");
         DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(JAVA_TIME_ZONED_DATE_TME,"tuple<timestamp, varchar>");
 
-        NATIVE_TYPES_MAPPING.put(JAVA_TIME_INSTANT, JAVA_UTIL_DATE);
-        NATIVE_TYPES_MAPPING.put(JAVA_TIME_LOCAL_DATE, JAVA_DRIVER_LOCAL_DATE);
-        NATIVE_TYPES_MAPPING.put(JAVA_TIME_LOCAL_TIME, OBJECT_LONG);
-        NATIVE_TYPES_MAPPING.put(JAVA_TIME_ZONED_DATE_TME, JAVA_DRIVER_TUPLE_VALUE_TYPE);
+//        NATIVE_TYPES_MAPPING.put(JAVA_TIME_INSTANT, JAVA_UTIL_DATE);
+//        NATIVE_TYPES_MAPPING.put(JAVA_TIME_LOCAL_DATE, JAVA_DRIVER_LOCAL_DATE);
+//        NATIVE_TYPES_MAPPING.put(JAVA_TIME_LOCAL_TIME, OBJECT_LONG);
+//        NATIVE_TYPES_MAPPING.put(JAVA_TIME_ZONED_DATE_TME, JAVA_DRIVER_TUPLE_VALUE_TYPE);
+
+        // Duration
+        ALLOWED_TYPES_3_10.addAll(ALLOWED_TYPES_2_1);
+        ALLOWED_TYPES_3_10.add(JAVA_DRIVER_DURATION);
+        NATIVE_TYPES_3_10.addAll(NATIVE_TYPES_2_1);
+        NATIVE_TYPES_3_10.add(JAVA_DRIVER_DURATION);
+
+        DRIVER_TYPES_MAPPING.put(JAVA_DRIVER_DURATION, "duration()");
+        DRIVER_TYPES_FUNCTION_PARAM_MAPPING.put(JAVA_DRIVER_DURATION, "duration");
     }
 
     public static String gettableDataGetter(TypeName typeName, String cqlColumn) {

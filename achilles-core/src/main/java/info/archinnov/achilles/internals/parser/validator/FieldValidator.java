@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.parser.validator;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
-import static info.archinnov.achilles.internals.parser.TypeUtils.ALLOWED_TYPES;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.summingInt;
 
@@ -42,6 +41,8 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 
 
 public abstract class FieldValidator {
+
+    public abstract List<TypeName> getAllowedTypes();
 
     public abstract void validateCompatibleIndexAnnotationsOnField(GlobalParsingContext context, AptUtils aptUtils,
                                                                    String fieldName, TypeName rawEntityClass,
@@ -138,7 +139,7 @@ public abstract class FieldValidator {
     }
 
     public void validateAllowedType(AptUtils aptUtils, TypeName rawTargetType, FieldParsingContext context) {
-        aptUtils.validateTrue(ALLOWED_TYPES.contains(rawTargetType),
+        aptUtils.validateTrue(getAllowedTypes().contains(rawTargetType),
                 "Impossible to parse type '%s' from field '%s' of class '%s'. It should be a supported type",
                 rawTargetType.toString(), context.fieldName, context.className);
     }

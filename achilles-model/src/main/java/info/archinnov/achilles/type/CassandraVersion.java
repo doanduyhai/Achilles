@@ -332,6 +332,16 @@ public enum CassandraVersion {
      *
      */
     CASSANDRA_3_9,
+    /**
+     * New features:
+     * <br/>
+     * <ul>
+     *     <li>Add duration type (CASSANDRA-11873)</li>
+     *     <li>Add support for Group By to Select statement (CASSANDRA-10707)</li>
+     * </ul>
+     *
+     */
+    CASSANDRA_3_10,
 
     /**
      * Feature:

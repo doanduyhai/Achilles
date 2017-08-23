@@ -56,7 +56,6 @@ import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVers
 import info.archinnov.achilles.internals.codegen.ManagerFactoryBuilderCodeGen;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryCodeGen;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryCodeGen.ManagersAndDSLClasses;
-import info.archinnov.achilles.internals.codegen.function.FunctionParameterTypesCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.parser.CodecRegistryParser;
 import info.archinnov.achilles.internals.parser.EntityParser;
@@ -245,7 +244,7 @@ public class AchillesProcessor extends AbstractProcessor {
                 .map(x -> x.sourceType)
                 .collect(toSet());
 
-        return new FunctionsContext(udfSignatures, CollectionsHelper.appendAll(functionParameterTypes, functionReturnTypes, entityColumnTargetTypes, NATIVE_TYPES));
+        return new FunctionsContext(udfSignatures, CollectionsHelper.appendAll(functionParameterTypes, functionReturnTypes, entityColumnTargetTypes, NATIVE_TYPES_2_1));
     }
 
     private List<EntityMetaSignature> discoverAndValidateTablesAndViews(Set<? extends TypeElement> annotatedTypes, RoundEnvironment roundEnv, GlobalParsingContext parsingContext) {

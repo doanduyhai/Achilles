@@ -124,7 +124,7 @@ public class InternalSystemFunctionRegistry {
         SYSTEM_FUNCTIONS.add(new FunctionSignature(empty(), SYSTEM_FUNCTION_REGISTRY, "blobAsVarchar", new FunctionParamSignature("returnType", STRING, STRING, "varchar"), asList(byteBufferInput)));
         SYSTEM_FUNCTIONS.add(new FunctionSignature(empty(), SYSTEM_FUNCTION_REGISTRY, "blobAsVarint", new FunctionParamSignature("returnType", BIG_INT, BIG_INT, "varint"), asList(byteBufferInput)));
 
-        TypeUtils.NATIVE_TYPES
+        TypeUtils.NATIVE_TYPES_2_1
                 .stream()
                 // Exclude collection types
                 .filter(x -> (!x.equals(LIST) && !x.equals(SET) && !x.equals(MAP)))

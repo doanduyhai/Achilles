@@ -16,13 +16,15 @@
 
 package info.archinnov.achilles.internals.parser.validator;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.ALLOWED_TYPES;
+import java.util.List;
 
 import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.apt.AptUtils;
 
 public abstract class TypeValidator {
+
+    public abstract List<TypeName> getAllowedTypes();
 
     public void validateAllowedTypes(AptUtils aptUtils, TypeName parentType, TypeName type) {
         if (type.isPrimitive()) {
@@ -40,7 +42,7 @@ public abstract class TypeValidator {
                 validateAllowedTypes(aptUtils, parentType, x);
             }
         } else if (type instanceof ClassName || type instanceof ArrayTypeName) {
-            final boolean isValidType = ALLOWED_TYPES.contains(type);
+            final boolean isValidType = getAllowedTypes().contains(type);
             aptUtils.validateTrue(isValidType, "Type '%s' in '%s' is not a valid type for CQL", type.toString(), parentType.toString());
         } else {
             aptUtils.printError("Type '%s' in '%s' is not a valid type for CQL", type.toString(), parentType.toString());
@@ -63,7 +65,7 @@ public abstract class TypeValidator {
                 validateAllowedTypesForFunction(aptUtils, className, methodName, x);
             }
         } else if (type instanceof ClassName || type instanceof ArrayTypeName) {
-            final boolean isValidType = ALLOWED_TYPES.contains(type);
+            final boolean isValidType = getAllowedTypes().contains(type);
             aptUtils.validateTrue(isValidType, "Type '%s' in method '%s' return type/parameter on class '%s' is not a valid native Java type for Cassandra",
                 type.toString(), methodName, className);
         } else {

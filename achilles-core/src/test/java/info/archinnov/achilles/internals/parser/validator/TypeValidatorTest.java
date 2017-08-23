@@ -36,6 +36,7 @@ import com.datastax.driver.core.TupleValue;
 import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.internals.apt.AptUtils;
+import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.type.tuples.Tuple1;
 import info.archinnov.achilles.type.tuples.Tuple2;
 import info.archinnov.achilles.type.tuples.Tuple3;
@@ -50,7 +51,12 @@ public class TypeValidatorTest {
     @Mock
     private AptUtils aptUtils;
 
-    private TypeValidator typeValidator = new TypeValidator() {};
+    private TypeValidator typeValidator = new TypeValidator() {
+        @Override
+        public List<TypeName> getAllowedTypes() {
+            return TypeUtils.ALLOWED_TYPES_3_10;
+        }
+    };
 
     @Test
     public void should_validate_primitiveByte() throws Exception {

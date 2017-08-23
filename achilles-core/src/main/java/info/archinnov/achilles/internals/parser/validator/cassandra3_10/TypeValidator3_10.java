@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.internals.parser.validator.cassandra2_1;
+package info.archinnov.achilles.internals.parser.validator.cassandra3_10;
 
 import java.util.List;
 
 import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.internals.parser.TypeUtils;
-import info.archinnov.achilles.internals.parser.validator.TypeValidator;
+import info.archinnov.achilles.internals.parser.validator.cassandra2_1.TypeValidator2_1;
 
-public class TypeValidator2_1 extends TypeValidator {
-
+public class TypeValidator3_10 extends TypeValidator2_1 {
 
     @Override
     public List<TypeName> getAllowedTypes() {
-        return TypeUtils.ALLOWED_TYPES_2_1;
+        return TypeUtils.ALLOWED_TYPES_3_10;
     }
+
 }
