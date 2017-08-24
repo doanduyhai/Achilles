@@ -53,6 +53,11 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen
                                                             ClassSignatureInfo nextSignature,
                                                             ReturnType returnType);
 
+//    public abstract void augmentClusteringWhereClass(TypeSpec.Builder clusteringClassBuilder,
+//                                                     String rootClassName,
+//                                                     List<ClassSignatureInfo> classesSignature,
+//                                                     ClassSignatureInfo lastSignature);
+
     public List<TypeSpec> buildWhereClasses(GlobalParsingContext context, EntityMetaSignature signature) {
         SelectWhereDSLCodeGen selectWhereDSLCodeGen = context.selectWhereDSLCodeGen();
 
@@ -259,14 +264,14 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen
         } else {
             final List<ClassSignatureInfo> copyClassesSignature = new ArrayList<>(classesSignature);
             classesSignature.remove(0);
-            final TypeSpec currentType = buildSelectWhereForClusteringColumn(signature, firstClusteringClassSignature, copyClassesSignature, lastSignature);
+            final TypeSpec currentType = buildSelectWhereForClusteringColumn(signature, firstClusteringClassSignature, copyClassesSignature, lastSignature).build();
             final List<TypeSpec> typeSpecs = buildWhereClassesForClusteringColumns(signature, firstClusteringClassSignature, classesSignature, lastSignature);
             typeSpecs.add(0, currentType);
             return typeSpecs;
         }
     }
 
-    public TypeSpec buildSelectWhereForClusteringColumn(EntityMetaSignature signature,
+    public TypeSpec.Builder buildSelectWhereForClusteringColumn(EntityMetaSignature signature,
                                                         Optional<ClassSignatureInfo> firstClusteringClassSignature,
                                                         List<ClassSignatureInfo> classesSignature,
                                                         ClassSignatureInfo lastSignature) {
@@ -292,6 +297,8 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen
                 .addMethod(buildGetEncodedBoundValuesInternal())
                 .addMethod(buildLimit(classSignature));
 
+//        augmentClusteringWhereClass(builder, rootClassName, classesSignature, lastSignature);
+
         TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(DSL_RELATION)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(buildColumnRelation(EQ, nextSignature.returnClassType, clusteringColumnInfo, ReturnType.NEW));
@@ -314,7 +321,7 @@ public abstract class SelectWhereDSLCodeGen extends AbstractDSLCodeGen
 
         maybeBuildOrderingBy(classSignature, firstClusteringClassSignature.map(x -> x.fieldSignatureInfo), builder);
 
-        return builder.build();
+        return builder;
     }
 }
 

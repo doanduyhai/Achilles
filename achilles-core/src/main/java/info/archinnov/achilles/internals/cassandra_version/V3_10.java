@@ -22,6 +22,8 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 import info.archinnov.achilles.internals.parser.validator.TypeValidator;
 import info.archinnov.achilles.internals.parser.validator.cassandra3_10.FieldValidator3_10;
@@ -54,5 +56,15 @@ public class V3_10 extends V3_9 {
     @Override
     public TypeValidator typeValidator() {
         return new TypeValidator3_10();
+    }
+
+    @Override
+    public SelectDSLCodeGen selectDslCodeGen() {
+        return SELECT_DSL_CODE_GEN_3_10;
+    }
+
+    @Override
+    public SelectWhereDSLCodeGen selectWhereDSLCodeGen() {
+        return SELECT_WHERE_DSL_CODE_GEN_3_10;
     }
 }

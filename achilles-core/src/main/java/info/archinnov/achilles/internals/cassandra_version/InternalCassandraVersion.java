@@ -33,6 +33,8 @@ import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_1.SelectD
 import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_1.SelectWhereDSLCodeGen2_1;
 import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_2.SelectDSLCodeGen2_2;
 import info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_2.SelectWhereDSLCodeGen2_2;
+import info.archinnov.achilles.internals.codegen.dsl.select.cassandra3_10.SelectDSLCodeGen3_10;
+import info.archinnov.achilles.internals.codegen.dsl.select.cassandra3_10.SelectWhereDSLCodeGen3_10;
 import info.archinnov.achilles.internals.codegen.dsl.select.cassandra3_6.SelectWhereDSLCodeGen3_6;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
@@ -96,10 +98,12 @@ public interface InternalCassandraVersion {
 
     CrudAPICodeGen CRUD_API_CODE_GEN_2_2 = new CrudAPICodeGen2_2();
     SelectDSLCodeGen SELECT_DSL_CODE_GEN_2_2 = new SelectDSLCodeGen2_2();
+    SelectDSLCodeGen SELECT_DSL_CODE_GEN_3_10 = new SelectDSLCodeGen3_10();
     IndexSelectDSLCodeGen INDEX_SELECT_DSL_CODE_GEN_2_2 = new IndexSelectDSLCodeGen2_2();
     SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_2_2 = new SelectWhereDSLCodeGen2_2();
     IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_2_2 = new IndexSelectWhereDSLCodeGen2_2();
     SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_3_6 = new SelectWhereDSLCodeGen3_6();
+    SelectWhereDSLCodeGen SELECT_WHERE_DSL_CODE_GEN_3_10 = new SelectWhereDSLCodeGen3_10();
     IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_3_7 = new IndexSelectWhereDSLCodeGen3_7();
     IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_DSE_4_8 = new IndexSelectWhereDSLCodeGen_DSE_4_8();
     IndexSelectWhereDSLCodeGen INDEX_SELECT_WHERE_DSL_CODE_GEN_DSE_5_0_0 = new IndexSelectWhereDSLCodeGen_DSE_5_0_0();

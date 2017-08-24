@@ -52,7 +52,7 @@ public class SelectDSLCodeGen2_2 extends SelectDSLCodeGen
         TypeName selectEndJSONTypeName = ClassName.get(DSL_PACKAGE, signature.selectEndJSONReturnType());
 
         final String className = FROM_JSON_DSL_SUFFIX;
-        builder.addType(buildSelectFromJSON(className, selectWhereJSONTypeName, selectEndJSONTypeName));
+        builder.addType(buildSelectFromJSON(signature, className, selectWhereJSONTypeName, selectEndJSONTypeName).build());
         builder.addMethod(buildAllColumnsJSON(selectFromJSONTypeName, SELECT_DOT_WHERE, "select"));
         builder.addMethod(buildAllColumnsJSONWithSchemaProvider(selectFromJSONTypeName, SELECT_DOT_WHERE, "select"));
     }

@@ -29,12 +29,14 @@ import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSig
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.IndexFieldSignatureInfo;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen.ParentSignature;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public interface JSONFunctionCallSupport {
 
-    default TypeSpec buildSelectFromJSON(String className,
+    default TypeSpec.Builder buildSelectFromJSON(EntityMetaCodeGen.EntityMetaSignature signature,
+                                         String className,
                                          TypeName selectWhereJSONTypeName,
                                          TypeName selectEndJSONTypeName) {
 
@@ -57,8 +59,7 @@ public interface JSONFunctionCallSupport {
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                         .addStatement("return new $T(where, cassandraOptions)", selectEndJSONTypeName)
                         .returns(selectEndJSONTypeName)
-                        .build())
-                .build();
+                        .build());
     }
 
     default MethodSpec buildToJSONFunctionCall() {

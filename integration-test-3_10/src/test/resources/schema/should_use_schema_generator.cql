@@ -58,6 +58,15 @@ CREATE TABLE IF NOT EXISTS test.entity_for_cast_fcall(
 		id bigint,
 		value text,
 		PRIMARY KEY(id));
+CREATE TABLE IF NOT EXISTS it_3_10.entity_for_group_by(
+		id bigint,
+		"uuID" uuid,
+		clust1 int,
+		"clusteRing2" int,
+		clust3 int,
+		val int,
+		PRIMARY KEY((id, "uuID"), clust1, "clusteRing2", clust3))
+	WITH CLUSTERING ORDER BY(clust1 ASC, "clusteRing2" ASC, clust3 ASC);
 CREATE TABLE IF NOT EXISTS test.entity_for_json_function_call(
 		id bigint,
 		clust bigint,
