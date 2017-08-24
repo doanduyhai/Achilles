@@ -195,7 +195,7 @@ protected List<SimpleStatement> buildStatements(List<String> lines) {
             }
 
             if (batch) {
-                batchStatement.append(line);
+                batchStatement.append(" ").append(line);
                 if (line.trim().startsWith(BATCH_APPLY)) {
                     batch = false;
                     statements.add(new SimpleStatement(batchStatement.toString()));

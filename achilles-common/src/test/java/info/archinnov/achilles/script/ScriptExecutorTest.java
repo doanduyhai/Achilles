@@ -98,7 +98,7 @@ public class ScriptExecutorTest {
 
         //Then
         assertThat(statements).hasSize(2);
-        assertThat(statements.get(0).getQueryString()).isEqualTo("BEGIN UNLOGGED BATCH USING TIMESTAMP 123456789 INSERT INTO test(id,value) VALUES(1,'test'); DELETE FROM test WHERE id=1;APPLY BATCH;");
+        assertThat(statements.get(0).getQueryString()).isEqualTo(" BEGIN UNLOGGED BATCH USING TIMESTAMP 123456789  INSERT INTO test(id,value) VALUES(1,'test');  DELETE FROM test WHERE id=1; APPLY BATCH;");
         assertThat(statements.get(1).getQueryString()).isEqualTo("INSERT INTO test(id,value) VALUES(2,'test2');");
     }
 
