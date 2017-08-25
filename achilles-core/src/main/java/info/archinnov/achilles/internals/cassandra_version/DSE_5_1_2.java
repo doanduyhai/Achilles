@@ -16,15 +16,16 @@
 
 package info.archinnov.achilles.internals.cassandra_version;
 
-public class DSE_5_0_1 extends DSE_5_0_0 {
+public class DSE_5_1_2 extends DSE_5_1_1 {
 
-    public static DSE_5_0_1 INSTANCE = new DSE_5_0_1();
+    public static DSE_5_1_2 INSTANCE = new DSE_5_1_2();
 
-    protected DSE_5_0_1() {
+    protected DSE_5_1_2() {
     }
 
     @Override
     public String version() {
-        return "DSE 5.0.1";
+        return "DSE 5.1.2";
     }
+
 }

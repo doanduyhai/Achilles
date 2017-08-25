@@ -323,14 +323,6 @@ public enum CassandraVersion {
      *
      */
     CASSANDRA_3_8,
-    /**
-     * New features:
-     * <br/>
-     * <ul>
-     *     <li>Allow literal value as parameter of UDF & UDA (CASSANDRA-10783)</li>
-     * </ul>
-     *
-     */
     CASSANDRA_3_9,
     /**
      * New features:
@@ -342,6 +334,7 @@ public enum CassandraVersion {
      *
      */
     CASSANDRA_3_10,
+    CASSANDRA_3_11_0,
 
     /**
      * Feature:
@@ -372,14 +365,19 @@ public enum CassandraVersion {
      * </ul>
      */
     DSE_5_0_2,
-    DSE_5_0_3
+    DSE_5_0_3,
     /**
      * New features:
      * <br/>
      * <ul>
-     *     <li>Allow literal values in UDF/UDA parameters (CASSANDRA-10783)</li>
+     *     <li>Allow literal value as parameter of UDF & UDA (CASSANDRA-10783)</li>
+     *     <li>Add duration type (CASSANDRA-11873)</li>
+     *     <li>Add support for Group By to Select statement (CASSANDRA-10707)</li>
      * </ul>
      *
      */
-    //CASSANDRA_3_9
+    DSE_5_1_0,
+    DSE_5_1_1,
+    DSE_5_1_2,
+
 }
