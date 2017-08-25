@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>info.archinnov</groupId>
     <artifactId>achilles</artifactId>
-    <version>5.3.0-SNAPSHOT</version>
+    <version>5.3.0</version>
     <packaging>pom</packaging>
     <description>A Persistence Manager for Cassandra</description>
     <inceptionYear>2012</inceptionYear>
@@ -91,7 +91,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.b></project.b>
+        <project.b />
         <cassandra.version>3.11.0</cassandra.version>
         <datastax.driver.core.version>3.3.0</datastax.driver.core.version>
         <fasterxml.jackson.version>2.3.3</fasterxml.jackson.version>
