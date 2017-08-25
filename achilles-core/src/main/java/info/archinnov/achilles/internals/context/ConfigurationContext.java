@@ -291,7 +291,7 @@ public class ConfigurationContext {
     }
 
     public void injectDependencies(TupleTypeFactory tupleTypeFactory, UserTypeFactory userTypeFactory, AbstractEntityProperty<?> entityProperty) {
-        LOGGER.info("Start injecting dependencies to meta classes");
+        LOGGER.debug("Start injecting dependencies to meta classes");
 
         final Class<?> entityClass = entityProperty.entityClass;
 
