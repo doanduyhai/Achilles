@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package info.archinnov.achilles.internals.cassandra_version;
 
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.JSON;
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDF_UDA;
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDT;
+import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.*;
 
 import java.util.Set;
 

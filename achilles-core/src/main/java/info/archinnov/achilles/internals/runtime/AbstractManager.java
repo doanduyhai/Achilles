@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,13 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.*;
 
-import info.archinnov.achilles.internals.dsl.crud.InsertJSONWithOptions;
-import info.archinnov.achilles.internals.dsl.crud.UpdateWithOptions;
-import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.dsl.crud.DeleteWithOptions;
+import info.archinnov.achilles.internals.dsl.crud.InsertJSONWithOptions;
 import info.archinnov.achilles.internals.dsl.crud.InsertWithOptions;
+import info.archinnov.achilles.internals.dsl.crud.UpdateWithOptions;
 import info.archinnov.achilles.internals.dsl.raw.NativeQuery;
 import info.archinnov.achilles.internals.dsl.raw.TypedQuery;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.type.tuples.Tuple2;
 

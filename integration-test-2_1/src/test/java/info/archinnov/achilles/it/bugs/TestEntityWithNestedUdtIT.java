@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,11 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
@@ -38,7 +37,6 @@ import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestEntityWithNestedUdtIT {
 
     @Rule
@@ -73,6 +71,7 @@ public class TestEntityWithNestedUdtIT {
         entity.setId(id);
         entity.setUdt(udtWithNoKeySpace);
         entity.setComplexUDT(udtWithNestedUDT);
+        entity.setOptionalUDT(Optional.of(udtWithNoKeySpace));
 
         //When
         manager.crud().insert(entity).execute();
@@ -82,6 +81,8 @@ public class TestEntityWithNestedUdtIT {
         assertThat(found).isNotNull();
         assertThat(found.getUdt()).isEqualTo(udtWithNoKeySpace);
         assertThat(found.getComplexUDT()).isEqualTo(udtWithNestedUDT);
+        assertThat(found.getOptionalUDT().isPresent()).isTrue();
+        assertThat(found.getOptionalUDT().get()).isEqualTo(udtWithNoKeySpace);
     }
 
     @Test

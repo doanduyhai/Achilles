@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,10 +71,9 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addField(buildEntityClassField(signature))
                 .addMethod(buildFromBaseTableMethod(updateFromTypeName))
                 .addMethod(buildFromSchemaProviderMethod(updateFromTypeName))
-                .addType(buildUpdateColumns(aptUtils, signature, signature.className + UPDATE_COLUMNS_DSL_SUFFIX,
+                .addType(buildUpdateColumns(aptUtils, signature, COLUMNS_DSL_SUFFIX,
                         updateColumnsTypeName, updateWhereTypeName, candidateColumns))
-                .addType(buildUpdateFrom(aptUtils, signature, signature.className + UPDATE_FROM_DSL_SUFFIX,
-                        updateColumnsTypeName, candidateColumns));
+                .addType(buildUpdateFrom(aptUtils, signature, FROM_DSL_SUFFIX, updateColumnsTypeName, candidateColumns));
 
 
         updateWhereDSLCodeGen.buildWhereClasses(signature).forEach(builder::addType);
@@ -109,10 +108,9 @@ public abstract class UpdateDSLCodeGen extends AbstractDSLCodeGen {
                 .addField(buildEntityClassField(signature))
                 .addMethod(buildFromBaseTableMethod(updateStaticFromTypeName))
                 .addMethod(buildFromSchemaProviderMethod(updateStaticFromTypeName))
-                .addType(buildUpdateColumns(aptUtils, signature, signature.className + UPDATE_STATIC_COLUMNS_DSL_SUFFIX,
+                .addType(buildUpdateColumns(aptUtils, signature, COLUMNS_DSL_SUFFIX,
                         updateStaticColumnsTypeName, updateStaticWhereTypeName, candidateColumns))
-                .addType(buildUpdateFrom(aptUtils, signature, signature.className + UPDATE_STATIC_FROM_DSL_SUFFIX,
-                        updateStaticColumnsTypeName, candidateColumns));
+                .addType(buildUpdateFrom(aptUtils, signature, FROM_DSL_SUFFIX, updateStaticColumnsTypeName, candidateColumns));
 
 
         updateWhereDSLCodeGen.buildWhereClassesForStatic(signature).forEach(builder::addType);

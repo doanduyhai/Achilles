@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.codegen.function;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
@@ -26,12 +25,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 
+import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.FunctionSignature;
 import info.archinnov.achilles.internals.parser.context.FunctionSignature.FunctionParamSignature;
-import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public class InternalSystemFunctionRegistry {
 
@@ -126,7 +124,7 @@ public class InternalSystemFunctionRegistry {
         SYSTEM_FUNCTIONS.add(new FunctionSignature(empty(), SYSTEM_FUNCTION_REGISTRY, "blobAsVarchar", new FunctionParamSignature("returnType", STRING, STRING, "varchar"), asList(byteBufferInput)));
         SYSTEM_FUNCTIONS.add(new FunctionSignature(empty(), SYSTEM_FUNCTION_REGISTRY, "blobAsVarint", new FunctionParamSignature("returnType", BIG_INT, BIG_INT, "varint"), asList(byteBufferInput)));
 
-        TypeUtils.NATIVE_TYPES
+        TypeUtils.NATIVE_TYPES_2_1
                 .stream()
                 // Exclude collection types
                 .filter(x -> (!x.equals(LIST) && !x.equals(SET) && !x.equals(MAP)))

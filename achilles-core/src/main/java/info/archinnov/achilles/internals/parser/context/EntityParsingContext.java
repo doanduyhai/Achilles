@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package info.archinnov.achilles.internals.parser.context;
 
+import java.util.Collections;
+import java.util.List;
 import javax.lang.model.element.TypeElement;
 
 import com.squareup.javapoet.TypeName;
@@ -29,17 +31,27 @@ public class EntityParsingContext {
     public final InternalNamingStrategy namingStrategy;
     public final GlobalParsingContext globalContext;
     public final String className;
+    public final List<AccessorsExclusionContext> accessorsExclusionContexts;
 
-    public EntityParsingContext(TypeElement elm, TypeName entityType, InternalNamingStrategy namingStrategy, GlobalParsingContext globalContext) {
+    public EntityParsingContext(TypeElement elm, TypeName entityType, InternalNamingStrategy namingStrategy,
+                                GlobalParsingContext globalContext) {
         this.entityTypeElement = elm;
         this.entityType = entityType;
+        this.accessorsExclusionContexts = Collections.emptyList();
         this.globalContext = globalContext;
         this.namingStrategy = namingStrategy;
         this.className = entityType.toString();
     }
 
-    public boolean hasCodecFor(TypeName typeName) {
-        return globalContext.hasCodecFor(typeName);
+    public EntityParsingContext(TypeElement elm, TypeName entityType, InternalNamingStrategy namingStrategy,
+                                List<AccessorsExclusionContext> accessorsExclusionContexts,
+                                GlobalParsingContext globalContext) {
+        this.entityTypeElement = elm;
+        this.entityType = entityType;
+        this.accessorsExclusionContexts = accessorsExclusionContexts;
+        this.globalContext = globalContext;
+        this.namingStrategy = namingStrategy;
+        this.className = entityType.toString();
     }
 
     public CodecFactory.CodecInfo getCodecFor(TypeName typeName) {

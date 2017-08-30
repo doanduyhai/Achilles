@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,12 @@ import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
+import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.context.DSESearchInfoContext;
 
@@ -47,7 +43,7 @@ public interface DSESearchSupport {
 
         dseSearchColumns.forEach(fieldInfo -> {
 
-            final String relationClassName = upperCaseFirst(fieldInfo.fieldName) + DSL_RELATION_SUFFIX;
+            final String relationClassName = upperCaseFirst(fieldInfo.fieldName);
             TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + relationClassName);
 
             final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(relationClassName)

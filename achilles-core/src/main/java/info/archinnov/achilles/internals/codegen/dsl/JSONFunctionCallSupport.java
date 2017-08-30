@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package info.archinnov.achilles.internals.codegen.dsl;
 import static com.squareup.javapoet.TypeName.BOOLEAN;
 import static com.squareup.javapoet.TypeName.OBJECT;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.TypeUtils.LIST;
 
 import javax.lang.model.element.Modifier;
 
@@ -30,12 +29,14 @@ import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSig
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.IndexFieldSignatureInfo;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen.ParentSignature;
+import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public interface JSONFunctionCallSupport {
 
-    default TypeSpec buildSelectFromJSON(String className,
+    default TypeSpec.Builder buildSelectFromJSON(EntityMetaCodeGen.EntityMetaSignature signature,
+                                         String className,
                                          TypeName selectWhereJSONTypeName,
                                          TypeName selectEndJSONTypeName) {
 
@@ -58,8 +59,7 @@ public interface JSONFunctionCallSupport {
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                         .addStatement("return new $T(where, cassandraOptions)", selectEndJSONTypeName)
                         .returns(selectEndJSONTypeName)
-                        .build())
-                .build();
+                        .build());
     }
 
     default MethodSpec buildToJSONFunctionCall() {

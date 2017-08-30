@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import info.archinnov.achilles.internals.metamodel.ComputedProperty;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
 import info.archinnov.achilles.internals.metamodel.columns.ComputedColumnInfo;
 import info.archinnov.achilles.internals.options.CassandraOptions;
-import info.archinnov.achilles.internals.runtime.BeanValueExtractor;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.validation.Validator;
 

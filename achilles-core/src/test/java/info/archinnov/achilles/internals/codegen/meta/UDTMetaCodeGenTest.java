@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,27 @@ package info.archinnov.achilles.internals.codegen.meta;
 import static info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer.getTypeParsingResults;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.lang.model.element.TypeElement;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeSpec;
 
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.codegen.TypeParsingResultConsumer;
-import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
+import info.archinnov.achilles.internals.parser.context.AccessorsExclusionContext;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT;
+import info.archinnov.achilles.internals.sample_classes.parser.field.TestUDTWithCustomConstructor;
 import info.archinnov.achilles.internals.strategy.naming.LowerCaseNaming;
 
-@RunWith(MockitoJUnitRunner.class)
 public class UDTMetaCodeGenTest extends AbstractTestProcessor
         implements TypeParsingResultConsumer {
 
@@ -52,14 +54,44 @@ public class UDTMetaCodeGenTest extends AbstractTestProcessor
             final GlobalParsingContext globalContext = GlobalParsingContext.defaultContext();
             final EntityParsingContext context = new EntityParsingContext(typeElement,
                     ClassName.get(TestUDT.class), new LowerCaseNaming(), globalContext);
-            final List<FieldParser.FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, globalContext);
+            final List<FieldMetaSignature> parsingResults = getTypeParsingResults(aptUtils, typeElement, globalContext);
 
-            final TypeSpec typeSpec = builder.buildUDTClassProperty(typeElement, context, parsingResults);
+            final TypeSpec typeSpec = builder.buildUDTClassProperty(typeElement, context, parsingResults, Collections.emptyList());
 
             assertThat(typeSpec.toString().trim()).isEqualTo(
                     readCodeBlockFromFile("expected_code/udt_meta_builder/should_generate_udt_property_class.txt"));
 
         });
         launchTest(TestUDT.class);
+    }
+
+    @Test
+    public void should_generate_udt_with_custom_constructor_property_class() throws Exception {
+        setExec(aptUtils -> {
+            final String className = TestUDTWithCustomConstructor.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+
+            final UDTMetaCodeGen builder = new UDTMetaCodeGen(aptUtils);
+
+            final GlobalParsingContext globalContext = GlobalParsingContext.defaultContext();
+            final EntityParsingContext context = new EntityParsingContext(typeElement,
+                    ClassName.get(TestUDT.class), new LowerCaseNaming(), globalContext);
+            final List<AccessorsExclusionContext> exclusionContexts = Arrays.asList(
+                    new AccessorsExclusionContext("name", false, true),
+                    new AccessorsExclusionContext("list", false, true));
+            final List<FieldMetaSignature> fieldMetaSignatures = getTypeParsingResults(aptUtils, typeElement, exclusionContexts, globalContext);
+
+            final List<FieldMetaSignature> constructorInjectedFieldMetaSignatures = fieldMetaSignatures
+                    .stream()
+                    .filter(fieldMeta -> !fieldMeta.context.fieldName.equals("date"))
+                    .collect(Collectors.toList());
+
+            final TypeSpec typeSpec = builder.buildUDTClassProperty(typeElement, context, fieldMetaSignatures, constructorInjectedFieldMetaSignatures);
+
+            assertThat(typeSpec.toString().trim()).isEqualTo(
+                    readCodeBlockFromFile("expected_code/udt_meta_builder/should_generate_udt_with_custom_constructor_property_class.txt"));
+
+        });
+        launchTest(TestUDTWithCustomConstructor.class);
     }
 }

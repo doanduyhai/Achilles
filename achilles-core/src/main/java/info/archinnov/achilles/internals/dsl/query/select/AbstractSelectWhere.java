@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Select;
 
-import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.StatementProvider;
+import info.archinnov.achilles.internals.dsl.TypedMapAware;
 import info.archinnov.achilles.internals.dsl.action.SelectAction;
 import info.archinnov.achilles.internals.dsl.options.AbstractOptionsForSelect;
-import info.archinnov.achilles.internals.dsl.TypedMapAware;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.OperationType;
@@ -98,7 +98,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
 
         final RuntimeEngine rte = getRte();
         final AbstractEntityProperty<ENTITY> meta = getMetaInternal();
-        final CassandraOptions cassandraOptions = getOptions();
+        final CassandraOptions options = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
@@ -110,13 +110,13 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
         return futureRS
-                .thenApply(cassandraOptions::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
+                .thenApply(options::resultSetAsyncListener)
+                .thenApply(x -> statementWrapper.logReturnResults(x, options.computeMaxDisplayedResults(rte.configContext)))
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(rs -> Tuple2.of(IntStream.range(0, rs.getAvailableWithoutFetching())
                             .mapToObj(index -> {
                                 final Row row = rs.one();
-                                cassandraOptions.rowAsyncListener(row);
+                                options.rowAsyncListener(row);
                                 return meta.createEntityFrom(row);
                             })
                             .collect(toList()),
@@ -135,7 +135,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
     @Override
     public CompletableFuture<Tuple2<List<TypedMap>, ExecutionInfo>> getTypedMapsAsyncWithStats() {
         final RuntimeEngine rte = getRte();
-        final CassandraOptions cassandraOptions = getOptions();
+        final CassandraOptions options = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
@@ -146,8 +146,8 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
         CompletableFuture<ResultSet> futureRS = rte.execute(statementWrapper);
 
         return futureRS
-            .thenApply(cassandraOptions::resultSetAsyncListener)
-                    .thenApply(statementWrapper::logReturnResults)
+            .thenApply(options::resultSetAsyncListener)
+                    .thenApply(x -> statementWrapper.logReturnResults(x, options.computeMaxDisplayedResults(rte.configContext)))
                     .thenApply(statementWrapper::logTrace)
                     .thenApply(x -> Tuple2.of(mapResultSetToTypedMaps(x), x.getExecutionInfo()));
     }
@@ -156,7 +156,7 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
 
     public CompletableFuture<Tuple2<TypedMap, ExecutionInfo>> getTypedMapAsyncWithStats() {
         final RuntimeEngine rte = getRte();
-        final CassandraOptions cassandraOptions = getOptions();
+        final CassandraOptions options = getOptions();
 
         final StatementWrapper statementWrapper = getInternalBoundStatementWrapper();
 
@@ -168,8 +168,8 @@ public abstract class AbstractSelectWhere<T extends AbstractSelectWhere<T, ENTIT
         CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
 
         return cfutureRS
-                .thenApply(cassandraOptions::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
+                .thenApply(options::resultSetAsyncListener)
+                .thenApply(x -> statementWrapper.logReturnResults(x, options.computeMaxDisplayedResults(rte.configContext)))
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> Tuple2.of(mapRowToTypedMap(x.one()), x.getExecutionInfo()));
     }

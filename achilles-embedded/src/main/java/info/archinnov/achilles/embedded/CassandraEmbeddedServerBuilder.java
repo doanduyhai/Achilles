@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -77,6 +75,8 @@ public class CassandraEmbeddedServerBuilder {
     private String savedCachesFolder;
 
     private String hintsFolder;
+
+    private String cdcRawFolder;
 
     private boolean cleanDataFiles = true;
 
@@ -248,6 +248,18 @@ public class CassandraEmbeddedServerBuilder {
      */
     public CassandraEmbeddedServerBuilder withHintsFolder(String hintsFolder) {
         this.hintsFolder = hintsFolder;
+        return this;
+    }
+
+    /**
+     * Specify cdc_raw folder for the embedded Cassandra server. Default
+     * value is 'target/cassandra_embedded/cdc_raw'
+     *
+     * @param cdcRawFolder cdc_raw folder for the embedded Cassandra server
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withCdcRawFolder(String cdcRawFolder) {
+        this.cdcRawFolder = cdcRawFolder;
         return this;
     }
 
@@ -555,6 +567,9 @@ public class CassandraEmbeddedServerBuilder {
 
         if (isNotBlank(hintsFolder))
             cassandraParams.put(HINTS_FOLDER, hintsFolder);
+
+        if (isNotBlank(cdcRawFolder))
+            cassandraParams.put(CDC_RAW_FOLDER, cdcRawFolder);
 
         if (isNotBlank(clusterName))
             cassandraParams.put(CLUSTER_NAME, clusterName);

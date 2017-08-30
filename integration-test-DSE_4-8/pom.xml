@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2012-2016 DuyHai DOAN
+  ~ Copyright (C) 2012-2017 DuyHai DOAN
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
     <parent>
         <artifactId>achilles</artifactId>
         <groupId>info.archinnov</groupId>
-        <version>5.2.1-SNAPSHOT</version>
+        <version>5.3.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>Achilles Integration Test DSE 4.8.X</name>
@@ -58,6 +58,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.2</version>
                 <configuration>
+                    <annotationProcessors>
+                        <annotationProcessor>info.archinnov.achilles.internals.apt.processors.meta.AchillesProcessor</annotationProcessor>
+                    </annotationProcessors>
                     <debug>false</debug>
                     <verbose>false</verbose>
                     <useIncrementalCompilation>false</useIncrementalCompilation>

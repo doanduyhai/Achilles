@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.management.*;
 
@@ -204,21 +203,25 @@ public enum ServerStarter {
         final String commitLogFolder = (String) parameters.get(COMMIT_LOG_FOLDER);
         final String savedCachesFolder = (String) parameters.get(SAVED_CACHES_FOLDER);
         final String hintsFolder = (String) parameters.get(HINTS_FOLDER);
+        final String cdcRawFolder = (String) parameters.get(CDC_RAW_FOLDER);
 
         LOGGER.debug(" Embedded Cassandra data directory = {}", dataFolder);
         LOGGER.debug(" Embedded Cassandra commitlog directory = {}", commitLogFolder);
         LOGGER.debug(" Embedded Cassandra saved caches directory = {}", savedCachesFolder);
         LOGGER.debug(" Embedded Cassandra hints directory = {}", hintsFolder);
+        LOGGER.debug(" Embedded Cassandra cdc_raw directory = {}", cdcRawFolder);
 
         validateFolder(dataFolder);
         validateFolder(commitLogFolder);
         validateFolder(savedCachesFolder);
         validateFolder(hintsFolder);
+        validateFolder(cdcRawFolder);
 
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_DATA_FOLDER, dataFolder);
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_COMMITLOG_FOLDER, commitLogFolder);
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_SAVED_CACHES_FOLDER, savedCachesFolder);
         System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_HINTS_FOLDER, hintsFolder);
+        System.setProperty(ACHILLES_EMBEDDED_CASSANDRA_CDC_RAW_FOLDER, cdcRawFolder);
 
     }
 

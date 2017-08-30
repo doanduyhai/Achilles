@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,15 @@ import static java.util.stream.Collectors.toList;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 import javax.lang.model.element.*;
-import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import org.eclipse.jdt.internal.compiler.apt.model.*;
+import org.eclipse.jdt.internal.compiler.apt.model.DeclaredTypeImplContainer;
+import org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl;
+import org.eclipse.jdt.internal.compiler.apt.model.TypeMirrorImpl;
+import org.eclipse.jdt.internal.compiler.apt.model.VariableElementImpl;
 import org.eclipse.jdt.internal.compiler.impl.BooleanConstant;
 import org.eclipse.jdt.internal.compiler.impl.IntConstant;
 import org.eclipse.jdt.internal.compiler.impl.StringConstant;

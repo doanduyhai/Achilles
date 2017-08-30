@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,13 @@
 package info.archinnov.achilles.internals.parser;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.truth0.Truth;
 
 import com.google.testing.compile.JavaSourceSubjectFactory;
@@ -40,7 +38,6 @@ import info.archinnov.achilles.internals.sample_classes.functions.*;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestUDT;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FunctionParserTest extends AbstractTestProcessor {
 
     private final GlobalParsingContext context = GlobalParsingContext.defaultContext();

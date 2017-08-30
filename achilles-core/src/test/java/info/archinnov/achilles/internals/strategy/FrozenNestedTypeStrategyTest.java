@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
@@ -31,10 +29,9 @@ import com.squareup.javapoet.TypeName;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes;
 import info.archinnov.achilles.internals.parser.validator.cassandra2_1.NestedTypeValidator2_1;
+import info.archinnov.achilles.internals.sample_classes.parser.strategy.TestEntityWithNestedTypes;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FrozenNestedTypeStrategyTest extends AbstractTestProcessor {
 
     GlobalParsingContext globalParsingContext = GlobalParsingContext.defaultContext();

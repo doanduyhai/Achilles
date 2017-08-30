@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static info.archinnov.achilles.internals.cassandra_version.CassandraFeatu
 import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.SASI_INDEX;
 import static java.util.Arrays.asList;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.squareup.javapoet.TypeName;
@@ -28,14 +29,18 @@ import info.archinnov.achilles.annotations.DSE_Search;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.SASI;
 import info.archinnov.achilles.internals.apt.AptUtils;
-import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
-import info.archinnov.achilles.internals.parser.context.DSESearchInfoContext;
+import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.parser.context.SASIInfoContext;
 import info.archinnov.achilles.internals.parser.validator.FieldValidator;
 
 public class FieldValidator2_1 extends FieldValidator {
+
+    @Override
+    public List<TypeName> getAllowedTypes() {
+        return TypeUtils.ALLOWED_TYPES_2_1;
+    }
+
     @Override
     public void validateCompatibleIndexAnnotationsOnField(GlobalParsingContext context, AptUtils aptUtils, String fieldName, TypeName rawEntityClass,
                                                           Optional<Index> index, Optional<SASI> sasi, Optional<DSE_Search> dseSearch) {

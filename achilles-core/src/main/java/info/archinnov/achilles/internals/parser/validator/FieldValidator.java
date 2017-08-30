@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@
 package info.archinnov.achilles.internals.parser.validator;
 
 import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
-import static info.archinnov.achilles.internals.parser.TypeUtils.ALLOWED_TYPES;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.summingInt;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 
@@ -31,13 +33,16 @@ import com.squareup.javapoet.TypeName;
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.metamodel.columns.KeyColumnInfo;
-import info.archinnov.achilles.internals.parser.FieldParser;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
-import info.archinnov.achilles.internals.parser.context.*;
+import info.archinnov.achilles.internals.parser.context.CodecContext;
+import info.archinnov.achilles.internals.parser.context.FieldParsingContext;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
 
 public abstract class FieldValidator {
+
+    public abstract List<TypeName> getAllowedTypes();
 
     public abstract void validateCompatibleIndexAnnotationsOnField(GlobalParsingContext context, AptUtils aptUtils,
                                                                    String fieldName, TypeName rawEntityClass,
@@ -134,7 +139,7 @@ public abstract class FieldValidator {
     }
 
     public void validateAllowedType(AptUtils aptUtils, TypeName rawTargetType, FieldParsingContext context) {
-        aptUtils.validateTrue(ALLOWED_TYPES.contains(rawTargetType),
+        aptUtils.validateTrue(getAllowedTypes().contains(rawTargetType),
                 "Impossible to parse type '%s' from field '%s' of class '%s'. It should be a supported type",
                 rawTargetType.toString(), context.fieldName, context.className);
     }

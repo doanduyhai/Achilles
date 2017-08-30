@@ -23,13 +23,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
 
 import com.datastax.driver.core.Row;
 import com.google.common.collect.ImmutableMap;
@@ -43,7 +39,6 @@ import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-@RunWith(MockitoJUnitRunner.class)
 public class NativeCollectionsCodecIT {
 
     @Rule

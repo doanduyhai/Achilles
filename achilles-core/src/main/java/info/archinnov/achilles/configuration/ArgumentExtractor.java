@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.context.ConfigurationContext;
 import info.archinnov.achilles.internals.factory.DefaultBeanFactory;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.types.ConfigMap;
 import info.archinnov.achilles.json.DefaultJacksonMapperFactory;
 import info.archinnov.achilles.json.JacksonMapperFactory;
@@ -65,6 +66,7 @@ public class ArgumentExtractor {
     static final InsertStrategy DEFAULT_INSERT_STRATEGY = InsertStrategy.ALL_FIELDS;
     static final NamingStrategy DEFAULT_GLOBAL_NAMING_STRATEGY = NamingStrategy.LOWER_CASE;
     static final BeanFactory DEFAULT_BEAN_FACTORY = new DefaultBeanFactory();
+    static final Integer DEFAULT_DML_RESULTS_DISPLAY_SIZE = 10;
     private static final Logger LOGGER = LoggerFactory.getLogger(ArgumentExtractor.class);
 
     public static ConfigurationContext initConfigContext(Cluster cluster, ConfigMap configurationMap) {
@@ -95,7 +97,14 @@ public class ArgumentExtractor {
         configContext.setProvidedSession(initProvidedSession(configurationMap));
         configContext.setStatementsCache(initStatementCache(configurationMap));
         configContext.setRuntimeCodecs(initRuntimeCodecs(configurationMap));
+        configContext.setValidateSchema(initValidateSchema(configurationMap));
+        configContext.setDMLResultsDisplaySize(initDMLResultsDisplayLimit(configurationMap));
         return configContext;
+    }
+
+    static boolean initValidateSchema(ConfigMap configurationMap) {
+        LOGGER.trace("Extract 'schema validation enabled' from configuration map");
+        return configurationMap.getTypedOr(VALIDATE_SCHEMA, true);
     }
 
     static boolean initForceSchemaCreation(ConfigMap configurationMap) {
@@ -174,7 +183,7 @@ public class ArgumentExtractor {
         return Optional.<Session>ofNullable(configurationMap.getTyped(NATIVE_SESSION))
                 .orElse(initKeyspaceName(configurationMap)
                                 .map(cluster::connect)
-                                .orElse(cluster.connect())
+                                .orElseGet(cluster::connect)
                 );
     }
 
@@ -282,6 +291,15 @@ public class ArgumentExtractor {
             return configMap.getTyped(RUNTIME_CODECS);
         } else {
             return new HashMap<>();
+        }
+    }
+
+    private static Integer initDMLResultsDisplayLimit(final ConfigMap configMap) {
+        if(configMap.containsKey(DML_RESULTS_DISPLAY_SIZE)) {
+            final Integer resultsDisplaySize = configMap.getTyped(DML_RESULTS_DISPLAY_SIZE);
+            return Integer.max(0,Integer.min(resultsDisplaySize, CassandraOptions.MAX_RESULTS_DISPLAY_SIZE));
+        } else {
+            return DEFAULT_DML_RESULTS_DISPLAY_SIZE;
         }
     }
 }

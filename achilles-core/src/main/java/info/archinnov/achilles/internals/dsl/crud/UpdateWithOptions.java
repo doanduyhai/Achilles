@@ -17,7 +17,8 @@
 package info.archinnov.achilles.internals.dsl.crud;
 
 import static info.archinnov.achilles.internals.dsl.LWTHelper.triggerLWTListeners;
-import static info.archinnov.achilles.type.interceptor.Event.*;
+import static info.archinnov.achilles.type.interceptor.Event.POST_UPDATE;
+import static info.archinnov.achilles.type.interceptor.Event.PRE_UPDATE;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
@@ -78,7 +79,6 @@ public class UpdateWithOptions<ENTITY> extends AbstractOptionsForCRUDUpdate<Upda
 
         return cfutureRS
                 .thenApply(this.options::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo())

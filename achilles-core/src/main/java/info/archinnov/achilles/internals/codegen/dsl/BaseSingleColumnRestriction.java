@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,11 @@ import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.r
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.MethodSpec;
@@ -29,6 +32,7 @@ import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
 import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ReturnType;
+import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public interface BaseSingleColumnRestriction {
 
@@ -71,8 +75,10 @@ public interface BaseSingleColumnRestriction {
 
         if (paramTypeName.isPrimitive()) {
             builder.addStatement("final $T varargs = $T.<Object>asList(($T[])$L)", LIST_OBJECT, ARRAYS, paramTypeName, param)
-                    .addStatement("final $T encodedVarargs = $T.stream(($T[])$L).mapToObj(x -> meta.$L.encodeFromJava(x, $T.of(cassandraOptions))).collect($T.toList())",
-                            LIST_OBJECT, ARRAYS, paramTypeName, param, param, OPTIONAL, COLLECTORS);
+                    .addStatement("final $T encodedVarargs = new $T<>($L.length);", LIST_OBJECT, ARRAY_LIST, param)
+                    .beginControlFlow("for($T $L_element : $L)", paramTypeName, param, param)
+                        .addStatement("encodedVarargs.add(meta.$L.encodeFromJava($L_element, $T.of(cassandraOptions)))", param, param, OPTIONAL)
+                    .endControlFlow();
         } else {
             builder.addStatement("final $T varargs = $T.<Object>asList((Object[])$L)", LIST_OBJECT, ARRAYS, param)
                     .addStatement("final $T encodedVarargs = $T.<$T>stream(($T[])$L).map(x -> meta.$L.encodeFromJava(x, $T.of(cassandraOptions))).collect($T.toList())",
@@ -81,6 +87,29 @@ public interface BaseSingleColumnRestriction {
 
         builder.addStatement("boundValues.add(varargs)")
                 .addStatement("encodedValues.add(encodedVarargs)")
+                .returns(nextType);
+
+        if (returnType == ReturnType.NEW) {
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
+        } else {
+            builder.addStatement("return $T.this", nextType);
+        }
+
+        return builder.build();
+    }
+
+    default MethodSpec buildTokenValueRelation(String relation, TypeName nextType, List<String> partitionKeyColumns, ReturnType returnType) {
+        final String fcall = partitionKeyColumns.stream().collect(Collectors.joining(",", "token(", ")"));
+        final String methodName = upperCaseFirst(relation);
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ?</strong>", fcall, relationToSymbolForJavaDoc(relation))
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addParameter(TypeUtils.OBJECT_LONG, "tokenValue")
+                .addStatement("where.and($T.$L($S, $T.bindMarker($S)))",
+                        QUERY_BUILDER, relation, fcall, QUERY_BUILDER, "tokenValue")
+                .addStatement("boundValues.add($N)", "tokenValue")
+                .addStatement("encodedValues.add($N)", "tokenValue")
                 .returns(nextType);
 
         if (returnType == ReturnType.NEW) {

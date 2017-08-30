@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ public class UserTypeBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserTypeBuilder.class);
 
-    public static UserType buildUserType(ProtocolVersion version, CodecRegistry registry, String keyspace, String typeName, Collection<UserType.Field> fields) {
+    public static UserType buildUserType(ProtocolVersion version, CodecRegistry registry, String keyspace, String typeName, boolean frozen, Collection<UserType.Field> fields) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Creating UserType instance for UDT %s in keyspace %s", typeName, keyspace));
         }
-        return new UserType(keyspace, typeName, fields, version, registry);
+        return new UserType(keyspace, typeName, frozen, fields, version, registry);
     }
 
     public static UserType.Field buildField(String name, DataType dataType) {

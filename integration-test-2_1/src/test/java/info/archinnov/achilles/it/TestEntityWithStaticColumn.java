@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -43,7 +41,6 @@ import info.archinnov.achilles.script.ScriptExecutor;
 import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener.LWTResult;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestEntityWithStaticColumn {
 
     @Rule

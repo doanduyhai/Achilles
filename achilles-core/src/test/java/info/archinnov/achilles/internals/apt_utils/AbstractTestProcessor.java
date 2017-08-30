@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,10 @@ import com.google.testing.compile.JavaSourcesSubjectFactory;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 
+import info.archinnov.achilles.annotations.CodecRegistry;
 import info.archinnov.achilles.annotations.FunctionRegistry;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.sample_classes.APUnitTest;
-import info.archinnov.achilles.annotations.CodecRegistry;
 import info.archinnov.achilles.internals.sample_classes.TestEntityDecoy;
 
 public abstract class AbstractTestProcessor extends AbstractProcessor {

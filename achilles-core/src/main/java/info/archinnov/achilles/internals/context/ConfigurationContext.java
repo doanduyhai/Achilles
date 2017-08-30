@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.interceptor.DefaultPostLoadBeanValidationInterceptor;
 import info.archinnov.achilles.internals.interceptor.DefaultPreMutateBeanValidationInterceptor;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
@@ -44,7 +43,6 @@ import info.archinnov.achilles.type.factory.BeanFactory;
 import info.archinnov.achilles.type.interceptor.Interceptor;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 import info.archinnov.achilles.type.strategy.NamingStrategy;
-import info.archinnov.achilles.type.tuples.Tuple3;
 
 public class ConfigurationContext {
 
@@ -54,6 +52,7 @@ public class ConfigurationContext {
     public static final ConsistencyLevel DEFAULT_SERIAL_CONSISTENCY_LEVEL = ConsistencyLevel.LOCAL_SERIAL;
 
     private boolean forceSchemaGeneration;
+    private boolean validateSchema = true;
 
     private List<Class<?>> manageEntities;
 
@@ -94,12 +93,22 @@ public class ConfigurationContext {
 
     private Map<CodecSignature<?,?>, Codec<?, ?>> runtimeCodecs = new HashMap<>();
 
+    private Integer DMLResultsDisplaySize;
+
     public boolean isForceSchemaGeneration() {
         return forceSchemaGeneration;
     }
 
     public void setForceSchemaGeneration(boolean forceSchemaGeneration) {
         this.forceSchemaGeneration = forceSchemaGeneration;
+    }
+
+    public boolean isValidateSchema() {
+        return validateSchema;
+    }
+
+    public void setValidateSchema(boolean validateSchema) {
+        this.validateSchema = validateSchema;
     }
 
     public List<Class<?>> getManageEntities() {
@@ -282,7 +291,7 @@ public class ConfigurationContext {
     }
 
     public void injectDependencies(TupleTypeFactory tupleTypeFactory, UserTypeFactory userTypeFactory, AbstractEntityProperty<?> entityProperty) {
-        LOGGER.info("Start injecting dependencies to meta classes");
+        LOGGER.debug("Start injecting dependencies to meta classes");
 
         final Class<?> entityClass = entityProperty.entityClass;
 
@@ -295,7 +304,6 @@ public class ConfigurationContext {
             LOGGER.debug("Injecting schema name provider");
             entityProperty.inject(schemaNameProvider.get());
         }
-
 
         LOGGER.debug("Injecting default bean factory");
         entityProperty.inject(defaultBeanFactory);
@@ -353,5 +361,13 @@ public class ConfigurationContext {
 
     public void setRuntimeCodecs(Map<CodecSignature<?, ?>, Codec<?, ?>> runtimeCodecs) {
         this.runtimeCodecs = runtimeCodecs;
+    }
+
+    public Integer getDMLResultsDisplaySize() {
+        return DMLResultsDisplaySize;
+    }
+
+    public void setDMLResultsDisplaySize(Integer DMLResultsDisplaySize) {
+        this.DMLResultsDisplaySize = DMLResultsDisplaySize;
     }
 }

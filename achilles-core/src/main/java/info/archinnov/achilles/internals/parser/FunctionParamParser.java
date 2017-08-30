@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ public class FunctionParamParser {
 
         final TypeName rawTargetType = getRawType(typeNameFromRegistry);
 
-        aptUtils.validateTrue(ALLOWED_TYPES.contains(rawTargetType),
+        aptUtils.validateTrue(context.typeValidator().getAllowedTypes().contains(rawTargetType),
                 "Impossible to parse type '%s' from param '%s' of method '%s' on class '%s'. It should be a supported type",
                 rawTargetType.toString(), paramName, methodName);
 

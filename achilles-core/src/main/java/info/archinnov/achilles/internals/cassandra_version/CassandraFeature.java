@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,5 +23,8 @@ public enum CassandraFeature {
     JSON,
     MATERIALIZED_VIEW,
     SASI_INDEX,
-    DSE_SEARCH
+    LITERAL_VALUES_IN_FUNCTION_CALL,
+    DURATION_TYPE,
+    DSE_SEARCH,
+
 }

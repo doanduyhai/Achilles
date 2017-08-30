@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,16 @@ import static com.datastax.driver.core.ClusteringOrder.DESC;
 import static info.archinnov.achilles.internals.apt.AptUtils.*;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.*;
-import javax.lang.model.element.*;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -39,6 +43,7 @@ import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.annotations.SASI.Analyzer;
 import info.archinnov.achilles.annotations.SASI.IndexMode;
 import info.archinnov.achilles.annotations.SASI.Normalization;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.metamodel.columns.*;
 import info.archinnov.achilles.internals.metamodel.index.IndexInfo;
@@ -62,10 +67,12 @@ public class FieldInfoParser {
         final String fieldName = elm.getSimpleName().toString();
         final String cqlColumn = ofNullable(elm.getAnnotation(Column.class))
                 .map(x -> x.value().isEmpty() ? null : x.value())
-                .orElse(context.namingStrategy.apply(fieldName));
+                .orElseGet(() -> context.namingStrategy.apply(fieldName));
 
-        final ExecutableElement getter = aptUtils.findGetter(classElm, elm, deriveGetterName(elm));
-        final ExecutableElement setter = aptUtils.findSetter(classElm, elm, deriveSetterName(elm));
+        final Optional<AccessorsExclusionContext> optionalAccessorExclusion = context.accessorsExclusionContexts
+                .stream()
+                .filter(x -> x.fieldName.equals(fieldName))
+                .findFirst();
 
         final Tuple2<CodeBlock, ColumnType> columnTypeCode = buildColumnType(context.globalContext, elm, fieldName, rawEntityClass);
         final Tuple2<CodeBlock, ColumnInfo> columnInfoCode = buildColumnInfo(context.globalContext, annotationTree, elm, fieldName, rawEntityClass);
@@ -82,13 +89,53 @@ public class FieldInfoParser {
             indexInfoCode = buildNativeIndexInfo(annotationTree, elm, context);
         }
 
-        CodeBlock getterLambda = CodeBlock.builder()
-                .add("($T entity$$) -> entity$$.$L()", rawEntityClass, getter.getSimpleName().toString())
-                .build();
+        final CodeBlock getterLambda;
+        final CodeBlock setterLambda;
 
-        CodeBlock setterLambda = CodeBlock.builder()
-                .add("($T entity$$, $T value$$) -> entity$$.$L(value$$)", rawEntityClass, currentType, setter.getSimpleName().toString())
-                .build();
+        if (optionalAccessorExclusion.isPresent()) {
+            final AccessorsExclusionContext exclusionContext = optionalAccessorExclusion.get();
+
+            /**
+             *
+             * no Getter/no Setter == Immutable entity
+             * Getter/no Setter == entity with custom @EntityCreator constructor
+             *
+             **/
+
+            if (exclusionContext.noGetter) {
+                // Direct field access
+                getterLambda = CodeBlock.builder()
+                        .add("($T entity$$) -> entity$$.$L", rawEntityClass, fieldName)
+                        .build();
+            } else {
+                final ExecutableElement getter = aptUtils.findGetter(classElm, elm, deriveGetterName(elm));
+                getterLambda = CodeBlock.builder()
+                        .add("($T entity$$) -> entity$$.$L()", rawEntityClass, getter.getSimpleName().toString())
+                        .build();
+            }
+
+
+            if (exclusionContext.noSetter) {
+                setterLambda = CodeBlock.builder()
+                        .add("($T entity$$, $T value$$) -> {}", rawEntityClass, currentType)
+                        .build();
+            } else {
+                throw new AchillesBeanMappingException(format("AccessorsExclusionContext for entity '%s' but the setter is present", context.className));
+            }
+
+        } else {
+
+            final ExecutableElement getter = aptUtils.findGetter(classElm, elm, deriveGetterName(elm));
+            final ExecutableElement setter = aptUtils.findSetter(classElm, elm, deriveSetterName(elm));
+
+            getterLambda = CodeBlock.builder()
+                    .add("($T entity$$) -> entity$$.$L()", rawEntityClass, getter.getSimpleName().toString())
+                    .build();
+
+            setterLambda = CodeBlock.builder()
+                    .add("($T entity$$, $T value$$) -> entity$$.$L(value$$)", rawEntityClass, currentType, setter.getSimpleName().toString())
+                    .build();
+        }
 
         return new FieldInfoContext(CodeBlock.builder()
                 .add("new $T<>($L, $L, $S, $S, $L, $L, $L)", FIELD_INFO, getterLambda, setterLambda,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.UUID;
 
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.Duration;
 import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.UDTValue;
@@ -60,6 +62,7 @@ public class TypeMapper {
         cql2Java.put(CUSTOM, ByteBuffer.class);
         cql2Java.put(UDT, UDTValue.class);
         cql2Java.put(TUPLE, TupleValue.class);
+        cql2Java.put(DURATION, Duration.class);
     }
 
     public static Class<?> toJavaType(Name cqlType) {

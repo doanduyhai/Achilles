@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,10 @@ import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.codegen.ManagerCodeGen.ManagerAndDSLClasses;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
-import info.archinnov.achilles.internals.parser.context.FunctionSignature.FunctionParamSignature;
-import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
-import info.archinnov.achilles.internals.parser.context.FunctionsContext;
 import info.archinnov.achilles.internals.parser.context.FunctionSignature;
-import info.archinnov.achilles.internals.utils.NamingHelper;
+import info.archinnov.achilles.internals.parser.context.FunctionSignature.FunctionParamSignature;
+import info.archinnov.achilles.internals.parser.context.FunctionsContext;
+import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
 public class ManagerFactoryCodeGen {
 

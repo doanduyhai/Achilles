@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@ package info.archinnov.achilles.internals.entities;
 
 import java.util.Date;
 
-import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.DSE_Search;
+import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.Table;
 
 @Table(keyspace = "achilles_dse_it", table = "search")
 public class EntityWithDSESearchJSON {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class NonEscapingSetAssignment extends Assignment.SetAssignment {
 
     @Override
     void appendTo(StringBuilder sb, List<Object> variables, CodecRegistry codecRegistry) {
-        sb.append(name.trim()).append('=');
+        sb.append(name).append('=');
         appendValue(value, codecRegistry, sb, variables);
     }
 

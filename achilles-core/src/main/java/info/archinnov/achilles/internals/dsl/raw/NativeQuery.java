@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,11 +31,11 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.ResultSet;
 
-import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.LWTHelper;
 import info.archinnov.achilles.internals.dsl.RawAndTypeMapDefaultImpl;
 import info.archinnov.achilles.internals.dsl.action.MutationAction;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.NativeStatementWrapper;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
@@ -147,6 +147,22 @@ public class NativeQuery implements MutationAction, RawAndTypeMapDefaultImpl {
     }
 
     /**
+     * When DEBUG log is enabled, restrict the Results Display to maximum <strong>DMLResultsDisplaySize</strong> rows. This only applies to SELECT statements
+     * <br/>
+     * <br/>
+     * <strong>WARNING: there is a hard-limit of maximum 100 rows. If you provide a value greater than 100 the number of displayed returned rows will still be capped to 100.
+     * If you provide a negative number, it will default to 0
+     * </strong>
+     * @param DMLResultsDisplaySize the maximum number of returned rows to be displayed
+     */
+    public NativeQuery withDMLResultsDisplaySize(int DMLResultsDisplaySize) {
+        if (!getOperationType(boundStatement).isUpsert) {
+            options.setDMLResultsDisplaySize(Optional.of(Integer.max(0,Integer.min(DMLResultsDisplaySize, CassandraOptions.MAX_RESULTS_DISPLAY_SIZE))));
+        }
+        return this;
+    }
+
+    /**
      * Execute the native query asynchronously and return the execution info
      *
      * @return CompletableFuture&lt;ExecutionInfo&gt;
@@ -165,133 +181,12 @@ public class NativeQuery implements MutationAction, RawAndTypeMapDefaultImpl {
 
         return cfutureRS
                 .thenApply(options::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
+                .thenApply(x -> statementWrapper.logReturnResults(x, options.computeMaxDisplayedResults(rte.configContext)))
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> LWTHelper.triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo());
     }
 
-//    /**
-//     * Execute the native query asynchronously and return a list of {@link info.archinnov.achilles.type.TypedMap}
-//     * and an execution info object
-//     *
-//     * @return CompletableFuture&lt;Tuple2&lt;List&lt;TypedMap&gt;, ExecutionInfo&gt;&gt;
-//     */
-//    public CompletableFuture<Tuple2<List<TypedMap>, ExecutionInfo>> getListAsyncWithStats() {
-//        final StatementWrapper statementWrapper = new NativeStatementWrapper(getOperationType(boundStatement), meta, boundStatement, encodedBoundValues);
-//        final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
-//
-//        if (LOGGER.isTraceEnabled()) {
-//            LOGGER.trace(format("Execute native query async with execution info : %s", queryString));
-//        }
-//
-//        CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
-//
-//        return cfutureRS
-//                .thenApply(options::resultSetAsyncListener)
-//                .thenApply(statementWrapper::logReturnResults)
-//                .thenApply(statementWrapper::logTrace)
-//                .thenApply(x -> LWTHelper.triggerLWTListeners(lwtResultListeners, x, queryString))
-//                .thenApply(x -> Tuple2.of(mapResultSetToTypedMaps(x), x.getExecutionInfo()));
-//    }
-//
-//    /**
-//     * Execute the native query asynchronously and return a list of {@link info.archinnov.achilles.type.TypedMap}
-//     *
-//     * @return CompletableFuture&lt;List&lt;TypedMap&gt;&gt;
-//     */
-//    public CompletableFuture<List<TypedMap>> getListAsync() {
-//        return getListAsyncWithStats()
-//                .thenApply(Tuple2::_1);
-//    }
-//
-//    /**
-//     * Execute the native query and return a list of {@link info.archinnov.achilles.type.TypedMap}
-//     * with execution info
-//     *
-//     * @return Tuple2&lt;List&lt;TypedMap&gt;, ExecutionInfo&gt;
-//     */
-//    public Tuple2<List<TypedMap>, ExecutionInfo> getListWithStats() {
-//        try {
-//            return Uninterruptibles.getUninterruptibly(getListAsyncWithStats());
-//        } catch (ExecutionException e) {
-//            throw extractCauseFromExecutionException(e);
-//        }
-//    }
-//
-//    /**
-//     * Execute the native query and return a list of {@link info.archinnov.achilles.type.TypedMap}
-//     *
-//     * @return List&lt;TypedMap&gt;
-//     */
-//    public List<TypedMap> getList() {
-//        try {
-//            return Uninterruptibles.getUninterruptibly(getListAsync());
-//        } catch (ExecutionException e) {
-//            throw extractCauseFromExecutionException(e);
-//        }
-//    }
-//
-//    /**
-//     * Execute the native query asynchronously and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
-//     * and an execution info object
-//     *
-//     * @return CompletableFuture&lt;Tuple2&lt;TypedMap, ExecutionInfo&gt;&gt;
-//     */
-//    public CompletableFuture<Tuple2<TypedMap, ExecutionInfo>> getOneAsyncWithStats() {
-//        final StatementWrapper statementWrapper = new NativeStatementWrapper(getOperationType(boundStatement), meta, boundStatement, encodedBoundValues);
-//        final String queryString = statementWrapper.getBoundStatement().preparedStatement().getQueryString();
-//
-//        if (LOGGER.isTraceEnabled()) {
-//            LOGGER.trace(format("Execute native query async with execution info : %s", queryString));
-//        }
-//
-//        CompletableFuture<ResultSet> cfutureRS = rte.execute(statementWrapper);
-//
-//        return cfutureRS
-//                .thenApply(options::resultSetAsyncListener)
-//                .thenApply(statementWrapper::logReturnResults)
-//                .thenApply(statementWrapper::logTrace)
-//                .thenApply(x -> LWTHelper.triggerLWTListeners(lwtResultListeners, x, queryString))
-//                .thenApply(x -> Tuple2.of(mapRowToTypedMap(x.one()), x.getExecutionInfo()));
-//    }
-//
-//    /**
-//     * Execute the native query asynchronously and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
-//     *
-//     * @return CompletableFuture&lt;TypedMap&gt;&gt;
-//     */
-//    public CompletableFuture<TypedMap> getOneAsync() {
-//        return getOneAsyncWithStats()
-//                .thenApply(Tuple2::_1);
-//    }
-//
-//    /**
-//     * Execute the native query and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
-//     * and execution info
-//     *
-//     * @return Tuple2&lt;TypedMap, ExecutionInfo&gt;
-//     */
-//    public Tuple2<TypedMap, ExecutionInfo> getOneWithStats() {
-//        try {
-//            return Uninterruptibles.getUninterruptibly(getOneAsyncWithStats());
-//        } catch (ExecutionException e) {
-//            throw extractCauseFromExecutionException(e);
-//        }
-//    }
-//
-//    /**
-//     * Execute the native query and return a the first row as a {@link info.archinnov.achilles.type.TypedMap}
-//     *
-//     * @return TypedMap
-//     */
-//    public TypedMap getOne() {
-//        try {
-//            return Uninterruptibles.getUninterruptibly(getOneAsync());
-//        } catch (ExecutionException e) {
-//            throw extractCauseFromExecutionException(e);
-//        }
-//    }
 
     @Override
     public RuntimeEngine runtimeEngine() {

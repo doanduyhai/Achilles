@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
@@ -54,12 +56,11 @@ import info.archinnov.achilles.internals.cassandra_version.InternalCassandraVers
 import info.archinnov.achilles.internals.codegen.ManagerFactoryBuilderCodeGen;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryCodeGen;
 import info.archinnov.achilles.internals.codegen.ManagerFactoryCodeGen.ManagersAndDSLClasses;
-import info.archinnov.achilles.internals.codegen.function.FunctionParameterTypesCodeGen;
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
-import info.archinnov.achilles.internals.parser.context.FunctionSignature;
 import info.archinnov.achilles.internals.parser.CodecRegistryParser;
 import info.archinnov.achilles.internals.parser.EntityParser;
 import info.archinnov.achilles.internals.parser.FunctionParser;
+import info.archinnov.achilles.internals.parser.context.FunctionSignature;
 import info.archinnov.achilles.internals.parser.context.FunctionsContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
@@ -88,23 +89,23 @@ public class AchillesProcessor extends AbstractProcessor {
 
             try {
 
-                final GlobalParsingContext parsingContext = initGlobalParsingContext(annotations, roundEnv);
+                final GlobalParsingContext globalContext = initGlobalParsingContext(annotations, roundEnv);
 
-                validateCassandraVersionAgainstUsedAnnotations(annotations, parsingContext);
+                validateCassandraVersionAgainstUsedAnnotations(annotations, globalContext);
 
-                parseCodecRegistry(parsingContext, annotations, roundEnv);
+                parseCodecRegistry(globalContext, annotations, roundEnv);
 
-                final List<EntityMetaSignature> tableAndViewSignatures = discoverAndValidateTablesAndViews(annotations, roundEnv, parsingContext);
+                final List<EntityMetaSignature> tableAndViewSignatures = discoverAndValidateTablesAndViews(annotations, roundEnv, globalContext);
 
-                final FunctionsContext udfContext = parseAndValidateFunctionRegistry(parsingContext, annotations, roundEnv, tableAndViewSignatures);
+                final FunctionsContext udfContext = parseAndValidateFunctionRegistry(globalContext, annotations, roundEnv, tableAndViewSignatures);
 
-                final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance(parsingContext);
+                final TypeSpec managerFactoryBuilder = ManagerFactoryBuilderCodeGen.buildInstance(globalContext);
 
-                final ManagersAndDSLClasses managersAndDSLClasses = ManagerFactoryCodeGen.buildInstance(aptUtils, tableAndViewSignatures, udfContext, parsingContext);
+                final ManagersAndDSLClasses managersAndDSLClasses = ManagerFactoryCodeGen.buildInstance(aptUtils, tableAndViewSignatures, udfContext, globalContext);
 
                 aptUtils.printNote("[Achilles] Reading previously generated source files (if exist)");
                 try {
-                    final FileObject resource = aptUtils.filer.getResource(StandardLocation.SOURCE_OUTPUT, GENERATED_PACKAGE, parsingContext.managerFactoryBuilderClassName());
+                    final FileObject resource = aptUtils.filer.getResource(StandardLocation.SOURCE_OUTPUT, GENERATED_PACKAGE, globalContext.managerFactoryBuilderClassName());
                     final File generatedSourceFolder = new File(resource.toUri().getRawPath().replaceAll("(.+/info/archinnov/achilles/generated/).+", "$1"));
                     aptUtils.printNote("[Achilles] Cleaning previously generated source files folder : '%s'", generatedSourceFolder.getPath());
                     FileUtils.deleteDirectory(generatedSourceFolder);
@@ -113,18 +114,18 @@ public class AchillesProcessor extends AbstractProcessor {
                 }
 
                 aptUtils.printNote("[Achilles] Generating CQL compatible types (used by the application) as class for function calls");
-                for (TypeSpec typeSpec : FunctionParameterTypesCodeGen.buildParameterTypesClasses(udfContext)) {
+                for (TypeSpec typeSpec : globalContext.functionParameterTypesCodeGen().buildParameterTypesClasses(udfContext)) {
                     JavaFile.builder(FUNCTION_PACKAGE, typeSpec)
                             .build().writeTo(aptUtils.filer);
                 }
 
                 aptUtils.printNote("[Achilles] Generating SystemFunctions");
-                JavaFile.builder(FUNCTION_PACKAGE, parsingContext.functionsRegistryCodeGen().generateFunctionsRegistryClass(SYSTEM_FUNCTIONS_CLASS,
+                JavaFile.builder(FUNCTION_PACKAGE, globalContext.functionsRegistryCodeGen().generateFunctionsRegistryClass(SYSTEM_FUNCTIONS_CLASS,
                         SYSTEM_FUNCTIONS)).build().writeTo(aptUtils.filer);
 
-                if (parsingContext.supportsFeature(UDF_UDA)) {
+                if (globalContext.supportsFeature(UDF_UDA)) {
                     aptUtils.printNote("[Achilles] Generating FunctionsRegistry");
-                    JavaFile.builder(FUNCTION_PACKAGE, parsingContext.functionsRegistryCodeGen().generateFunctionsRegistryClass(FUNCTIONS_REGISTRY_CLASS,
+                    JavaFile.builder(FUNCTION_PACKAGE, globalContext.functionsRegistryCodeGen().generateFunctionsRegistryClass(FUNCTIONS_REGISTRY_CLASS,
                             udfContext.functionSignatures)).build().writeTo(aptUtils.filer);
                 }
 
@@ -138,7 +139,7 @@ public class AchillesProcessor extends AbstractProcessor {
                         .build().writeTo(aptUtils.filer);
 
                 aptUtils.printNote("[Achilles] Generating UDT meta classes");
-                for (TypeSpec typeSpec : parsingContext.udtTypes.values()) {
+                for (TypeSpec typeSpec : globalContext.udtTypes.values()) {
                     JavaFile.builder(UDT_META_PACKAGE, typeSpec)
                             .build().writeTo(aptUtils.filer);
                 }
@@ -209,7 +210,7 @@ public class AchillesProcessor extends AbstractProcessor {
                 .map(typeElement -> aptUtils.getAnnotationOnClass(typeElement, CompileTimeConfig.class).get())
                 .findFirst()
                 .map(annot -> GlobalParsingContext.fromCompileTimeConfig(annot))
-                .orElse(GlobalParsingContext.defaultContext());
+                .orElseGet(GlobalParsingContext::defaultContext);
 
         context.validateProjectName(aptUtils);
 
@@ -243,7 +244,7 @@ public class AchillesProcessor extends AbstractProcessor {
                 .map(x -> x.sourceType)
                 .collect(toSet());
 
-        return new FunctionsContext(udfSignatures, CollectionsHelper.appendAll(functionParameterTypes, functionReturnTypes, entityColumnTargetTypes, NATIVE_TYPES));
+        return new FunctionsContext(udfSignatures, CollectionsHelper.appendAll(functionParameterTypes, functionReturnTypes, entityColumnTargetTypes, NATIVE_TYPES_2_1));
     }
 
     private List<EntityMetaSignature> discoverAndValidateTablesAndViews(Set<? extends TypeElement> annotatedTypes, RoundEnvironment roundEnv, GlobalParsingContext parsingContext) {

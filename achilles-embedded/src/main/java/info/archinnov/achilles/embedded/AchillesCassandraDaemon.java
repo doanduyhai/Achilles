@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,12 @@ import java.util.List;
 
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.Schema;
+import org.apache.cassandra.config.SchemaConstants;
 import org.apache.cassandra.cql3.functions.ThreadAwareSecurityManager;
-import org.apache.cassandra.db.*;
+import org.apache.cassandra.db.ColumnFamilyStore;
+import org.apache.cassandra.db.Keyspace;
+import org.apache.cassandra.db.SystemKeyspace;
+import org.apache.cassandra.db.WindowsFailedSnapshotTracker;
 import org.apache.cassandra.db.commitlog.CommitLog;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.exceptions.StartupException;
@@ -30,7 +34,10 @@ import org.apache.cassandra.io.FSError;
 import org.apache.cassandra.io.sstable.CorruptSSTableException;
 import org.apache.cassandra.io.util.FileUtils;
 import org.apache.cassandra.metrics.StorageMetrics;
-import org.apache.cassandra.service.*;
+import org.apache.cassandra.service.CacheService;
+import org.apache.cassandra.service.CassandraDaemon;
+import org.apache.cassandra.service.NativeTransportService;
+import org.apache.cassandra.service.StorageService;
 import org.apache.cassandra.tracing.Tracing;
 import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.JVMStabilityInspector;
@@ -63,7 +70,7 @@ public class AchillesCassandraDaemon extends CassandraDaemon {
     @Override
     protected void setup()  {
         // Delete any failed snapshot deletions on Windows - see CASSANDRA-9658
-        if (FBUtilities.isWindows())
+        if (FBUtilities.isWindows)
             WindowsFailedSnapshotTracker.deleteOldSnapshots();
 
         ThreadAwareSecurityManager.install();
@@ -98,19 +105,24 @@ public class AchillesCassandraDaemon extends CassandraDaemon {
         // load schema from disk
         Schema.instance.loadFromDisk();
 
-        try {
-            // clean up debris in the rest of the keyspaces
-            for (String keyspaceName : Schema.instance.getKeyspaces()) {
-                // Skip system as we've already cleaned it
-                if (keyspaceName.equals(SystemKeyspace.NAME))
-                    continue;
+        // clean up debris in the rest of the keyspaces
+        for (String keyspaceName : Schema.instance.getKeyspaces())
+        {
+            // Skip system as we've already cleaned it
+            if (keyspaceName.equals(SchemaConstants.SYSTEM_KEYSPACE_NAME))
+                continue;
 
-                for (CFMetaData cfm : Schema.instance.getTablesAndViews(keyspaceName))
+            for (CFMetaData cfm : Schema.instance.getTablesAndViews(keyspaceName))
+            {
+                try
+                {
                     ColumnFamilyStore.scrubDataDirectories(cfm);
+                }
+                catch (StartupException e)
+                {
+                    exitOrFail(e.returnCode, e.getMessage(), e.getCause());
+                }
             }
-        } catch (StartupException startupEx) {
-            logger.error("***** Startup exception : " + startupEx.getLocalizedMessage());
-            throw new RuntimeException(startupEx);
         }
 
         Keyspace.setInitialized();
@@ -144,7 +156,7 @@ public class AchillesCassandraDaemon extends CassandraDaemon {
         // replay the log if necessary
         try
         {
-            CommitLog.instance.recover();
+            CommitLog.instance.recoverSegmentsOnDisk();
         }
         catch (IOException e)
         {
@@ -153,6 +165,19 @@ public class AchillesCassandraDaemon extends CassandraDaemon {
 
         // Re-populate token metadata after commit log recover (new peers might be loaded onto system keyspace #10293)
         StorageService.instance.populateTokenMetadata();
+
+        // Disable auto compaction
+        for (Keyspace keyspace : Keyspace.all())
+        {
+            for (ColumnFamilyStore cfs : keyspace.getColumnFamilyStores())
+            {
+                for (final ColumnFamilyStore store : cfs.concatWithIndexes())
+                {
+                    if (store.getCompactionStrategyManager().shouldBeEnabled())
+                        store.disableAutoCompaction();
+                }
+            }
+        }
 
         SystemKeyspace.finishStartup();
 
@@ -222,7 +247,7 @@ public class AchillesCassandraDaemon extends CassandraDaemon {
 
         // On windows, we need to stop the entire system as prunsrv doesn't have the jsvc hooks
         // We rely on the shutdown hook to drain the node
-        if (FBUtilities.isWindows())
+        if (FBUtilities.isWindows)
             System.exit(0);
     }
 

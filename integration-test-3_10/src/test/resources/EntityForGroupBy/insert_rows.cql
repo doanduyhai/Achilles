@@ -1,0 +1,20 @@
+BEGIN UNLOGGED BATCH
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 1, 1, 1, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 1, 1, 2, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 1, 1, 3, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 1, 2, 1, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 1, 2, 2, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 1, 2, 3, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 1, 3, 1, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 1, 3, 2, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 1, 3, 3, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 2, 1, 1, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 2, 1, 2, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 2, 1, 3, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 2, 2, 1, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 2, 2, 2, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 2, 2, 3, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 3, 1, 1, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 3, 1, 2, 1);
+  INSERT INTO it_3_10.entity_for_group_by(id, "uuID", clust1, "clusteRing2", clust3, val) VALUES(${id}, ${uuid}, 3, 1, 3, 1);
+APPLY BATCH;

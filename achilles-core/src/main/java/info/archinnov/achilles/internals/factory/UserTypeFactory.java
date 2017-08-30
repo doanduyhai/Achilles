@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ public class UserTypeFactory {
         this.registry = registry;
     }
 
-    public UserType typeFor(String keyspace, String typeName, Collection<UserType.Field> fields) {
-        return UserTypeBuilder.buildUserType(protocolVersion, registry, keyspace, typeName, fields);
+    public UserType typeFor(String keyspace, String typeName, boolean frozen, Collection<UserType.Field> fields) {
+        return UserTypeBuilder.buildUserType(protocolVersion, registry, keyspace, typeName, frozen, fields);
     }
 
     public UserType.Field fieldFor(String name, DataType dataType) {

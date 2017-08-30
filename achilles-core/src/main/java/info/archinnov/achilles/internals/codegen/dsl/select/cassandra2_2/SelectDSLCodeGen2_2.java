@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package info.archinnov.achilles.internals.codegen.dsl.select.cassandra2_2;
 
-import static info.archinnov.achilles.internals.parser.TypeUtils.DSL_PACKAGE;
-import static info.archinnov.achilles.internals.parser.TypeUtils.SELECT_DOT_WHERE;
-import static info.archinnov.achilles.internals.parser.TypeUtils.SELECT_FROM_JSON_DSL_SUFFIX;
+import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
@@ -53,8 +51,8 @@ public class SelectDSLCodeGen2_2 extends SelectDSLCodeGen
 
         TypeName selectEndJSONTypeName = ClassName.get(DSL_PACKAGE, signature.selectEndJSONReturnType());
 
-        final String className = signature.className + SELECT_FROM_JSON_DSL_SUFFIX;
-        builder.addType(buildSelectFromJSON(className, selectWhereJSONTypeName, selectEndJSONTypeName));
+        final String className = FROM_JSON_DSL_SUFFIX;
+        builder.addType(buildSelectFromJSON(signature, className, selectWhereJSONTypeName, selectEndJSONTypeName).build());
         builder.addMethod(buildAllColumnsJSON(selectFromJSONTypeName, SELECT_DOT_WHERE, "select"));
         builder.addMethod(buildAllColumnsJSONWithSchemaProvider(selectFromJSONTypeName, SELECT_DOT_WHERE, "select"));
     }

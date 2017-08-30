@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,8 @@ public class TestEntityWithCaseSensitivePKIT {
         //Given
         Long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
         Long clust = RandomUtils.nextLong(0, Long.MAX_VALUE);
-        final EntityWithCaseSensitivePK entity = new EntityWithCaseSensitivePK(id, clust);
+        Integer priority = 1;
+        final EntityWithCaseSensitivePK entity = new EntityWithCaseSensitivePK(id, clust, priority);
         entity.setList(Arrays.asList("1", "2"));
         entity.setSet(Sets.newHashSet("1", "2"));
         entity.setMap(ImmutableMap.of(1, "1", 2, "2"));
@@ -70,7 +71,7 @@ public class TestEntityWithCaseSensitivePKIT {
         manager.crud().insert(entity).execute();
 
         //Then
-        final EntityWithCaseSensitivePK found = manager.crud().findById(id, clust).get();
+        final EntityWithCaseSensitivePK found = manager.crud().findById(id, clust, priority).get();
         assertThat(found).isNotNull();
         assertThat(found.getList()).containsExactly("1", "2");
         assertThat(found.getSet()).containsExactly("1", "2");
@@ -86,13 +87,14 @@ public class TestEntityWithCaseSensitivePKIT {
         //Given
         Long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
         Long clust = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        Integer priority = 1;
 
         //When
-        manager.crud().insert(new EntityWithCaseSensitivePK(id, clust)).execute();
-        manager.crud().deleteById(id, clust).execute();
+        manager.crud().insert(new EntityWithCaseSensitivePK(id, clust, priority)).execute();
+        manager.crud().deleteById(id, clust, priority).execute();
 
         //Then
-        final EntityWithCaseSensitivePK found = manager.crud().findById(id, clust).get();
+        final EntityWithCaseSensitivePK found = manager.crud().findById(id, clust, priority).get();
         assertThat(found).isNull();
     }
 
@@ -125,6 +127,64 @@ public class TestEntityWithCaseSensitivePKIT {
         assertThat(found.getUdt().getValue()).isEqualTo("test");
     }
 
+    @Test
+    public void should_dsl_select_with_tuple_relations() throws Exception {
+        //Given
+        Long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        scriptExecutor.executeScriptTemplate("EntityWithCaseSensitivePK/insert1row.cql", ImmutableMap.of("partitionKey",id));
+
+        //When
+        final EntityWithCaseSensitivePK found = manager
+                .dsl()
+                .select()
+                .list()
+                .set()
+                .map()
+                .udt().allColumns()
+                .fromBaseTable()
+                .where()
+                .id().Eq(id)
+                .clust_priority().Gte_And_Lte(9L, 1, 11L, 1)
+                .getOne();
+
+        //Then
+        assertThat(found).isNotNull();
+        assertThat(found.getList()).containsExactly("1", "2");
+        assertThat(found.getSet()).containsExactly("1", "2");
+        assertThat(found.getMap()).containsEntry(1, "1");
+        assertThat(found.getMap()).containsEntry(2, "2");
+        assertThat(found.getUdt().getId()).isEqualTo(1L);
+        assertThat(found.getUdt().getValue()).isEqualTo("test");
+    }
+
+    @Test
+    public void should_dsl_select_with_token_value() throws Exception {
+        //Given
+        Long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        scriptExecutor.executeScriptTemplate("EntityWithCaseSensitivePK/insert1row.cql", ImmutableMap.of("partitionKey",id));
+
+        //When
+        final EntityWithCaseSensitivePK found = manager
+                .dsl()
+                .select()
+                .list()
+                .set()
+                .map()
+                .udt().allColumns()
+                .fromBaseTable()
+                .where()
+                .tokenValueOf_partitionKey().Gt(Long.MIN_VALUE)
+                .getOne();
+
+        //Then
+        assertThat(found).isNotNull();
+        assertThat(found.getList()).containsExactly("1", "2");
+        assertThat(found.getSet()).containsExactly("1", "2");
+        assertThat(found.getMap()).containsEntry(1, "1");
+        assertThat(found.getMap()).containsEntry(2, "2");
+        assertThat(found.getUdt().getId()).isEqualTo(1L);
+        assertThat(found.getUdt().getValue()).isEqualTo("test");
+    }
 
     @Test
     public void should_dsl_update() throws Exception {
@@ -142,10 +202,11 @@ public class TestEntityWithCaseSensitivePKIT {
                 .where()
                 .id().Eq(id)
                 .clust().Eq(10L)
+                .priority().Eq(1)
                 .execute();
 
         //Then
-        final EntityWithCaseSensitivePK found = manager.crud().findById(id, 10L).get();
+        final EntityWithCaseSensitivePK found = manager.crud().findById(id, 10L, 1).get();
         assertThat(found).isNotNull();
         assertThat(found.getList()).containsExactly("1", "2", "3");
         assertThat(found.getSet()).containsExactly("1", "2");
@@ -174,10 +235,11 @@ public class TestEntityWithCaseSensitivePKIT {
                 .where()
                 .id().Eq(id)
                 .clust().Eq(10L)
+                .priority().Eq(1)
                 .execute();
 
         //Then
-        final EntityWithCaseSensitivePK found = manager.crud().findById(id, 10L).get();
+        final EntityWithCaseSensitivePK found = manager.crud().findById(id, 10L, 1).get();
         assertThat(found).isNotNull();
         assertThat(found.getList()).isNull();
         assertThat(found.getSet()).isNull();

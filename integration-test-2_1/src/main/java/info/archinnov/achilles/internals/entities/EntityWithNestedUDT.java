@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 
 package info.archinnov.achilles.internals.entities;
+
+import java.util.Optional;
 
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Frozen;
@@ -35,6 +37,8 @@ public class EntityWithNestedUDT {
     @Column
     private UDTWithNestedUDT complexUDT;
 
+    @Column
+    private Optional<@Frozen UDTWithNoKeyspace> optionalUDT;
 
     public Long getId() {
         return id;
@@ -58,5 +62,13 @@ public class EntityWithNestedUDT {
 
     public void setComplexUDT(UDTWithNestedUDT complexUDT) {
         this.complexUDT = complexUDT;
+    }
+
+    public Optional<UDTWithNoKeyspace> getOptionalUDT() {
+        return optionalUDT;
+    }
+
+    public void setOptionalUDT(Optional<UDTWithNoKeyspace> optionalUDT) {
+        this.optionalUDT = optionalUDT;
     }
 }

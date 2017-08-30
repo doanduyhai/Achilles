@@ -1,7 +1,8 @@
 ![Achilles](https://raw.github.com/wiki/doanduyhai/Achilles/assets/Achilles_New_Logo.png)
 
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Build Status](https://travis-ci.org/doanduyhai/Achilles.png?branch=master)](https://travis-ci.org/doanduyhai/Achilles)
+
+[![Build Status](https://travis-ci.org/doanduyhai/Achilles.png?branch=master)](https://travis-ci.org/doanduyhai/Achilles)
 
 ## Presentation #
 
@@ -22,6 +23,7 @@
 - Support for the new **JSON** API
 - Support for multi-project compilation unit
 - Support for native index, **SASI** and **DSE Search**
+- Support for **`GROUP BY`** since **Cassandra 3.10** and **DSE 5.1.x**
 - Flexible naming strategy & insert strategy
 - Runtime **Schema Name Provider** for multi-tenant environments
 - Full compatibility with Java 8 **CompletableFuture**
@@ -44,17 +46,22 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
         <tr>
-            <td>5.2.0 (all Cassandra versions up to 3.7)</td>
+            <td>5.3.0 (all Cassandra versions up to 3.11.0, all DSE up to 5.1.2)</td>
+            <td>3.3.0</td>
+            <td>3.11.0</td>
+        </tr>
+        <tr>
+            <td>5.2.1 (all Cassandra versions up to 3.7, all DSE up to 5.0.3)</td>
        	    <td>3.1.3</td>
             <td>3.7</td>
         </tr>   
         <tr>
-            <td>5.0.0 (all Cassandra versions up to 3.7)</td>
+            <td>5.0.0 (all Cassandra versions up to 3.7, all DSE up to 5.0.3)</td>
             <td>3.1.0</td>
             <td>3.7</td>
         </tr> 
 	<tr>
-	    <td>4.2.3 (all Cassandra versions up to 3.7)</td>
+	    <td>4.2.3 (all Cassandra versions up to 3.7, all DSE up to 5.0.3)</td>
 	    <td>3.1.0</td>
 	    <td>3.7</td>
 	</tr>		
@@ -102,13 +109,16 @@ latest version of **Achilles** to benefit from new features
                     <source>1.8</source>
                     <target>1.8</target>
                     <useIncrementalCompilation>false</useIncrementalCompilation>
+                    <annotationProcessors>
+                        <annotationProcessor>info.archinnov.achilles.internals.apt.processors.meta.AchillesProcessor</annotationProcessor>
+                    </annotationProcessors>
                 </configuration>
             </plugin>
         </plugins>
     </build>        
 ```
             
-> Achilles 4.x requires a JDK 8 to work. It is recommended to use JDK 8 update 45 or later
+> Achilles 5.x requires a JDK 8 to work. It is recommended to use JDK 8 update 45 or later
 
 For unit-testing with embedded Cassandra, add this dependency with **test** scope:
 

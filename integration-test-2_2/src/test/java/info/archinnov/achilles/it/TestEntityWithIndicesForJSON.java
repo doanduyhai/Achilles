@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
-
 
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_2_2;
 import info.archinnov.achilles.generated.ManagerFactory_For_IT_2_2;

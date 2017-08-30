@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 package info.archinnov.achilles.internals.dsl.crud;
 
-import static info.archinnov.achilles.internals.cache.CacheKey.Operation.*;
+import static info.archinnov.achilles.internals.cache.CacheKey.Operation.INSERT_IF_NOT_EXISTS_JSON;
+import static info.archinnov.achilles.internals.cache.CacheKey.Operation.INSERT_JSON;
 import static info.archinnov.achilles.internals.dsl.LWTHelper.triggerLWTListeners;
 import static java.lang.String.format;
 
@@ -77,7 +78,6 @@ public class InsertJSONWithOptions extends AbstractOptionsForCRUDInsert<InsertJS
 
         return cfutureRS
                 .thenApply(getOptions()::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(x -> triggerLWTListeners(lwtResultListeners, x, queryString))
                 .thenApply(x -> x.getExecutionInfo());

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ import javax.lang.model.type.TypeMirror;
 
 import com.squareup.javapoet.TypeName;
 
-import info.archinnov.achilles.annotations.*;
+import info.archinnov.achilles.annotations.Frozen;
+import info.archinnov.achilles.annotations.Index;
+import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.AnnotationTree;
 import info.archinnov.achilles.internals.parser.FieldParser.UDTMetaSignature;

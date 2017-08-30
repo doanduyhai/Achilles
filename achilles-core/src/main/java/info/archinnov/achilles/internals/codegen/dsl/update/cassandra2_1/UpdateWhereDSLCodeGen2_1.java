@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package info.archinnov.achilles.internals.codegen.dsl.update.cassandra2_1;
 
 import com.squareup.javapoet.TypeSpec;
 
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
 
 public class UpdateWhereDSLCodeGen2_1 extends UpdateWhereDSLCodeGen {

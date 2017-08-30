@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package info.archinnov.achilles.internals.parser.context;
 
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static java.util.stream.Collectors.reducing;
 import static java.util.stream.Collectors.toList;
 
 import java.util.*;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,6 @@ import javax.lang.model.element.VariableElement;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.truth0.Truth;
 
 import com.datastax.driver.core.UDTValue;
@@ -43,7 +41,6 @@ import com.google.common.collect.Sets;
 import com.google.testing.compile.JavaSourcesSubjectFactory;
 import com.squareup.javapoet.ClassName;
 
-import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.cassandra_version.V3_6;
@@ -62,7 +59,6 @@ import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FieldParserTest extends AbstractTestProcessor {
 
     private static final String TUPLE_VALUE_CLASSNAME = "com.datastax.driver.core.TupleValue";

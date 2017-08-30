@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,8 @@ public class CassandraEmbeddedConfigParameters {
 
     public static final String HINTS_FOLDER = "hintsFolder";
 
+    public static final String CDC_RAW_FOLDER = "cdcRawFolder";
+
     public static final String LOGBACK_FILE = "logbackXmlFile";
 
     public static final String CLUSTER_NAME = "clusterName";
@@ -92,9 +94,10 @@ public class CassandraEmbeddedConfigParameters {
     static final String DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER = "target/cassandra_embedded/saved_caches";
     static final String DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER = "target/cassandra_embedded/cassandra_triggers";
     static final String DEFAULT_ACHILLES_TEST_HINTS_FOLDER = "target/cassandra_embedded/hints";
+    static final String DEFAULT_ACHILLES_TEST_CDC_RAW_FOLDER = "target/cassandra_embedded/cdc_raw";
     static final Set<String> DEFAULT_ACHILLES_TEST_FOLDERS = SetUtils.of(DEFAULT_ACHILLES_TEST_DATA_FOLDER,
             DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER,
-            DEFAULT_ACHILLES_TEST_HINTS_FOLDER);
+            DEFAULT_ACHILLES_TEST_HINTS_FOLDER, DEFAULT_ACHILLES_TEST_CDC_RAW_FOLDER);
     static final String DEFAULT_CASSANDRA_EMBEDDED_LOGBACK_FILE = "target/cassandra_embedded/logback.xml";
     static final String DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME = "Achilles Embedded Cassandra Cluster";
     static final Boolean DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE = false;
@@ -122,6 +125,7 @@ public class CassandraEmbeddedConfigParameters {
         defaultParams.put(COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER);
         defaultParams.put(SAVED_CACHES_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
         defaultParams.put(HINTS_FOLDER, DEFAULT_ACHILLES_TEST_HINTS_FOLDER);
+        defaultParams.put(CDC_RAW_FOLDER, DEFAULT_ACHILLES_TEST_CDC_RAW_FOLDER);
         defaultParams.put(LOGBACK_FILE, DEFAULT_CASSANDRA_EMBEDDED_LOGBACK_FILE);
         defaultParams.put(CLUSTER_NAME, DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME);
         defaultParams.put(DEFAULT_KEYSPACE_NAME, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);

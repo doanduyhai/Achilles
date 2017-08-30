@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import static info.archinnov.achilles.type.strategy.ColumnMappingStrategy.IMPLIC
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
 import javax.lang.model.SourceVersion;
 
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +43,7 @@ import info.archinnov.achilles.internals.codegen.dsl.select.SelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.select.SelectWhereDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.dsl.update.UpdateWhereDSLCodeGen;
+import info.archinnov.achilles.internals.codegen.function.FunctionParameterTypesCodeGen;
 import info.archinnov.achilles.internals.codegen.function.FunctionsRegistryCodeGen;
 import info.archinnov.achilles.internals.codegen.index.IndexSelectDSLCodeGen;
 import info.archinnov.achilles.internals.codegen.index.IndexSelectWhereDSLCodeGen;
@@ -78,11 +78,18 @@ public class GlobalParsingContext {
         VERSION_MAPPING.put(CASSANDRA_3_5, V3_5.INSTANCE);
         VERSION_MAPPING.put(CASSANDRA_3_6, V3_6.INSTANCE);
         VERSION_MAPPING.put(CASSANDRA_3_7, V3_7.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_8, V3_8.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_9, V3_9.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_10, V3_10.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_11_0, V3_11_0.INSTANCE);
         VERSION_MAPPING.put(DSE_4_8_X, info.archinnov.achilles.internals.cassandra_version.DSE_4_8_X.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_0, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_0.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_1, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_1.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_2, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_2.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_3, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_3.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_1_0, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_0.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_1_1, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_1.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_1_2, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_2.INSTANCE);
 
         COLUMNS_MAPPING.put(EXPLICIT, Tuple2.of(EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER));
         COLUMNS_MAPPING.put(IMPLICIT, Tuple2.of(IMPLICIT_ENTITY_FIELD_FILTER, IMPLICIT_UDT_FIELD_FILTER));
@@ -202,6 +209,10 @@ public class GlobalParsingContext {
 
     public FunctionsRegistryCodeGen functionsRegistryCodeGen() {
         return cassandraVersion.functionsRegistryCodeGen();
+    }
+
+    public FunctionParameterTypesCodeGen functionParameterTypesCodeGen() {
+        return cassandraVersion.functionParameterTypesCodeGen();
     }
 
     public boolean supportsFeature(CassandraFeature feature) {

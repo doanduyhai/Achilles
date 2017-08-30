@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@
 package info.archinnov.achilles.internals.codegen.index.cassandra3_7;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.DSL_PACKAGE;
-import static info.archinnov.achilles.internals.parser.TypeUtils.DSL_RELATION_SUFFIX;
 import static info.archinnov.achilles.internals.parser.TypeUtils.STRING;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 
 import java.util.List;
-
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.ClassName;
@@ -50,7 +48,7 @@ public class IndexSelectWhereDSLCodeGen3_7 extends IndexSelectWhereDSLCodeGen2_2
                                        ClassSignatureInfo lastSignature,
                                        ReturnType returnType) {
 
-        final String relationClassName = upperCaseFirst(indexFieldInfo.fieldName) + DSL_RELATION_SUFFIX;
+        final String relationClassName = upperCaseFirst(indexFieldInfo.fieldName);
         TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + relationClassName);
 
         final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(relationClassName)

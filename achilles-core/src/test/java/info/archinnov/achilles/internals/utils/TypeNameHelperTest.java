@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,15 @@
 package info.archinnov.achilles.internals.utils;
 
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.LocalDate;
 import com.squareup.javapoet.TypeName;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TypeNameHelperTest {
 
     @Test

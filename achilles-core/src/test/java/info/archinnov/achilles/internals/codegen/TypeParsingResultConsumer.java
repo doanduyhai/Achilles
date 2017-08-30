@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,30 @@
 
 package info.archinnov.achilles.internals.codegen;
 
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 
 import info.archinnov.achilles.internals.apt.AptUtils;
 import info.archinnov.achilles.internals.parser.EntityParser;
 import info.archinnov.achilles.internals.parser.FieldParser;
+import info.archinnov.achilles.internals.parser.context.AccessorsExclusionContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
 
 public interface TypeParsingResultConsumer {
 
-    static List<FieldParser.FieldMetaSignature> getTypeParsingResults(AptUtils aptUtils, TypeElement typeElement, GlobalParsingContext context) {
+    static List<FieldParser.FieldMetaSignature> getTypeParsingResults(AptUtils aptUtils, TypeElement typeElement,
+                                                                      GlobalParsingContext context) {
         final EntityParser parser = new EntityParser(aptUtils);
         final FieldParser fieldParser = new FieldParser(aptUtils);
-        return parser.parseFields(typeElement, fieldParser, context);
+        return parser.parseFields(typeElement, fieldParser, Collections.emptyList(), context);
+    }
+
+    static List<FieldParser.FieldMetaSignature> getTypeParsingResults(AptUtils aptUtils, TypeElement typeElement,
+                                                                      List<AccessorsExclusionContext> exclusionContexts,
+                                                                      GlobalParsingContext context) {
+        final EntityParser parser = new EntityParser(aptUtils);
+        final FieldParser fieldParser = new FieldParser(aptUtils);
+        return parser.parseFields(typeElement, fieldParser, exclusionContexts, context);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public abstract class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(UPDATE_DSL_SUFFIX,
-                UPDATE_WHERE_DSL_SUFFIX, UPDATE_END_DSL_SUFFIX,
+                WHERE_DSL_SUFFIX, END_DSL_SUFFIX,
                 ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_END);
 
         final List<ClassSignatureInfo> classesSignature =
@@ -81,7 +81,7 @@ public abstract class UpdateWhereDSLCodeGen extends AbstractDSLCodeGen
         final List<FieldSignatureInfo> clusteringCols = getClusteringColsSignatureInfo(signature.fieldMetaSignatures);
 
         final ClassSignatureParams classSignatureParams = ClassSignatureParams.of(UPDATE_STATIC_DSL_SUFFIX,
-                UPDATE_STATIC_WHERE_DSL_SUFFIX, UPDATE_STATIC_END_DSL_SUFFIX,
+                WHERE_DSL_SUFFIX, END_DSL_SUFFIX,
                 ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_WHERE, ABSTRACT_UPDATE_END);
 
         final List<ClassSignatureInfo> classesSignature =

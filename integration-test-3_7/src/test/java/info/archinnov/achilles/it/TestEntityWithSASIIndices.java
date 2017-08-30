@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.datastax.driver.core.ConsistencyLevel;
 import com.google.common.collect.ImmutableMap;
 
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_3_7;
@@ -157,11 +155,12 @@ public class TestEntityWithSASIIndices {
                 .getList();
 
         //Then
-        assertThat(actual).hasSize(4);
+        assertThat(actual).hasSize(5);
         assertThat(actual.get(0).getContainsStandardAnalyzer()).isEqualTo("forever love");
         assertThat(actual.get(1).getContainsStandardAnalyzer()).isEqualTo("lovers");
         assertThat(actual.get(2).getContainsStandardAnalyzer()).isEqualTo("the white gloves");
-        assertThat(actual.get(3).getContainsStandardAnalyzer()).isEqualTo("no love");
+        assertThat(actual.get(3).getContainsStandardAnalyzer()).isEqualTo("the loving man");
+        assertThat(actual.get(4).getContainsStandardAnalyzer()).isEqualTo("no love");
     }
 
     @Test

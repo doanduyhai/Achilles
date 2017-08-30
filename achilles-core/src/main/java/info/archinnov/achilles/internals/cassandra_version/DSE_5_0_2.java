@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,11 @@
 package info.archinnov.achilles.internals.cassandra_version;
 
 public class DSE_5_0_2 extends DSE_5_0_0 {
+
+    public static DSE_5_0_2 INSTANCE = new DSE_5_0_2();
+
+    protected DSE_5_0_2() {
+    }
 
     @Override
     public String version() {

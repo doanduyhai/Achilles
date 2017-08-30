@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 public abstract class DeleteDSLCodeGen extends AbstractDSLCodeGen {
 
     public static final Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
-            (o1, o2) -> o1._2().order.compareTo(o2._2().order);
+            Comparator.comparing(o -> o._2().order);
 
     public TypeSpec buildDeleteClass(EntityMetaSignature signature, DeleteWhereDSLCodeGen deleteWhereDSLCodeGen) {
 
@@ -66,10 +66,9 @@ public abstract class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildDeleteConstructor(signature))
                 .addField(buildExactEntityMetaField(signature))
                 .addField(buildEntityClassField(signature))
-                .addType(buildDeleteColumns(signature, signature.className + DELETE_COLUMNS_DSL_SUFFIX,
+                .addType(buildDeleteColumns(signature, COLUMNS_DSL_SUFFIX,
                         deleteColumnsTypeName, deleteFromTypeName, candidateColumns))
-                .addType(buildDeleteFrom(signature, signature.className + DELETE_FROM_DSL_SUFFIX,
-                        deleteWhereTypeName));
+                .addType(buildDeleteFrom(signature, FROM_DSL_SUFFIX, deleteWhereTypeName));
 
         signature.fieldMetaSignatures
                 .stream()
@@ -109,10 +108,9 @@ public abstract class DeleteDSLCodeGen extends AbstractDSLCodeGen {
                 .addMethod(buildDeleteConstructor(signature))
                 .addField(buildExactEntityMetaField(signature))
                 .addField(buildEntityClassField(signature))
-                .addType(buildDeleteColumns(signature, signature.className + DELETE_STATIC_COLUMNS_DSL_SUFFIX,
+                .addType(buildDeleteColumns(signature, COLUMNS_DSL_SUFFIX,
                         deleteStaticColumnsTypeName, deleteStaticFromTypeName, candidateColumns))
-                .addType(buildDeleteFrom(signature, signature.className + DELETE_STATIC_FROM_DSL_SUFFIX,
-                        deleteStaticWhereTypeName));
+                .addType(buildDeleteFrom(signature, FROM_DSL_SUFFIX, deleteStaticWhereTypeName));
 
         signature.fieldMetaSignatures
                 .stream()

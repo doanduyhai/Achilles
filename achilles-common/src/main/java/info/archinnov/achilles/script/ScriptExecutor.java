@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,7 +195,7 @@ protected List<SimpleStatement> buildStatements(List<String> lines) {
             }
 
             if (batch) {
-                batchStatement.append(line);
+                batchStatement.append(" ").append(line);
                 if (line.trim().startsWith(BATCH_APPLY)) {
                     batch = false;
                     statements.add(new SimpleStatement(batchStatement.toString()));

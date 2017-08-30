@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package info.archinnov.achilles.internals.metamodel;
 
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumnType;
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateColumns;
-import static info.archinnov.achilles.internals.schema.SchemaValidator.validateDefaultTTL;
+import static info.archinnov.achilles.internals.schema.SchemaValidator.*;
 import static info.archinnov.achilles.internals.statements.PreparedStatementGenerator.*;
 import static info.archinnov.achilles.validation.Validator.validateNotNull;
 import static java.lang.String.format;
@@ -86,6 +84,7 @@ public abstract class AbstractEntityProperty<T> implements
     public final List<AbstractProperty<T, ?, ?>> normalColumns;
     public final List<AbstractProperty<T, ?, ?>> computedColumns;
     public final List<AbstractProperty<T, ?, ?>> counterColumns;
+    public final List<AbstractProperty<T, ?, ?>> constructorInjectedColumns;
     public final List<AbstractProperty<T, ?, ?>> allColumns;
     public final List<AbstractProperty<T, ?, ?>> allColumnsWithComputed;
     public final List<Interceptor<T>> interceptors = new ArrayList<>();
@@ -117,6 +116,7 @@ public abstract class AbstractEntityProperty<T> implements
         staticColumns = getStaticColumns();
         normalColumns = getNormalColumns();
         computedColumns = getComputedColumns();
+        constructorInjectedColumns = getConstructorInjectedColumns();
         counterColumns = getCounterColumns();
         allColumns = getAllColumns();
         allColumnsWithComputed = getAllColumnsWithComputed();
@@ -157,6 +157,8 @@ public abstract class AbstractEntityProperty<T> implements
     protected abstract List<AbstractProperty<T, ?, ?>> getComputedColumns();
 
     protected abstract List<AbstractProperty<T, ?, ?>> getCounterColumns();
+
+    protected abstract List<AbstractProperty<T, ?, ?>> getConstructorInjectedColumns();
 
     protected EntityType getType() {
         return EntityType.TABLE;
@@ -225,19 +227,34 @@ public abstract class AbstractEntityProperty<T> implements
                 .forEach(x -> x.onEvent(instance, event));
     }
 
+    protected abstract T newInstanceFromCustomConstructor(Row row, List<String> cqlColumns);
+
     public T createEntityFrom(Row row) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(format("Create entity of type %s from Cassandra row %s",
                     entityClass.getCanonicalName(), row));
         }
         if (row != null) {
-            T newInstance = beanFactory.newInstance(entityClass);
+            // No custom constructor
             final List<String> cqlColumns = row.getColumnDefinitions().asList().stream().map(def -> def.getName()).collect(toList());
-            allColumnsWithComputed
-                    .stream()
-                    .filter(x -> cqlColumns.contains(x.getColumnForSelect()))
-                    .forEach(x -> x.decodeField(row, newInstance));
-            return newInstance;
+            if (constructorInjectedColumns.size() == 0) {
+                T newInstance = beanFactory.newInstance(entityClass);
+                allColumnsWithComputed
+                        .stream()
+                        .filter(x -> cqlColumns.contains(x.getColumnForSelect()))
+                        .forEach(x -> x.decodeField(row, newInstance));
+                return newInstance;
+            } else {
+
+                final T newInstance = newInstanceFromCustomConstructor(row, cqlColumns);
+
+                // Call setters for remaining fields not injected by constructor
+                allColumnsWithComputed
+                        .stream()
+                        .filter(x -> !constructorInjectedColumns.contains(x))
+                        .forEach(x -> x.decodeField(row, newInstance));
+                return newInstance;
+            }
         }
         return null;
     }
@@ -368,8 +385,8 @@ public abstract class AbstractEntityProperty<T> implements
          * 1. Set at runtime (see this.writeConsistency(), this.readConsistency() and this.serialConsistency() )
          * 2. Defined by static annotation on entity
          * 3. Defined by Consistency Level Map as Achilles Config
-         * 4. Defined as QueryOptions in the injected Cluster object
-         * 5. Defined by Achilles Config
+         * 4. Defined by Achilles Config
+         * 5. Defined as QueryOptions in the injected Cluster object
          * 6. Hard-coded value LOCAL_ONE & LOCAL_SERIAL
          */
 
@@ -380,16 +397,16 @@ public abstract class AbstractEntityProperty<T> implements
         this.readConsistencyLevel =
                 OverridingOptional.from(staticReadConsistency)
                         .andThen(configContext.getReadConsistencyLevelForTable(tableOrViewName))
-                        .andThen(clusterConsistency)
                         .andThen(configContext.getDefaultReadConsistencyLevel())
+                        .andThen(clusterConsistency)
                         .defaultValue(ConfigurationContext.DEFAULT_CONSISTENCY_LEVEL)
                         .get();
 
         this.writeConsistencyLevel =
                 OverridingOptional.from(staticWriteConsistency)
                         .andThen(configContext.getWriteConsistencyLevelForTable(tableOrViewName))
-                        .andThen(clusterConsistency)
                         .andThen(configContext.getDefaultWriteConsistencyLevel())
+                        .andThen(clusterConsistency)
                         .defaultValue(ConfigurationContext.DEFAULT_CONSISTENCY_LEVEL)
                         .get();
 

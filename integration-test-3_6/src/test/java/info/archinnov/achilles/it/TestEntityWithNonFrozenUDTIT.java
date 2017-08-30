@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ package info.archinnov.achilles.it;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -33,9 +31,7 @@ import com.google.common.collect.ImmutableMap;
 
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_3_6;
 import info.archinnov.achilles.generated.ManagerFactory_For_IT_3_6;
-import info.archinnov.achilles.generated.manager.EntityWithClustering_Manager;
 import info.archinnov.achilles.generated.manager.EntityWithNonFrozenUDT_Manager;
-import info.archinnov.achilles.internals.entities.EntityWithClustering;
 import info.archinnov.achilles.internals.entities.EntityWithNonFrozenUDT;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;

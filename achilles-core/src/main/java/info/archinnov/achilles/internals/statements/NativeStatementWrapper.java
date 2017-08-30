@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,10 +67,10 @@ public class NativeStatementWrapper implements StatementWrapper {
     }
 
     @Override
-    public ResultSet logReturnResults(ResultSet originalResultSet) {
+    public ResultSet logReturnResults(ResultSet originalResultSet, int maxDisplayedRows) {
         if (DML_LOGGER.isDebugEnabled()) {
             final ResultSetWrapper wrapper = new ResultSetWrapper(originalResultSet);
-            logReturnedResultsInternal(DML_LOGGER, queryId, wrapper);
+            logReturnedResultsInternal(DML_LOGGER, queryId, wrapper, maxDisplayedRows);
             return wrapper;
         } else {
             return originalResultSet;

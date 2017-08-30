@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,18 @@ package info.archinnov.achilles.internals.codegen.dsl;
 
 import static info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static info.archinnov.achilles.internals.parser.TypeUtils.ARRAYS;
-import static info.archinnov.achilles.internals.parser.TypeUtils.COLLECTORS;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
 import com.squareup.javapoet.*;
 
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.ClassSignatureInfo;
-import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.FieldSignatureInfo;
+import info.archinnov.achilles.internals.codegen.dsl.AbstractDSLCodeGen.*;
+import info.archinnov.achilles.internals.parser.TypeUtils;
 
 public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRestriction {
 
@@ -61,13 +60,13 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
             final List<FieldSignatureInfo> fieldInfosMinusOne = clusteringCols.stream().limit(i - 1).collect(toList());
 
             String multiRelationName = fieldInfos
-                    .stream().map(x -> x.fieldName).reduce((a, b) -> a + "_And_" + b)
+                    .stream().map(x -> x.fieldName).reduce((a, b) -> a + "_" + b)
                     .get();
 
             TypeName multiRelationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName
-                    + "." + multiRelationName + DSL_RELATION_SUFFIX);
+                    + "." + multiRelationName);
 
-            TypeSpec multiRelationClass = TypeSpec.classBuilder(multiRelationName + DSL_RELATION_SUFFIX)
+            TypeSpec multiRelationClass = TypeSpec.classBuilder(multiRelationName)
                     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                     .addMethod(buildTuplesColumnRelation(GT, lastSignature.returnClassType, fieldInfos, returnType))
                     .addMethod(buildTuplesColumnRelation(GTE, lastSignature.returnClassType, fieldInfos, returnType))
@@ -130,6 +129,37 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
         return builder.build();
     }
 
+    default MethodSpec buildDoubleTokenValueRelation(String relation1, String relation2, TypeName nextType, List<String> partitionKeyColumns, ReturnType returnType) {
+        final String methodName = upperCaseFirst(relation1) + "_And_" + upperCaseFirst(relation2);
+        final String fcall = partitionKeyColumns.stream().collect(Collectors.joining(",", "token(", ")"));
+
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
+                .addJavadoc("Generate a SELECT ... FROM ... WHERE ... <strong>$L $L ? AND $L $L ?</strong>",
+                        fcall, relationToSymbolForJavaDoc(relation1),
+                        fcall, relationToSymbolForJavaDoc(relation2))
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "static-access").build())
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addParameter(TypeUtils.OBJECT_LONG, "tokenValue1")
+                .addParameter(TypeUtils.OBJECT_LONG, "tokenValue2")
+                .addStatement("where.and($T.$L($S,$T.bindMarker($S)))",
+                        QUERY_BUILDER, relation1, fcall, QUERY_BUILDER, "tokenValue1")
+                .addStatement("where.and($T.$L($S,$T.bindMarker($S)))",
+                        QUERY_BUILDER, relation2, fcall, QUERY_BUILDER, "tokenValue2")
+                .addStatement("boundValues.add($N)", "tokenValue1")
+                .addStatement("encodedValues.add($N)", "tokenValue1")
+                .addStatement("boundValues.add($N)", "tokenValue2")
+                .addStatement("encodedValues.add($N)", "tokenValue2")
+                .returns(nextType);
+
+        if (returnType == ReturnType.NEW) {
+            builder.addStatement("return new $T(where, cassandraOptions)", nextType);
+        } else {
+            builder.addStatement("return $T.this", nextType);
+        }
+
+        return builder.build();
+    }
+
     default MethodSpec buildTuplesColumnRelation(String relation, TypeName nextType, List<FieldSignatureInfo> fieldInfos, ReturnType returnType) {
         final String methodName = upperCaseFirst(relation);
 
@@ -137,7 +167,7 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
         StringJoiner dataTypeJoiner = new StringJoiner(",");
         fieldInfos
                 .stream()
-                .map(x -> x.quotedCqlColumn)
+                .map(x -> x.quotedCqlColumn.replaceAll("\"", "\\\\\""))
                 .forEach(x -> paramsJoiner.add("\"" + x + "\""));
 
         final String params = paramsJoiner.toString();
@@ -177,7 +207,7 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
 
         fieldInfos
                 .stream()
-                .map(x -> x.quotedCqlColumn)
+                .map(x -> x.quotedCqlColumn.replaceAll("\"", "\\\\\""))
                 .forEach(x -> {
                     paramsJoinerRelation1AsString.add("\"" + x + "\"");
                     paramsJoinerRelation2AsString.add("\"" + x + "\"");
@@ -240,12 +270,12 @@ public interface MultiColumnsSliceRestrictionCodeGen extends BaseSingleColumnRes
 
         fieldInfos1
                 .stream()
-                .map(x -> x.quotedCqlColumn)
+                .map(x -> x.quotedCqlColumn.replaceAll("\"", "\\\\\""))
                 .forEach(x -> paramsJoinerRelation1AsString.add("\"" + x + "\""));
 
         fieldInfos2
                 .stream()
-                .map(x -> x.quotedCqlColumn)
+                .map(x -> x.quotedCqlColumn.replaceAll("\"", "\\\\\""))
                 .forEach(x -> paramsJoinerRelation2AsString.add("\"" + x + "\""));
 
         final String paramsRelation1AsString = paramsJoinerRelation1AsString.toString();

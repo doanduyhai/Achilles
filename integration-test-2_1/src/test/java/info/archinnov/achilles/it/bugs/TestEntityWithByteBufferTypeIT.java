@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Row;
@@ -36,7 +34,6 @@ import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.manager.EntityWithByteBufferType_Manager;
 import info.archinnov.achilles.internals.entities.EntityWithByteBufferType;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestEntityWithByteBufferTypeIT {
 
     @Test

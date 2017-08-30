@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ package info.archinnov.achilles.internals.codegen.dsl;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 
 import info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.EntityMetaSignature;
 import info.archinnov.achilles.internals.metamodel.columns.ClusteringColumnInfo;
@@ -50,16 +50,16 @@ public abstract class AbstractDSLCodeGen {
     public static final String LTE = "lte";
 
     public static final Comparator<Tuple2<String, PartitionKeyInfo>> TUPLE2_PARTITION_KEY_SORTER =
-            (o1, o2) -> o1._2().order.compareTo(o2._2().order);
+            Comparator.comparing(o -> o._2().order);
 
     public static final Comparator<Tuple4<String, String, TypeName, PartitionKeyInfo>> TUPLE4_PARTITION_KEY_SORTER =
-            (o1, o2) -> o1._4().order.compareTo(o2._4().order);
+            Comparator.comparing(o -> o._4().order);
 
     public static final Comparator<Tuple4<String, String, TypeName, ClusteringColumnInfo>> TUPLE4_CLUSTERING_COLUMN_SORTER =
-            (o1, o2) -> o1._4().order.compareTo(o2._4().order);
+            Comparator.comparing(o -> o._4().order);
 
     public static final Comparator<IndexFieldSignatureInfo> INDEX_FIELD_SIGNATURE_SORTER =
-            (o1, o2) -> o1.fieldName.compareTo(o2.fieldName);
+            Comparator.comparing(o -> o.fieldName);
 
     public List<ClassSignatureInfo> buildClassesSignatureForWhereClause(EntityMetaSignature signature,
                                                                                   ClassSignatureParams classSignatureParams,
@@ -74,7 +74,7 @@ public abstract class AbstractDSLCodeGen {
             final TypeName returnTypeName = ClassName.get(DSL_PACKAGE, signature.whereReturnType(x.fieldName,
                     classSignatureParams.dslSuffix, classSignatureParams.whereDslSuffix));
             signatures.add(ClassSignatureInfo.of(typeName, returnTypeName,
-                    classSignatureParams.abstractWherePartitionType, className));
+                    classSignatureParams.abstractWherePartitionType, className, ColumnType.PARTITION, x));
         }
 
         if (whereClauseFor == WhereClauseFor.NORMAL) {
@@ -87,7 +87,7 @@ public abstract class AbstractDSLCodeGen {
                         ? classSignatureParams.abstractWhereType
                         : genericType(classSignatureParams.abstractWhereType, returnTypeName, signature.entityRawClass);
 
-                signatures.add(ClassSignatureInfo.of(typeName, returnTypeName, superType, className));
+                signatures.add(ClassSignatureInfo.of(typeName, returnTypeName, superType, className, ColumnType.CLUSTERING, x));
             }
         }
 
@@ -98,18 +98,9 @@ public abstract class AbstractDSLCodeGen {
         final ClassName abstractEndType = classSignatureParams.abstractEndType.orElse(classSignatureParams.abstractWhereType);
 
         signatures.add(ClassSignatureInfo.of(endTypeName, endReturnTypeName, genericType(abstractEndType, endReturnTypeName, signature.entityRawClass),
-                endClassName));
+                endClassName, null, null));
 
         return signatures;
-    }
-
-    public MethodSpec buildWhereConstructor(TypeName whereType) {
-        return MethodSpec.constructorBuilder()
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(whereType, "where")
-                .addStatement("super(where)")
-                .build();
-
     }
 
     public MethodSpec buildWhereConstructorWithOptions(TypeName whereType) {
@@ -381,17 +372,39 @@ public abstract class AbstractDSLCodeGen {
         public final TypeName returnClassType;
         public final TypeName superType;
         public final String className;
+        public final ColumnType columnType;
+        public final FieldSignatureInfo fieldSignatureInfo;
 
 
-        private ClassSignatureInfo(TypeName classType, TypeName returnClassType, TypeName superType, String className) {
+        private ClassSignatureInfo(TypeName classType, TypeName returnClassType, TypeName superType, String className, ColumnType columnType, FieldSignatureInfo fieldSignatureInfo) {
             this.classType = classType;
             this.returnClassType = returnClassType;
             this.superType = superType;
             this.className = className;
+            this.columnType = columnType;
+            this.fieldSignatureInfo = fieldSignatureInfo;
         }
 
-        public static ClassSignatureInfo of(TypeName classType, TypeName returnClassType, TypeName superType, String className) {
-            return new ClassSignatureInfo(classType, returnClassType, superType, className);
+        public static ClassSignatureInfo of(TypeName classType, TypeName returnClassType, TypeName superType, String className, ColumnType columnType, FieldSignatureInfo fieldSignatureInfo) {
+            return new ClassSignatureInfo(classType, returnClassType, superType, className, columnType, fieldSignatureInfo);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ClassSignatureInfo that = (ClassSignatureInfo) o;
+            return Objects.equals(classType, that.classType) &&
+                    Objects.equals(returnClassType, that.returnClassType) &&
+                    Objects.equals(superType, that.superType) &&
+                    Objects.equals(className, that.className) &&
+                    columnType == that.columnType &&
+                    Objects.equals(fieldSignatureInfo, that.fieldSignatureInfo);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(classType, returnClassType, superType, className, columnType, fieldSignatureInfo);
         }
     }
 

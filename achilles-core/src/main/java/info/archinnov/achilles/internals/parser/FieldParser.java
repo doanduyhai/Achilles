@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 package info.archinnov.achilles.internals.parser;
 
-import static info.archinnov.achilles.internals.apt.AptUtils.*;
+import static info.archinnov.achilles.internals.apt.AptUtils.containsAnnotation;
+import static info.archinnov.achilles.internals.apt.AptUtils.extractTypedMap;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
 
@@ -209,7 +210,8 @@ public class FieldParser {
         final TypeName sourceType = TypeName.get(annotationTree.getCurrentType());
         final TypeMirror typeMirror1 = AptUtils.getTypeArguments(annotationTree.getCurrentType()).get(0);
         final TypeName sourceType1 = TypeName.get(typeMirror1);
-        final FieldMetaSignature parsingResult = parseType(annotationTree.next(), context.forOptionalType(context.entityRawType, sourceType1), sourceType1);
+        final boolean frozen = AptUtils.containsAnnotation(annotationTree, Frozen.class);
+        final FieldMetaSignature parsingResult = parseType(annotationTree.next(), context.forOptionalType(context.entityRawType, sourceType1, frozen), sourceType1);
         final CodeBlock codeBlock = CodeBlock.builder().add("new $T<>($L, $L)",
                 JDK_OPTIONAL_PROPERTY,
                 context.fieldInfoCode,
@@ -647,7 +649,7 @@ public class FieldParser {
         }
 
         public String relationClassnameForUpdate() {
-            return upperCaseFirst(context.fieldName) + DSL_RELATION_SUFFIX;
+            return upperCaseFirst(context.fieldName);
         }
 
         public FieldSpec buildPropertyAsField() {
@@ -713,12 +715,15 @@ public class FieldParser {
         final public String fieldName;
         final public String quotedCqlColumn;
         final public List<FieldMetaSignature> fieldMetaSignatures;
+        final public List<FieldMetaSignature> customConstructorFieldMetaSignatures;
         final public boolean isFrozen;
 
-        public UDTMetaSignature(String fieldName, String quotedCqlColumn, List<FieldMetaSignature> fieldMetaSignatures, boolean isFrozen) {
+        public UDTMetaSignature(String fieldName, String quotedCqlColumn, List<FieldMetaSignature> fieldMetaSignatures,
+                                List<FieldMetaSignature> customConstructorFieldMetaSignatures, boolean isFrozen) {
             this.fieldName = fieldName;
             this.quotedCqlColumn = quotedCqlColumn;
             this.fieldMetaSignatures = fieldMetaSignatures;
+            this.customConstructorFieldMetaSignatures = customConstructorFieldMetaSignatures;
             this.isFrozen = isFrozen;
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import java.util.Date;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.google.common.collect.ImmutableMap;
@@ -42,7 +40,6 @@ import info.archinnov.achilles.it.utils.CassandraLogAsserter;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ConsistencyLevelOrderingIT {
 
     @Rule
@@ -124,15 +121,15 @@ public class ConsistencyLevelOrderingIT {
         entityWithStaticAnnotationsManager
                 .crud()
                 .insert(entity)
-                .withConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM)
+                .withConsistencyLevel(ConsistencyLevel.EACH_QUORUM)
                 .execute();
 
         //Then
-        logAsserter.assertConsistencyLevels(ConsistencyLevel.LOCAL_QUORUM);
+        logAsserter.assertConsistencyLevels(ConsistencyLevel.EACH_QUORUM);
     }
 
     @Test
-    public void should_override_achilles_consistency_setting_by_cluster_consistency_config() throws Exception {
+    public void should_override_cluster_consistency_config_by_achilles_consistency_setting() throws Exception {
         //Given
         final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
         final EntityAsChild entityAsChild = new EntityAsChild(id, "val", "another_val");
@@ -147,6 +144,6 @@ public class ConsistencyLevelOrderingIT {
                 .execute();
 
         //Then
-        logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL);
+        logAsserter.assertConsistencyLevels(ConsistencyLevel.LOCAL_QUORUM);
     }
 }

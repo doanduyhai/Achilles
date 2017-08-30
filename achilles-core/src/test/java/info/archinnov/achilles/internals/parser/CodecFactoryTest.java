@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,6 @@ import javax.lang.model.element.VariableElement;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.squareup.javapoet.*;
@@ -50,7 +48,6 @@ import info.archinnov.achilles.internals.sample_classes.codecs.IntToStringCodec;
 import info.archinnov.achilles.internals.sample_classes.codecs.StringToLongCodec;
 import info.archinnov.achilles.internals.sample_classes.parser.field.TestEntityForCodecs;
 
-@RunWith(MockitoJUnitRunner.class)
 public class CodecFactoryTest extends AbstractTestProcessor {
 
     private final CodeBlock fieldInfoCode = CodeBlock.builder().build();

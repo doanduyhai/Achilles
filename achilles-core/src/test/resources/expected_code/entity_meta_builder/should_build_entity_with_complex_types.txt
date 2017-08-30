@@ -2,6 +2,7 @@ package info.archinnov.achilles.generated;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.UDTValue;
 import com.fasterxml.jackson.databind.type.SimpleType;
@@ -72,6 +73,7 @@ import java.lang.Long;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
+import java.lang.UnsupportedOperationException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Date;
@@ -88,7 +90,7 @@ import java.util.UUID;
  *    <li>determining runtime consistency levels (read/write,serial)<li/>
  *    <li>determining runtime insert strategy<li/>
  *    <li>trigger event interceptors (if any)<li/>
- *    <li>map a com.datastax.driver.core.Row back to an instance of TestEntityWithComplexTypes<li/>
+ *    <li>map a Row back to an instance of TestEntityWithComplexTypes<li/>
  *    <li>determine runtime keyspace name using static annotations and runtime SchemaNameProvider (if any)<li/>
  *    <li>determine runtime table name using static annotations and runtime SchemaNameProvider (if any)<li/>
  *    <li>generate schema during bootstrap<li/>
@@ -238,7 +240,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings("unchecked")
-  public static final ListProperty<TestEntityWithComplexTypes, TestUDT, UDTValue> listUdt = new ListProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getListUdt(), (TestEntityWithComplexTypes entity$, List<TestUDT> value$) -> entity$.setListUdt(value$), "listUdt", "listudt", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, UDTValue.class, new UDTProperty<TestEntityWithComplexTypes, TestUDT_AchillesMeta, TestUDT>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("listUdt", "listudt"), TestUDT.class, TestUDT_AchillesMeta.INSTANCE));
+  public static final ListProperty<TestEntityWithComplexTypes, TestUDT, UDTValue> listUdt = new ListProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getListUdt(), (TestEntityWithComplexTypes entity$, List<TestUDT> value$) -> entity$.setListUdt(value$), "listUdt", "listudt", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, UDTValue.class, new UDTProperty<TestEntityWithComplexTypes, TestUDT_AchillesMeta, TestUDT>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("listUdt", "listudt", true), TestUDT.class, TestUDT_AchillesMeta.INSTANCE));
 
   /**
    * Meta class for 'mapUdt' property <br/>
@@ -249,7 +251,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings({"serial", "unchecked"})
-  public static final MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue> mapUdt = new MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getMapUdt(), (TestEntityWithComplexTypes entity$, Map<Integer, TestUDT> value$) -> entity$.setMapUdt(value$), "mapUdt", "mapudt", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("mapUdt", "mapudt"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new UDTProperty<TestEntityWithComplexTypes, TestUDT_AchillesMeta, TestUDT>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("mapUdt", "mapudt"), TestUDT.class, TestUDT_AchillesMeta.INSTANCE));
+  public static final MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue> mapUdt = new MapProperty<TestEntityWithComplexTypes, Integer, Integer, TestUDT, UDTValue>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getMapUdt(), (TestEntityWithComplexTypes entity$, Map<Integer, TestUDT> value$) -> entity$.setMapUdt(value$), "mapUdt", "mapudt", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("mapUdt", "mapudt", true), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new UDTProperty<TestEntityWithComplexTypes, TestUDT_AchillesMeta, TestUDT>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("mapUdt", "mapudt", true), TestUDT.class, TestUDT_AchillesMeta.INSTANCE));
 
   /**
    * Meta class for 'okSet' property <br/>
@@ -260,7 +262,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings({"serial", "unchecked"})
-  public static final SetProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer> okSet = new SetProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getOkSet(), (TestEntityWithComplexTypes entity$, Set<ConsistencyLevel> value$) -> entity$.setOkSet(value$), "okSet", "okset", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, Integer.class, new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("okSet", "okset"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<Integer>(){}, new EnumOrdinalCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class)));
+  public static final SetProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer> okSet = new SetProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getOkSet(), (TestEntityWithComplexTypes entity$, Set<ConsistencyLevel> value$) -> entity$.setOkSet(value$), "okSet", "okset", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, Integer.class, new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("okSet", "okset", true), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<Integer>(){}, new EnumOrdinalCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class)));
 
   /**
    * Meta class for 'jsonMap' property <br/>
@@ -282,7 +284,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings({"serial", "unchecked"})
-  public static final MapProperty<TestEntityWithComplexTypes, Integer, Integer, List<Map<Integer, String>>, String> mapWithNestedJson = new MapProperty<TestEntityWithComplexTypes, Integer, Integer, List<Map<Integer, String>>, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getMapWithNestedJson(), (TestEntityWithComplexTypes entity$, Map<Integer, List<Map<Integer, String>>> value$) -> entity$.setMapWithNestedJson(value$), "mapWithNestedJson", "mapwithnestedjson", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("mapWithNestedJson", "mapwithnestedjson"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, List<Map<Integer, String>>, String>(FieldInfo.<TestEntityWithComplexTypes, List<Map<Integer, String>>> of("mapWithNestedJson", "mapwithnestedjson"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<List<Map<Integer, String>>>(){}, new TypeToken<String>(){}, new JSONCodec<>(List.class, JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(List.class,JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(Map.class,SimpleType.construct(Integer.class),SimpleType.construct(String.class))))));
+  public static final MapProperty<TestEntityWithComplexTypes, Integer, Integer, List<Map<Integer, String>>, String> mapWithNestedJson = new MapProperty<TestEntityWithComplexTypes, Integer, Integer, List<Map<Integer, String>>, String>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getMapWithNestedJson(), (TestEntityWithComplexTypes entity$, Map<Integer, List<Map<Integer, String>>> value$) -> entity$.setMapWithNestedJson(value$), "mapWithNestedJson", "mapwithnestedjson", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("mapWithNestedJson", "mapwithnestedjson", true), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, List<Map<Integer, String>>, String>(FieldInfo.<TestEntityWithComplexTypes, List<Map<Integer, String>>> of("mapWithNestedJson", "mapwithnestedjson", true), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<List<Map<Integer, String>>>(){}, new TypeToken<String>(){}, new JSONCodec<>(List.class, JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(List.class,JSONCodec.TYPE_FACTORY_INSTANCE.constructParametricType(Map.class,SimpleType.construct(Integer.class),SimpleType.construct(String.class))))));
 
   /**
    * Meta class for 'listNesting' property <br/>
@@ -293,7 +295,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings({"serial", "unchecked"})
-  public static final ListProperty<TestEntityWithComplexTypes, Map<Integer, String>, Map<Integer, String>> listNesting = new ListProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getListNesting(), (TestEntityWithComplexTypes entity$, List<Map<Integer, String>> value$) -> entity$.setListNesting(value$), "listNesting", "listnesting", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, Map.class, new MapProperty<TestEntityWithComplexTypes, Integer, Integer, String, String>(FieldInfo.<TestEntityWithComplexTypes, Map<Integer, String>> of("listNesting", "listnesting"), true, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("listNesting", "listnesting"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, String, String>(FieldInfo.<TestEntityWithComplexTypes, String> of("listNesting", "listnesting"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class))));
+  public static final ListProperty<TestEntityWithComplexTypes, Map<Integer, String>, Map<Integer, String>> listNesting = new ListProperty<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getListNesting(), (TestEntityWithComplexTypes entity$, List<Map<Integer, String>> value$) -> entity$.setListNesting(value$), "listNesting", "listnesting", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, false, Map.class, new MapProperty<TestEntityWithComplexTypes, Integer, Integer, String, String>(FieldInfo.<TestEntityWithComplexTypes, Map<Integer, String>> of("listNesting", "listnesting", true), true, false, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("listNesting", "listnesting", true), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, String, String>(FieldInfo.<TestEntityWithComplexTypes, String> of("listNesting", "listnesting", true), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class))));
 
   /**
    * Meta class for 'tupleNesting' property <br/>
@@ -304,7 +306,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings({"serial", "unchecked"})
-  public static final Tuple2Property<TestEntityWithComplexTypes, Integer, List<String>> tupleNesting = new Tuple2Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTupleNesting(), (TestEntityWithComplexTypes entity$, Tuple2<Integer, List<String>> value$) -> entity$.setTupleNesting(value$), "tupleNesting", "tuplenesting", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("tupleNesting", "tuplenesting"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new ListProperty<>(FieldInfo.<TestEntityWithComplexTypes, List<String>> of("tupleNesting", "tuplenesting"), false, false, String.class, new SimpleProperty<TestEntityWithComplexTypes, String, String>(FieldInfo.<TestEntityWithComplexTypes, String> of("tupleNesting", "tuplenesting"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class))));
+  public static final Tuple2Property<TestEntityWithComplexTypes, Integer, List<String>> tupleNesting = new Tuple2Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTupleNesting(), (TestEntityWithComplexTypes entity$, Tuple2<Integer, List<String>> value$) -> entity$.setTupleNesting(value$), "tupleNesting", "tuplenesting", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("tupleNesting", "tuplenesting", true), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new ListProperty<>(FieldInfo.<TestEntityWithComplexTypes, List<String>> of("tupleNesting", "tuplenesting", true), false, false, String.class, new SimpleProperty<TestEntityWithComplexTypes, String, String>(FieldInfo.<TestEntityWithComplexTypes, String> of("tupleNesting", "tuplenesting", true), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<String>(){}, new TypeToken<String>(){}, new FallThroughCodec<>(String.class))));
 
   /**
    * Meta class for 'tuple1' property <br/>
@@ -315,7 +317,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings({"serial", "unchecked"})
-  public static final Tuple1Property<TestEntityWithComplexTypes, ConsistencyLevel> tuple1 = new Tuple1Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTuple1(), (TestEntityWithComplexTypes entity$, Tuple1<ConsistencyLevel> value$) -> entity$.setTuple1(value$), "tuple1", "tuple1", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("tuple1", "tuple1"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new JSONCodec<>(ConsistencyLevel.class, SimpleType.construct(ConsistencyLevel.class))));
+  public static final Tuple1Property<TestEntityWithComplexTypes, ConsistencyLevel> tuple1 = new Tuple1Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTuple1(), (TestEntityWithComplexTypes entity$, Tuple1<ConsistencyLevel> value$) -> entity$.setTuple1(value$), "tuple1", "tuple1", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("tuple1", "tuple1", true), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new JSONCodec<>(ConsistencyLevel.class, SimpleType.construct(ConsistencyLevel.class))));
 
   /**
    * Meta class for 'tuple2' property <br/>
@@ -326,7 +328,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings({"serial", "unchecked"})
-  public static final Tuple2Property<TestEntityWithComplexTypes, ConsistencyLevel, Integer> tuple2 = new Tuple2Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTuple2(), (TestEntityWithComplexTypes entity$, Tuple2<ConsistencyLevel, Integer> value$) -> entity$.setTuple2(value$), "tuple2", "tuple2", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("tuple2", "tuple2"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new JSONCodec<>(ConsistencyLevel.class, SimpleType.construct(ConsistencyLevel.class))), new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("tuple2", "tuple2"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec()));
+  public static final Tuple2Property<TestEntityWithComplexTypes, ConsistencyLevel, Integer> tuple2 = new Tuple2Property<>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getTuple2(), (TestEntityWithComplexTypes entity$, Tuple2<ConsistencyLevel, Integer> value$) -> entity$.setTuple2(value$), "tuple2", "tuple2", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, String>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("tuple2", "tuple2", true), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<String>(){}, new JSONCodec<>(ConsistencyLevel.class, SimpleType.construct(ConsistencyLevel.class))), new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("tuple2", "tuple2", true), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec()));
 
   /**
    * Meta class for 'complexNestingMap' property <br/>
@@ -337,7 +339,7 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
    * </ul>
    */
   @SuppressWarnings({"serial", "unchecked"})
-  public static final MapProperty<TestEntityWithComplexTypes, TestUDT, String, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>, Map<Integer, TupleValue>> complexNestingMap = new MapProperty<TestEntityWithComplexTypes, TestUDT, String, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>, Map<Integer, TupleValue>>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getComplexNestingMap(), (TestEntityWithComplexTypes entity$, Map<TestUDT, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>> value$) -> entity$.setComplexNestingMap(value$), "complexNestingMap", "complexnestingmap", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, true, new SimpleProperty<TestEntityWithComplexTypes, TestUDT, String>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("complexNestingMap", "complexnestingmap"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<TestUDT>(){}, new TypeToken<String>(){}, new JSONCodec<>(TestUDT.class, SimpleType.construct(TestUDT.class))), new MapProperty<TestEntityWithComplexTypes, Integer, Integer, Tuple3<Integer, Integer, ConsistencyLevel>, TupleValue>(FieldInfo.<TestEntityWithComplexTypes, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>> of("complexNestingMap", "complexnestingmap"), true, true, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new Tuple3Property<>(FieldInfo.<TestEntityWithComplexTypes, Tuple3<Integer, Integer, ConsistencyLevel>> of("complexNestingMap", "complexnestingmap"), new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap"), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec()), new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("complexNestingMap", "complexnestingmap"), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<Integer>(){}, new EnumOrdinalCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class)))));
+  public static final MapProperty<TestEntityWithComplexTypes, TestUDT, String, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>, Map<Integer, TupleValue>> complexNestingMap = new MapProperty<TestEntityWithComplexTypes, TestUDT, String, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>, Map<Integer, TupleValue>>(new FieldInfo<>((TestEntityWithComplexTypes entity$) -> entity$.getComplexNestingMap(), (TestEntityWithComplexTypes entity$, Map<TestUDT, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>> value$) -> entity$.setComplexNestingMap(value$), "complexNestingMap", "complexnestingmap", ColumnType.NORMAL, new ColumnInfo(false), IndexInfo.noIndex()), false, true, new SimpleProperty<TestEntityWithComplexTypes, TestUDT, String>(FieldInfo.<TestEntityWithComplexTypes, TestUDT> of("complexNestingMap", "complexnestingmap", true), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<TestUDT>(){}, new TypeToken<String>(){}, new JSONCodec<>(TestUDT.class, SimpleType.construct(TestUDT.class))), new MapProperty<TestEntityWithComplexTypes, Integer, Integer, Tuple3<Integer, Integer, ConsistencyLevel>, TupleValue>(FieldInfo.<TestEntityWithComplexTypes, Map<Integer, Tuple3<Integer, Integer, ConsistencyLevel>>> of("complexNestingMap", "complexnestingmap", true), true, true, new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap", true), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new Tuple3Property<>(FieldInfo.<TestEntityWithComplexTypes, Tuple3<Integer, Integer, ConsistencyLevel>> of("complexNestingMap", "complexnestingmap", true), new SimpleProperty<TestEntityWithComplexTypes, Integer, String>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap", true), DataType.text(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<String>(){}, new IntToStringCodec()), new SimpleProperty<TestEntityWithComplexTypes, Integer, Integer>(FieldInfo.<TestEntityWithComplexTypes, Integer> of("complexNestingMap", "complexnestingmap", true), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<Integer>(){}, new TypeToken<Integer>(){}, new FallThroughCodec<>(Integer.class)), new SimpleProperty<TestEntityWithComplexTypes, ConsistencyLevel, Integer>(FieldInfo.<TestEntityWithComplexTypes, ConsistencyLevel> of("complexNestingMap", "complexnestingmap", true), DataType.cint(), gettable$ -> null, (udt$, value$) -> {}, new TypeToken<ConsistencyLevel>(){}, new TypeToken<Integer>(){}, new EnumOrdinalCodec<>(java.util.Arrays.asList(ConsistencyLevel.values()), ConsistencyLevel.class)))));
 
   /**
    * Meta class for 'writeTime' property <br/>
@@ -447,6 +449,11 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   }
 
   @Override
+  protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getConstructorInjectedColumns() {
+    return Arrays.asList();
+  }
+
+  @Override
   protected boolean isCounterTable() {
     return false;
   }
@@ -489,6 +496,11 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
   @Override
   protected List<AbstractProperty<TestEntityWithComplexTypes, ?, ?>> getCounterColumns() {
     return Arrays.asList();
+  }
+
+  @Override
+  protected TestEntityWithComplexTypes newInstanceFromCustomConstructor(final Row row, final List<String> cqlColumns) {
+    throw new UnsupportedOperationException("Cannot instantiate entity 'info.archinnov.achilles.internals.sample_classes.parser.entity.TestEntityWithComplexTypes' using custom constructor because no custom constructor (@EntityCreator) is defined");
   }
 
   /**

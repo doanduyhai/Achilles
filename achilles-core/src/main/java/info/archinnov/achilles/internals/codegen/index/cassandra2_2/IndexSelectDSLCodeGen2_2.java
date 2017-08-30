@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ public class IndexSelectDSLCodeGen2_2 extends IndexSelectDSLCodeGen2_1
 
         TypeName selectEndJSONTypeName = ClassName.get(DSL_PACKAGE, signature.indexSelectEndJSONReturnType());
 
-        final String className = signature.className + INDEX_SELECT_FROM_JSON_DSL_SUFFIX;
-        builder.addType(buildSelectFromJSON(className, selectWhereJSONTypeName, selectEndJSONTypeName));
+        final String className = FROM_JSON_DSL_SUFFIX;
+        builder.addType(buildSelectFromJSON(signature, className, selectWhereJSONTypeName, selectEndJSONTypeName).build());
         builder.addMethod(buildAllColumnsJSON(selectFromJSONTypeName, SELECT_DOT_WHERE, "select"));
         builder.addMethod(buildAllColumnsJSONWithSchemaProvider(selectFromJSONTypeName, SELECT_DOT_WHERE, "select"));
     }

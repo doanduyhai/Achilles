@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package info.archinnov.achilles.internals.metamodel.functions;
 
 
 import java.util.List;
-
 import java.util.Optional;
 import java.util.stream.Collectors;
 

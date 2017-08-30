@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import java.util.List;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
@@ -39,7 +37,6 @@ import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestEntityWithComplexIndices {
 
     @Rule
@@ -285,7 +282,7 @@ public class TestEntityWithComplexIndices {
                 .allColumns_FromBaseTable()
                 .where()
                 .simpleIndex().Eq("312")
-                .clust1_And_clust2_And_clust3().clust1_And_clust2_And_clust3_Gte_And_clust1_And_clust2_Lte(1, 1, "1", 3, 2)
+                .clust1_clust2_clust3().clust1_And_clust2_And_clust3_Gte_And_clust1_And_clust2_Lte(1, 1, "1", 3, 2)
                 .getList();
 
         //Then

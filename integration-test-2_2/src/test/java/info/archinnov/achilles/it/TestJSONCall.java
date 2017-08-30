@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,9 @@
 package info.archinnov.achilles.it;
 
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME;
-import static info.archinnov.achilles.generated.function.SystemFunctions.*;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Optional;
-import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,41 +27,28 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.ProtocolVersion;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
 
 import info.archinnov.achilles.annotations.Enumerated;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.generated.ManagerFactory;
-import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder_For_IT_2_2;
 import info.archinnov.achilles.generated.ManagerFactory_For_IT_2_2;
-import info.archinnov.achilles.generated.function.FunctionsRegistry;
 import info.archinnov.achilles.generated.function.SystemFunctions;
 import info.archinnov.achilles.generated.manager.EntityForJSONCall_Manager;
-import info.archinnov.achilles.generated.manager.EntityWithComplexTypes_Manager;
-import info.archinnov.achilles.generated.manager.SimpleEntity_Manager;
 import info.archinnov.achilles.generated.meta.entity.EntityForJSONCall_AchillesMeta;
-import info.archinnov.achilles.generated.meta.entity.EntityWithComplexTypes_AchillesMeta;
-import info.archinnov.achilles.generated.meta.entity.SimpleEntity_AchillesMeta;
 import info.archinnov.achilles.internals.codecs.EncodingOrdinalCodec;
 import info.archinnov.achilles.internals.codecs.ProtocolVersionCodec;
 import info.archinnov.achilles.internals.entities.EntityForJSONCall;
-import info.archinnov.achilles.internals.entities.EntityWithComplexTypes;
-import info.archinnov.achilles.internals.entities.SimpleEntity;
-import info.archinnov.achilles.internals.entities.TestUDT;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
 import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener;
-import info.archinnov.achilles.type.tuples.Tuple3;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestJSONCall {
 
     @Rule

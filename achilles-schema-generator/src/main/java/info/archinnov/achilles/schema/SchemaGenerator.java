@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package info.archinnov.achilles.schema;
 import static com.datastax.driver.core.ProtocolVersion.NEWEST_SUPPORTED;
 import static com.google.common.collect.Sets.newHashSet;
 import static info.archinnov.achilles.internals.parser.TypeUtils.ENTITY_META_PACKAGE;
-import static info.archinnov.achilles.internals.parser.TypeUtils.GENERATED_PACKAGE;
 import static info.archinnov.achilles.internals.parser.TypeUtils.UDT_META_PACKAGE;
 import static info.archinnov.achilles.validation.Validator.validateNotBlank;
 import static info.archinnov.achilles.validation.Validator.validateTrue;
@@ -43,9 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.CodecRegistry;
-import com.google.common.collect.Sets;
 
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internals.factory.TupleTypeFactory;
 import info.archinnov.achilles.internals.factory.UserTypeFactory;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;

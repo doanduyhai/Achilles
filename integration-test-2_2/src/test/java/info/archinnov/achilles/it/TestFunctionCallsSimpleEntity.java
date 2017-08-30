@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,9 @@ import java.util.Optional;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ProtocolVersion;
@@ -44,7 +41,6 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
 import info.archinnov.achilles.generated.function.FunctionsRegistry;
-import info.archinnov.achilles.generated.function.SystemFunctions;
 import info.archinnov.achilles.generated.manager.EntityWithComplexTypes_Manager;
 import info.archinnov.achilles.generated.manager.SimpleEntity_Manager;
 import info.archinnov.achilles.generated.meta.entity.EntityWithComplexTypes_AchillesMeta;
@@ -61,7 +57,6 @@ import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.codec.CodecSignature;
 import info.archinnov.achilles.type.tuples.Tuple3;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestFunctionCallsSimpleEntity {
 
     @Rule

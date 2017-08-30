@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,18 @@ package info.archinnov.achilles.internals.codegen.meta;
 import static com.squareup.javapoet.TypeName.BOOLEAN;
 import static com.squareup.javapoet.TypeName.INT;
 import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.MATERIALIZED_VIEW;
-import static info.archinnov.achilles.internals.cassandra_version.CassandraFeature.UDF_UDA;
-import static info.archinnov.achilles.internals.parser.TypeUtils.getRawType;
 import static info.archinnov.achilles.internals.metamodel.columns.ColumnType.*;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 import static info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy.inferNamingStrategy;
 import static info.archinnov.achilles.internals.utils.NamingHelper.upperCaseFirst;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.StringJoiner;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
@@ -40,7 +42,6 @@ import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.internals.apt.AptUtils;
-import info.archinnov.achilles.internals.cassandra_version.CassandraFeature;
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty.EntityType;
 import info.archinnov.achilles.internals.metamodel.columns.*;
 import info.archinnov.achilles.internals.metamodel.index.IndexType;
@@ -55,18 +56,20 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
 
     public static final Comparator<Tuple2<String, PartitionKeyInfo>> PARTITION_KEY_SORTER =
-            (o1, o2) -> o1._2().order.compareTo(o2._2().order);
+            Comparator.comparing(o -> o._2().order);
     public static final Comparator<Tuple2<String, ClusteringColumnInfo>> CLUSTERING_COLUMN_SORTER =
-            (o1, o2) -> o1._2().order.compareTo(o2._2().order);
+            Comparator.comparing(o -> o._2().order);
     public static final Comparator<Tuple2<String, String>> BY_CQL_NAME_COLUMN_SORTER =
-            (o1, o2) -> o1._1().compareTo(o2._1());
+            Comparator.comparing(Tuple2::_1);
     private final AptUtils aptUtils;
 
     public EntityMetaCodeGen(AptUtils aptUtils) {
         this.aptUtils = aptUtils;
     }
 
-    public EntityMetaSignature buildEntityMeta(EntityType entityType, TypeElement elm, GlobalParsingContext globalParsingContext, List<FieldMetaSignature> fieldMetaSignatures) {
+    public EntityMetaSignature buildEntityMeta(EntityType entityType, TypeElement elm, GlobalParsingContext globalParsingContext,
+                                               List<FieldMetaSignature> fieldMetaSignatures,
+                                               List<FieldMetaSignature> customConstructorFieldMetaSignatures) {
         final TypeName rawClassTypeName = getRawType(TypeName.get(elm.asType()));
         final Optional<Consistency> consistency = aptUtils.getAnnotationOnClass(elm, Consistency.class);
         final Optional<TTL> ttl = aptUtils.getAnnotationOnClass(elm, TTL.class);
@@ -85,10 +88,10 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         final BeanValidator beanValidator = globalParsingContext.beanValidator();
         final FieldValidator fieldValidator = globalParsingContext.fieldValidator();
 
-        beanValidator.validateIsAConcreteNonFinalClass(aptUtils, elm);
-        beanValidator.validateHasPublicConstructor(aptUtils, rawClassTypeName, elm);
+        beanValidator.validateIsAConcreteClass(aptUtils, elm);
         beanValidator.validateNoDuplicateNames(aptUtils, rawClassTypeName, fieldMetaSignatures);
         beanValidator.validateHasPartitionKey(aptUtils, rawClassTypeName, fieldMetaSignatures);
+        beanValidator.validateConstructor(aptUtils, rawClassTypeName, elm);
 
         final boolean isCounter = beanValidator.isCounterTable(aptUtils, rawClassTypeName, fieldMetaSignatures);
 
@@ -149,7 +152,8 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                 .addMethod(buildPartitionKeys(fieldMetaSignatures, rawBeanType))
                 .addMethod(buildClusteringColumns(fieldMetaSignatures, rawBeanType))
                 .addMethod(buildNormalColumns(fieldMetaSignatures, rawBeanType))
-                .addMethod(buildComputedColumns(fieldMetaSignatures, rawBeanType));
+                .addMethod(buildComputedColumns(fieldMetaSignatures, rawBeanType))
+                .addMethod(buildConstructorInjectedColumns(customConstructorFieldMetaSignatures, rawBeanType));
 
         if (entityType == EntityType.TABLE) {
             builder.superclass(genericType(ABSTRACT_ENTITY_PROPERTY, rawBeanType))
@@ -169,6 +173,8 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                     .addMethod(buildGetBaseEntityClass(viewBaseClass.get()));
         }
 
+        builder.addMethod(buildNewInstanceFromCustomConstructor(customConstructorFieldMetaSignatures, rawClassTypeName));
+
         for(FieldMetaSignature x: fieldMetaSignatures) {
             builder.addField(x.buildPropertyAsField());
         }
@@ -177,7 +183,39 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         builder.addType(EntityMetaColumnsForFunctionsCodeGen.createColumnsClassForFunctionParam(fieldMetaSignatures))
                 .addField(buildColumnsField(className));
 
-        return new EntityMetaSignature(entityType, builder.build(), elm.getSimpleName().toString(), typeName, rawBeanType, viewBaseClass, fieldMetaSignatures);
+        return new EntityMetaSignature(entityType, builder.build(), elm.getSimpleName().toString(), typeName, rawBeanType, viewBaseClass,
+                fieldMetaSignatures, customConstructorFieldMetaSignatures);
+    }
+
+    private MethodSpec buildNewInstanceFromCustomConstructor(List<FieldMetaSignature> customConstructorFieldMetaSignatures, TypeName rawClassTypeName) {
+        final MethodSpec.Builder methodSpec = MethodSpec
+                .methodBuilder("newInstanceFromCustomConstructor")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PROTECTED)
+                .addParameter(ROW, "row", Modifier.FINAL)
+                .addParameter(genericType(LIST, STRING), "cqlColumns", Modifier.FINAL)
+                .returns(rawClassTypeName);
+
+        if (customConstructorFieldMetaSignatures.size() > 0) {
+            customConstructorFieldMetaSignatures
+                    .forEach(field ->
+                            methodSpec.addStatement("final $T $L_value = cqlColumns.contains($L.getColumnForSelect()) ? $L.decodeFromGettable(row): null",
+                                    field.sourceType.box(),
+                                    field.context.fieldName,
+                                    field.context.fieldName,
+                                    field.context.fieldName)
+                    );
+
+            methodSpec.addStatement(customConstructorFieldMetaSignatures
+                    .stream()
+                    .map(fieldMeta -> fieldMeta.context.fieldName + "_value")
+                    .collect(joining(",", "return new $T(", ")")), rawClassTypeName);
+        } else {
+            final String errorMessage = "Cannot instantiate entity '" + rawClassTypeName.toString() + "' using custom constructor because no custom constructor (@EntityCreator) is defined";
+            methodSpec.addStatement("throw new $T($S)", TypeName.get(UnsupportedOperationException.class), errorMessage);
+        }
+
+        return methodSpec.build();
     }
 
     private MethodSpec buildFieldNameToCqlColumn(List<FieldMetaSignature> parsingResults) {
@@ -314,6 +352,21 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
                 .forEach(x -> joiner.add(x));
 
         return MethodSpec.methodBuilder("getComputedColumns")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PROTECTED)
+                .returns(propertyListType(rawClassType))
+                .addStatement("return $T.asList($L)", ARRAYS, joiner.toString())
+                .build();
+    }
+
+    private MethodSpec buildConstructorInjectedColumns(List<FieldMetaSignature> constructorFieldMetaSignatures, TypeName rawClassType) {
+        StringJoiner joiner = new StringJoiner(",");
+        constructorFieldMetaSignatures
+                .stream()
+                .map(x -> x.context.fieldName)
+                .forEach(x -> joiner.add(x));
+
+        return MethodSpec.methodBuilder("getConstructorInjectedColumns")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
                 .returns(propertyListType(rawClassType))
@@ -487,8 +540,9 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         public final List<FieldMetaSignature> fieldMetaSignatures;
         public final EntityType entityType;
         public final Optional<TypeName> viewBaseClass;
+        public final List<FieldMetaSignature> constructorInjectedFieldMetaSignatures;
 
-        public EntityMetaSignature(EntityType entityType, TypeSpec sourceCode, String className, TypeName typeName, TypeName entityRawClass, Optional<TypeName> viewBaseClass, List<FieldMetaSignature> fieldMetaSignatures) {
+        public EntityMetaSignature(EntityType entityType, TypeSpec sourceCode, String className, TypeName typeName, TypeName entityRawClass, Optional<TypeName> viewBaseClass, List<FieldMetaSignature> fieldMetaSignatures, List<FieldMetaSignature> constructorInjectedFieldMetaSignatures) {
             this.entityType = entityType;
             this.sourceCode = sourceCode;
             this.className = className;
@@ -497,6 +551,7 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
             this.viewBaseClass = viewBaseClass;
             this.fieldMetaSignatures = fieldMetaSignatures;
             this.fieldName = className.substring(0, 1).toLowerCase() + className.substring(1);
+            this.constructorInjectedFieldMetaSignatures = constructorInjectedFieldMetaSignatures;
         }
 
         public boolean hasClustering() {
@@ -526,19 +581,19 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         }
 
         public String whereType(String fieldName, String suffix) {
-            return className + suffix + "_" + upperCaseFirst(fieldName);
+            return suffix + "_" + upperCaseFirst(fieldName);
         }
 
         public String endClassName(String suffix) {
-            return className + suffix;
+            return suffix;
         }
 
         public String endReturnType(String dslSuffix, String suffix) {
-            return className + dslSuffix + "." + className + suffix;
+            return className + dslSuffix + "." + suffix;
         }
 
         public String whereReturnType(String fieldName, String dslSuffix, String suffix) {
-            return className + dslSuffix + "." + className + suffix + "_" + upperCaseFirst(fieldName);
+            return className + dslSuffix + "." + suffix + "_" + upperCaseFirst(fieldName);
         }
 
         public String selectClassName() {
@@ -550,91 +605,91 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         }
 
         public String selectFromReturnType() {
-            return selectClassName() + "." + className + SELECT_FROM_DSL_SUFFIX;
+            return selectClassName() + "." + FROM_DSL_SUFFIX;
         }
 
         public String indexSelectFromReturnType() {
-            return indexSelectClassName() + "." + className + INDEX_SELECT_FROM_DSL_SUFFIX;
+            return indexSelectClassName() + "." + FROM_DSL_SUFFIX;
         }
 
         public String selectFromTypedMapReturnType() {
-            return selectClassName() + "." + className + SELECT_FROM_TYPED_MAP_DSL_SUFFIX;
+            return selectClassName() + "." + FROM_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String indexSelectFromTypedMapReturnType() {
-            return indexSelectClassName() + "." + className + INDEX_SELECT_FROM_TYPED_MAP_DSL_SUFFIX;
+            return indexSelectClassName() + "." + FROM_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String selectFromJSONReturnType() {
-            return selectClassName() + "." + className + SELECT_FROM_JSON_DSL_SUFFIX;
+            return selectClassName() + "." + FROM_JSON_DSL_SUFFIX;
         }
 
         public String indexSelectFromJSONReturnType() {
-            return indexSelectClassName() + "." + className + INDEX_SELECT_FROM_JSON_DSL_SUFFIX;
+            return indexSelectClassName() + "." + FROM_JSON_DSL_SUFFIX;
         }
 
         public String selectColumnsReturnType() {
-            return selectClassName() + "." + className + SELECT_COLUMNS_DSL_SUFFIX;
+            return selectClassName() + "." + COLUMNS_DSL_SUFFIX;
         }
 
         public String indexSelectColumnsReturnType() {
-            return indexSelectClassName() + "." + className + INDEX_SELECT_COLUMNS_DSL_SUFFIX;
+            return indexSelectClassName() + "." + COLUMNS_DSL_SUFFIX;
         }
 
         public String selectColumnsTypedMapReturnType() {
-            return selectClassName() + "." + className + SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX;
+            return selectClassName() + "." + COLUMNS_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String indexSelectColumnsTypedMapReturnType() {
-            return indexSelectClassName() + "." + className + INDEX_SELECT_COLUMNS_TYPED_MAP_DSL_SUFFIX;
+            return indexSelectClassName() + "." + COLUMNS_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String selectWhereReturnType(String fieldName) {
-            return selectClassName() + "." + className + SELECT_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+            return selectClassName() + "." + WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
         }
 
         public String indexSelectWhereReturnType() {
-            return indexSelectClassName() + "." + className + INDEX_SELECT_WHERE_DSL_SUFFIX;
+            return indexSelectClassName() + "." + WHERE_DSL_SUFFIX;
         }
 
         public String selectWhereTypedMapReturnType(String fieldName) {
-            return selectClassName() + "." + className + SELECT_WHERE_TYPED_MAP_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+            return selectClassName() + "." + WHERE_TYPED_MAP_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
         }
 
         public String indexSelectWhereTypedMapReturnType() {
-            return indexSelectClassName() + "." + className + INDEX_SELECT_WHERE_TYPED_MAP_DSL_SUFFIX;
+            return indexSelectClassName() + "." + WHERE_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String selectWhereJSONReturnType(String fieldName) {
-            return selectClassName() + "." + className + SELECT_WHERE_JSON_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+            return selectClassName() + "." + WHERE_JSON_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
         }
 
         public String indexSelectWhereJSONReturnType() {
-            return indexSelectClassName() + "." + className + INDEX_SELECT_WHERE_JSON_DSL_SUFFIX;
+            return indexSelectClassName() + "." + WHERE_JSON_DSL_SUFFIX;
         }
 
         public String selectEndReturnType() {
-            return selectClassName() + "." + className + SELECT_END_DSL_SUFFIX;
+            return selectClassName() + "." + END_DSL_SUFFIX;
         }
 
         public String indexSelectEndReturnType() {
-            return indexSelectClassName() + "." + className + INDEX_SELECT_END_DSL_SUFFIX;
+            return indexSelectClassName() + "." + END_DSL_SUFFIX;
         }
 
         public String selectEndTypedMapReturnType() {
-            return selectClassName() + "." + className + SELECT_END_TYPED_MAP_DSL_SUFFIX;
+            return selectClassName() + "." + END_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String indexSelectEndTypedMapReturnType() {
-            return indexSelectClassName() + "." + className + INDEX_SELECT_END_TYPED_MAP_DSL_SUFFIX;
+            return indexSelectClassName() + "." + END_TYPED_MAP_DSL_SUFFIX;
         }
 
         public String selectEndJSONReturnType() {
-            return selectClassName() + "." + className + SELECT_END_JSON_DSL_SUFFIX;
+            return selectClassName() + "." + END_JSON_DSL_SUFFIX;
         }
 
         public String indexSelectEndJSONReturnType() {
-            return indexSelectClassName() + "." + className + INDEX_SELECT_END_JSON_DSL_SUFFIX;
+            return indexSelectClassName() + "." + END_JSON_DSL_SUFFIX;
         }
 
         public String deleteClassName() {
@@ -642,15 +697,15 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         }
 
         public String deleteFromReturnType() {
-            return deleteClassName() + "." + className + DELETE_FROM_DSL_SUFFIX;
+            return deleteClassName() + "." + FROM_DSL_SUFFIX;
         }
 
         public String deleteColumnsReturnType() {
-            return deleteClassName() + "." + className + DELETE_COLUMNS_DSL_SUFFIX;
+            return deleteClassName() + "." + COLUMNS_DSL_SUFFIX;
         }
 
         public String deleteWhereReturnType(String fieldName) {
-            return deleteClassName() + "." + className + DELETE_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+            return deleteClassName() + "." + WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
         }
 
 
@@ -660,15 +715,15 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         }
 
         public String deleteStaticFromReturnType() {
-            return deleteStaticClassName() + "." + className + DELETE_STATIC_FROM_DSL_SUFFIX;
+            return deleteStaticClassName() + "." + FROM_DSL_SUFFIX;
         }
 
         public String deleteStaticColumnsReturnType() {
-            return deleteStaticClassName() + "." + className + DELETE_STATIC_COLUMNS_DSL_SUFFIX;
+            return deleteStaticClassName() + "." + COLUMNS_DSL_SUFFIX;
         }
 
         public String deleteStaticWhereReturnType(String fieldName) {
-            return deleteStaticClassName() + "." + className + DELETE_STATIC_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+            return deleteStaticClassName() + "." + WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
         }
 
         public String updateClassName() {
@@ -676,15 +731,15 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         }
 
         public String updateFromReturnType() {
-            return updateClassName() + "." + className + UPDATE_FROM_DSL_SUFFIX;
+            return updateClassName() + "." + FROM_DSL_SUFFIX;
         }
 
         public String updateColumnsReturnType() {
-            return updateClassName() + "." + className + UPDATE_COLUMNS_DSL_SUFFIX;
+            return updateClassName() + "." + COLUMNS_DSL_SUFFIX;
         }
 
         public String updateWhereReturnType(String fieldName) {
-            return updateClassName() + "." + className + UPDATE_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+            return updateClassName() + "." + WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
         }
 
         public String updateStaticClassName() {
@@ -692,15 +747,15 @@ public class EntityMetaCodeGen implements CommonBeanMetaCodeGen {
         }
 
         public String updateStaticFromReturnType() {
-            return updateStaticClassName() + "." + className + UPDATE_STATIC_FROM_DSL_SUFFIX;
+            return updateStaticClassName() + "." + FROM_DSL_SUFFIX;
         }
 
         public String updateStaticColumnsReturnType() {
-            return updateStaticClassName() + "." + className + UPDATE_STATIC_COLUMNS_DSL_SUFFIX;
+            return updateStaticClassName() + "." + COLUMNS_DSL_SUFFIX;
         }
 
         public String updateStaticWhereReturnType(String fieldName) {
-            return updateStaticClassName() + "." + className + UPDATE_STATIC_WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
+            return updateStaticClassName() + "." + WHERE_DSL_SUFFIX + "_" + upperCaseFirst(fieldName);
         }
     }
 }

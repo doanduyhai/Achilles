@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ package info.archinnov.achilles.internals.parser;
 import static info.archinnov.achilles.internals.apt.AptUtils.findFieldInType;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.List;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
@@ -34,6 +34,7 @@ import com.squareup.javapoet.TypeName;
 import info.archinnov.achilles.internals.apt_utils.AbstractTestProcessor;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnInfo;
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.parser.context.AccessorsExclusionContext;
 import info.archinnov.achilles.internals.parser.context.EntityParsingContext;
 import info.archinnov.achilles.internals.parser.context.FieldInfoContext;
 import info.archinnov.achilles.internals.parser.context.GlobalParsingContext;
@@ -42,7 +43,6 @@ import info.archinnov.achilles.internals.strategy.naming.InternalNamingStrategy;
 import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
 import info.archinnov.achilles.type.tuples.Tuple2;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FieldInfoParserTest extends AbstractTestProcessor {
 
     private final InternalNamingStrategy strategy = new SnakeCaseNaming();
@@ -743,6 +743,52 @@ public class FieldInfoParserTest extends AbstractTestProcessor {
 
             assertThat(fieldInfo.codeBlock.toString().trim().replaceAll("\n", ""))
                     .isEqualTo(readCodeLineFromFile("expected_code/method_parser/should_generate_field_info_for_map.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
+    public void should_generate_field_info_for_column_with_no_setter() throws Exception {
+        setExec(aptUtils -> {
+            final FieldInfoParser parser = new FieldInfoParser(aptUtils);
+            final String className = TestEntityForFieldInfo.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final List<AccessorsExclusionContext> exclusionContexts = Arrays.asList(new AccessorsExclusionContext("columnWithNoSetter", false, true));
+            final EntityParsingContext context = new EntityParsingContext(typeElement,
+                    ClassName.get(TestEntityForFieldInfo.class), strategy, exclusionContexts,
+                    globalParsingContext);
+
+            VariableElement elm = findFieldInType(typeElement, "columnWithNoSetter");
+
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
+
+            FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
+
+            assertThat(fieldInfo.codeBlock.toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/method_parser/should_generate_field_info_for_column_with_no_setter.txt"));
+        });
+        launchTest();
+    }
+
+    @Test
+    public void should_generate_field_info_for_public_final_columns() throws Exception {
+        setExec(aptUtils -> {
+            final FieldInfoParser parser = new FieldInfoParser(aptUtils);
+            final String className = TestEntityForFieldInfo.class.getCanonicalName();
+            final TypeElement typeElement = aptUtils.elementUtils.getTypeElement(className);
+            final List<AccessorsExclusionContext> exclusionContexts = Arrays.asList(new AccessorsExclusionContext("immutableColumn", true, true));
+            final EntityParsingContext context = new EntityParsingContext(typeElement,
+                    ClassName.get(TestEntityForFieldInfo.class), strategy, exclusionContexts,
+                    globalParsingContext);
+
+            VariableElement elm = findFieldInType(typeElement, "immutableColumn");
+
+            final AnnotationTree annotationTree = AnnotationTree.buildFrom(aptUtils,  globalParsingContext, elm);
+
+            FieldInfoContext fieldInfo = parser.buildFieldInfo(elm, annotationTree, context);
+
+            assertThat(fieldInfo.codeBlock.toString().trim().replaceAll("\n", ""))
+                    .isEqualTo(readCodeLineFromFile("expected_code/method_parser/should_generate_field_info_for_public_final_columns.txt"));
         });
         launchTest();
     }

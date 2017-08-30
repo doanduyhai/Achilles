@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.internals.dsl.raw;
 
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
@@ -35,10 +34,10 @@ import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
-import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.dsl.RawAndTypeMapDefaultImpl;
 import info.archinnov.achilles.internals.dsl.action.SelectAction;
+import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
+import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.runtime.RuntimeEngine;
 import info.archinnov.achilles.internals.statements.BoundStatementWrapper;
 import info.archinnov.achilles.internals.statements.StatementWrapper;
@@ -141,6 +140,22 @@ public class TypedQuery<ENTITY> implements SelectAction<ENTITY>, RawAndTypeMapDe
     }
 
     /**
+     * When DEBUG log is enabled, restrict the Results Display to maximum <strong>DMLResultsDisplaySize</strong> rows. This only applies to SELECT statements
+     * <br/>
+     * <br/>
+     * <strong>WARNING: there is a hard-limit of maximum 100 rows. If you provide a value greater than 100 the number of displayed returned rows will still be capped to 100.
+     * If you provide a negative number, it will default to 0
+     * </strong>
+     * @param DMLResultsDisplaySize the maximum number of returned rows to be displayed
+     */
+    public TypedQuery<ENTITY> withDMLResultsDisplaySize(int DMLResultsDisplaySize) {
+        if (!getOperationType(boundStatement).isUpsert) {
+            options.setDMLResultsDisplaySize(Optional.of(Integer.max(0,Integer.min(DMLResultsDisplaySize, CassandraOptions.MAX_RESULTS_DISPLAY_SIZE))));
+        }
+        return this;
+    }
+
+    /**
      * Execute the typed query and return an iterator of entities
      *
      * @return Iterator&lt;ENTITY&gt;
@@ -190,7 +205,7 @@ public class TypedQuery<ENTITY> implements SelectAction<ENTITY>, RawAndTypeMapDe
 
         return futureRS
                 .thenApply(options::resultSetAsyncListener)
-                .thenApply(statementWrapper::logReturnResults)
+                .thenApply(x -> statementWrapper.logReturnResults(x, options.computeMaxDisplayedResults(rte.configContext)))
                 .thenApply(statementWrapper::logTrace)
                 .thenApply(rs -> Tuple2.of(IntStream.range(0, rs.getAvailableWithoutFetching())
                                 .mapToObj(index -> {

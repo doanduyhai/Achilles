@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import java.util.Arrays;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.UDTValue;
 import com.google.common.collect.Sets;
 
 import info.archinnov.achilles.generated.ManagerFactory;
@@ -38,7 +38,6 @@ import info.archinnov.achilles.internals.entities.UDTWithCollectionsPrimitive;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TestNotUsePrimitiveArrayCodecs {
 
     @Rule

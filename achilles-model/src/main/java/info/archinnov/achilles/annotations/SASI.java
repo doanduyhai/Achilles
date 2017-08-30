@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package info.archinnov.achilles.annotations;
 
 import java.lang.annotation.*;
-import java.util.Locale;
 
 /**
  * Annotation for SASI index
@@ -75,8 +74,8 @@ import java.util.Locale;
  *                     <li>normalization (OPTIONAL)</li>
  *                     <li>locale (OPTIONAL)</li>
  *                     <li>maxCompactionFlushMemoryInMb (OPTIONAL)</li>
- *                     <li>enableStemming (OPTIONAL)</li>
- *                     <li>skipStopWords (OPTIONAL)</li>
+ *                     <li>enableStemming = <strong>false</strong> (DEFAULT)</li>
+ *                     <li>skipStopWords  = <strong>false</strong> (DEFAULT)</li>
  *                 </ul>
  *             </td>
  *         </tr>

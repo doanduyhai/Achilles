@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,14 +83,14 @@ public class CassandraLogAsserter {
     }
 
     public void assertContains(String text) {
-        asssertPatternToBe(text, true);
+        assertPatternToBe(text, true);
     }
 
     public void assertNotContains(String text) {
-        asssertPatternToBe(text, false);
+        assertPatternToBe(text, false);
     }
 
-    private void asssertPatternToBe(String text, boolean present) {
+    private void assertPatternToBe(String text, boolean present) {
         final Iterator<String> standardOutputs = asList(split(logStream.toString(), "\n")).iterator();
         try {
             boolean textFound = false;

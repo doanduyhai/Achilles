@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
-import info.archinnov.achilles.internals.types.OverridingOptional;
 import info.archinnov.achilles.type.lightweighttransaction.LWTResultListener;
 import info.archinnov.achilles.type.strategy.InsertStrategy;
 

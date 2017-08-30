@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import info.archinnov.achilles.internals.injectable.InjectUserAndTupleTypeFactor
 import info.archinnov.achilles.internals.metamodel.columns.FieldInfo;
 import info.archinnov.achilles.internals.options.CassandraOptions;
 import info.archinnov.achilles.internals.utils.CollectionsHelper;
-
 import info.archinnov.achilles.type.SchemaNameProvider;
 import info.archinnov.achilles.type.codec.Codec;
 import info.archinnov.achilles.type.codec.CodecSignature;
@@ -83,7 +82,7 @@ public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Encode from Java '%s' %s to CQL UDT type", fieldName, javaValue));
         }
-        return udtClassProperty.createUDTFromBean(javaValue, cassandraOptions);
+        return udtClassProperty.createUDTFromBean(javaValue, fieldInfo.columnInfo.frozen, cassandraOptions);
     }
 
     @Override
@@ -121,7 +120,7 @@ public class UDTProperty<ENTITY, UDT_META extends AbstractUDTClassProperty<A>, A
             LOGGER.debug(format("Build current '%s' UDT data type", fieldName));
         }
 
-        return udtClassProperty.buildType(cassandraOptions);
+        return udtClassProperty.buildType(fieldInfo.columnInfo.frozen, cassandraOptions);
     }
 
     @Override

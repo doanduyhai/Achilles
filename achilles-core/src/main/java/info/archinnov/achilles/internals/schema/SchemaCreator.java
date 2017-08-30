@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 DuyHai DOAN
+ * Copyright (C) 2012-2017 DuyHai DOAN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internals.schema;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 import java.util.*;
 
@@ -30,7 +29,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
-import com.datastax.driver.core.schemabuilder.UDTType;
 
 import info.archinnov.achilles.internals.metamodel.AbstractEntityProperty;
 import info.archinnov.achilles.internals.metamodel.AbstractProperty;
@@ -213,7 +211,7 @@ public class SchemaCreator {
         }
 
 
-        final String keyspace = entityProperty.getKeyspace().orElse(session.getLoggedKeyspace());
+        final String keyspace = entityProperty.getKeyspace().orElseGet(session::getLoggedKeyspace);
         final SchemaContext schemaContext = new SchemaContext(keyspace, true, true);
         final List<String> schemas;
         if (entityProperty.isTable()) {
@@ -243,7 +241,7 @@ public class SchemaCreator {
                 .flatMap(x -> x.getUDTClassProperties().stream())
                 .forEach(x -> generateUDTAtRuntime(session, x));
 
-        final String udtKeyspace = udtClassProperty.staticKeyspace.orElse(session.getLoggedKeyspace());
+        final String udtKeyspace = udtClassProperty.staticKeyspace.orElseGet(session::getLoggedKeyspace);
         final SchemaContext schemaContext = new SchemaContext(udtKeyspace, true, true);
         final String udtSchema = udtClassProperty.generateSchema(schemaContext);
 
