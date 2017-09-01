@@ -1,4 +1,4 @@
 Sonatype : https://oss.sonatype.org/
-Bump Maven version:  mvn versions:set -DnewVersion=xxx
+Bump Maven version:  mvn versions:set -PDSE -DnewVersion=xxx
 mvn release:clean -PDSE && mvn release:prepare -PDSE
 mvn release:perform -PDSE -Darguments=-Dgpg.passphrase=PASSPHRASE
