@@ -91,7 +91,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.b />
         <cassandra.version>3.11.0</cassandra.version>
         <datastax.driver.core.version>3.3.0</datastax.driver.core.version>
         <fasterxml.jackson.version>2.3.3</fasterxml.jackson.version>
@@ -400,13 +399,6 @@
                         <artifactId>guava</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <!-- CGLIB -->
-            <dependency>
-                <groupId>cglib</groupId>
-                <artifactId>cglib-nodep</artifactId>
-                <version>${cglib.version}</version>
             </dependency>
 
             <!-- Jackson Serializer -->
