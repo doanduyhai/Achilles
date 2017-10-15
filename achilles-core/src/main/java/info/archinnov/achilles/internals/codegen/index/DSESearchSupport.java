@@ -34,7 +34,6 @@ public interface DSESearchSupport {
     default void buildDSESearchIndexRelation(EntityMetaCodeGen.EntityMetaSignature signature,
                                                          TypeSpec.Builder indexSelectWhereBuilder,
                                                          AugmentRelationClassForWhereClauseLambda augmentRelationClassForWhereClauseLambda,
-                                                         BuildRelationMethodLambda relationMethodLambda,
                                                          String parentClassName,
                                                          ClassSignatureInfo lastSignature,
                                                          ReturnType returnType) {
@@ -88,7 +87,7 @@ public interface DSESearchSupport {
 
             indexSelectWhereBuilder.addType(relationClassBuilder.build());
 
-            indexSelectWhereBuilder.addMethod(relationMethodLambda.buildRelationMethod(fieldInfo.fieldName, relationClassTypeName));
+            indexSelectWhereBuilder.addMethod(DSESearchSupport.buildSearchRelationMethod(fieldInfo.fieldName, relationClassTypeName));
         });
 
         //Do not generate rawSolrQuery() method in SelectEnd
@@ -393,8 +392,11 @@ public interface DSESearchSupport {
                                                         ReturnType returnType);
     }
 
-    @FunctionalInterface
-    interface BuildRelationMethodLambda {
-        MethodSpec buildRelationMethod(String fieldName, TypeName relationClassTypeName);
+    static MethodSpec buildSearchRelationMethod(String fieldName, TypeName relationClassTypeName) {
+        return MethodSpec.methodBuilder("search_on_" + fieldName)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addStatement("return new $T()", relationClassTypeName)
+                .returns(relationClassTypeName)
+                .build();
     }
 }

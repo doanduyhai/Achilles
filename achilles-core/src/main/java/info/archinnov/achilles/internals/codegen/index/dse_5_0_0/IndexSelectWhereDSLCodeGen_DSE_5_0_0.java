@@ -39,7 +39,6 @@ public class IndexSelectWhereDSLCodeGen_DSE_5_0_0 extends IndexSelectWhereDSLCod
 
         buildDSESearchIndexRelation(signature, indexSelectWhereBuilder,
                 this::augmentRelationClassForWhereClause,
-                AbstractDSLCodeGen::buildRelationMethod,
                 parentClassName, lastSignature, returnType);
     }
 
