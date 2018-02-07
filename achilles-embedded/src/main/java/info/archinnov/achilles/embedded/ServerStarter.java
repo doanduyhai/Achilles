@@ -267,18 +267,17 @@ public enum ServerStarter {
 
     private void randomizePortsIfNeeded(TypedMap parameters) {
         final Integer thriftPort = extractAndValidatePort(Optional.ofNullable(parameters.get(CASSANDRA_THRIFT_PORT))
-                .orElse(thriftRandomPort()), CASSANDRA_THRIFT_PORT);
-        final Integer cqlPort = extractAndValidatePort(
-                Optional.ofNullable(parameters.get(CASSANDRA_CQL_PORT)).orElse(cqlRandomPort()), CASSANDRA_CQL_PORT);
-        final Integer storagePort = extractAndValidatePort(Optional
-                .ofNullable(parameters.get(CASSANDRA_STORAGE_PORT)).orElse(storageRandomPort()), CASSANDRA_STORAGE_PORT);
+                .orElseGet(() -> thriftRandomPort()), CASSANDRA_THRIFT_PORT);
+        final Integer cqlPort = extractAndValidatePort(Optional.ofNullable(parameters.get(CASSANDRA_CQL_PORT))
+                .orElseGet(() -> cqlRandomPort()), CASSANDRA_CQL_PORT);
+        final Integer storagePort = extractAndValidatePort(Optional.ofNullable(parameters.get(CASSANDRA_STORAGE_PORT))
+                .orElseGet(() -> storageRandomPort()), CASSANDRA_STORAGE_PORT);
         final Integer storageSSLPort = extractAndValidatePort(
-                Optional.ofNullable(parameters.get(CASSANDRA_STORAGE_SSL_PORT)).orElse(storageSslRandomPort()),
-                CASSANDRA_STORAGE_SSL_PORT);
+                Optional.ofNullable(parameters.get(CASSANDRA_STORAGE_SSL_PORT))
+                .orElseGet(() -> storageSslRandomPort()), CASSANDRA_STORAGE_SSL_PORT);
 
-        final Integer jmxPort = extractAndValidatePort(
-                Optional.ofNullable(parameters.get(CASSANDRA_JMX_PORT)).orElse(jxmRandomPort()),
-                CASSANDRA_JMX_PORT);
+        final Integer jmxPort = extractAndValidatePort(Optional.ofNullable(parameters.get(CASSANDRA_JMX_PORT))
+                .orElseGet(() -> jxmRandomPort()), CASSANDRA_JMX_PORT);
 
 
         parameters.put(CASSANDRA_THRIFT_PORT, thriftPort);
