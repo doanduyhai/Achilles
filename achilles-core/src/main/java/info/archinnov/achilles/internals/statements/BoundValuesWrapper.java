@@ -68,7 +68,7 @@ public class BoundValuesWrapper {
     public StatementWrapper bindForUpdate(PreparedStatement ps) {
 
         if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(format("Bind values %s to query %s for UPDATE %s",
+            LOGGER.trace(format("Bind values %s to query %s for UPDATE",
                     boundValuesInfo, ps.getQueryString()));
         }
 

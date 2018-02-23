@@ -136,7 +136,7 @@ public class BeanValueExtractor {
 
     public static <T> BoundValuesWrapper extractPartitionKeysAndStaticValues(T instance, AbstractEntityProperty<T> entityProperty, CassandraOptions cassandraOptions) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(format("Extract partition key values and static columns from entity %s of type %",
+            LOGGER.debug(format("Extract partition key values and static columns from entity %s of type %s",
                     instance, entityProperty.entityClass.getCanonicalName()));
         }
 

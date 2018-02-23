@@ -365,7 +365,7 @@ public class PreparedStatementGenerator {
         if (schemaNameProvider.isPresent()) {
             final SchemaNameProvider provider = schemaNameProvider.get();
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(format("Get INSERT query for entity of type %s with schema provider",
+                LOGGER.debug(format("Get INSERT query for entity of type %s with schema provider %s",
                         entityProperty.entityClass.getCanonicalName(), provider));
             }
             insert = QueryBuilder.insertInto(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));
@@ -385,7 +385,7 @@ public class PreparedStatementGenerator {
         if (schemaNameProvider.isPresent()) {
             final SchemaNameProvider provider = schemaNameProvider.get();
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(format("Get UPDATE query for entity of type %s with schema provider",
+                LOGGER.debug(format("Get UPDATE query for entity of type %s with schema provider %s",
                         entityProperty.entityClass.getCanonicalName(), provider));
             }
             update = QueryBuilder.update(provider.keyspaceFor(entityProperty.entityClass), provider.tableNameFor(entityProperty.entityClass));

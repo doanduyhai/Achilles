@@ -61,7 +61,7 @@ public class FunctionParamParser {
         if (containsAnnotation(annotationTree, JSON.class)) {
             return new FunctionParamSignature(paramName, sourceType, STRING, "text");
         } else if (containsAnnotation(annotationTree, Computed.class)) {
-            throw new AchillesBeanMappingException(format("Cannot have @Computed annotation on param '%s' of method '%s' on class '%s'", paramName, methodName));
+            throw new AchillesBeanMappingException(format("Cannot have @Computed annotation on param '%s' of method '%s''", paramName, methodName));
         } else if (aptUtils.isAssignableFrom(Tuple1.class, currentTypeMirror)) {
             return parseTuple1(context, annotationTree, parentType, methodName, paramName);
         } else if (aptUtils.isAssignableFrom(Tuple2.class, currentTypeMirror)) {
