@@ -335,6 +335,15 @@ public enum CassandraVersion {
      */
     CASSANDRA_3_10,
     CASSANDRA_3_11_0,
+    /**
+     * New features:
+     * <br/>
+     * <ul>
+     *     <li> Fix for JDK 8u161 breaks JMX integration (CASSANDRA-14173)</li>
+     * </ul>
+     *
+     */
+    CASSANDRA_3_11_2,
 
     /**
      * Feature:
