@@ -188,6 +188,21 @@ public abstract class AbstractManager<ENTITY> {
                 ? preparedStatement.bind()
                 : preparedStatement.bind(encodedBoundValues);
 
+        if (regularStatement.getConsistencyLevel() != null)
+            boundStatement.setConsistencyLevel(regularStatement.getConsistencyLevel());
+        if (regularStatement.getSerialConsistencyLevel() != null)
+            boundStatement.setSerialConsistencyLevel(regularStatement.getSerialConsistencyLevel());
+        if (regularStatement.isTracing())
+            boundStatement.enableTracing();
+        if (regularStatement.getRetryPolicy() != null)
+            boundStatement.setRetryPolicy(regularStatement.getRetryPolicy());
+        if (regularStatement.getOutgoingPayload() != null)
+            boundStatement.setOutgoingPayload(regularStatement.getOutgoingPayload());
+        if (regularStatement.isIdempotent() != null) {
+            boundStatement.setIdempotent(regularStatement.isIdempotent());
+        }
+        boundStatement.setFetchSize(regularStatement.getFetchSize());
+
         return new TypedQuery<>(rte, meta_internal, boundStatement, encodedBoundValues);
     }
 
