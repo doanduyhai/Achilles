@@ -82,6 +82,9 @@ public class GlobalParsingContext {
         VERSION_MAPPING.put(CASSANDRA_3_9, V3_9.INSTANCE);
         VERSION_MAPPING.put(CASSANDRA_3_10, V3_10.INSTANCE);
         VERSION_MAPPING.put(CASSANDRA_3_11_0, V3_11_0.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_11_1, V3_11_1.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_11_2, V3_11_2.INSTANCE);
+        VERSION_MAPPING.put(CASSANDRA_3_12, V3_12.INSTANCE);
         VERSION_MAPPING.put(DSE_4_8_X, info.archinnov.achilles.internals.cassandra_version.DSE_4_8_X.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_0, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_0.INSTANCE);
         VERSION_MAPPING.put(DSE_5_0_1, info.archinnov.achilles.internals.cassandra_version.DSE_5_0_1.INSTANCE);
@@ -90,6 +93,14 @@ public class GlobalParsingContext {
         VERSION_MAPPING.put(DSE_5_1_0, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_0.INSTANCE);
         VERSION_MAPPING.put(DSE_5_1_1, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_1.INSTANCE);
         VERSION_MAPPING.put(DSE_5_1_2, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_2.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_1_3, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_3.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_1_4, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_4.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_1_5, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_5.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_1_6, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_6.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_1_7, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_7.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_1_8, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_8.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_1_9, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_9.INSTANCE);
+        VERSION_MAPPING.put(DSE_5_1_10, info.archinnov.achilles.internals.cassandra_version.DSE_5_1_10.INSTANCE);
 
         COLUMNS_MAPPING.put(EXPLICIT, Tuple2.of(EXPLICIT_ENTITY_FIELD_FILTER, EXPLICIT_UDT_FIELD_FILTER));
         COLUMNS_MAPPING.put(IMPLICIT, Tuple2.of(IMPLICIT_ENTITY_FIELD_FILTER, IMPLICIT_UDT_FIELD_FILTER));

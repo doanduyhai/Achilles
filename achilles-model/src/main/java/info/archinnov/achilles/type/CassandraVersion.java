@@ -335,6 +335,9 @@ public enum CassandraVersion {
      */
     CASSANDRA_3_10,
     CASSANDRA_3_11_0,
+    CASSANDRA_3_11_1,
+    CASSANDRA_3_11_2,
+    CASSANDRA_3_12,
 
     /**
      * Feature:
@@ -379,5 +382,13 @@ public enum CassandraVersion {
     DSE_5_1_0,
     DSE_5_1_1,
     DSE_5_1_2,
+    DSE_5_1_3,
+    DSE_5_1_4,
+    DSE_5_1_5,
+    DSE_5_1_6,
+    DSE_5_1_7,
+    DSE_5_1_8,
+    DSE_5_1_9,
+    DSE_5_1_10
 
 }
