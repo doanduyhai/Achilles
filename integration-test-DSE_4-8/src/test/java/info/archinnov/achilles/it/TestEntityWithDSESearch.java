@@ -69,7 +69,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .string().StartWith("speed")
+                .search_on_string().StartWith("speed")
                 .getList();
 
         //Then
@@ -88,7 +88,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .string().EndWith("run")
+                .search_on_string().EndWith("run")
                 .getList();
 
         //Then
@@ -107,7 +107,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .string().Contains("eds")
+                .search_on_string().Contains("eds")
                 .getList();
 
         //Then
@@ -126,7 +126,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .numeric().Eq(100.03f)
+                .search_on_numeric().Eq(100.03f)
                 .getList();
 
         //Then
@@ -144,7 +144,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .numeric().Gt(100.03f)
+                .search_on_numeric().Gt(100.03f)
                 .getList();
 
         //Then
@@ -162,7 +162,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .numeric().Gte(138.47f)
+                .search_on_numeric().Gte(138.47f)
                 .getList();
 
         //Then
@@ -180,7 +180,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .numeric().Lt(100.03f)
+                .search_on_numeric().Lt(100.03f)
                 .getList();
 
         //Then
@@ -198,7 +198,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .numeric().Lte(87.39f)
+                .search_on_numeric().Lte(87.39f)
                 .getList();
 
         //Then
@@ -216,7 +216,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .numeric().Gt_And_Lt(87.39f, 138.47f)
+                .search_on_numeric().Gt_And_Lt(87.39f, 138.47f)
                 .getList();
 
         //Then
@@ -234,7 +234,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .numeric().Gt_And_Lte(87.39f, 138.47f)
+                .search_on_numeric().Gt_And_Lte(87.39f, 138.47f)
                 .getList();
 
         //Then
@@ -253,7 +253,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .numeric().Gte_And_Lt(87.39f, 138.47f)
+                .search_on_numeric().Gte_And_Lt(87.39f, 138.47f)
                 .getList();
 
         //Then
@@ -272,7 +272,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .numeric().Gte_And_Lte(87.39f, 138.47f)
+                .search_on_numeric().Gte_And_Lte(87.39f, 138.47f)
                 .getList();
 
         //Then
@@ -293,7 +293,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Eq(searchedDate)
+                .search_on_date().Eq(searchedDate)
                 .getList();
 
         //Then
@@ -312,7 +312,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Gt(searchedDate)
+                .search_on_date().Gt(searchedDate)
                 .getList();
 
         //Then
@@ -331,7 +331,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Gte(searchedDate)
+                .search_on_date().Gte(searchedDate)
                 .getList();
 
         //Then
@@ -354,7 +354,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Lt(searchedDate)
+                .search_on_date().Lt(searchedDate)
                 .getList();
 
         //Then
@@ -373,7 +373,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Lte(searchedDate)
+                .search_on_date().Lte(searchedDate)
                 .getList();
 
         //Then
@@ -398,7 +398,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Gt_And_Lt(searchedDate1, searchedDate2)
+                .search_on_date().Gt_And_Lt(searchedDate1, searchedDate2)
                 .getList();
 
         //Then
@@ -422,7 +422,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Gt_And_Lte(searchedDate1, searchedDate2)
+                .search_on_date().Gt_And_Lte(searchedDate1, searchedDate2)
                 .getList();
 
         //Then
@@ -446,7 +446,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Gte_And_Lt(searchedDate1, searchedDate2)
+                .search_on_date().Gte_And_Lt(searchedDate1, searchedDate2)
                 .getList();
 
         //Then
@@ -470,7 +470,7 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Gte_And_Lte(searchedDate1, searchedDate2)
+                .search_on_date().Gte_And_Lte(searchedDate1, searchedDate2)
                 .getList();
 
         //Then
@@ -496,9 +496,9 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Gte_And_Lte(searchedDate1, searchedDate2)
-                .string().Contains("run")
-                .numeric().Gt_And_Lte(80f, 110f)
+                .search_on_date().Gte_And_Lte(searchedDate1, searchedDate2)
+                .search_on_string().Contains("run")
+                .search_on_numeric().Gt_And_Lte(80f, 110f)
                 .getList();
 
         //Then
@@ -516,8 +516,8 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .string().RawPredicate("*eed?u*")
-                .numeric().RawPredicate("{100 TO 150}")
+                .search_on_string().RawPredicate("*eed?u*")
+                .search_on_numeric().RawPredicate("{100 TO 150}")
                 .getList();
 
         //Then
@@ -558,8 +558,8 @@ public class TestEntityWithDSESearch {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Gte_And_Lte(searchedDate1, searchedDate2)
-                .string().Contains("run")
+                .search_on_date().Gte_And_Lte(searchedDate1, searchedDate2)
+                .search_on_string().Contains("run")
                 .id().Eq(3L)
                 .getList();
 

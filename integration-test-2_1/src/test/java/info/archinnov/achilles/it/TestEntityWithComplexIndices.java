@@ -68,7 +68,7 @@ public class TestEntityWithComplexIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .simpleIndex().Eq("313")
+                .indexed_simpleIndex().Eq("313")
                 .getList();
 
         //Then
@@ -89,7 +89,7 @@ public class TestEntityWithComplexIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .collectionIndex().Contains("4")
+                .indexed_collectionIndex().Contains("4")
                 .getList();
 
         //Then
@@ -110,7 +110,7 @@ public class TestEntityWithComplexIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .fullIndexOnCollection().Eq(Sets.newHashSet("311"))
+                .indexed_fullIndexOnCollection().Eq(Sets.newHashSet("311"))
                 .getList();
 
         //Then
@@ -131,7 +131,7 @@ public class TestEntityWithComplexIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .indexOnMapKey().ContainsKey("312")
+                .indexed_indexOnMapKey().ContainsKey("312")
                 .getList();
 
         //Then
@@ -152,7 +152,7 @@ public class TestEntityWithComplexIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .indexOnMapValue().ContainsValue("211")
+                .indexed_indexOnMapValue().ContainsValue("211")
                 .getList();
 
         //Then
@@ -173,7 +173,7 @@ public class TestEntityWithComplexIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .indexOnMapEntry().ContainsEntry(212, "212")
+                .indexed_indexOnMapEntry().ContainsEntry(212, "212")
                 .getList();
 
         //Then
@@ -194,7 +194,7 @@ public class TestEntityWithComplexIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .simpleIndex().Eq("313")
+                .indexed_simpleIndex().Eq("313")
                 .id().Eq(id)
                 .getList();
 
@@ -216,7 +216,7 @@ public class TestEntityWithComplexIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .simpleIndex().Eq("312")
+                .indexed_simpleIndex().Eq("312")
                 .clust1().Eq(3)
                 .clust3().Eq("2")
                 .getList();
@@ -239,7 +239,7 @@ public class TestEntityWithComplexIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .simpleIndex().Eq("312")
+                .indexed_simpleIndex().Eq("312")
                 .clust1().Gte_And_Lte(1, 4)
                 .getList();
 
@@ -261,7 +261,7 @@ public class TestEntityWithComplexIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .simpleIndex().Eq("312")
+                .indexed_simpleIndex().Eq("312")
                 .clust1().Gte(5)
                 .getList();
 
@@ -281,7 +281,7 @@ public class TestEntityWithComplexIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .simpleIndex().Eq("312")
+                .indexed_simpleIndex().Eq("312")
                 .clust1_clust2_clust3().clust1_And_clust2_And_clust3_Gte_And_clust1_And_clust2_Lte(1, 1, "1", 3, 2)
                 .getList();
 

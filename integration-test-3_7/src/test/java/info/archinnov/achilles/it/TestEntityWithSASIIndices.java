@@ -66,9 +66,9 @@ public class TestEntityWithSASIIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .prefixNonTokenizer().StartWith("speed")
-                .numeric().Gte(10)
-                .numeric().Lte(15)
+                .indexed_prefixNonTokenizer().StartWith("speed")
+                .indexed_numeric().Gte(10)
+                .indexed_numeric().Lte(15)
                 .getList();
 
         //Then
@@ -89,9 +89,9 @@ public class TestEntityWithSASIIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .prefixNonTokenizer().Like("speedster")
-                .sparse().Gte(13)
-                .sparse().Lte(15)
+                .indexed_prefixNonTokenizer().Like("speedster")
+                .indexed_sparse().Gte(13)
+                .indexed_sparse().Lte(15)
                 .getList();
 
         //Then
@@ -111,7 +111,7 @@ public class TestEntityWithSASIIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .prefixNonTokenizer().Eq("speedster")
+                .indexed_prefixNonTokenizer().Eq("speedster")
                 .getList();
 
         //Then
@@ -131,7 +131,7 @@ public class TestEntityWithSASIIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .containsStandardAnalyzer().EndWith("man")
+                .indexed_containsStandardAnalyzer().EndWith("man")
                 .getList();
 
         //Then
@@ -151,7 +151,7 @@ public class TestEntityWithSASIIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .containsStandardAnalyzer().Contains("love")
+                .indexed_containsStandardAnalyzer().Contains("love")
                 .getList();
 
         //Then
@@ -175,7 +175,7 @@ public class TestEntityWithSASIIndices {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .containsStandardAnalyzer().Like("chair dance")
+                .indexed_containsStandardAnalyzer().Like("chair dance")
                 .getList();
 
         //Then

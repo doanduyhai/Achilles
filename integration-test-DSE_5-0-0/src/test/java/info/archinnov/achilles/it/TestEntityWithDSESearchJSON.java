@@ -69,7 +69,7 @@ public class TestEntityWithDSESearchJSON {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .string().Eq_FromJson("\"speedrun\"")
+                .search_on_string().Eq_FromJson("\"speedrun\"")
                 .getList();
 
         //Then
@@ -88,7 +88,7 @@ public class TestEntityWithDSESearchJSON {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .numeric().Eq_FromJson("100.03")
+                .search_on_numeric().Eq_FromJson("100.03")
                 .getList();
 
         //Then
@@ -107,7 +107,7 @@ public class TestEntityWithDSESearchJSON {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Eq_FromJson(searchedDate)
+                .search_on_date().Eq_FromJson(searchedDate)
                 .getList();
 
         //Then
@@ -126,7 +126,7 @@ public class TestEntityWithDSESearchJSON {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .date().Eq_FromJson(searchedDate)
+                .search_on_date().Eq_FromJson(searchedDate)
                 .id().Eq_FromJson("3")
                 .getList();
 

@@ -48,7 +48,7 @@ public class IndexSelectWhereDSLCodeGen3_7 extends IndexSelectWhereDSLCodeGen2_2
                                        ClassSignatureInfo lastSignature,
                                        ReturnType returnType) {
 
-        final String relationClassName = upperCaseFirst(indexFieldInfo.fieldName);
+        final String relationClassName = "Indexed_" + upperCaseFirst(indexFieldInfo.fieldName);
         TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + relationClassName);
 
         final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(relationClassName)
@@ -81,7 +81,7 @@ public class IndexSelectWhereDSLCodeGen3_7 extends IndexSelectWhereDSLCodeGen2_2
 
         indexSelectWhereBuilder.addType(relationClassBuilder.build());
 
-        indexSelectWhereBuilder.addMethod(buildRelationMethod(indexFieldInfo.fieldName, relationClassTypeName));
+        indexSelectWhereBuilder.addMethod(buildIndexedRelationMethod(indexFieldInfo.fieldName, relationClassTypeName));
 
     }
 }

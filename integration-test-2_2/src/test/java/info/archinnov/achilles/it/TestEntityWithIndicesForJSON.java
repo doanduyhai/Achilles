@@ -66,7 +66,7 @@ public class TestEntityWithIndicesForJSON {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .simpleIndex().Eq_FromJson("\"313\"")
+                .indexed_simpleIndex().Eq_FromJson("\"313\"")
                 .getList();
 
         //Then
@@ -87,7 +87,7 @@ public class TestEntityWithIndicesForJSON {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .collectionIndex().Contains_FromJson("\"4\"")
+                .indexed_collectionIndex().Contains_FromJson("\"4\"")
                 .getList();
 
         //Then
@@ -108,7 +108,7 @@ public class TestEntityWithIndicesForJSON {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .fullIndexOnCollection().Eq_FromJson("[\"311\"]")
+                .indexed_fullIndexOnCollection().Eq_FromJson("[\"311\"]")
                 .getList();
 
         //Then
@@ -129,7 +129,7 @@ public class TestEntityWithIndicesForJSON {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .indexOnMapKey().ContainsKey_FromJSON("\"312\"")
+                .indexed_indexOnMapKey().ContainsKey_FromJSON("\"312\"")
                 .getList();
 
         //Then
@@ -150,7 +150,7 @@ public class TestEntityWithIndicesForJSON {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .indexOnMapValue().ContainsValue_FromJSON("\"211\"")
+                .indexed_indexOnMapValue().ContainsValue_FromJSON("\"211\"")
                 .getList();
 
         //Then
@@ -171,7 +171,7 @@ public class TestEntityWithIndicesForJSON {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .indexOnMapEntry().ContainsEntry_FromJSON("212", "\"212\"")
+                .indexed_indexOnMapEntry().ContainsEntry_FromJSON("212", "\"212\"")
                 .getList();
 
         //Then
@@ -192,7 +192,7 @@ public class TestEntityWithIndicesForJSON {
                 .select()
                 .allColumnsAsJSON_FromBaseTable()
                 .where()
-                .simpleIndex().Eq("313")
+                .indexed_simpleIndex().Eq("313")
                 .id().Eq(id)
                 .getListJSON();
 
@@ -214,7 +214,7 @@ public class TestEntityWithIndicesForJSON {
                 .select()
                 .allColumns_FromBaseTable()
                 .where()
-                .simpleIndex().Eq("312")
+                .indexed_simpleIndex().Eq("312")
                 .clust1().Eq_FromJson("3")
                 .clust3().Eq_FromJson("\"2\"")
                 .getList();

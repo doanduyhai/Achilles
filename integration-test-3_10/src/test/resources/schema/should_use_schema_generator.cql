@@ -236,6 +236,15 @@ CREATE TABLE IF NOT EXISTS test.entitywithimplicitfieldparsing(
 		uuid uuid,
 		PRIMARY KEY(id, uuid))
 	WITH CLUSTERING ORDER BY(uuid ASC);
+CREATE TABLE IF NOT EXISTS test.index_on_clustering(
+		partition bigint,
+		clustering int,
+		value text,
+		PRIMARY KEY(partition, clustering))
+	WITH CLUSTERING ORDER BY(clustering ASC);
+
+
+CREATE  INDEX IF NOT EXISTS clustering_index ON test.index_on_clustering ( clustering );
 CREATE TABLE IF NOT EXISTS test.entity_with_indices_for_json(
 		id bigint,
 		clust1 int,

@@ -8,17 +8,17 @@ import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectInd
 import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.ColsTM.Udt_UDT;
 import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.E;
 import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.E.Id;
-import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.E.IndexedText;
+import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.E.Indexed_IndexedText;
 import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.E_TM;
 import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.E_TM.Id;
-import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.E_TM.IndexedText;
+import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.E_TM.Indexed_IndexedText;
 import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.F;
 import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.F_TM;
 import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.Udt_UDT;
 import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.W;
-import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.W.IndexedText;
+import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.W.Indexed_IndexedText;
 import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.W_TM;
-import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.W_TM.IndexedText;
+import info.archinnov.achilles.generated.dsl.TestEntityWithIndexAndUDT_SelectIndex.W_TM.Indexed_IndexedText;
 import info.archinnov.achilles.generated.meta.entity.TestEntityWithIndexAndUDT_AchillesMeta;
 import info.archinnov.achilles.internals.dsl.query.select.AbstractIndexSelectWhere;
 import info.archinnov.achilles.internals.dsl.query.select.AbstractIndexSelectWhereTypeMap;
@@ -469,11 +469,11 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
       super(where, cassandraOptions);
     }
 
-    public final TestEntityWithIndexAndUDT_SelectIndex.W.IndexedText indexedText() {
-      return new TestEntityWithIndexAndUDT_SelectIndex.W.IndexedText();
+    public final TestEntityWithIndexAndUDT_SelectIndex.W.Indexed_IndexedText indexed_indexedText() {
+      return new TestEntityWithIndexAndUDT_SelectIndex.W.Indexed_IndexedText();
     }
 
-    public final class IndexedText {
+    public final class Indexed_IndexedText {
       /**
        * Generate a SELECT ... FROM ... WHERE ... <strong>indexedtext = ?</strong> */
       @SuppressWarnings("static-access")
@@ -539,8 +539,8 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
       return new TestEntityWithIndexAndUDT_SelectIndex.E.Id();
     }
 
-    public final TestEntityWithIndexAndUDT_SelectIndex.E.IndexedText indexedText() {
-      return new TestEntityWithIndexAndUDT_SelectIndex.E.IndexedText();
+    public final TestEntityWithIndexAndUDT_SelectIndex.E.Indexed_IndexedText indexed_indexedText() {
+      return new TestEntityWithIndexAndUDT_SelectIndex.E.Indexed_IndexedText();
     }
 
     public final class Id {
@@ -568,7 +568,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
       }
     }
 
-    public final class IndexedText {
+    public final class Indexed_IndexedText {
       /**
        * Generate a SELECT ... FROM ... WHERE ... <strong>indexedtext = ?</strong> */
       @SuppressWarnings("static-access")
@@ -586,11 +586,11 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
       super(where, cassandraOptions);
     }
 
-    public final TestEntityWithIndexAndUDT_SelectIndex.W_TM.IndexedText indexedText() {
-      return new TestEntityWithIndexAndUDT_SelectIndex.W_TM.IndexedText();
+    public final TestEntityWithIndexAndUDT_SelectIndex.W_TM.Indexed_IndexedText indexed_indexedText() {
+      return new TestEntityWithIndexAndUDT_SelectIndex.W_TM.Indexed_IndexedText();
     }
 
-    public final class IndexedText {
+    public final class Indexed_IndexedText {
       /**
        * Generate a SELECT ... FROM ... WHERE ... <strong>indexedtext = ?</strong> */
       @SuppressWarnings("static-access")
@@ -656,8 +656,8 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
       return new TestEntityWithIndexAndUDT_SelectIndex.E_TM.Id();
     }
 
-    public final TestEntityWithIndexAndUDT_SelectIndex.E_TM.IndexedText indexedText() {
-      return new TestEntityWithIndexAndUDT_SelectIndex.E_TM.IndexedText();
+    public final TestEntityWithIndexAndUDT_SelectIndex.E_TM.Indexed_IndexedText indexed_indexedText() {
+      return new TestEntityWithIndexAndUDT_SelectIndex.E_TM.Indexed_IndexedText();
     }
 
     public final class Id {
@@ -685,7 +685,7 @@ public final class TestEntityWithIndexAndUDT_SelectIndex extends AbstractSelect 
       }
     }
 
-    public final class IndexedText {
+    public final class Indexed_IndexedText {
       /**
        * Generate a SELECT ... FROM ... WHERE ... <strong>indexedtext = ?</strong> */
       @SuppressWarnings("static-access")

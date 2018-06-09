@@ -157,7 +157,7 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
                                          ClassSignatureInfo lastSignature,
                                          ReturnType returnType) {
 
-        final String relationClassName = upperCaseFirst(indexFieldInfo.fieldName);
+        final String relationClassName = "Indexed_"+upperCaseFirst(indexFieldInfo.fieldName);
         TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + relationClassName);
 
         final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(relationClassName)
@@ -190,7 +190,15 @@ public abstract class IndexSelectWhereDSLCodeGen extends SelectWhereDSLCodeGen
 
         indexSelectWhereBuilder.addType(relationClassBuilder.build());
 
-        indexSelectWhereBuilder.addMethod(buildRelationMethod(indexFieldInfo.fieldName, relationClassTypeName));
+        indexSelectWhereBuilder.addMethod(buildIndexedRelationMethod(indexFieldInfo.fieldName, relationClassTypeName));
+    }
+
+    public static MethodSpec buildIndexedRelationMethod(String fieldName, TypeName relationClassTypeName) {
+        return MethodSpec.methodBuilder("indexed_" + fieldName)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addStatement("return new $T()", relationClassTypeName)
+                .returns(relationClassTypeName)
+                .build();
     }
 
     public MethodSpec buildIndexRelationForMapEntry(IndexFieldSignatureInfo indexFieldInfo, TypeName returnClassType, ReturnType returnType) {

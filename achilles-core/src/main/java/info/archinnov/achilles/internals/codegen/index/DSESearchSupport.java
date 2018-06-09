@@ -42,7 +42,7 @@ public interface DSESearchSupport {
 
         dseSearchColumns.forEach(fieldInfo -> {
 
-            final String relationClassName = upperCaseFirst(fieldInfo.fieldName);
+            final String relationClassName = "Indexed_" + upperCaseFirst(fieldInfo.fieldName);
             TypeName relationClassTypeName = ClassName.get(DSL_PACKAGE, parentClassName + "." + relationClassName);
 
             final TypeSpec.Builder relationClassBuilder = TypeSpec.classBuilder(relationClassName)
