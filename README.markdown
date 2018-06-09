@@ -28,6 +28,9 @@
 - Runtime **Schema Name Provider** for multi-tenant environments
 - Full compatibility with Java 8 **CompletableFuture**
 
+> **warning: Achilles version 6.0.0 is the newest release, for migrating from version 5.x please read the
+[Migration From 5.X Guide]**
+
 > **Warning: Achilles versions 4.x are no longer maintained, only bug-fixes are supported, please migrate to
 version 5.x and follow the [Migration From 4.x Guide]**
 
@@ -45,6 +48,11 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 		</tr>
 	</thead>
 	<tbody>
+        <tr>
+            <td>6.0.0 (all Cassandra versions up to 3.11.2, all DSE up to 5.1.10)</td>
+            <td>3.5.0</td>
+            <td>3.11.2</td>
+        </tr>
         <tr>
             <td>5.3.1 (all Cassandra versions up to 3.11.0, all DSE up to 5.1.2)</td>
             <td>3.3.0</td>
@@ -176,7 +184,7 @@ For unit-testing with embedded Cassandra, add this dependency with **test** scop
  For any question, bug encountered, you can use the **[mailing list]**
 
 ## License
-Copyright 2012-2016 DuyHai DOAN
+Copyright 2012-2018 DuyHai DOAN
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this application except in compliance with the License. You may obtain a copy of the License at
 
@@ -184,7 +192,8 @@ http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
-[Migration From 3.x Guide]: https://github.com/doanduyhai/Achilles/wiki/Migration-Guide
+[Migration From 4.x Guide]: https://github.com/doanduyhai/Achilles/wiki/Migration-Guide-4-to-5
+[Migration From 5.x Guide]: https://github.com/doanduyhai/Achilles/wiki/Migration-Guide-5-to-6
 [IDE Configuration]: https://github.com/doanduyhai/Achilles/wiki/IDE-configuration
 [5 minutes tutorial]: https://github.com/doanduyhai/Achilles/wiki/5-minutes-Tutorial
 [Quick Reference]: https://github.com/doanduyhai/Achilles/wiki/Quick-Reference
