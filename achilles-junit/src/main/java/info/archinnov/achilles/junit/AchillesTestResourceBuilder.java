@@ -22,6 +22,7 @@ import static java.util.Optional.ofNullable;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import com.datastax.driver.core.Cluster;
 
@@ -214,6 +215,24 @@ public class AchillesTestResourceBuilder {
     public <T extends AbstractManagerFactory> AchillesTestResource<T> build(BiFunction<Cluster, StatementsCache, T> managerFactoryBuilder) {
         final TypedMap cassandraParams = buildCassandraParams();
         return new AchillesTestResource<>(managerFactoryBuilder, cassandraParams, keyspace, cleanupSteps, tablesToTruncate, entityClassesToCleanUp);
+    }
+
+    /**
+     * Use this function to add parameters to cassandra startup.
+     * 
+     * Example:
+     * <pre class="code"><code class="java">
+     * AchillesTestResourceBuilder
+     * .forJunit()
+     * .withCassandraParams(Collections.singletonMap(CASSANDRA_CQL_PORT, 9042))
+     * ...
+     * .build();
+     * </code></pre> 
+     * @return AchillesTestResourceBuilder
+     */
+    public AchillesTestResourceBuilder withCassandraParams(Map<String, Object> cassandraParams) {
+        this.cassandraParams.putAll(cassandraParams);
+        return this;
     }
 
     private TypedMap buildCassandraParams() {
