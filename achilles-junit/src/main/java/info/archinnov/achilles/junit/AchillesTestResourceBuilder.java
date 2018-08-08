@@ -220,10 +220,18 @@ public class AchillesTestResourceBuilder {
     /**
      * Use this function to add parameters to cassandra startup.
      * 
+     * Example:
+     * <pre class="code"><code class="java">
+     * AchillesTestResourceBuilder
+     * .forJunit()
+     * .withCassandraParams(Collections.singletonMap(CASSANDRA_CQL_PORT, 9042))
+     * ...
+     * .build();
+     * </code></pre> 
      * @return AchillesTestResourceBuilder
      */
-    public AchillesTestResourceBuilder changeStartupParameter(Consumer<TypedMap> c) {
-        c.accept(cassandraParams);
+    public AchillesTestResourceBuilder withCassandraParams(Map<String, Object> cassandraParams) {
+        this.cassandraParams.putAll(cassandraParams);
         return this;
     }
 
