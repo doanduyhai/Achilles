@@ -72,11 +72,11 @@ public enum ServerStarter {
     }
 
     private static int cqlRandomPort() {
-        return PortFinder.findAvailableBetween(9043, 9499);
+        return PortFinder.findFirstAvailableBetween(9042, 9499);
     }
 
     private static int thriftRandomPort() {
-        return PortFinder.findAvailableBetween(9501, 9999);
+        return PortFinder.findFirstAvailableBetween(9160, 9999);
     }
 
     public void startServer(String cassandraHost, TypedMap parameters) {
