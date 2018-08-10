@@ -19,6 +19,7 @@ package info.archinnov.achilles.embedded;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
+import java.util.stream.IntStream;
 
 public class PortFinder {
 
@@ -26,6 +27,14 @@ public class PortFinder {
 
     public static int randomAvailable() {
         return findAvailableBetween(1025, 65534);
+    }
+
+    public static int findFirstAvailableBetween(int startInclusive, int endExclusive) {
+        return IntStream.range(startInclusive, endExclusive)
+            .filter(PortFinder::isAvailable)
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(
+                "no available port found between " + startInclusive + " and " + endExclusive + "."));
     }
 
     public static Integer findAvailableBetween(int start, int end) {
