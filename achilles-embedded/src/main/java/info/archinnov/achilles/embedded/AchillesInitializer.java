@@ -117,6 +117,7 @@ public class AchillesInitializer {
                 .withCompression(compression).withLoadBalancingPolicy(loadBalancingPolicy).withRetryPolicy(retryPolicy)
                 .withReconnectionPolicy(reconnectionPolicy)
                 .withProtocolVersion(ProtocolVersion.NEWEST_SUPPORTED)
+                .withoutJMXReporting()
                 .build();
 
         // Add Cluster for shutdown process
