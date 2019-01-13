@@ -1,6 +1,9 @@
 CREATE TYPE IF NOT EXISTS test.adress_udt(
 		street text,
 		number int);
+CREATE TYPE IF NOT EXISTS test.CaseSensitiveUDT(
+		"Quantity" int,
+		value text);
 CREATE TYPE IF NOT EXISTS test.immutable_udt(
 		idx bigint,
 		value text);
@@ -107,6 +110,10 @@ CREATE TABLE IF NOT EXISTS test.entity_with_case_sensitive_pk(
 		"udtWithNoKeyspace" frozen<test.no_ks>,
 		PRIMARY KEY("partitionKey", "clusteringColumn", priority))
 	WITH CLUSTERING ORDER BY("clusteringColumn" ASC, priority ASC);
+CREATE TABLE IF NOT EXISTS "MyKeyspace".entity_with_case_sensitive_udt(
+		id text,
+		details frozen<"MyKeyspace"."CaseSensitiveUDT">,
+		PRIMARY KEY(id));
 CREATE TABLE IF NOT EXISTS test.entity_with_clusterings(
 		id bigint,
 		uuid uuid,

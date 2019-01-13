@@ -166,14 +166,14 @@ public class AchillesTestResource<T extends AbstractManagerFactory> extends Exte
 
         maybeGenerateTruncateStatement(session, entityClassesToTruncate
                 .stream()
-                .map(clazz -> managerFactory.staticTableNameFor(clazz).get().toLowerCase())
+                .map(clazz -> managerFactory.staticTableNameFor(clazz).get())
                 .collect(toList()));
 
         maybeGenerateTruncateStatement(session, tablesToTruncate);
 
         return
                 Stream.concat(tablesToTruncate.stream(),
-                        entityClassesToTruncate.stream().map(clazz -> managerFactory.staticTableNameFor(clazz).get().toLowerCase()))
+                        entityClassesToTruncate.stream().map(clazz -> managerFactory.staticTableNameFor(clazz).get()))
                         .map(TABLES_TO_TRUNCATE::get)
                         .collect(toList());
     }

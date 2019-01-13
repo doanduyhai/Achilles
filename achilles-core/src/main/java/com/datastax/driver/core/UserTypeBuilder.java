@@ -31,10 +31,13 @@ public class UserTypeBuilder {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(format("Creating UserType instance for UDT %s in keyspace %s", typeName, keyspace));
         }
-        return new UserType(keyspace, typeName, frozen, fields, version, registry);
+        String plainKeyspace = keyspace.replaceAll("\"", "");
+        String plainTypeName = typeName.replaceAll("\"", "");
+        return new UserType(plainKeyspace, plainTypeName, frozen, fields, version, registry);
     }
 
     public static UserType.Field buildField(String name, DataType dataType) {
-        return new UserType.Field(name, dataType);
+        String plainName = name.replaceAll("\"", "");
+        return new UserType.Field(plainName, dataType);
     }
 }

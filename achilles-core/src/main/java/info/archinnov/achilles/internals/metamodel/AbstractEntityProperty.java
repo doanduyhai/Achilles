@@ -269,7 +269,8 @@ public abstract class AbstractEntityProperty<T> implements
 
     public Optional<String> getKeyspace() {
         final Optional<String> keyspace = OverridingOptional
-                .from(staticKeyspace)
+                .from(staticNamingStrategy.flatMap(naming -> staticKeyspace.map(ks -> naming.apply(ks))))
+                .andThen(staticKeyspace)
                 .andThen(schemaStrategy.map(x -> x.keyspaceFor(entityClass)))
                 .andThen(this.keyspace)
                 .getOptional();
@@ -282,7 +283,8 @@ public abstract class AbstractEntityProperty<T> implements
 
     public String getTableOrViewName() {
         final String tableName = OverridingOptional
-                .from(staticTableOrViewName)
+                .from(staticNamingStrategy.flatMap(naming -> staticTableOrViewName.map(ks -> naming.apply(ks))))
+                .andThen(staticTableOrViewName)
                 .andThen(schemaStrategy.map(x -> x.tableNameFor(entityClass)))
                 .defaultValue(derivedTableOrViewName)
                 .get();
