@@ -181,7 +181,7 @@ public class ArgumentExtractor {
         LOGGER.trace("Extract or init Session from configuration map");
 
         return Optional.<Session>ofNullable(configurationMap.getTyped(NATIVE_SESSION))
-                .orElse(initKeyspaceName(configurationMap)
+                .orElseGet(() -> initKeyspaceName(configurationMap)
                                 .map(cluster::connect)
                                 .orElseGet(cluster::connect)
                 );
