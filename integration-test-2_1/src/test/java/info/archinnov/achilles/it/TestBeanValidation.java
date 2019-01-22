@@ -101,7 +101,7 @@ public class TestBeanValidation {
         //When
         exception.expect(AchillesBeanValidationException.class);
         exception.expectMessage("Bean validation error on event 'PRE_INSERT' : \n" +
-                "\tproperty 'value' of class 'info.archinnov.achilles.internals.entities.EntityWithBeanValidation' may not be empty");
+                "\tproperty 'value' of class 'info.archinnov.achilles.internals.entities.EntityWithBeanValidation' should not be blank");
 
         manager
                 .crud()
@@ -119,7 +119,7 @@ public class TestBeanValidation {
         //When
         exception.expect(AchillesBeanValidationException.class);
         exception.expectMessage("Bean validation error on event 'PRE_INSERT' : \n" +
-                "\tproperty 'list' of class 'info.archinnov.achilles.internals.entities.EntityWithBeanValidation' may not be empty");
+                "\tproperty 'list' of class 'info.archinnov.achilles.internals.entities.EntityWithBeanValidation' should not be empty");
 
         manager
                 .crud()
@@ -191,7 +191,7 @@ public class TestBeanValidation {
 
         exception.expect(AchillesException.class);
         exception.expectMessage("Bean validation error on event 'POST_LOAD' : \n" +
-                "\tproperty 'list' of class 'info.archinnov.achilles.internals.entities.EntityWithBeanValidation' may not be empty");
+                "\tproperty 'list' of class 'info.archinnov.achilles.internals.entities.EntityWithBeanValidation' should not be empty");
 
         manager
                 .crud()

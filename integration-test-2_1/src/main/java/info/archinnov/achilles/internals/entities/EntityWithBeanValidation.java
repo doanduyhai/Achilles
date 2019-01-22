@@ -34,11 +34,11 @@ public class EntityWithBeanValidation {
     private Long id;
 
     @Column
-    @NotBlank
+    @NotBlank(message = "should not be blank")
     private String value;
 
     @Column
-    @NotEmpty
+    @NotEmpty(message = "should not be empty")
     private List<String> list;
 
     @Column
