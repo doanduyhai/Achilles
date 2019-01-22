@@ -33,7 +33,7 @@ import info.archinnov.achilles.internals.constraints.ValidUDT;
 @UDT(keyspace = DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME, name = "my_type")
 public class TestUDT {
 
-    @Email
+    @Email(message = "not a well-formed email address")
     @Column
     private String name;
 
