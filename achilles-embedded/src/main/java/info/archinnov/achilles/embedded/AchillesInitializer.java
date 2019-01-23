@@ -33,6 +33,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SocketOptions;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
@@ -111,12 +112,21 @@ public class AchillesInitializer {
         final LoadBalancingPolicy loadBalancingPolicy = parameters.getTyped(LOAD_BALANCING_POLICY);
         final RetryPolicy retryPolicy = parameters.getTyped(RETRY_POLICY);
         final ReconnectionPolicy reconnectionPolicy = parameters.getTyped(RECONNECTION_POLICY);
+        final SocketOptions socketOptions = new SocketOptions();
+        socketOptions.setKeepAlive(true);
+        socketOptions.setConnectTimeoutMillis(15000);
+        socketOptions.setReadTimeoutMillis(30000);
 
-
-        Cluster cluster = Cluster.builder().addContactPoint(host).withPort(cqlPort).withClusterName(clusterName)
-                .withCompression(compression).withLoadBalancingPolicy(loadBalancingPolicy).withRetryPolicy(retryPolicy)
+        Cluster cluster = Cluster.builder()
+                .addContactPoint(host)
+                .withPort(cqlPort)
+                .withClusterName(clusterName)
+                .withCompression(compression)
+                .withLoadBalancingPolicy(loadBalancingPolicy)
+                .withRetryPolicy(retryPolicy)
                 .withReconnectionPolicy(reconnectionPolicy)
                 .withProtocolVersion(ProtocolVersion.NEWEST_SUPPORTED)
+                .withSocketOptions(socketOptions)
                 .withoutJMXReporting()
                 .build();
 

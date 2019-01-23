@@ -63,7 +63,7 @@ public class TestCRUDSimpleEntity {
     public AchillesTestResource<ManagerFactory> resource = AchillesTestResourceBuilder
             .forJunit()
             .entityClassesToTruncate(SimpleEntity.class)
-            .truncateBeforeAndAfterTest()
+            .truncateBeforeTest()
             .build((cluster, statementsCache) -> ManagerFactoryBuilder
                     .builder(cluster)
                     .withManagedEntityClasses(SimpleEntity.class)
