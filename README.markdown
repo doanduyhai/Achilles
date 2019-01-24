@@ -49,9 +49,9 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
         <tr>
-            <td>6.0.0 (all Cassandra versions up to 3.11.2, all DSE up to 5.1.10)</td>
-            <td>3.5.0</td>
-            <td>3.11.2</td>
+            <td>6.0.1 (all Cassandra versions up to 3.11.3, all DSE up to 5.1.10)</td>
+            <td>3.6.0</td>
+            <td>3.11.3</td>
         </tr>
         <tr>
             <td>5.3.1 (all Cassandra versions up to 3.11.0, all DSE up to 5.1.2)</td>
