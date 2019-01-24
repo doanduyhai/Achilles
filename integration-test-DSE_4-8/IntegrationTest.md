@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS achilles_dse_it.search(
     id bigint PRIMARY KEY,
     string text,
     numeric float,
-    date timestamp,
+    date timestamp
 );
 ```
 
