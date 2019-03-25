@@ -88,6 +88,8 @@ public class CassandraEmbeddedServerBuilder {
 
     private int cqlPort;
 
+    private int jmxPort;
+
     private int thriftPort;
 
     private int storagePort;
@@ -313,6 +315,19 @@ public class CassandraEmbeddedServerBuilder {
         this.cqlPort = clqPort;
         return this;
     }
+
+    /**
+     * Specify the JMX port for the embedded Cassandra
+     * server. If not set, the port will be randomized at runtime
+     *
+     * @param jmxPort JMX port
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withJMXPort(int jmxPort) {
+        this.jmxPort = jmxPort;
+        return this;
+    }
+
 
     /**
      * Specify the rpc port (Thrift port) for the embedded Cassandra server. If
@@ -579,6 +594,9 @@ public class CassandraEmbeddedServerBuilder {
 
         if (cqlPort > 0)
             cassandraParams.put(CASSANDRA_CQL_PORT, cqlPort);
+
+        if (jmxPort > 0)
+            cassandraParams.put(CASSANDRA_JMX_PORT, jmxPort);
 
         if (thriftPort > 0)
             cassandraParams.put(CASSANDRA_THRIFT_PORT, thriftPort);
