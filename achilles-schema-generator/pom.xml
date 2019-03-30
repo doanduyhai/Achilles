@@ -19,7 +19,7 @@
     <parent>
         <artifactId>achilles</artifactId>
         <groupId>info.archinnov</groupId>
-        <version>6.0.2-SNAPSHOT</version>
+        <version>6.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>Achilles Schema Generator</name>
