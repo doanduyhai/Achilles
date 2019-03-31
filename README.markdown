@@ -28,7 +28,7 @@
 - Runtime **Schema Name Provider** for multi-tenant environments
 - Full compatibility with Java 8 **CompletableFuture**
 
-> **warning: Achilles version 6.0.0 is the newest release, for migrating from version 5.x please read the
+> **warning: Achilles version 6.0.2 is the newest release, for migrating from version 5.x please read the
 [Migration From 5.X Guide]**
 
 > **Warning: Achilles versions 4.x are no longer maintained, only bug-fixes are supported, please migrate to
@@ -184,7 +184,7 @@ For unit-testing with embedded Cassandra, add this dependency with **test** scop
  For any question, bug encountered, you can use the **[mailing list]**
 
 ## License
-Copyright 2012-2018 DuyHai DOAN
+Copyright 2012-2019 DuyHai DOAN
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this application except in compliance with the License. You may obtain a copy of the License at
 
