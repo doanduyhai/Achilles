@@ -144,7 +144,7 @@ For unit-testing with embedded Cassandra, add this dependency with **test** scop
  
  1. cassandra (see matrix version above)
  2. cassandra-driver-core (see matrix version above)
- 3. Jackson core, annotations, databind & module jaxb annotations 2.3.3
+ 3. Jackson core, annotations, databind & module jaxb annotations 2.9.8
  4. Google Auto Common 0.4
  5. Google Auto Service 1.0-rc2
  6. Java Poet 1.5.1 
