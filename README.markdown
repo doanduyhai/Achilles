@@ -28,7 +28,7 @@
 - Runtime **Schema Name Provider** for multi-tenant environments
 - Full compatibility with Java 8 **CompletableFuture**
 
-> **warning: Achilles version 6.0.2 is the newest release, for migrating from version 5.x please read the
+> **warning: Achilles version 6.0.3 is the newest release, for migrating from version 5.x please read the
 [Migration From 5.X Guide]**
 
 > **Warning: Achilles versions 4.x are no longer maintained, only bug-fixes are supported, please migrate to
@@ -49,7 +49,7 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
         <tr>
-            <td>6.0.2 (all Cassandra versions up to 3.11.3, all DSE up to 5.1.10)</td>
+            <td>6.0.3 (all Cassandra versions up to 3.11.3, all DSE up to 5.1.10)</td>
             <td>3.6.0</td>
             <td>3.11.3</td>
         </tr>
