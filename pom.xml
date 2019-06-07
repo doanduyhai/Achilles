@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>info.archinnov</groupId>
     <artifactId>achilles</artifactId>
-    <version>6.0.3</version>
+    <version>6.0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>A Persistence Manager for Cassandra</description>
     <inceptionYear>2012</inceptionYear>
