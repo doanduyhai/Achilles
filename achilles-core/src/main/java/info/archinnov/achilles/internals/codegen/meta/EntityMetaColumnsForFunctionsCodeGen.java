@@ -16,20 +16,22 @@
 
 package info.archinnov.achilles.internals.codegen.meta;
 
+import static info.archinnov.achilles.internals.codegen.function.FunctionParameterTypesCodeGen.PARTITION_KEYS_TYPE;
+import static info.archinnov.achilles.internals.codegen.meta.EntityMetaCodeGen.PARTITION_KEY_SORTER;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
-import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
 import info.archinnov.achilles.internals.metamodel.columns.ColumnType;
+import info.archinnov.achilles.internals.metamodel.columns.PartitionKeyInfo;
 import info.archinnov.achilles.internals.parser.FieldParser.FieldMetaSignature;
 import info.archinnov.achilles.internals.parser.TypeUtils;
 import info.archinnov.achilles.internals.strategy.naming.SnakeCaseNaming;
+import info.archinnov.achilles.type.tuples.Tuple2;
 
 public class EntityMetaColumnsForFunctionsCodeGen  {
 
@@ -44,6 +46,8 @@ public class EntityMetaColumnsForFunctionsCodeGen  {
                 .stream()
                 .filter(x -> x.context.columnType != ColumnType.COMPUTED)
                 .forEach(parsingResult -> builder.addField(buildField(parsingResult)));
+
+        builder.addField(buildPartitionKeysField(parsingResults));
 
         return builder.build();
     }
@@ -71,6 +75,34 @@ public class EntityMetaColumnsForFunctionsCodeGen  {
                         .add("  }\n")
                         .build()
                 )
+                .build();
+    }
+
+    private static final FieldSpec buildPartitionKeysField(List<FieldMetaSignature> fieldMetaSignatures) {
+        List<String> cqlPartitionKeys = fieldMetaSignatures
+                .stream()
+                .filter(x -> x.context.columnType == ColumnType.PARTITION)
+                .map(x -> Tuple2.of(x.context.quotedCqlColumn, (PartitionKeyInfo) x.context.columnInfo))
+                .sorted(PARTITION_KEY_SORTER)
+                .map(x -> x._1())
+                .collect(Collectors.toList());
+
+        ClassName partitionKeysType = ClassName.get(FUNCTION_PACKAGE, PARTITION_KEYS_TYPE);
+        CodeBlock.Builder builder = CodeBlock.builder()
+                .add("new $T(new $T<$T>() {\n", partitionKeysType, ARRAY_LIST, STRING)
+                .add(" {\n");
+        for (String cqlPartitionKey : cqlPartitionKeys) {
+            builder.add(" add($S);", cqlPartitionKey);
+        }
+        CodeBlock initializer = builder.add(" }\n")
+                .add("  })\n")
+                .build();
+
+        return FieldSpec.builder(partitionKeysType, "PARTITION_KEYS", Modifier.PUBLIC, Modifier.FINAL)
+                .addJavadoc("<br/>\n")
+                .addJavadoc("Field to be used with <em>SystemFunctions.token(xxx_AchillesMeta.COLUMNS.PARTITION_KEYS, \"tokens\")</em> call\n")
+                .addJavadoc("<br/>\n")
+                .initializer(initializer)
                 .build();
     }
 

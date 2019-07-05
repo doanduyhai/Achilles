@@ -304,4 +304,29 @@ public class TestEntityForGroupByIT {
 
 
     }
+
+    @Test
+    public void should_select_using_token_function() throws Exception {
+        //Given
+        final Long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        scriptExecutor.executeScriptTemplate("EntityForGroupBy/insert_multi_partitions.cql", ImmutableMap.of("id", id));
+
+        //When
+        TypedMap typedMap = manager
+                .dsl()
+                .select()
+                .id()
+                .function(SystemFunctions.token(COLUMNS.PARTITION_KEYS), "tokens")
+                .fromBaseTable()
+                .without_WHERE_Clause()
+                .limit(1)
+                .getTypedMap();
+
+        //Then
+        assertThat(typedMap).isNotNull();
+        assertThat(typedMap).isNotEmpty();
+        assertThat(typedMap.<Long>getTyped("tokens")).isNotNull();
+
+    }
+
 }

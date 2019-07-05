@@ -18,6 +18,7 @@ package info.archinnov.achilles.internals.codegen.function;
 
 import static com.squareup.javapoet.TypeName.BOOLEAN;
 import static com.squareup.javapoet.TypeName.OBJECT;
+import static info.archinnov.achilles.internals.codegen.function.FunctionParameterTypesCodeGen.PARTITION_KEYS_TYPE;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
 
 import java.util.ArrayList;
@@ -116,19 +117,8 @@ public abstract class FunctionsRegistryCodeGen {
                 .addMember("value", "$S", "rawtypes")
                 .build();
 
-        //Token function
-        final MethodSpec.Builder tokenFunctionBuilder = MethodSpec.methodBuilder("token")
-                .addTypeVariable(typeVariableName)
-                .addAnnotation(unchecked)
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                .addJavadoc("Call $S function with given parameters", "token")
-                .returns(LONG_TYPE)
-                .addParameter(typeVariableName, "input", Modifier.FINAL)
-                .addStatement("final $T<Object> params = new $T<>()", LIST, ARRAY_LIST)
-                .addStatement("$T.validateFalse(input.isFunctionCall(), $S)", VALIDATOR, "Invalid argument for 'token' function, it does not accept function call as argument, only simple column")
-                .addStatement("$T.validateFalse(input.hasLiteralValue(), $S)", VALIDATOR, "Invalid argument for 'token' function, it does not accept literal value as argument, only simple column")
-                .addStatement("params.add($T.column((String)$L.getValue()))", QUERY_BUILDER, "input");
-
+        //TODO To remove when upgrading to major version
+        //Legacy Token function
         final TypeSpec.Builder tokenAnonClassBuilder = TypeSpec.anonymousClassBuilder("$T.empty()", OPTIONAL)
                 .superclass(LONG_TYPE)
                 .addMethod(MethodSpec
@@ -153,7 +143,42 @@ public abstract class FunctionsRegistryCodeGen {
                         .addStatement("return params")
                         .build());
 
-        methods.add(tokenFunctionBuilder.addStatement("return $L", tokenAnonClassBuilder.build()).build());
+        final MethodSpec.Builder tokenFunctionBuilder = MethodSpec.methodBuilder("token")
+                .addTypeVariable(typeVariableName)
+                .addAnnotation(unchecked)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .addJavadoc("Call $S function with given parameters", "token")
+                .returns(LONG_TYPE)
+                .addParameter(typeVariableName, "input", Modifier.FINAL)
+                .addStatement("final $T<Object> params = new $T<>()", LIST, ARRAY_LIST)
+                .addStatement("$T.validateFalse(input.isFunctionCall(), $S)", VALIDATOR, "Invalid argument for 'token' function, it does not accept function call as argument, only simple column")
+                .addStatement("$T.validateFalse(input.hasLiteralValue(), $S)", VALIDATOR, "Invalid argument for 'token' function, it does not accept literal value as argument, only simple column")
+                .addStatement("params.add($T.column((String)$L.getValue()))", QUERY_BUILDER, "input")
+                .addStatement("return $L", tokenAnonClassBuilder.build());
+
+        methods.add(tokenFunctionBuilder.build());
+
+
+        //Type-safe token function
+        final MethodSpec.Builder typeSafeTokenFunctionBuilder = MethodSpec.methodBuilder("token")
+                .addAnnotation(unchecked)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .addJavadoc("Call $S function with given parameters", "token")
+                .returns(LONG_TYPE)
+                .addParameter(ClassName.get(FUNCTION_PACKAGE, PARTITION_KEYS_TYPE), "partitionKeys", Modifier.FINAL)
+                /**
+                 *  final List<Object> params = new ArrayList<>();
+                 *  for (String partitionKey : partitionKeys.getValue()) {
+                 *       params.add(QueryBuilder.column(partitionKey));
+                 *  }
+                 */
+                .addStatement("final $T<Object> params = new $T<>()", LIST, ARRAY_LIST)
+                .beginControlFlow("for ($T partitionKey: partitionKeys.getValue())", STRING)
+                    .addStatement("params.add($T.column(partitionKey))", QUERY_BUILDER)
+                .endControlFlow()
+                .addStatement("return $L", tokenAnonClassBuilder.build());
+
+        methods.add(typeSafeTokenFunctionBuilder.build());
 
 
         //writetime function

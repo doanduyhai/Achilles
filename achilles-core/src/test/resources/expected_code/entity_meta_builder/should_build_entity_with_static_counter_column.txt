@@ -8,6 +8,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.reflect.TypeToken;
 import info.archinnov.achilles.generated.function.Long_Type;
+import info.archinnov.achilles.generated.function.PartitionKeys_Type;
 import info.archinnov.achilles.generated.function.UUID_Type;
 import info.archinnov.achilles.generated.meta.entity.TestEntityWithStaticCounterColumn_AchillesMeta.ColumnsForFunctions;
 import info.archinnov.achilles.internals.apt.annotations.AchillesMeta;
@@ -31,6 +32,7 @@ import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
 import java.lang.UnsupportedOperationException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -247,6 +249,17 @@ public final class TestEntityWithStaticCounterColumn_AchillesMeta extends Abstra
           return false;
     }
       }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used with <em>SystemFunctions.token(xxx_AchillesMeta.COLUMNS.PARTITION_KEYS, "tokens")</em> call
+     * <br/>
+     */
+    public final PartitionKeys_Type PARTITION_KEYS = new PartitionKeys_Type(new ArrayList<String>() {
+     {
+     add("id"); }
+      })
     ;
   }
 }

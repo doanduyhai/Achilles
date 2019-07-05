@@ -18,7 +18,6 @@ package info.archinnov.achilles.internals.codegen.function;
 
 import static com.squareup.javapoet.TypeName.BOOLEAN;
 import static info.archinnov.achilles.internals.parser.TypeUtils.*;
-import static java.lang.String.format;
 
 import java.util.List;
 import java.util.Set;
@@ -32,6 +31,8 @@ import info.archinnov.achilles.internals.utils.TypeNameHelper;
 
 public abstract class FunctionParameterTypesCodeGen {
 
+    public static String PARTITION_KEYS_TYPE = "PartitionKeys" + FUNCTION_TYPE_SUFFIX;
+
     public abstract List<TypeSpec> buildParameterTypesClasses(FunctionsContext functionContext);
 
     protected abstract void enhanceGeneratedType(TypeSpec.Builder builder, TypeName typeName);
@@ -44,28 +45,76 @@ public abstract class FunctionParameterTypesCodeGen {
                 .map(TypeName::box)
                 .collect(Collectors.toSet());
 
-        return uniqueTypeNames
-            .stream()
-            .map(typeName -> {
-                final TypeSpec.Builder builder = TypeSpec.classBuilder(TypeNameHelper.asString(typeName) + FUNCTION_TYPE_SUFFIX)
-                        .superclass(genericType(ABSTRACT_CQL_COMPATIBLE_TYPE, typeName))
-                        .addSuperinterface(FUNCTION_CALL)
+        List<TypeSpec> typeSpecs = uniqueTypeNames
+                .stream()
+                .map(typeName -> {
+                    final TypeSpec.Builder builder = TypeSpec.classBuilder(TypeNameHelper.asString(typeName) + FUNCTION_TYPE_SUFFIX)
+                            .superclass(genericType(ABSTRACT_CQL_COMPATIBLE_TYPE, typeName))
+                            .addSuperinterface(FUNCTION_CALL)
+                            .addModifiers(Modifier.PUBLIC)
+                            .addMethod(buildConstructor(typeName))
+                            .addMethod(buildIsFunctionCall());
+
+                    if (typeName.equals(LIST) || typeName.equals(SET) || typeName.equals(MAP)) {
+                        builder.addAnnotation(AnnotationSpec
+                                .builder(SuppressWarnings.class)
+                                .addMember("value", "$S", "rawtypes")
+                                .build());
+                    }
+
+                    enhanceGeneratedType(builder, typeName);
+                    return builder.build();
+                })
+                .collect(Collectors.toList());
+
+        /**
+         * Build here the special PartitionKey_Type
+         * useful for SystemFunctions.token(xxx_AchillesMeta.COLUMNS.PARTITION_KEYS, "tokens")
+         */
+        TypeSpec partitionKeyType = TypeSpec.classBuilder(PARTITION_KEYS_TYPE)
+                .superclass(genericType(ABSTRACT_CQL_COMPATIBLE_TYPE, STRING))
+                .addSuperinterface(FUNCTION_CALL)
+                .addModifiers(Modifier.PUBLIC)
+                /**
+                 * private final List<String> partitionKeys;
+                 */
+                .addField(FieldSpec
+                        .builder(ParameterizedTypeName.get(LIST, STRING), "partitionKeys", Modifier.PRIVATE, Modifier.FINAL)
+                        .build()
+                )
+                /**
+                 * public PartitionKeys_Type(List<String> partitionKeys) {
+                 *      this.partitionKeys = partitionKeys;
+                 * }
+                 */
+                .addMethod(MethodSpec.constructorBuilder()
                         .addModifiers(Modifier.PUBLIC)
-                        .addMethod(buildConstructor(typeName))
-                        .addMethod(buildIsFunctionCall());
+                        .addParameter(ParameterizedTypeName.get(LIST, STRING), "partitionKeys", Modifier.FINAL)
+                        .addStatement("this.partitionKeys = partitionKeys")
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("isFunctionCall")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(BOOLEAN)
+                        .addStatement("return true")
+                        .build())
+                /**
+                 * @Override
+                 *   public List<String> getValue() {
+                 *     return this.partitionKeys;
+                 *   }
+                 */
+                .addMethod(MethodSpec.methodBuilder("getValue")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(ParameterizedTypeName.get(LIST, STRING))
+                        .addStatement("return this.partitionKeys")
+                        .build())
+                .build();
 
-                if (typeName.equals(LIST) || typeName.equals(SET) || typeName.equals(MAP)) {
-                    builder.addAnnotation(AnnotationSpec
-                            .builder(SuppressWarnings.class)
-                            .addMember("value", "$S", "rawtypes")
-                            .build());
-                }
+        typeSpecs.add(partitionKeyType);
 
-                enhanceGeneratedType(builder, typeName);
-                return builder.build();
-            })
-            .collect(Collectors.toList());
-
+        return typeSpecs;
     }
 
     protected MethodSpec buildConstructor(TypeName typeName) {

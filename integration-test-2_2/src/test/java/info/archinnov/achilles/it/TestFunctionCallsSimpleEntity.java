@@ -96,6 +96,8 @@ public class TestFunctionCallsSimpleEntity {
                 .dsl()
                 .select()
                 .id()
+                .function(token(SimpleEntity_AchillesMeta.COLUMNS.ID), "tokens")
+                .function(token(SimpleEntity_AchillesMeta.COLUMNS.PARTITION_KEYS), "partitionTokens")
                 .function(toUnixTimestamp(SimpleEntity_AchillesMeta.COLUMNS.DATE), "dateAsLong")
                 .function(writetime(SimpleEntity_AchillesMeta.COLUMNS.VALUE), "writetimeOfValue")
                 .fromBaseTable()
@@ -107,6 +109,8 @@ public class TestFunctionCallsSimpleEntity {
         //Then
         assertThat(typedMap).isNotNull();
         assertThat(typedMap).isNotEmpty();
+        assertThat(typedMap.<Long>getTyped("tokens")).isNotNull();
+        assertThat(typedMap.<Long>getTyped("partitiontokens")).isNotNull();
         assertThat(typedMap.<Long>getTyped("dateaslong")).isGreaterThan(0L);
         assertThat(typedMap.<Long>getTyped("writetimeofvalue")).isGreaterThan(date.getTime());
     }

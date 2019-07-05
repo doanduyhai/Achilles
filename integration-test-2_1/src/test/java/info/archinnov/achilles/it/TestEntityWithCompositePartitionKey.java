@@ -17,6 +17,8 @@
 package info.archinnov.achilles.it;
 
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME;
+import static info.archinnov.achilles.generated.function.SystemFunctions.token;
+import static info.archinnov.achilles.generated.meta.entity.EntityWithCompositePartitionKey_AchillesMeta.COLUMNS;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,15 +37,13 @@ import com.google.common.collect.ImmutableMap;
 
 import info.archinnov.achilles.generated.ManagerFactory;
 import info.archinnov.achilles.generated.ManagerFactoryBuilder;
-import info.archinnov.achilles.generated.function.SystemFunctions;
 import info.archinnov.achilles.generated.manager.EntityWithCompositePartitionKey_Manager;
 import info.archinnov.achilles.internals.entities.EntityWithCompositePartitionKey;
-import info.archinnov.achilles.internals.metamodel.functions.FunctionCall;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.junit.AchillesTestResourceBuilder;
 import info.archinnov.achilles.script.ScriptExecutor;
+import info.archinnov.achilles.type.TypedMap;
 import info.archinnov.achilles.type.tuples.Tuple2;
-import info.archinnov.achilles.type.tuples.Tuple3;
 
 public class TestEntityWithCompositePartitionKey {
 
@@ -198,5 +198,34 @@ public class TestEntityWithCompositePartitionKey {
                 .sorted()
                 .collect(toList()))
                 .containsExactly("val1-1", "val2-1", "val2-3");
+    }
+
+    @Test
+    public void should_dsl_select_using_token_function() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0L, Long.MAX_VALUE);
+        final UUID uuid = new UUID(1L, 1L);
+        final EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, uuid, "val");
+        manager.crud().insert(entity).execute();
+
+
+        //When
+        TypedMap typedMap = manager
+                .dsl()
+                .select()
+                .id()
+                .uuid()
+                .function(token(COLUMNS.PARTITION_KEYS), "tokens")
+                .fromBaseTable()
+                .where()
+                .id().Eq(id)
+                .uuid().Eq(uuid)
+                .getTypedMap();
+
+        //Then
+        assertThat(typedMap).isNotNull();
+        assertThat(typedMap).isNotEmpty();
+        assertThat(typedMap.<Long>getTyped("tokens")).isNotNull();
+
     }
 }

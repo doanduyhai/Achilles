@@ -23,6 +23,7 @@ import info.archinnov.achilles.generated.function.Map_Integer_List_Integer_Type;
 import info.archinnov.achilles.generated.function.Map_Integer_List_Map_Integer_String_Type;
 import info.archinnov.achilles.generated.function.Map_Integer_TestUDT_Type;
 import info.archinnov.achilles.generated.function.Map_TestUDT_Map_Integer_Tuple3_Integer_Integer_ConsistencyLevel_Type;
+import info.archinnov.achilles.generated.function.PartitionKeys_Type;
 import info.archinnov.achilles.generated.function.Set_ConsistencyLevel_Type;
 import info.archinnov.achilles.generated.function.String_Type;
 import info.archinnov.achilles.generated.function.TestUDT_Type;
@@ -75,6 +76,7 @@ import java.lang.String;
 import java.lang.SuppressWarnings;
 import java.lang.UnsupportedOperationException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -895,6 +897,17 @@ public final class TestEntityWithComplexTypes_AchillesMeta extends AbstractEntit
           return false;
     }
       }
+    ;
+
+    /**
+     * <br/>
+     * Field to be used with <em>SystemFunctions.token(xxx_AchillesMeta.COLUMNS.PARTITION_KEYS, "tokens")</em> call
+     * <br/>
+     */
+    public final PartitionKeys_Type PARTITION_KEYS = new PartitionKeys_Type(new ArrayList<String>() {
+     {
+     add("id"); }
+      })
     ;
   }
 }
