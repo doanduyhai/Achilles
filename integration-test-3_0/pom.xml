@@ -19,7 +19,7 @@
     <parent>
         <artifactId>achilles</artifactId>
         <groupId>info.archinnov</groupId>
-        <version>6.0.4-SNAPSHOT</version>
+        <version>6.0.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>Achilles Integration Test Cassandra 3.0.X</name>
