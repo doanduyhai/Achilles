@@ -1,8 +1,5 @@
 ![Achilles](https://raw.github.com/wiki/doanduyhai/Achilles/assets/Achilles_New_Logo.png)
 
-<br/>
-
-[![Build Status](https://travis-ci.org/doanduyhai/Achilles.png?branch=master)](https://travis-ci.org/doanduyhai/Achilles)
 
 ## Presentation #
 
@@ -28,11 +25,11 @@
 - Runtime **Schema Name Provider** for multi-tenant environments
 - Full compatibility with Java 8 **CompletableFuture**
 
-> **warning: Achilles version 6.0.3 is the newest release, for migrating from version 5.x please read the
+> **warning: Achilles version 6.0.4 is the newest release, for migrating from version 5.x please read the
 [Migration From 5.X Guide]**
 
-> **Warning: Achilles versions 4.x are no longer maintained, only bug-fixes are supported, please migrate to
-version 5.x and follow the [Migration From 4.x Guide]**
+> **Warning: Achilles versions 5.x are no longer maintained, only bug-fixes are supported, please migrate to
+version 6.x and follow the [Migration From 5.x Guide]**
 
 ## Installation #
 
@@ -49,9 +46,9 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
         <tr>
-            <td>6.0.3 (all Cassandra versions up to 3.11.3, all DSE up to 5.1.10)</td>
+            <td>6.0.4 (all Cassandra versions up to 3.11.3, all DSE up to 5.1.10)</td>
             <td>3.6.0</td>
-            <td>3.11.3</td>
+            <td>3.11.4</td>
         </tr>
         <tr>
             <td>5.3.1 (all Cassandra versions up to 3.11.0, all DSE up to 5.1.2)</td>
@@ -91,7 +88,7 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
     </tbody>
 </table>    
 
-> Warning: there will be no new features for branches older than **5.0.x**. Those branches are
+> Warning: there will be no new features for branches older than **6.0.x**. Those branches are
 only supported for bug fixes. New features will **not** be back-ported. Please upgrade to the
 latest version of **Achilles** to benefit from new features
 
