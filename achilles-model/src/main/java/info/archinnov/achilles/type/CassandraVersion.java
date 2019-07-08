@@ -337,7 +337,8 @@ public enum CassandraVersion {
     CASSANDRA_3_11_0,
     CASSANDRA_3_11_1,
     CASSANDRA_3_11_2,
-    CASSANDRA_3_12,
+    CASSANDRA_3_11_3,
+    CASSANDRA_3_11_4,
 
     /**
      * Feature:

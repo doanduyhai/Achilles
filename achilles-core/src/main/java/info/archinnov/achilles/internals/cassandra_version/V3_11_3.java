@@ -16,16 +16,16 @@
 
 package info.archinnov.achilles.internals.cassandra_version;
 
-public class V3_12 extends V3_10 {
+public class V3_11_3 extends V3_10 {
 
 
-    public static V3_12 INSTANCE = new V3_12();
+    public static V3_11_3 INSTANCE = new V3_11_3();
 
-    protected V3_12() {
+    protected V3_11_3() {
     }
 
     @Override
     public String version() {
-        return "3.12";
+        return "3.11.3";
     }
 }
