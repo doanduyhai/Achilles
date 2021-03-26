@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Session;
 
 import info.archinnov.achilles.type.TypedMap;
@@ -87,6 +88,8 @@ public class CassandraEmbeddedServerBuilder {
     private int concurrentWrites;
 
     private int cqlPort;
+
+    private ProtocolVersion protocolVersion;
 
     private int jmxPort;
 
@@ -313,6 +316,18 @@ public class CassandraEmbeddedServerBuilder {
      */
     public CassandraEmbeddedServerBuilder withCQLPort(int clqPort) {
         this.cqlPort = clqPort;
+        return this;
+    }
+
+    /**
+     * Specify the connection protocol version for the embedded Cassandra
+     * server. If not set, the version will be the newest supported.
+     *
+     * @param protocolVersion connection protocol version
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public CassandraEmbeddedServerBuilder withConnectionProtocol(ProtocolVersion protocolVersion) {
+        this.protocolVersion = protocolVersion;
         return this;
     }
 

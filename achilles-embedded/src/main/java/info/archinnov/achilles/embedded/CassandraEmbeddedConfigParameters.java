@@ -68,6 +68,8 @@ public class CassandraEmbeddedConfigParameters {
 
     public static final String CASSANDRA_CQL_PORT = "cqlPort";
 
+    public static final String CASSANDRA_CONNECTION_PROTOCOL_VERSION = "connectionProtocolVersion";
+
     public static final String CASSANDRA_STORAGE_PORT = "storagePort";
 
     public static final String CASSANDRA_STORAGE_SSL_PORT = "storageSSLPort";

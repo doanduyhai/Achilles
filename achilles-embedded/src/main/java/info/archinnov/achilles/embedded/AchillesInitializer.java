@@ -112,6 +112,7 @@ public class AchillesInitializer {
         final LoadBalancingPolicy loadBalancingPolicy = parameters.getTyped(LOAD_BALANCING_POLICY);
         final RetryPolicy retryPolicy = parameters.getTyped(RETRY_POLICY);
         final ReconnectionPolicy reconnectionPolicy = parameters.getTyped(RECONNECTION_POLICY);
+        final ProtocolVersion protocolVersion = parameters.getTypedOr(CASSANDRA_CONNECTION_PROTOCOL_VERSION,ProtocolVersion.NEWEST_SUPPORTED);
         final SocketOptions socketOptions = new SocketOptions();
         socketOptions.setKeepAlive(true);
         socketOptions.setConnectTimeoutMillis(15000);
@@ -125,7 +126,7 @@ public class AchillesInitializer {
                 .withLoadBalancingPolicy(loadBalancingPolicy)
                 .withRetryPolicy(retryPolicy)
                 .withReconnectionPolicy(reconnectionPolicy)
-                .withProtocolVersion(ProtocolVersion.NEWEST_SUPPORTED)
+                .withProtocolVersion(protocolVersion)
                 .withSocketOptions(socketOptions)
                 .withoutJMXReporting()
                 .build();
