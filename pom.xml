@@ -98,7 +98,7 @@
         <commons.io.version>2.4</commons.io.version>
         <commons.collections.version>3.2.2</commons.collections.version>
         <reflections.version>0.9.10</reflections.version>
-        <guava.version>24.1.1-jre</guava.version>
+        <guava.version>29.0-jre</guava.version>
         <validation.api.version>1.1.0.Final</validation.api.version>
         <validator.version>5.3.6.Final</validator.version>
         <slf4j.version>1.7.2</slf4j.version>
