@@ -25,6 +25,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ProtocolVersion;
 
 import info.archinnov.achilles.internals.cache.StatementsCache;
 import info.archinnov.achilles.internals.runtime.AbstractManagerFactory;
@@ -64,6 +65,7 @@ public class AchillesTestResourceBuilder {
     private List<String> scriptLocations = new ArrayList<>();
     private Map<String, Map<String, Object>> scriptTemplates = new HashMap<>();
     private List<String> tablesToTruncate = new ArrayList<>();
+    private ProtocolVersion protocolVersion;
 
     private AchillesTestResourceBuilder() {
     }
@@ -139,6 +141,16 @@ public class AchillesTestResourceBuilder {
         Validator.validateNotBlank(scriptTemplateLocation, "The script template should not be blank while executing AchillesTestResourceBuilder.withScriptTemplate()");
         Validator.validateNotEmpty(values, "The template values should not be empty while executing AchillesTestResourceBuilder.withScriptTemplate()");
         scriptTemplates.put(scriptTemplateLocation.trim(), values);
+        return this;
+    }
+
+    /**
+     * Set the protocol version for the Java driver to connect to the embedded Cassandra server
+     * @param protocolVersion target protocol version
+     * @return AchillesTestResourceBuilder
+     */
+    public AchillesTestResourceBuilder withProtocolVersion(ProtocolVersion protocolVersion) {
+        this.protocolVersion = protocolVersion;
         return this;
     }
 
@@ -236,6 +248,9 @@ public class AchillesTestResourceBuilder {
     }
 
     private TypedMap buildCassandraParams() {
+        if (protocolVersion != null) {
+            cassandraParams.put(CASSANDRA_CONNECTION_PROTOCOL_VERSION, protocolVersion);
+        }
         cassandraParams.put(SCRIPT_LOCATIONS, scriptLocations);
         cassandraParams.put(SCRIPT_TEMPLATES, scriptTemplates);
         cassandraParams.put(USE_UNSAFE_CASSANDRA_DAEMON, false);

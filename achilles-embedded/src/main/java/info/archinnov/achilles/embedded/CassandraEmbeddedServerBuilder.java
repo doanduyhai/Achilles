@@ -19,10 +19,7 @@ package info.archinnov.achilles.embedded;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ProtocolVersion;
@@ -645,6 +642,10 @@ public class CassandraEmbeddedServerBuilder {
         }
 
         cassandraParams.put(KEYSPACE_DURABLE_WRITE, durableWrite);
+
+        if (!cassandraParams.containsKey(CASSANDRA_CONNECTION_PROTOCOL_VERSION) || cassandraParams.get(CASSANDRA_CONNECTION_PROTOCOL_VERSION) == null) {
+            cassandraParams.put(CASSANDRA_CONNECTION_PROTOCOL_VERSION, Optional.ofNullable(protocolVersion).orElse(ProtocolVersion.V4));
+        }
 
         TypedMap parameters = CassandraEmbeddedConfigParameters.mergeWithDefaultParameters(cassandraParams);
         return parameters;
