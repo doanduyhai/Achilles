@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.AfterClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -45,7 +46,7 @@ import info.archinnov.achilles.type.tuples.Tuple2;
 
 public class TestEntityWithComplexTuple {
 
-    @Rule
+    @ClassRule
     public static AchillesTestResource<ManagerFactory> resource = AchillesTestResourceBuilder
             .forJunit()
             .entityClassesToTruncate(EntityWithComplexTuple.class)
