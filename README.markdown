@@ -25,7 +25,7 @@
 - Runtime **Schema Name Provider** for multi-tenant environments
 - Full compatibility with Java 8 **CompletableFuture**
 
-> **warning: Achilles version 6.0.4 is the newest release, for migrating from version 5.x please read the
+> **warning: Achilles version 6.1.0 is the newest release, for migrating from version 5.x please read the
 [Migration From 5.X Guide]**
 
 > **Warning: Achilles versions 5.x are no longer maintained, only bug-fixes are supported, please migrate to
@@ -46,9 +46,9 @@ Below is the compatibility matrix between **Achilles**, **Java Driver** and **Ca
 	</thead>
 	<tbody>
         <tr>
-            <td>6.0.4 (all Cassandra versions up to 3.11.3, all DSE up to 5.1.10)</td>
-            <td>3.6.0</td>
-            <td>3.11.4</td>
+            <td>6.1.0 (all Cassandra versions up to 3.11.10, all DSE up to 5.1.10)</td>
+            <td>3.11.0</td>
+            <td>3.11.10</td>
         </tr>
         <tr>
             <td>5.3.1 (all Cassandra versions up to 3.11.0, all DSE up to 5.1.2)</td>
@@ -141,11 +141,11 @@ For unit-testing with embedded Cassandra, add this dependency with **test** scop
  
  1. cassandra (see matrix version above)
  2. cassandra-driver-core (see matrix version above)
- 3. Jackson core, annotations, databind & module jaxb annotations 2.9.9
+ 3. Jackson core, annotations, databind & module jaxb annotations 2.10.0
  4. Google Auto Common 0.4
  5. Google Auto Service 1.0-rc2
  6. Java Poet 1.5.1 
- 7. Guava 18.0
+ 7. Guava 24.1.1-jre
  8. slf4j-api 1.7.2
  9. commons-io 2.4
  10. commons-lang3 3.3.2
