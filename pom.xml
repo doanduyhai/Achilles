@@ -566,6 +566,9 @@
                     </systemPropertyVariables>
                     <workingDirectory>${basedir}/..</workingDirectory>
                     <argLine>-Duser.language=en</argLine>
+                	<parallel>classes</parallel>
+                	<useUnlimitedThreads>true</useUnlimitedThreads>
+
                 </configuration>
             </plugin>
             <plugin>
