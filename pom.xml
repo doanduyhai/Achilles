@@ -136,6 +136,7 @@
         <clean.data.files>true</clean.data.files>
         <joda-time.version>2.9.1</joda-time.version>
         <asm.version>5.0.4</asm.version>
+    	<closeTestReports>true</closeTestReports>
     </properties>
 
     <modules>
