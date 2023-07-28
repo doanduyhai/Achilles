@@ -60,6 +60,9 @@ public class AchillesInitializer {
             if (STARTED.get() == false) {
                 LOGGER.debug("Creating cluster and session singletons");
                 singletonCluster = initializeCluster(cassandraHost, parameters);
+                while (!ServerStarter.hasExecutionStatus()) { 
+                    Thread.yield(); 
+                }
                 final Session tempSession = singletonCluster.connect();
                 createKeyspaceIfNeeded(tempSession, keyspaceName, durableWrite);
                 tempSession.close();

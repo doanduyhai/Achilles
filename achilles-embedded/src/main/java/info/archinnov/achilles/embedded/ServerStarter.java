@@ -52,6 +52,7 @@ import info.archinnov.achilles.validation.Validator;
 public enum ServerStarter {
     CASSANDRA_EMBEDDED;
 
+    private static volatile boolean hasExecuted;
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerStarter.class);
 
     private static final OrderedShutdownHook orderedShutdownHook = new OrderedShutdownHook();
@@ -114,6 +115,10 @@ public enum ServerStarter {
         return orderedShutdownHook;
     }
 
+    public static boolean hasExecutionStatus() {
+        return hasExecuted;
+    }
+
     private void start(final TypedMap parameters) {
         if (isAlreadyRunning() && CassandraEmbeddedServer.embeddedServerStarted == true) {
             LOGGER.debug("Cassandra is already running, not starting new one");
@@ -161,6 +166,7 @@ public enum ServerStarter {
 
             cassandraDaemon.completeSetup();
             cassandraDaemon.activate();
+            hasExecuted = true;
             daemonRef.getAndSet(cassandraDaemon);
             startupLatch.countDown();
         });
